@@ -54,7 +54,25 @@ class WorldTest {
         assertEquals(fridge.id, milk.inside)
         assertEquals(fridge.y - 0.02f, milk.y, 0.001f)
         val pillow = world.bodiesIn(PlaceId.HOME).first { it is Thing && it.type == ThingType.PILLOW }
-        assertEquals(0.795f, pillow.y, 0.001f)
+        val bed = world.fixturesIn(PlaceId.HOME).first { it.type == FixtureType.BED }
+        assertEquals(bed.id, pillow.restOwner)
+        assertEquals(bed.y - 0.105f, pillow.y, 0.001f)
+    }
+
+    @Test
+    fun `a thing let go on the floor band stays at its own depth`() {
+        val world = WorldFactory.create(Random(4))
+        val sim = Sim(world)
+        val back = world.addThing(ThingType.APPLE, 0, PlaceId.HOME, 3.9f, 0.82f)
+        val front = world.addThing(ThingType.APPLE, 0, PlaceId.HOME, 3.95f, 0.95f)
+        back.ground = 0.82f
+        front.ground = 0.95f
+        back.y = 0.5f
+        front.y = 0.5f
+        repeat(240) { sim.step(PlaceId.HOME, 1f / 60f) }
+        assertTrue(back.resting && front.resting)
+        assertEquals(0.82f, back.y, 0.002f)
+        assertEquals(0.95f, front.y, 0.002f)
     }
 
     @Test

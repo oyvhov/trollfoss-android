@@ -214,6 +214,8 @@ class Engine(
             body.y += (ty - body.y) * follow
             body.vx = (body.x - ox) / max(dt, 0.001f)
             if (body is Thing) body.rot += (-body.rot) * follow * 0.3f + body.vx * 0.4f
+            // Down on the floor band a held body picks its depth: further up is further back.
+            if (body.y >= place.back) body.ground = min(body.y, PlaceId.FRONT)
         }
 
         // A thing carried to the screen edge takes the camera with it.
@@ -462,7 +464,6 @@ class Engine(
 
     fun down(id: Long, at: Offset, uptime: Long) {
         val grab = Grab(pick(at), at, uptime)
-        if (app.trollfoss.BuildConfig.DEBUG) android.util.Log.d("Trollfoss", "down at=$at scene=${toScene(at)} cam=$cam u=$u target=${(grab.target as? Target.Hold)?.body?.let { "${it::class.simpleName} ${(it as? Person)?.name} x=${it.x} y=${it.y}" } ?: grab.target}")
         grab.tracker.addPosition(uptime, at)
         val body = heldBody(grab)
         if (body != null) {
@@ -608,6 +609,10 @@ class Engine(
                 holder.anim.faceTime = 0.8f
             }
         }
+        // Lifted off a chair, a table or out of a cupboard: if let go in the air, it lands in front of it.
+        val from = world.fixtures[if (body.mode == Mode.SEATED) body.holder else if (body.inside >= 0) body.inside else if (body.resting) body.restOwner else -1]
+        if (from != null && !from.spec.wall) body.ground = from.depth + 0.02f
+        body.restOwner = -2
         if (body.mode == Mode.SEATED && body is Person) {
             body.y += body.h * Anatomy.HIPS
             val p = toScene(g.finger)
@@ -674,6 +679,8 @@ class Engine(
                 }
             }
         }
+        if (body.y > PlaceId.FRONT) body.y = PlaceId.FRONT
+        if (body.y >= place.back) body.ground = body.y
         body.vx = vx
         body.vy = vy
         if (body is Thing) body.vrot = vx * 220f
@@ -1112,9 +1119,37 @@ class Engine(
 
     // ---------------------------------------------------------------------------------- drawing
 
-    /** Bodies in drawing order, lowest first. */
+    /** Bodies in drawing order, furthest back first; held bodies always on top. */
     private fun drawList(): List<Body> =
-        world.bodiesIn(place).filter { !hidden(it) }.sortedWith(compareBy<Body> { if (it.held) 1 else 0 }.thenBy { it.z })
+        world.bodiesIn(place).filter { !hidden(it) }.sortedWith(compareBy<Body> { if (it.held) 1 else 0 }.thenBy { bodyKey(it) }.thenBy { it.z })
+
+    /*
+     * «Skrå-3D» drawing order. Everything on the floor band is sorted by its depth line: the further
+     * back, the earlier it is drawn. Wall fixtures come first of all. Things on a piece of furniture are
+     * drawn just after it, figures in a seat just before the seat's front part.
+     */
+    private fun fixtureKey(f: Fixture): Float = if (f.spec.wall) -10f + f.id * 0.00001f else f.depth
+
+    private fun bodyKey(b: Body): Float {
+        if (b.mode == Mode.SEATED) world.fixtures[b.holder]?.let { return fixtureKey(it) + 0.0006f }
+        if (b.inside >= 0) world.fixtures[b.inside]?.let { return fixtureKey(it) + 0.0003f }
+        if (b.resting) {
+            world.fixtures[b.restOwner]?.let { return fixtureKey(it) + 0.0005f }
+            return b.y.coerceIn(place.back, PlaceId.FRONT)
+        }
+        val ground = sim.groundOf(place, b)
+        if (!sim.zeroG(place)) {
+            // Falling onto furniture: drawn with the furniture it will land on.
+            sim.fixtureBelow(place, b)?.let { f -> if (f.y < ground) return fixtureKey(f) + 0.0005f }
+        }
+        return ground
+    }
+
+    private fun glimtKey(s: Secret): Float {
+        val index = if (s.on >= 0) s.on else s.inside
+        if (index >= 0) world.fixtures[s.place.ordinal * 100 + index]?.let { return fixtureKey(it) + 0.0002f }
+        return if (s.y >= place.back) s.y else -5f
+    }
 
     private fun hidden(b: Body): Boolean {
         if (b.mode == Mode.INSIDE || b.mode == Mode.WORN || b.mode == Mode.BAG) return true
@@ -1162,30 +1197,42 @@ class Engine(
     private fun DrawScope.drawWorld(pen: Pen, lw: Float) {
         drawPlaceBack(place, cam, u, pen)
 
-        val fixtures = world.fixturesIn(place).sortedWith(compareBy<Fixture> { if (it.spec.wall) 0 else 1 }.thenBy { it.id })
-        for (f in fixtures) {
+        // One list for furniture, glimt and bodies, sorted back to front.
+        layers.clear()
+        for (f in world.fixturesIn(place)) {
             val fx = f.x + f.shiftX
             if (fx + f.spec.w < cam - 0.1f || fx - f.spec.w > cam + viewport + 0.1f) continue
-            translate(sx(fx), sy(f.y + f.shiftY)) {
-                val bounce = if (motion) 1f + f.anim * 0.05f else 1f
-                scale(bounce, 2f - bounce, pivot = Offset.Zero) {
-                    drawFixtureBack(f, u, pen, if (f.spec.machine == app.trollfoss.domain.Machine.BLENDER || f.spec.machine == app.trollfoss.domain.Machine.CAULDRON || f.spec.machine == app.trollfoss.domain.Machine.BUILD) world.inMachine(f) else emptyList())
+            val k = fixtureKey(f)
+            layers += Layer(k, 0, f)
+            if (f.spec.front) layers += Layer(k + 0.0008f, 1, f)
+        }
+        // Glimt sit just behind what lies on the same furniture, so a pillow can hide one.
+        for (s in sim.visibleSecrets(place)) layers += Layer(glimtKey(s), 2, s)
+        val list = drawList()
+        for (b in list) if (!b.held) layers += Layer(bodyKey(b), 3, b)
+        layers.sortWith(layerOrder)
+        for (l in layers) {
+            when (l.kind) {
+                0 -> {
+                    val f = l.ref as Fixture
+                    translate(sx(f.x + f.shiftX), sy(f.y + f.shiftY)) {
+                        val bounce = if (motion) 1f + f.anim * 0.05f else 1f
+                        scale(bounce, 2f - bounce, pivot = Offset.Zero) {
+                            drawFixtureBack(f, u, pen, if (f.spec.machine == app.trollfoss.domain.Machine.BLENDER || f.spec.machine == app.trollfoss.domain.Machine.CAULDRON || f.spec.machine == app.trollfoss.domain.Machine.BUILD) world.inMachine(f) else emptyList())
+                        }
+                    }
+                }
+                1 -> {
+                    val f = l.ref as Fixture
+                    translate(sx(f.x + f.shiftX), sy(f.y + f.shiftY)) { drawFixtureFront(f, u, pen) }
+                }
+                2 -> drawGlimt(l.ref as Secret, lw)
+                else -> {
+                    val b = l.ref as Body
+                    drawShadow(b)
+                    drawBody(b, pen)
                 }
             }
-        }
-
-        // Glimt sit behind things, so a pillow can hide one.
-        for (s in sim.visibleSecrets(place)) drawGlimt(s, lw)
-
-        val list = drawList()
-        for (b in list) if (!b.held) drawShadow(b)
-        for (b in list) if (!b.held) drawBody(b, pen)
-
-        for (f in fixtures) {
-            if (!f.spec.front) continue
-            val fx = f.x + f.shiftX
-            if (fx + f.spec.w < cam - 0.1f || fx - f.spec.w > cam + viewport + 0.1f) continue
-            translate(sx(fx), sy(f.y + f.shiftY)) { drawFixtureFront(f, u, pen) }
         }
         drawPlaceFront(place, cam, u, pen)
 
@@ -1200,8 +1247,16 @@ class Engine(
         lateText = list
     }
 
+    private class Layer(val key: Float, val kind: Int, val ref: Any)
+    private val layers = ArrayList<Layer>(128)
+    private val layerOrder = compareBy<Layer> { it.key }.thenBy { it.kind }
+
     private fun DrawScope.drawShadow(b: Body) {
-        val floorY = if (b.resting) b.y else surfaceBelow(b.x, b.y) ?: return
+        val floorY = when {
+            b.resting -> b.y
+            b.held && b.y >= place.back -> b.y
+            else -> sim.previewRest(place, b) ?: return
+        }
         val lift = max(0f, floorY - b.y)
         val w = when (b) {
             is Person -> if (b.anim.pose == Pose.LIE) b.h * 0.8f else b.w * 1.1f
@@ -1210,11 +1265,6 @@ class Engine(
         if (b is Person && b.mode == Mode.SEATED) return
         val fade = max(0.2f, 1f - lift * 2.5f)
         groundShadow(sx(b.x), sy(floorY), w * u * fade, fade)
-    }
-
-    private fun surfaceBelow(x: Float, y: Float): Float? {
-        if (sim.zeroG(place)) return null
-        return sim.surfaces(place).filter { x >= it.x1 && x <= it.x2 && it.y >= y - 0.001f }.minOfOrNull { it.y }
     }
 
     private fun DrawScope.drawBody(b: Body, pen: Pen) {

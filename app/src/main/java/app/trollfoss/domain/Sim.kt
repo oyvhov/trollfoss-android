@@ -9,7 +9,11 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /** A flat top in scene coordinates. [owner] is the fixture id, or -1 for the ground. */
-class Surface(val x1: Float, val x2: Float, val y: Float, val owner: Int, val interior: Boolean, val bounce: Float, val slippery: Boolean = false)
+/**
+ * A flat top in scene coordinates. [owner] is the fixture id, or -1 for the ground. A [band] surface is
+ * the floor band of «skrå-3D»: each body meets it at its own depth line instead of at [y].
+ */
+class Surface(val x1: Float, val x2: Float, val y: Float, val owner: Int, val interior: Boolean, val bounce: Float, val slippery: Boolean = false, val band: Boolean = false)
 
 /** Water in scene coordinates: the sea, a pond, a bath or a fountain basin. */
 class Pool(val x1: Float, val x2: Float, val line: Float, val bottom: Float, val owner: Int)
@@ -58,7 +62,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
 
     private fun buildSurfaces(place: PlaceId, allInterior: Boolean): List<Surface> {
         val list = ArrayList<Surface>()
-        Places.spec(place).grounds.forEach { list += Surface(it.x1, it.x2, it.y, -1, false, 0f) }
+        Places.spec(place).grounds.forEach { list += Surface(it.x1, it.x2, it.y, -1, false, 0f, band = it.y == place.floor) }
         for (f in world.fixturesIn(place)) {
             for (s in f.spec.surfaces) {
                 val active = when {
@@ -87,6 +91,26 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
 
     private fun below(list: List<Surface>, x: Float, y: Float): Surface? =
         list.filter { x >= it.x1 && x <= it.x2 && it.y >= y - 0.001f }.minByOrNull { it.y }
+
+    /** Where a body stands on the floor band: its own depth line, kept between the back wall and the front. */
+    fun groundOf(place: PlaceId, b: Body): Float {
+        if (b.ground.isNaN()) b.ground = if (b.y in place.back..PlaceId.FRONT) b.y else place.floor
+        return b.ground.coerceIn(place.back, PlaceId.FRONT)
+    }
+
+    /** The height at which [b] would rest on [s]. */
+    fun restY(place: PlaceId, s: Surface, b: Body): Float = if (s.band) groundOf(place, b) else s.y
+
+    /**
+     * The surface a body falling from [from] to [to] meets first. Furniture tops win over the floor
+     * band, so a cup dropped over a table lands on it even when its depth line lies higher up.
+     */
+    private fun landing(place: PlaceId, list: List<Surface>, b: Body, from: Float, to: Float): Surface? {
+        list.filter { !it.band && b.x >= it.x1 && b.x <= it.x2 && it.y >= from - 0.003f && it.y <= to }.minByOrNull { it.y }?.let { return it }
+        val band = list.firstOrNull { it.band && b.x >= it.x1 && b.x <= it.x2 } ?: return null
+        val g = groundOf(place, b)
+        return if (g >= from - 0.003f && g <= to) band else null
+    }
 
     fun floats(body: Body): Boolean = when (body) {
         is Thing -> body.type.buoyant
@@ -122,14 +146,15 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                         b.y = place.ceiling + b.h
                         continue
                     }
-                    val s = below(all, b.x, b.y - 0.002f)
+                    val s = landing(place, all, b, b.y - 0.002f, 2f)
                     val pool = pools.firstOrNull { b.x in it.x1..it.x2 }
-                    if (pool != null && (s == null || s.y > pool.line) && floats(b)) {
+                    if (pool != null && (s == null || restY(place, s, b) > pool.line) && floats(b)) {
                         b.y = floatLine(b, pool)
                         b.resting = false
                     } else if (s != null) {
-                        b.y = s.y
+                        b.y = restY(place, s, b)
                         b.resting = true
+                        b.restOwner = s.owner
                         b.inside = if (s.interior) s.owner else -1
                     }
                     b.vx = 0f
@@ -177,7 +202,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         }
         val lift = liftOf(b)
         if (b.resting) {
-            val support = if (lift < 0f) null else list.firstOrNull { abs(it.y - b.y) < 0.004f && b.x >= it.x1 - 0.003f && b.x <= it.x2 + 0.003f }
+            val support = if (lift < 0f) null else list.firstOrNull { abs(restY(place, it, b) - b.y) < 0.004f && b.x >= it.x1 - 0.003f && b.x <= it.x2 + 0.003f }
             if (support != null) {
                 val rolls = b is Thing && b.type.rolls
                 if (abs(b.vx) > 0.002f) {
@@ -191,8 +216,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                     if (rolls) b.rot += b.vx * dt / max(0.01f, b.h * 0.5f) * 57.3f
                     wall(place, b)
                     if (b.x < support.x1 - 0.003f || b.x > support.x2 + 0.003f) {
-                        b.resting = false
-                        b.inside = -1
+                        leaveSupport(b)
                     }
                 } else {
                     b.vx = 0f
@@ -200,8 +224,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                 if (!rolls) b.rot *= exp(-12f * dt)
                 if (b.resting) return
             } else {
-                b.resting = false
-                b.inside = -1
+                leaveSupport(b)
             }
         }
 
@@ -242,9 +265,9 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         }
 
         if (b.vy > 0f) {
-            val s = list.filter { b.x >= it.x1 && b.x <= it.x2 && it.y >= oldY - 0.003f && it.y <= newY }.minByOrNull { it.y }
+            val s = landing(place, list, b, oldY, newY)
             if (s != null) {
-                land(b, s)
+                land(place, b, s)
                 return
             }
         }
@@ -280,9 +303,9 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         b.rot += b.vrot * dt
         wall(place, b)
         if (b.vy > 0f) {
-            val s = list.filter { b.x >= it.x1 && b.x <= it.x2 && it.y >= oldY - 0.0005f && it.y <= newY }.minByOrNull { it.y }
+            val s = landing(place, list, b, oldY, newY)
             if (s != null) {
-                newY = s.y - 0.001f
+                newY = restY(place, s, b) - 0.001f
                 b.vy = -max(abs(b.vy) * 0.55f, 0.04f)
                 if (abs(b.vy) > 0.3f) listener.onBounce(b, abs(b.vy))
             }
@@ -296,9 +319,35 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
 
     private var floating = false
 
-    private fun land(b: Body, s: Surface) {
+    /** Where [b] would come to rest if it fell from where it is now, or null in zero gravity or with nothing below. */
+    fun previewRest(place: PlaceId, b: Body): Float? {
+        if (zeroG(place)) return null
+        val s = landing(place, surfaces(place), b, b.y, 2f) ?: return null
+        return restY(place, s, b)
+    }
+
+    /** The piece of furniture straight below [b] with a top it could land on. */
+    fun fixtureBelow(place: PlaceId, b: Body): Fixture? {
+        val s = surfaces(place).filter { !it.band && b.x >= it.x1 && b.x <= it.x2 && it.y >= b.y - 0.001f }.minByOrNull { it.y } ?: return null
+        return world.fixtures[s.owner]
+    }
+
+    /** New things from a machine land in front of it, not hidden behind it. */
+    private fun inFront(t: Body, f: Fixture) {
+        t.ground = (if (f.spec.wall) t.place?.back ?: f.depth else f.depth + 0.02f)
+    }
+
+    /** Something that rolls or is pulled off a piece of furniture falls to the floor in front of it. */
+    private fun leaveSupport(b: Body) {
+        world.fixtures[b.restOwner]?.let { f -> if (!f.spec.wall) b.ground = f.depth + 0.012f }
+        b.resting = false
+        b.inside = -1
+        b.restOwner = -2
+    }
+
+    private fun land(place: PlaceId, b: Body, s: Surface) {
         val impact = b.vy
-        b.y = s.y
+        b.y = restY(place, s, b)
         val e = max(bounceOf(b), s.bounce)
         when {
             s.bounce >= 1f -> {
@@ -318,6 +367,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
             else -> {
                 b.vy = 0f
                 b.resting = true
+                b.restOwner = s.owner
                 b.inside = if (s.interior) s.owner else -1
                 b.vrot = 0f
                 if (!(b is Thing && b.type.rolls) && !s.slippery) b.vx *= 0.35f
@@ -548,6 +598,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                         placeSeated(rider)
                         rider.mode = Mode.FREE
                         rider.holder = -1
+                        rider.ground = f.depth + 0.02f
                         rider.y += rider.h * Anatomy.HIPS
                         rider.vx = if (jump) 2.3f else 1.5f
                         rider.vy = if (jump) -2.5f else -0.4f
@@ -637,6 +688,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         val y = egg.y
         removeThing(egg)
         val dragon = world.addPerson(Species.DRAGON, Look(skin = random.nextInt(Palette.scales.size)), 1.3f, place, x, y)
+        dragon.ground = egg.ground
         dragon.vy = -1.6f
         dragon.age = 0f
         listener.onSpawn(dragon)
@@ -674,6 +726,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         Recipes.keyFor(FixtureType.BLENDER, contents.map { it.type })?.let(::discover)
         contents.forEach { removeThing(it, quiet = true) }
         val t = world.addThing(made.type, made.variant, place, f.x + 0.075f, f.y - 0.02f)
+        inFront(t, f)
         t.vy = -1.2f
         t.vx = 0.35f
         listener.onSpawn(t)
@@ -691,12 +744,14 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         if (Recipes.cauldronMakesPet(a, b)) {
             val species = listOf(Species.CAT, Species.DOG, Species.BUNNY)[random.nextInt(3)]
             val pet = world.addPerson(species, Look(skin = random.nextInt(Palette.furs.size)), 1.2f, place, f.x, f.top)
+            inFront(pet, f)
             pet.vy = -2.2f
             pet.age = 0f
             listener.onSpawn(pet)
         } else {
             val made = Recipes.cauldron(a, b)
             val t = world.addThing(made.type, made.variant, place, f.x, f.top)
+            inFront(t, f)
             t.vy = -2.4f
             t.vx = (random.nextFloat() - 0.5f) * 0.6f
             t.vrot = 240f
@@ -821,6 +876,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                 } else {
                     // A finished snowman shares a snowball.
                     val ball = world.addThing(ThingType.SNOWBALL, 0, place, f.x + 0.06f, f.y - 0.12f)
+                    inFront(ball, f)
                     ball.vy = -1.4f
                     ball.vx = 0.7f
                     capPlace(place, keep = ball)
@@ -872,6 +928,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                     f.mode = 0
                     repeat(3) { i ->
                         val veg = world.addThing(if ((i + f.count) % 2 == 0) ThingType.CARROT else ThingType.POTATO, 0, place, f.x - 0.12f + i * 0.12f, f.y - 0.02f)
+                        inFront(veg, f)
                         veg.vy = -1.6f - i * 0.2f
                         veg.vx = (i - 1) * 0.3f
                         veg.vrot = (i - 1) * 200f
@@ -985,6 +1042,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
             return
         }
         val t = world.addThing(made.type, made.variant, place, f.x, f.y)
+        inFront(t, f)
         t.vy = -1.4f
         t.vx = 0.45f
         t.vrot = 200f
@@ -1036,6 +1094,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
             else -> f.top
         }
         val t = world.addThing(made.type, made.variant, place, f.x + dx.coerceIn(-spec.w / 2 + 0.03f, spec.w / 2 - 0.03f), y)
+        inFront(t, f)
         t.vy = if (f.type == FixtureType.POTION_RACK || f.type == FixtureType.CLOTHES_RACK) -0.4f else -1.8f
         t.vx = if (f.type == FixtureType.FRUIT_CRATE || f.type == FixtureType.FLOUR_SACK) (random.nextFloat() - 0.3f) * 0.8f else 0.2f
         t.vrot = (random.nextFloat() - 0.5f) * 300f
@@ -1142,6 +1201,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                     Recipes.keyFor(FixtureType.WORKBENCH, contents.map { it.type })?.let(::discover)
                     contents.forEach { removeThing(it, quiet = true) }
                     val built = world.addThing(made.type, made.variant, place, f.x, f.top - 0.02f)
+                    inFront(built, f)
                     built.vy = -1.8f
                     built.vx = 0.3f
                     built.vrot = 200f

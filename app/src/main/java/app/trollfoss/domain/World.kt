@@ -50,6 +50,15 @@ sealed class Body(val id: Int) {
     /** Seconds since the body appeared; new things pop in. */
     var age = 10f
 
+    /**
+     * Where on the floor band this body stands («skrå-3D»): the screen y of its feet when it is on the
+     * floor. Not a number until first placed.
+     */
+    var ground = Float.NaN
+
+    /** The fixture this body rests on, -1 for the floor, -2 for nothing. */
+    var restOwner = -2
+
     abstract val w: Float
     abstract val h: Float
 }
@@ -104,8 +113,11 @@ class PersonAnim {
     var wave = 0f
 }
 
-/** A piece of furniture or a machine in a place. Its state is saved; the rest comes from the blueprint. */
-class Fixture(val id: Int, val place: PlaceId, val type: FixtureType, val x: Float, val y: Float, val variant: Int = 0) {
+/**
+ * A piece of furniture or a machine in a place. Its state is saved; the rest comes from the blueprint.
+ * [depth] is where it stands on the floor band; for a radio on a table it is the table's depth.
+ */
+class Fixture(val id: Int, val place: PlaceId, val type: FixtureType, val x: Float, val y: Float, val variant: Int = 0, val depth: Float = y) {
     var open = false
     var on = false
     var mode = 0

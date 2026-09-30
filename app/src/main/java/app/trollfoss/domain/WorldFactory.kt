@@ -9,8 +9,10 @@ object WorldFactory {
     /** The fixtures of every place, in their starting state. Saves apply their own state on top. */
     fun addFixtures(world: World) {
         for (place in PlaceId.entries) {
-            Places.spec(place).fixtures.forEachIndexed { index, def ->
-                val f = Fixture(fixtureId(place, index), place, def.type, def.x, def.y, def.variant)
+            val defs = Places.spec(place).fixtures
+            defs.forEachIndexed { index, def ->
+                val depth = if (def.on >= 0) defs[def.on].y + 0.0004f else def.y
+                val f = Fixture(fixtureId(place, index), place, def.type, def.x, def.y, def.variant, depth)
                 // Street lamps are lit, so the park and the beach glow when night falls.
                 if (def.type == FixtureType.LAMP_POST) f.on = true
                 world.fixtures[f.id] = f
