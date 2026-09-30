@@ -14,6 +14,8 @@ object WorldFactory {
                 val depth = if (def.on >= 0) defs[def.on].y + 0.0004f else def.y
                 val f = Fixture(fixtureId(place, index), place, def.type, def.x, def.y, def.variant, depth)
                 if (def.on >= 0) f.host = fixtureId(place, def.on)
+                // The carousel starts with its first horse at the front.
+                if (def.type == FixtureType.CAROUSEL) f.angle = 1.5708f
                 // Street lamps are lit, so the park and the beach glow when night falls.
                 if (def.type == FixtureType.LAMP_POST) f.on = true
                 world.fixtures[f.id] = f

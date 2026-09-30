@@ -419,6 +419,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
             "map" -> open(Screen.Map)
             "creator" -> open(Screen.Creator(null))
             "book" -> open(Screen.Book)
+            "tasks" -> open(Screen.Tasks)
             "parent" -> open(Screen.Parent)
             "gate" -> open(Screen.ParentGate)
             "play" -> open(Screen.Play)

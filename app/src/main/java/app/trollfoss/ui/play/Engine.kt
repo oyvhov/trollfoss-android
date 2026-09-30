@@ -1821,7 +1821,7 @@ class Engine(
     private fun DrawScope.drawWorld(pen: Pen, lw: Float) {
         val t0 = System.nanoTime()
         sprites.frame()
-        if (skip and 1 == 0) timed(0) { drawPlaceBack(place, cam, u, pen) }
+        if (skip and 1 == 0) timed(0) { drawPlaceBack(place, cam, u, pen, Decor.styles(world, place)) }
 
         // One list for furniture, glimt and bodies, sorted back to front.
         layers.clear()
