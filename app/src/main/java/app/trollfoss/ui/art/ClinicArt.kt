@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.lerp
 import app.trollfoss.domain.PlaceId
+import app.trollfoss.domain.RoomStyle
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -45,11 +46,21 @@ private val clinicStatic = Memo { u ->
     ClinicStatic(specks, seams, guide)
 }
 
-internal fun DrawScope.doctorBack(st: Stage, pen: Pen) {
+internal fun DrawScope.doctorBack(st: Stage, pen: Pen, styles: List<RoomStyle> = emptyList()) {
     val u = st.u
     val n = pen.night
     val back = PlaceId.DOCTOR.back
     val cs = clinicStatic.of(u)
+    if (styles.wallOf(0) > 0) {
+        paperWall(st, styles.wallOf(0), back)
+    } else {
+        pastelWall(st, pen, back)
+    }
+    doctorWallThings(st, pen, back, cs, n, styles.floorOf(0))
+}
+
+private fun DrawScope.pastelWall(st: Stage, pen: Pen, back: Float) {
+    val u = st.u
     drawRect(Color(0xFFD9F2EA), Offset(0f, SKY_TOP * u), Size(st.w, (back - SKY_TOP) * u))
     // Soft polka dots on the upper wall.
     val dots = ArrayList<Offset>(60)
@@ -69,6 +80,10 @@ internal fun DrawScope.doctorBack(st: Stage, pen: Pen) {
     drawRect(Color.White, Offset(0f, 0.592f * u), Size(st.w, 0.02f * u))
     drawLine(Ink.line, Offset(0f, 0.592f * u), Offset(st.w, 0.592f * u), strokeWidth = pen.lw * 0.7f)
     drawLine(Ink.line, Offset(0f, 0.612f * u), Offset(st.w, 0.612f * u), strokeWidth = pen.lw * 0.7f)
+}
+
+private fun DrawScope.doctorWallThings(st: Stage, pen: Pen, back: Float, cs: ClinicStatic, n: Float, floorStyle: Int) {
+    val u = st.u
     if (st.sees(-0.05f, 0.25f)) clinicDoor(st, pen)
     if (st.sees(1.4f, 1.95f)) treeWindow(st, pen)
     if (st.sees(1.0f, 1.25f)) posterTooth(st, pen, st.rect(1.03f, 0.1f, 1.21f, 0.3f))
@@ -77,14 +92,18 @@ internal fun DrawScope.doctorBack(st: Stage, pen: Pen) {
     skirting(st, pen, back, Color(0xFFF7F3EC))
     crown(st, pen, Color(0xFFF7F3EC))
 
-    drawRect(
-        Brush.verticalGradient(listOf(Color(0xFFD6DEE8), Color(0xFFEEF2F7)), startY = back * u, endY = FRONT_Y * u),
-        Offset(0f, back * u), Size(st.w, (FRONT_Y - back) * u),
-    )
-    inScene(st) {
-        for ((i, pts) in cs.specks.withIndex()) drawPoints(pts, PointMode.Points, speckColors[i], strokeWidth = 0.007f * u, cap = StrokeCap.Round)
-        drawPoints(cs.seams, PointMode.Lines, Color(0xFFC4CEDA), strokeWidth = pen.lw * 0.6f)
-        drawPath(cs.guide, Color(0xFF7FD3B0))
+    if (floorStyle > 0) {
+        layFloor(st, floorStyle, back)
+    } else {
+        drawRect(
+            Brush.verticalGradient(listOf(Color(0xFFD6DEE8), Color(0xFFEEF2F7)), startY = back * u, endY = FRONT_Y * u),
+            Offset(0f, back * u), Size(st.w, (FRONT_Y - back) * u),
+        )
+        inScene(st) {
+            for ((i, pts) in cs.specks.withIndex()) drawPoints(pts, PointMode.Points, speckColors[i], strokeWidth = 0.007f * u, cap = StrokeCap.Round)
+            drawPoints(cs.seams, PointMode.Lines, Color(0xFFC4CEDA), strokeWidth = pen.lw * 0.6f)
+            drawPath(cs.guide, Color(0xFF7FD3B0))
+        }
     }
     wallShadow(st, back)
     lightPatch(st, 1.68f, 0.3f, back, n)

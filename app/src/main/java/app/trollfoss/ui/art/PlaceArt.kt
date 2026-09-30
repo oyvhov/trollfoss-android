@@ -2,29 +2,33 @@ package app.trollfoss.ui.art
 
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import app.trollfoss.domain.PlaceId
+import app.trollfoss.domain.RoomStyle
 
 /**
  * Draws a place's background in screen pixels: sky or walls, far scenery with parallax, and the floor
  * or ground band. [cam] is the left edge of the view in scene units and [u] pixels per unit; scene point
  * (x, y) is at ((x - cam) * u, y * u). The world is drawn in oblique 3D («skrå-3D»): the floor band runs
  * from `place.back` to [PlaceId.FRONT], and depth recedes up and to the right (see [Oblique]).
+ *
+ * [styles] are the home designer's choices, one per room of `Decor.rooms(place)`: a wallpaper (1..11)
+ * and a floor (1..8), where 0 keeps the place's own look. Only indoor places that can be decorated use them.
  */
-fun DrawScope.drawPlaceBack(place: PlaceId, cam: Float, u: Float, pen: Pen) {
+fun DrawScope.drawPlaceBack(place: PlaceId, cam: Float, u: Float, pen: Pen, styles: List<RoomStyle> = emptyList()) {
     val st = Stage(cam, u, size.width, size.height, place.width)
     when (place) {
         PlaceId.BEACH -> beachBack(st, pen)
         PlaceId.FOREST -> forestBack(st, pen)
         PlaceId.MOUNTAIN -> mountainBack(st, pen)
-        PlaceId.HOME -> homeBack(st, pen)
-        PlaceId.CAFE -> cafeBack(st, pen)
-        PlaceId.SALON -> salonBack(st, pen)
+        PlaceId.HOME -> homeBack(st, pen, styles)
+        PlaceId.CAFE -> cafeBack(st, pen, styles)
+        PlaceId.SALON -> salonBack(st, pen, styles)
         PlaceId.LAB -> labBack(st, pen)
         PlaceId.FARM -> farmBack(st, pen)
         PlaceId.SPACE -> spaceBack(st, pen)
         PlaceId.TIVOLI -> tivoliBack(st, pen)
-        PlaceId.SHOP -> shopBack(st, pen)
-        PlaceId.DOCTOR -> doctorBack(st, pen)
-        PlaceId.STAGE -> stageBack(st, pen)
+        PlaceId.SHOP -> shopBack(st, pen, styles)
+        PlaceId.DOCTOR -> doctorBack(st, pen, styles)
+        PlaceId.STAGE -> stageBack(st, pen, styles)
         PlaceId.UNDERWATER -> underwaterBack(st, pen)
     }
 }

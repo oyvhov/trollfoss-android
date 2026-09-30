@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.lerp
 import app.trollfoss.domain.PlaceId
+import app.trollfoss.domain.RoomStyle
 import kotlin.math.sin
 
 /*
@@ -76,12 +77,16 @@ private val shopStatic = Memo { u ->
     ShopStatic(tiles, joints, boards, goods, shelfBack)
 }
 
-internal fun DrawScope.shopBack(st: Stage, pen: Pen) {
+internal fun DrawScope.shopBack(st: Stage, pen: Pen, styles: List<RoomStyle> = emptyList()) {
     val u = st.u
     val n = pen.night
     val back = PlaceId.SHOP.back
     val ss = shopStatic.of(u)
-    drawRect(Color(0xFFF7F4EF), Offset(0f, SKY_TOP * u), Size(st.w, (back - SKY_TOP) * u))
+    if (styles.wallOf(0) > 0) {
+        paperWall(st, styles.wallOf(0), back)
+    } else {
+        drawRect(Color(0xFFF7F4EF), Offset(0f, SKY_TOP * u), Size(st.w, (back - SKY_TOP) * u))
+    }
     drawRect(Color(0xFF2FB57A), Offset(0f, 0.025f * u), Size(st.w, 0.028f * u))
     drawRect(Color(0xFFFFD166), Offset(0f, 0.053f * u), Size(st.w, 0.008f * u))
     drawLine(Ink.line, Offset(0f, 0.025f * u), Offset(st.w, 0.025f * u), strokeWidth = pen.lw * 0.7f)
@@ -112,13 +117,17 @@ internal fun DrawScope.shopBack(st: Stage, pen: Pen) {
     skirting(st, pen, back, Color(0xFFD5DBE2))
     crown(st, pen, Color(0xFFF7F4EF))
 
-    drawRect(
-        Brush.verticalGradient(listOf(Color(0xFFD9DEE4), Color(0xFFF4F6F8)), startY = back * u, endY = FRONT_Y * u),
-        Offset(0f, back * u), Size(st.w, (FRONT_Y - back) * u),
-    )
-    inScene(st) {
-        drawPath(ss.tiles, Color(0xFFE2E7EC))
-        drawPoints(ss.joints, PointMode.Lines, Color(0xFFC4CCD5), strokeWidth = pen.lw * 0.6f)
+    if (styles.floorOf(0) > 0) {
+        layFloor(st, styles.floorOf(0), back)
+    } else {
+        drawRect(
+            Brush.verticalGradient(listOf(Color(0xFFD9DEE4), Color(0xFFF4F6F8)), startY = back * u, endY = FRONT_Y * u),
+            Offset(0f, back * u), Size(st.w, (FRONT_Y - back) * u),
+        )
+        inScene(st) {
+            drawPath(ss.tiles, Color(0xFFE2E7EC))
+            drawPoints(ss.joints, PointMode.Lines, Color(0xFFC4CCD5), strokeWidth = pen.lw * 0.6f)
+        }
     }
     for (x in floatArrayOf(0.5f, 1.4f, 2.3f, 3.1f)) {
         if (!st.sees(x - 0.4f, x + 0.3f)) continue

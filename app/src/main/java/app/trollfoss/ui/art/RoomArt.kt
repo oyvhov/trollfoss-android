@@ -14,7 +14,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.rotate
 import app.trollfoss.domain.PlaceId
+import app.trollfoss.domain.RoomStyle
 import kotlin.math.cos
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
 
@@ -25,6 +27,28 @@ import kotlin.math.sin
  */
 
 // ----------------------------------------------------------------------------------- shared kit
+
+/** The chosen wallpaper of room [i], or 0 for the place's own look. */
+internal fun List<RoomStyle>.wallOf(i: Int): Int = getOrNull(i)?.wall ?: 0
+
+/** The chosen floor of room [i], or 0 for the place's own look. */
+internal fun List<RoomStyle>.floorOf(i: Int): Int = getOrNull(i)?.floor ?: 0
+
+/** Papers the back wall from scene x [x0] to [x1] (and all the way up) with wallpaper [index]. */
+internal fun DrawScope.paperWall(st: Stage, index: Int, back: Float, x0: Float = -9f, x1: Float = 99f) {
+    val u = st.u
+    drawWallpaper(index, max(st.x(x0), -2f), SKY_TOP * u - 2f, min(st.x(x1), st.w + 2f), back * u, -st.cam * u, 0f, u)
+}
+
+/** Lays flooring [index] on the floor band between front-edge x [x0] and [x1], receding to [back]. */
+internal fun DrawScope.layFloor(st: Stage, index: Int, back: Float, x0: Float = -9f, x1: Float = 99f) {
+    val u = st.u
+    val a = max(x0, st.cam - 1f)
+    val b = min(x1, st.cam + st.vw + 1f)
+    if (b <= a) return
+    val area = Path().apply { floorQuad(u, st.cam, a, b, FRONT_Y, back) }
+    drawFlooring(index, area, -st.cam * u, 0f, u, -2f, st.w + 2f)
+}
 
 internal class Planks(val joints: List<Offset>, val ends: List<Offset>, val grain: List<Offset>)
 
@@ -238,7 +262,7 @@ private val homeStatic = Memo { u ->
     HomeStatic(buildPlanks(u, -0.3f, 4.9f, back, 0.1f, 11), petals, hearts, splash, bathTiles, bathFloor)
 }
 
-internal fun DrawScope.homeBack(st: Stage, pen: Pen) {
+internal fun DrawScope.homeBack(st: Stage, pen: Pen, styles: List<RoomStyle> = emptyList()) {
     val u = st.u
     val n = pen.night
     val back = PlaceId.HOME.back
@@ -247,11 +271,16 @@ internal fun DrawScope.homeBack(st: Stage, pen: Pen) {
         val a = homeEdge(i, back)
         val b = homeEdge(i + 1, back)
         if (!st.sees(a, b)) continue
-        drawRect(homeWalls[i], Offset(st.x(a), SKY_TOP * u), Size((b - a) * u, (back - SKY_TOP) * u))
+        val paper = styles.wallOf(i)
+        if (paper > 0) {
+            drawWallpaper(paper, st.x(a), SKY_TOP * u - 2f, st.x(b), back * u, -st.cam * u, 0f, u)
+        } else {
+            drawRect(homeWalls[i], Offset(st.x(a), SKY_TOP * u), Size((b - a) * u, (back - SKY_TOP) * u))
+        }
     }
     // Bedroom: soft blue wallpaper with small flowers.
     if (st.sees(-0.2f, homeEdge(1, back))) {
-        clipRect(right = st.x(homeEdge(1, back))) {
+        if (styles.wallOf(0) == 0) clipRect(right = st.x(homeEdge(1, back))) {
             inScene(st) {
                 drawPoints(hs.petals, PointMode.Points, Color.White, strokeWidth = 0.011f * u, cap = StrokeCap.Round, alpha = 0.8f)
                 drawPoints(hs.hearts, PointMode.Points, Color(0xFFF49AB6), strokeWidth = 0.008f * u, cap = StrokeCap.Round)
@@ -266,8 +295,10 @@ internal fun DrawScope.homeBack(st: Stage, pen: Pen) {
     }
     // Living room: warm paint, a picture rail, photos and a child's drawing.
     if (st.sees(homeEdge(1, back), homeEdge(2, back))) {
-        drawLine(Color(0xFFFFF8EE), st.o(homeEdge(1, back), 0.12f), st.o(homeEdge(2, back), 0.12f), strokeWidth = 0.008f * u)
-        drawLine(Ink.line, st.o(homeEdge(1, back), 0.124f), st.o(homeEdge(2, back), 0.124f), strokeWidth = pen.lw * 0.6f)
+        if (styles.wallOf(1) == 0) {
+            drawLine(Color(0xFFFFF8EE), st.o(homeEdge(1, back), 0.12f), st.o(homeEdge(2, back), 0.12f), strokeWidth = 0.008f * u)
+            drawLine(Ink.line, st.o(homeEdge(1, back), 0.124f), st.o(homeEdge(2, back), 0.124f), strokeWidth = pen.lw * 0.6f)
+        }
         if (st.sees(1.5f, 1.75f)) childDrawing(st, pen, st.o(1.62f, 0.3f))
         if (st.sees(2.0f, 2.36f)) {
             val a = frame3d(st.rect(2.02f, 0.21f, 2.16f, 0.37f), pen, Color(0xFF3B3346), Color(0xFFFFE4B5))
@@ -311,20 +342,27 @@ internal fun DrawScope.homeBack(st: Stage, pen: Pen) {
     skirting(st, pen, back, Color(0xFFF7F3EC))
     crown(st, pen, Color(0xFFF7F3EC))
 
-    // The floor: light oak boards, tiles in the bathroom.
-    plankFloor(st, pen, hs.planks, back, Color(0xFFD9A873))
+    // The floor: light oak boards, tiles in the bathroom, or what the child has chosen per room.
+    if ((0 until 4).any { styles.floorOf(it) == 0 }) plankFloor(st, pen, hs.planks, back, Color(0xFFD9A873))
     val bath = HOME_DIVIDERS[2] - recede(PlaceId.HOME.floor) + DIV_TH
-    if (st.sees(bath, 5f)) {
+    if (styles.floorOf(3) == 0 && st.sees(bath, 5f)) {
         val tiles = Path().apply { floorQuad(u, st.cam, bath, 5f, FRONT_Y, back) }
         drawPath(tiles, Brush.verticalGradient(listOf(Color(0xFFB8C6C9), Color(0xFFE6EEEF)), startY = back * u, endY = FRONT_Y * u))
         inScene(st) { drawPoints(hs.bathFloor, PointMode.Lines, Color(0xFF93A5AA), strokeWidth = pen.lw * 0.6f) }
+    }
+    for (i in 0 until 4) {
+        val floor = styles.floorOf(i)
+        if (floor == 0) continue
+        val x0 = if (i == 0) -9f else HOME_DIVIDERS[i - 1] - recede(PlaceId.HOME.floor) + DIV_TH
+        val x1 = if (i == 3) 9f else HOME_DIVIDERS[i] - recede(PlaceId.HOME.floor)
+        layFloor(st, floor, back, x0, x1)
     }
     wallShadow(st, back)
     lightPatch(st, 0.4f, 0.2f, back, n)
     lightPatch(st, 1.9f, 0.2f, back, n)
     lightPatch(st, 3.25f, 0.2f, back, n)
     homeRugs(st, pen)
-    for ((i, x) in HOME_DIVIDERS.withIndex()) divider(st, pen, x, back, homeWalls[i + 1], Color(0xFFF7F3EC))
+    for ((i, x) in HOME_DIVIDERS.withIndex()) divider(st, pen, x, back, homeWalls[i + 1], Color(0xFFF7F3EC), styles.wallOf(i + 1))
     pendant(st, pen, 1.66f, 0.12f, Color(0xFFF2C14E))
     pendant(st, pen, 3.25f, 0.1f, Color(0xFF6FB7A8))
     drawBase(st, pen, Color(0xFFE7C497), Color(0xFF9C6B45))
@@ -390,7 +428,7 @@ private fun DrawScope.homeRugs(st: Stage, pen: Pen) {
  * [x]. We see its right face (the next room's wall, [face]) with a door opening, its cut front edge and
  * its top, in [edge].
  */
-private fun DrawScope.divider(st: Stage, pen: Pen, x: Float, back: Float, face: Color, edge: Color) {
+private fun DrawScope.divider(st: Stage, pen: Pen, x: Float, back: Float, face: Color, edge: Color, paper: Int = 0) {
     val u = st.u
     val xf = x - recede(PlaceId.HOME.floor)
     val shift = recede(back)
@@ -415,7 +453,13 @@ private fun DrawScope.divider(st: Stage, pen: Pen, x: Float, back: Float, face: 
         lineTo(px(d0, th), py(d0))
         close()
     }
-    drawPath(facePath, Brush.horizontalGradient(listOf(face.darken(0.18f), face.darken(0.06f)), startX = px(0f), endX = px(1f)))
+    if (paper > 0) {
+        // The next room's wallpaper runs on along its side wall, in shade.
+        drawWallpaperSlanted(paper, facePath, px(0f, th), u)
+        drawPath(facePath, Brush.horizontalGradient(listOf(Ink.line.copy(alpha = 0.26f), Ink.line.copy(alpha = 0.1f)), startX = px(0f), endX = px(1f)))
+    } else {
+        drawPath(facePath, Brush.horizontalGradient(listOf(face.darken(0.18f), face.darken(0.06f)), startX = px(0f), endX = px(1f)))
+    }
     // Skirting along the foot of the wall, either side of the door.
     val skirt = Path().apply {
         poly(px(0f, th), py(0f, 0.024f), px(d0, th), py(d0, 0.024f), px(d0, th), py(d0), px(0f, th), py(0f))
@@ -543,17 +587,22 @@ private val cafeStatic = Memo { u ->
     CafeStatic(stripes, beads, dark, string, flags, flagLines, chalk)
 }
 
-internal fun DrawScope.cafeBack(st: Stage, pen: Pen) {
+internal fun DrawScope.cafeBack(st: Stage, pen: Pen, styles: List<RoomStyle> = emptyList()) {
     val u = st.u
     val back = PlaceId.CAFE.back
     val cs = cafeStatic.of(u)
-    drawRect(Color(0xFFFFF5E4), Offset(0f, SKY_TOP * u), Size(st.w, (back - SKY_TOP) * u))
-    inScene(st) { drawPath(cs.stripes, Color(0xFFCDEFDF)) }
-    drawRect(Color(0xFF8ED6B7), Offset(0f, 0.6f * u), Size(st.w, (back - 0.6f) * u))
-    inScene(st) { drawPoints(cs.beads, PointMode.Lines, Color(0xFF6DBF9C), strokeWidth = pen.lw * 0.7f) }
-    drawRect(Color(0xFFFFFBF2), Offset(0f, 0.592f * u), Size(st.w, 0.022f * u))
-    drawLine(Ink.line, Offset(0f, 0.592f * u), Offset(st.w, 0.592f * u), strokeWidth = pen.lw * 0.7f)
-    drawLine(Ink.line, Offset(0f, 0.614f * u), Offset(st.w, 0.614f * u), strokeWidth = pen.lw * 0.7f)
+    val paper = styles.wallOf(0)
+    if (paper > 0) {
+        paperWall(st, paper, back)
+    } else {
+        drawRect(Color(0xFFFFF5E4), Offset(0f, SKY_TOP * u), Size(st.w, (back - SKY_TOP) * u))
+        inScene(st) { drawPath(cs.stripes, Color(0xFFCDEFDF)) }
+        drawRect(Color(0xFF8ED6B7), Offset(0f, 0.6f * u), Size(st.w, (back - 0.6f) * u))
+        inScene(st) { drawPoints(cs.beads, PointMode.Lines, Color(0xFF6DBF9C), strokeWidth = pen.lw * 0.7f) }
+        drawRect(Color(0xFFFFFBF2), Offset(0f, 0.592f * u), Size(st.w, 0.022f * u))
+        drawLine(Ink.line, Offset(0f, 0.592f * u), Offset(st.w, 0.592f * u), strokeWidth = pen.lw * 0.7f)
+        drawLine(Ink.line, Offset(0f, 0.614f * u), Offset(st.w, 0.614f * u), strokeWidth = pen.lw * 0.7f)
+    }
     skirting(st, pen, back, Color(0xFF5DB892))
     crown(st, pen, Color(0xFF7FD3B0))
     inScene(st) {
@@ -574,13 +623,17 @@ internal fun DrawScope.cafeBack(st: Stage, pen: Pen) {
         }
         drawPoints(dots, PointMode.Points, Color(0xFFFFD66B), strokeWidth = 0.014f * u, cap = StrokeCap.Round)
     }
-    drawRect(Color(0xFFFFF6E6), Offset(0f, back * u), Size(st.w, (FRONT_Y - back) * u))
-    inScene(st) { drawPath(cs.dark, Color(0xFF6CC3A0)) }
-    drawRect(
-        Brush.verticalGradient(listOf(Ink.line.copy(alpha = 0.16f), Ink.line.copy(alpha = 0f)), startY = back * u, endY = FRONT_Y * u),
-        Offset(0f, back * u),
-        Size(st.w, (FRONT_Y - back) * u),
-    )
+    if (styles.floorOf(0) > 0) {
+        layFloor(st, styles.floorOf(0), back)
+    } else {
+        drawRect(Color(0xFFFFF6E6), Offset(0f, back * u), Size(st.w, (FRONT_Y - back) * u))
+        inScene(st) { drawPath(cs.dark, Color(0xFF6CC3A0)) }
+        drawRect(
+            Brush.verticalGradient(listOf(Ink.line.copy(alpha = 0.16f), Ink.line.copy(alpha = 0f)), startY = back * u, endY = FRONT_Y * u),
+            Offset(0f, back * u),
+            Size(st.w, (FRONT_Y - back) * u),
+        )
+    }
     wallShadow(st, back)
     lightPatch(st, 2.46f, 0.2f, back, pen.night)
     pendant(st, pen, 0.95f, 0.12f, Color(0xFFFFC83D))
@@ -674,17 +727,22 @@ private val salonStatic = Memo { u ->
     SalonStatic(dots, arches, chips, joints)
 }
 
-internal fun DrawScope.salonBack(st: Stage, pen: Pen) {
+internal fun DrawScope.salonBack(st: Stage, pen: Pen, styles: List<RoomStyle> = emptyList()) {
     val u = st.u
     val back = PlaceId.SALON.back
     val ss = salonStatic.of(u)
-    drawRect(Color(0xFFFFD6E6), Offset(0f, SKY_TOP * u), Size(st.w, (back - SKY_TOP) * u))
-    inScene(st) { drawPoints(ss.dots, PointMode.Points, Color(0xFFE3C3F2), strokeWidth = 0.012f * u, cap = StrokeCap.Round) }
-    drawRect(Color(0xFFD7C4F4), Offset(0f, 0.58f * u), Size(st.w, (back - 0.58f) * u))
-    inScene(st) { drawPath(ss.arches, Color(0xFFB79CE3), style = Stroke(pen.lw * 0.9f)) }
-    drawRect(Color.White, Offset(0f, 0.572f * u), Size(st.w, 0.02f * u))
-    drawLine(Ink.line, Offset(0f, 0.572f * u), Offset(st.w, 0.572f * u), strokeWidth = pen.lw * 0.7f)
-    drawLine(Ink.line, Offset(0f, 0.592f * u), Offset(st.w, 0.592f * u), strokeWidth = pen.lw * 0.7f)
+    val paper = styles.wallOf(0)
+    if (paper > 0) {
+        paperWall(st, paper, back)
+    } else {
+        drawRect(Color(0xFFFFD6E6), Offset(0f, SKY_TOP * u), Size(st.w, (back - SKY_TOP) * u))
+        inScene(st) { drawPoints(ss.dots, PointMode.Points, Color(0xFFE3C3F2), strokeWidth = 0.012f * u, cap = StrokeCap.Round) }
+        drawRect(Color(0xFFD7C4F4), Offset(0f, 0.58f * u), Size(st.w, (back - 0.58f) * u))
+        inScene(st) { drawPath(ss.arches, Color(0xFFB79CE3), style = Stroke(pen.lw * 0.9f)) }
+        drawRect(Color.White, Offset(0f, 0.572f * u), Size(st.w, 0.02f * u))
+        drawLine(Ink.line, Offset(0f, 0.572f * u), Offset(st.w, 0.572f * u), strokeWidth = pen.lw * 0.7f)
+        drawLine(Ink.line, Offset(0f, 0.592f * u), Offset(st.w, 0.592f * u), strokeWidth = pen.lw * 0.7f)
+    }
     skirting(st, pen, back, Color(0xFFA88BD6))
     crown(st, pen, Color(0xFFC9B2F0))
 
@@ -708,16 +766,20 @@ internal fun DrawScope.salonBack(st: Stage, pen: Pen) {
         trailingPlant(st, pen, 1.3f, 0.17f)
     }
 
-    drawRect(
-        Brush.verticalGradient(listOf(Color(0xFFE2D4DF), Color(0xFFF8F1F6)), startY = back * u, endY = FRONT_Y * u),
-        Offset(0f, back * u),
-        Size(st.w, (FRONT_Y - back) * u),
-    )
-    inScene(st) {
-        for ((i, pts) in ss.chips.withIndex()) {
-            drawPoints(pts, PointMode.Points, salonChipColors[i], strokeWidth = (0.006f + 0.003f * (i % 2)) * u, cap = StrokeCap.Round)
+    if (styles.floorOf(0) > 0) {
+        layFloor(st, styles.floorOf(0), back)
+    } else {
+        drawRect(
+            Brush.verticalGradient(listOf(Color(0xFFE2D4DF), Color(0xFFF8F1F6)), startY = back * u, endY = FRONT_Y * u),
+            Offset(0f, back * u),
+            Size(st.w, (FRONT_Y - back) * u),
+        )
+        inScene(st) {
+            for ((i, pts) in ss.chips.withIndex()) {
+                drawPoints(pts, PointMode.Points, salonChipColors[i], strokeWidth = (0.006f + 0.003f * (i % 2)) * u, cap = StrokeCap.Round)
+            }
+            drawPoints(ss.joints, PointMode.Lines, Color(0xFFCDBBCB), strokeWidth = pen.lw * 0.7f)
         }
-        drawPoints(ss.joints, PointMode.Lines, Color(0xFFCDBBCB), strokeWidth = pen.lw * 0.7f)
     }
     wallShadow(st, back)
     lightPatch(st, 2.3f, 0.2f, back, pen.night)
