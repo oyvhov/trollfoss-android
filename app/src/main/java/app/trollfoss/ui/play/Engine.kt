@@ -1658,7 +1658,7 @@ class Engine(
             if (fx + f.spec.w < cam - 0.1f || fx - f.spec.w > cam + viewport + 0.1f) continue
             val k = fixtureKey(f)
             layers += Layer(k, 0, f)
-            if (f.spec.front) layers += Layer(k + 0.0008f, 1, f)
+            if (f.spec.front || f.spec.glass) layers += Layer(k + 0.0008f, 1, f)
         }
         // Glimt sit just behind what lies on the same furniture, so a pillow can hide one.
         for (s in sim.visibleSecrets(place)) layers += Layer(glimtKey(s), 2, s)
@@ -1678,8 +1678,12 @@ class Engine(
                     }
                 }
                 1 -> {
+                    // The front layer squashes with the back, so a duvet or a bath side stays in place.
                     val f = l.ref as Fixture
-                    translate(sx(f.x + f.shiftX), sy(f.y + f.shiftY)) { drawFixtureFront(f, u, pen) }
+                    translate(sx(f.x + f.shiftX), sy(f.y + f.shiftY)) {
+                        val bounce = (if (motion) 1f + f.anim * 0.05f else 1f) + f.lift * 0.03f
+                        scale(bounce, 2f - bounce + f.lift * 0.06f, pivot = Offset.Zero) { drawFixtureFront(f, u, pen) }
+                    }
                 }
                 2 -> drawGlimt(l.ref as Secret, lw)
                 else -> {

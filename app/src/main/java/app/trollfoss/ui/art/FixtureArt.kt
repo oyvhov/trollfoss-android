@@ -119,9 +119,20 @@ fun DrawScope.drawFixtureBack(f: Fixture, u: Float, pen: Pen, contents: List<Thi
             FixtureType.ORRERY -> fxOrrery(f, u, pen)
             FixtureType.SPACE_BED -> fxSpaceBed(f, u, pen)
             FixtureType.FOOD_DISPENSER -> fxFoodDispenser(f, u, pen)
+            else -> fxPending(f, u, pen)
         }
     }
 }
+
+/** A plain painted box for furniture whose own drawing is still on its way. */
+private fun DrawScope.fxPending(f: Fixture, u: Float, pen: Pen) {
+    val w = f.spec.w * u
+    val h = f.spec.h * u
+    val hue = FX_PENDING[f.type.ordinal % FX_PENDING.size]
+    box3d(Rect(-w / 2, -h, w / 2, 0f), 0.08f * u, hue, pen, radius = 0.012f * u)
+}
+
+private val FX_PENDING = listOf(Color(0xFFFFC83D), Color(0xFF7CCBFF), Color(0xFFFF8FB1), Color(0xFF8BE3B5), Color(0xFFC9A4FF))
 
 /** Draws the part of a fixture that sits in front of whoever uses it (a duvet, a bath side, glass). */
 fun DrawScope.drawFixtureFront(f: Fixture, u: Float, pen: Pen) {

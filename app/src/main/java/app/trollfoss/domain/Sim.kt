@@ -527,7 +527,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
             FixtureType.SALON_CHAIR -> y -= f.mode * 0.04f
             FixtureType.BOAT -> y += f.bob
             FixtureType.SLED_HILL, FixtureType.SKI_JUMP -> if (f.on) {
-                val point = ridePoint(f.type, f.anim.coerceIn(0f, 1f))
+                val point = ridePoint(f.type, f.angle.coerceIn(0f, 1f))
                 x = f.x + point[0]
                 y = f.y + point[1]
             }
@@ -676,14 +676,15 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                     f.timer += dt
                     if (f.timer > 0.5f) {
                         f.on = true
-                        f.anim = 0f
+                        f.angle = 0f
                         listener.onFx(Fx.SLIDE, f.x, f.top, f)
                     }
                 } else {
+                    // Ride progress lives in angle; anim is only the tap squash.
                     val jump = f.type == FixtureType.SKI_JUMP
-                    f.anim += dt / (if (jump) 1.0f else 0.9f)
-                    if (f.anim >= 1f) {
-                        f.anim = 1f
+                    f.angle += dt / (if (jump) 1.0f else 0.9f)
+                    if (f.angle >= 1f) {
+                        f.angle = 1f
                         placeSeated(rider)
                         rider.mode = Mode.FREE
                         rider.holder = -1
@@ -695,7 +696,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                         rider.z = world.nextZ()
                         f.on = false
                         f.timer = 0f
-                        f.anim = 0f
+                        f.angle = 0f
                         if (jump) {
                             f.count++
                             listener.onFx(Fx.WHEE, rider.x, rider.y - rider.h, f)
