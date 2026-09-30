@@ -1722,7 +1722,11 @@ class Engine(
     }
 
     private fun bodyKey(b: Body): Float {
-        if (b.mode == Mode.SEATED) world.fixtures[b.holder]?.let { return fixtureKey(it) + 0.0006f }
+        if (b.mode == Mode.SEATED) world.fixtures[b.holder]?.let { f ->
+            // Riders on the carousel go far to near as it turns.
+            if (f.type == FixtureType.CAROUSEL) return fixtureKey(f) + 0.0006f + 0.00009f * (sin(f.angle + b.slot * 2.0944f) + 1f)
+            return fixtureKey(f) + 0.0006f
+        }
         if (b.inside >= 0) world.fixtures[b.inside]?.let { return fixtureKey(it) + 0.0003f }
         if (b.resting) {
             world.fixtures[b.restOwner]?.let { return fixtureKey(it) + 0.0005f }
