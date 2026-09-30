@@ -156,6 +156,22 @@ enum class ThingType(
     BANANA_PEEL(0.075f, 0.022f, Cat.NATURE),
     /** A pinch at the nose and … atsjo! */
     PEPPER(0.028f, 0.06f, Cat.HOME),
+
+    // Tivoli, shop, doctor, stage, sea
+    CANDY_FLOSS(0.06f, 0.11f, Cat.FOOD, bites = 3, variants = 2),
+    POPCORN(0.05f, 0.07f, Cat.FOOD, bites = 3),
+    /** Fizzy: three quick sips and the hiccups come. Variant: 0 cola, 1 orange, 2 lemon. */
+    SODA(0.035f, 0.065f, Cat.DRINK, bites = 3, variants = 3),
+    /** Medicine: a sour face, then a happy one. */
+    SYRUP(0.035f, 0.075f, Cat.DRINK, bites = 1),
+    /** A plaster, worn on the cheek. */
+    BANDAGE(0.05f, 0.025f, Cat.GLASSES),
+    THERMOMETER(0.018f, 0.075f, Cat.TOOL),
+    /** Held close to a figure, you hear its heart. */
+    STETHOSCOPE(0.07f, 0.07f, Cat.TOOL),
+    MICROPHONE(0.025f, 0.08f, Cat.TOY),
+    PEARL(0.025f, 0.025f, Cat.MAGIC, glows = true, rolls = true),
+    DIVING_MASK(0.14f, 0.07f, Cat.GLASSES),
     ;
 
     /** Head width of a grown-up figure; hats and glasses are drawn at this size and scaled to fit a head. */

@@ -14,6 +14,12 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
     MOUNTAIN(3.8f, true, 0.88f, 0.02f),
     FARM(4.4f, true, 0.88f, 0.02f),
     SPACE(3.6f, false, 0.90f, 0.07f),
+    TIVOLI(4.4f, true, 0.88f, 0.02f),
+    SHOP(3.4f, false, 0.90f, 0.07f),
+    DOCTOR(3.0f, false, 0.90f, 0.07f),
+    STAGE(3.2f, false, 0.90f, 0.07f),
+    /** The sea floor off the beach: everything swims. */
+    UNDERWATER(3.8f, true, 0.90f, 0.1f),
     ;
 
     /**
@@ -201,7 +207,6 @@ object Places {
                 people = listOf(
                     PersonDef(Species.FOLK, Look(skin = 6, height = 1.03f, hair = 1, hairColor = 0, top = 0, topColor = 9, bottom = 0, bottomColor = 11, shoes = 11, extra = 3), 1.22f, y = 0.86f, hat = ThingType.CHEF_HAT, name = "Sondre"),
                     PersonDef(Species.FOLK, Look(skin = 3, height = 0.78f, hair = 5, hairColor = 3, eyes = 1, top = 3, topColor = 8, bottom = 2, bottomColor = 6, shoes = 5), 2.06f, seat = 11 to 0, name = "Alva"),
-                    PersonDef(Species.FOLK, Look(skin = 9, height = 0.9f, hair = 8, hairColor = 8, eyes = 4, ears = 1, top = 1, topColor = 2, bottom = 1, bottomColor = 11, shoes = 0), 2.86f, seat = 16 to 0, name = "Velte"),
                 ),
             )
             PlaceId.SALON -> PlaceSpec(
@@ -268,7 +273,6 @@ object Places {
                     t(ThingType.ICE_CREAM, 0.5f, 0.8f, 3),
                 ),
                 people = listOf(
-                    PersonDef(Species.FOLK, Look(skin = 4, height = 0.9f, hair = 7, hairColor = 3, top = 0, topColor = 1, bottom = 1, bottomColor = 5, shoes = 4), 1.35f, y = 0.92f, name = "Iver"),
                     PersonDef(Species.FOLK, Look(skin = 1, height = 1.14f, hair = 0, hairColor = 6, top = 3, topColor = 6, bottom = 1, bottomColor = 13, shoes = 12, extra = 2), 0.44f, seat = 1 to 0, hat = ThingType.SUN_HAT, name = "Besten"),
                     PersonDef(Species.PUFFIN, Look(skin = 0), 1.74f, y = 0.95f),
                 ),
@@ -299,7 +303,6 @@ object Places {
                     t(ThingType.LEAF, 0.12f, 0.87f),
                 ),
                 people = listOf(
-                    PersonDef(Species.FOLK, Look(skin = 13, height = 1.14f, hair = 3, hairColor = 1, ears = 4, top = 4, topColor = 12, bottom = 0, bottomColor = 12, shoes = 12, extra = 2), 1.25f, seat = 2 to 0, name = "Rumle"),
                     PersonDef(Species.FOLK, Look(skin = 7, height = 0.9f, hair = 2, hairColor = 0, top = 1, topColor = 1, bottom = 1, bottomColor = 3, shoes = 6), 2.07f, y = 0.93f, hat = ThingType.BEANIE, hatVariant = 1, name = "Olve"),
                     PersonDef(Species.BUNNY, Look(skin = 3), 2.4f),
                     PersonDef(Species.ELK, Look(skin = 0), 0.54f, y = 0.86f),
@@ -334,7 +337,8 @@ object Places {
                     t(ThingType.TEDDY, 1.55f, 0.95f),
                 ),
                 people = listOf(
-                    PersonDef(Species.FOLK, Look(skin = 10, height = 1.03f, hair = 4, hairColor = 4, eyes = 0, top = 2, topColor = 7, bottom = 0, bottomColor = 11, shoes = 7), 1.2f, glasses = ThingType.ROUND_GLASSES, hat = ThingType.WIZARD_HAT, name = "Hilde"),
+                    // Rumle the troll lives here, in the cave behind the falls.
+                    PersonDef(Species.FOLK, Look(skin = 13, height = 1.14f, hair = 3, hairColor = 1, ears = 4, top = 4, topColor = 12, bottom = 0, bottomColor = 12, shoes = 12, extra = 2), 1.28f, y = 0.94f, hat = ThingType.WIZARD_HAT, name = "Rumle"),
                     PersonDef(Species.DRAGON, Look(skin = 0), 0.7f, y = 0.95f),
                 ),
             )
@@ -364,7 +368,6 @@ object Places {
                 people = listOf(
                     PersonDef(Species.FOLK, Look(skin = 1, height = 0.9f, hair = 5, hairColor = 3, eyes = 1, top = 5, topColor = 6, bottom = 0, bottomColor = 11, shoes = 0), 1.06f, seat = 2 to 0, hat = ThingType.BEANIE, hatVariant = 2, name = "Frida"),
                     PersonDef(Species.FOLK, Look(skin = 2, height = 1.03f, hair = 6, hairColor = 6, eyes = 2, top = 2, topColor = 7, bottom = 2, bottomColor = 11, shoes = 12), 3.42f, hat = ThingType.BEANIE, glasses = ThingType.ROUND_GLASSES, name = "BesteSonja"),
-                    PersonDef(Species.FOLK, Look(skin = 6, height = 1.03f, hair = 4, hairColor = 0, eyes = 3, top = 1, topColor = 8, bottom = 2, bottomColor = 11, shoes = 11), 2.84f, y = 0.94f, hand = ThingType.COCOA, name = "Berit"),
                     PersonDef(Species.DOG, Look(skin = 1), 2.02f, y = 0.95f),
                 ),
             )
@@ -434,8 +437,171 @@ object Places {
                 ),
                 people = listOf(
                     PersonDef(Species.FOLK, Look(skin = 4, height = 0.9f, hair = 2, hairColor = 0, eyes = 1, top = 4, topColor = 9, bottom = 0, bottomColor = 9, shoes = 10), 0.35f, seat = 0 to 0, hat = ThingType.SPACE_HELMET, name = "Olvar"),
-                    PersonDef(Species.FOLK, Look(skin = 0, height = 0.9f, hair = 8, hairColor = 5, eyes = 0, top = 4, topColor = 1, bottom = 0, bottomColor = 1, shoes = 10, extra = 1), 2.2f, y = 0.55f, name = "Eilev"),
                     PersonDef(Species.CAT, Look(skin = 1), 2.6f, y = 0.4f, hat = ThingType.SPACE_HELMET),
+                ),
+            )
+            PlaceId.TIVOLI -> PlaceSpec(
+                id,
+                grounds = listOf(Ground(0f, id.width, floor)),
+                water = null,
+                fixtures = listOf(
+                    fl(FixtureType.FERRIS_WHEEL, 0.45f, depth = -0.08f),          // 0
+                    fl(FixtureType.CANDY_FLOSS_STAND, 1.05f, depth = -0.07f),     // 1
+                    fl(FixtureType.CAROUSEL, 1.62f, depth = -0.04f),              // 2
+                    fl(FixtureType.TRAMPOLINE, 2.22f, depth = 0.05f),             // 3
+                    fl(FixtureType.POPCORN_CART, 2.64f, depth = -0.06f),          // 4
+                    fl(FixtureType.CAN_TOSS, 3.04f, depth = -0.08f),              // 5
+                    fl(FixtureType.BUMPER_CAR, 3.5f, depth = 0.03f),              // 6
+                    fl(FixtureType.BUMPER_CAR, 4.05f, 1, depth = 0.03f),          // 7
+                ),
+                things = listOf(
+                    t(ThingType.CANDY_FLOSS, 0.99f, 0.68f, 0, on = 1),
+                    t(ThingType.CANDY_FLOSS, 1.11f, 0.68f, 1, on = 1),
+                    t(ThingType.BALL, 2.92f, 0.68f, on = 5),
+                    t(ThingType.BALL, 2.98f, 0.68f, on = 5),
+                    t(ThingType.BALL, 3.18f, 0.68f, on = 5),
+                    t(ThingType.TEDDY, 3.1f, 0.68f, on = 5),
+                    t(ThingType.POPCORN, 2.4f, 0.95f),
+                    t(ThingType.BALLOON, 2.44f, 0.3f, 2),
+                    t(ThingType.BALLOON, 2.5f, 0.3f, 4),
+                    t(ThingType.WHOOPEE, 2.2f, 0.95f, 1),
+                ),
+                people = listOf(
+                    PersonDef(Species.FOLK, Look(skin = 9, height = 0.9f, hair = 8, hairColor = 8, eyes = 4, ears = 1, top = 1, topColor = 2, bottom = 1, bottomColor = 11, shoes = 0), 1.62f, seat = 2 to 0, name = "Velte"),
+                    PersonDef(Species.SHEEP, Look(skin = 0), 3.5f, seat = 6 to 0),
+                ),
+            )
+            PlaceId.SHOP -> PlaceSpec(
+                id,
+                grounds = listOf(Ground(0f, id.width, floor)),
+                water = null,
+                fixtures = listOf(
+                    fl(FixtureType.SHOP_SHELF, 0.28f, depth = -0.08f),            // 0
+                    fl(FixtureType.SHOP_SHELF, 0.68f, 1, depth = -0.08f),         // 1
+                    fl(FixtureType.FRUIT_CRATE, 1.06f, depth = 0.03f),            // 2
+                    fl(FixtureType.SCALE, 1.32f, depth = 0.05f),                  // 3
+                    fl(FixtureType.FREEZER, 1.72f, depth = -0.05f),               // 4
+                    fl(FixtureType.SODA_FRIDGE, 2.14f, depth = -0.09f),           // 5
+                    fl(FixtureType.CHECKOUT, 2.72f, depth = -0.01f),              // 6
+                    fl(FixtureType.CART, 3.22f, depth = 0.05f),                   // 7
+                ),
+                things = listOf(
+                    t(ThingType.BREAD, 0.18f, 0.87f, on = 0),
+                    t(ThingType.MILK, 0.3f, 0.87f, on = 0),
+                    t(ThingType.JUICE, 0.38f, 0.87f, on = 0),
+                    t(ThingType.COOKIE, 0.2f, 0.73f, on = 0),
+                    t(ThingType.CUPCAKE, 0.3f, 0.73f, 1, on = 0),
+                    t(ThingType.EGG, 0.37f, 0.73f, on = 0),
+                    t(ThingType.PIZZA, 0.28f, 0.59f, on = 0),
+                    t(ThingType.CARROT, 0.59f, 0.87f, on = 1),
+                    t(ThingType.POTATO, 0.68f, 0.87f, on = 1),
+                    t(ThingType.APPLE, 0.77f, 0.87f, on = 1),
+                    t(ThingType.BANANA, 0.64f, 0.73f, on = 1),
+                    t(ThingType.STRAWBERRY, 0.76f, 0.73f, on = 1),
+                    t(ThingType.BROWN_CHEESE, 0.68f, 0.59f, on = 1),
+                    t(ThingType.ICE_CREAM, 1.62f, 0.85f, 0, on = 4),
+                    t(ThingType.ICE_CREAM, 1.72f, 0.85f, 2, on = 4),
+                    t(ThingType.ICE_CREAM, 1.82f, 0.85f, 4, on = 4),
+                    t(ThingType.SODA, 2.1f, 0.86f, 0, on = 5),
+                    t(ThingType.SODA, 2.18f, 0.86f, 1, on = 5),
+                    t(ThingType.SODA, 2.14f, 0.74f, 2, on = 5),
+                    t(ThingType.JUICE, 2.14f, 0.62f, on = 5),
+                    t(ThingType.WATERMELON, 2.54f, 0.7f, on = 6),
+                    t(ThingType.APPLE, 3.16f, 0.78f, on = 7),
+                ),
+                people = listOf(
+                    PersonDef(Species.FOLK, Look(skin = 6, height = 1.03f, hair = 4, hairColor = 0, eyes = 3, top = 1, topColor = 8, bottom = 2, bottomColor = 11, shoes = 11), 2.92f, seat = 6 to 0, name = "Berit"),
+                    PersonDef(Species.CAT, Look(skin = 2), 3.3f, seat = 7 to 0),
+                ),
+            )
+            PlaceId.DOCTOR -> PlaceSpec(
+                id,
+                grounds = listOf(Ground(0f, id.width, floor)),
+                water = null,
+                fixtures = listOf(
+                    fl(FixtureType.BENCH, 0.36f, depth = 0.03f),                  // 0
+                    f(FixtureType.EYE_CHART, 0.36f, 0.5f),                        // 1
+                    f(FixtureType.HEIGHT_CHART, 0.78f, 0.8f),                     // 2
+                    fl(FixtureType.XRAY, 1.12f, depth = -0.08f),                  // 3
+                    fl(FixtureType.EXAM_BED, 1.66f, depth = -0.02f),              // 4
+                    f(FixtureType.MEDICINE_CABINET, 2.12f, 0.52f),                // 5
+                    fl(FixtureType.DOCTOR_DESK, 2.48f, depth = -0.06f),           // 6
+                    fl(FixtureType.CHAIR, 2.8f, depth = 0.02f),                   // 7
+                    fl(FixtureType.PLANT_BIG, 2.92f, depth = -0.09f),             // 8
+                ),
+                things = listOf(
+                    t(ThingType.BANDAGE, 2.05f, 0.5f),
+                    t(ThingType.BANDAGE, 2.19f, 0.5f),
+                    t(ThingType.SYRUP, 2.1f, 0.4f),
+                    t(ThingType.STETHOSCOPE, 2.4f, 0.72f, on = 6),
+                    t(ThingType.THERMOMETER, 2.53f, 0.72f, on = 6),
+                    t(ThingType.LOLLIPOP, 2.62f, 0.72f, 2, on = 6),
+                    t(ThingType.TEDDY, 0.24f, 0.83f, on = 0),
+                ),
+                people = listOf(
+                    PersonDef(Species.FOLK, Look(skin = 10, height = 1.03f, hair = 4, hairColor = 4, eyes = 0, top = 1, topColor = 9, bottom = 0, bottomColor = 11, shoes = 7), 2.8f, seat = 7 to 0, glasses = ThingType.ROUND_GLASSES, name = "Hilde"),
+                    PersonDef(Species.DOG, Look(skin = 2), 0.44f, seat = 0 to 1, glasses = ThingType.BANDAGE),
+                    PersonDef(Species.BUNNY, Look(skin = 1), 1.66f, seat = 4 to 0),
+                ),
+            )
+            PlaceId.STAGE -> PlaceSpec(
+                id,
+                grounds = listOf(Ground(0f, id.width, floor)),
+                water = null,
+                fixtures = listOf(
+                    fl(FixtureType.STAGE_PLATFORM, 1.0f, depth = -0.07f),         // 0
+                    f(FixtureType.DRUM_KIT, 0.52f, 0.78f, on = 0),                // 1
+                    f(FixtureType.MIC_STAND, 1.0f, 0.78f, on = 0),                // 2
+                    f(FixtureType.XYLOPHONE, 1.42f, 0.78f, on = 0),               // 3
+                    fl(FixtureType.SPEAKER, 1.95f, depth = -0.08f),               // 4
+                    f(FixtureType.DISCO_BALL, 1.0f, 0.22f),                       // 5
+                    fl(FixtureType.SMOKE_MACHINE, 2.28f, depth = 0.04f),          // 6
+                    fl(FixtureType.BENCH, 2.66f, depth = 0.05f),                  // 7
+                    fl(FixtureType.SPEAKER, 3.05f, 1, depth = -0.08f),            // 8
+                ),
+                things = listOf(
+                    t(ThingType.GUITAR, 1.2f, 0.78f, on = 0),
+                    t(ThingType.MICROPHONE, 0.78f, 0.78f, on = 0),
+                    t(ThingType.FLOWER, 2.58f, 0.83f, 1, on = 7),
+                    t(ThingType.FLOWER, 2.72f, 0.83f, 3, on = 7),
+                    t(ThingType.DRUM, 2.42f, 0.95f),
+                    t(ThingType.BALLOON, 2.9f, 0.3f, 5),
+                    t(ThingType.SODA, 2.8f, 0.83f, 1, on = 7),
+                ),
+                people = listOf(
+                    PersonDef(Species.FOLK, Look(skin = 0, height = 0.9f, hair = 8, hairColor = 5, eyes = 0, top = 3, topColor = 1, bottom = 0, bottomColor = 1, shoes = 10, extra = 1), 1.08f, y = 0.705f, glasses = ThingType.STAR_GLASSES, name = "Eilev"),
+                    PersonDef(Species.DOG, Look(skin = 0), 0.54f, seat = 1 to 0, glasses = ThingType.SUNGLASSES),
+                ),
+            )
+            PlaceId.UNDERWATER -> PlaceSpec(
+                id,
+                grounds = listOf(Ground(0f, id.width, floor)),
+                water = null,
+                fixtures = listOf(
+                    fl(FixtureType.SHIPWRECK, 0.5f, depth = -0.09f),              // 0
+                    fl(FixtureType.KELP, 1.02f, depth = -0.07f),                  // 1
+                    fl(FixtureType.GIANT_CLAM, 1.34f, depth = 0.04f),             // 2
+                    fl(FixtureType.CORAL, 1.8f, depth = -0.05f),                  // 3
+                    fl(FixtureType.SUBMARINE, 2.42f, depth = -0.02f),             // 4
+                    fl(FixtureType.OCTOPUS, 2.98f, depth = 0.03f),                // 5
+                    fl(FixtureType.CHEST, 3.32f, depth = -0.05f),                 // 6
+                    fl(FixtureType.CORAL, 3.62f, 1, depth = -0.07f),              // 7
+                ),
+                things = listOf(
+                    t(ThingType.COIN, 0.5f, 0.85f, on = 0),
+                    t(ThingType.PEARL, 1.34f, 0.87f, on = 2),
+                    t(ThingType.STARFISH, 1.8f, 0.68f, on = 3),
+                    t(ThingType.GEM, 3.28f, 0.885f, 1, on = 6),
+                    t(ThingType.COIN, 3.37f, 0.885f, on = 6),
+                    t(ThingType.SHELL, 2.1f, 0.95f),
+                    t(ThingType.BOOT, 0.95f, 0.95f),
+                    t(ThingType.FISH, 2.72f, 0.5f),
+                    t(ThingType.DIVING_MASK, 1.58f, 0.95f),
+                    t(ThingType.SWIM_RING, 3.1f, 0.3f),
+                ),
+                people = listOf(
+                    PersonDef(Species.FOLK, Look(skin = 4, height = 0.9f, hair = 7, hairColor = 3, top = 0, topColor = 1, bottom = 1, bottomColor = 5, shoes = 4), 1.62f, y = 0.55f, glasses = ThingType.DIVING_MASK, name = "Iver"),
+                    PersonDef(Species.PUFFIN, Look(skin = 0), 2.2f, y = 0.42f),
                 ),
             )
         }

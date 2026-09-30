@@ -27,6 +27,9 @@ enum class Fx {
 
     // Slapstick; param is the figure it happened to.
     PRRT, SLIP, ATSJO, PEPPER, BONK, FLUFF, SPLAT, BURP, HICCUP, GOBBLE,
+
+    // Tivoli, shop, stage and sea.
+    BUMP, SCAN, KNOCK, XYLO, SING, BOOM, DISCO, FOG, BUBBLES, INK,
 }
 
 interface SimListener {
@@ -62,6 +65,9 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
 
     /** Whoopee cushions, banana peels, sneezes and bonks. */
     val jokes = Jokes(this, random)
+
+    /** Rides, games, instruments and machines of the newer places. */
+    val attractions = Attractions(this, random)
     private var pools: List<Pool> = emptyList()
 
     fun invalidate(place: PlaceId) {
@@ -80,7 +86,8 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                     s.closedOnly -> !f.open
                     else -> true
                 }
-                if (active) list += Surface(f.x + s.x1, f.x + s.x2, f.y + s.dy, f.id, s.interior, s.bounce, s.slippery)
+                // Shifted with the fixture, so a rolling trolley takes its basket along.
+                if (active) list += Surface(f.x + f.shiftX + s.x1, f.x + f.shiftX + s.x2, f.y + f.shiftY + s.dy, f.id, s.interior, s.bounce, s.slippery)
             }
         }
         return list
@@ -132,6 +139,9 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         is Person -> pool.line + body.h * (if (body.species == Species.FOLK) 0.55f else 0.45f)
     }
 
+    /** On the sea floor everything swims: slow, soft and a little floaty. */
+    fun underwater(place: PlaceId): Boolean = place == PlaceId.UNDERWATER
+
     /** The space station floats in zero gravity until someone pulls the gravity lever. */
     fun zeroG(place: PlaceId): Boolean =
         place == PlaceId.SPACE && world.fixturesIn(place).firstOrNull { it.type == FixtureType.GRAVITY_LEVER }?.on != true
@@ -149,6 +159,11 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                 Mode.SEATED -> (b as? Person)?.let { placeSeated(it) }
                 Mode.FREE -> {
                     if (floating && b.inside < 0) {
+                        b.resting = false
+                        continue
+                    }
+                    // Under water, figures and light things stay where they swim.
+                    if (underwater(place) && b.inside < 0 && (b is Person || (b is Thing && (b.type.buoyant || b.type.lift < 0f)))) {
                         b.resting = false
                         continue
                     }
@@ -212,6 +227,10 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
             stepFloating(place, b, list, dt)
             return
         }
+        if (underwater(place)) {
+            stepSwimming(place, b, list, dt)
+            return
+        }
         val lift = liftOf(b)
         if (b.resting) {
             val support = if (lift < 0f) null else list.firstOrNull { abs(restY(place, it, b) - b.y) < 0.004f && b.x >= it.x1 - 0.003f && b.x <= it.x2 + 0.003f }
@@ -265,6 +284,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         b.vrot *= exp(-0.8f * dt)
         b.rot += b.vrot * dt
         if (b is Thing && jokes.flying(place, b)) return
+        if (b is Thing) attractions.flying(place, b)
         val oldY = b.y
         var newY = b.y + b.vy * dt
         b.x += b.vx * dt
@@ -332,6 +352,55 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
 
     private var floating = false
 
+    /**
+     * Under water: heavy things sink slowly, light ones rise to the surface, figures hover and drift
+     * down so gently it looks like swimming. Everything is slowed by the water.
+     */
+    private fun stepSwimming(place: PlaceId, b: Body, list: List<Surface>, dt: Float) {
+        val sink = when (b) {
+            is Person -> 0.035f
+            is Thing -> if (b.type.buoyant || b.type.lift < 0f) -0.3f else 0.45f
+        }
+        if (b.resting) {
+            if (sink >= 0f) {
+                if (abs(b.vx) > 0.002f) {
+                    b.x += b.vx * dt
+                    b.vx *= exp(-6f * dt)
+                    wall(place, b)
+                }
+                return
+            }
+            leaveSupport(b)
+        }
+        val drag = exp(-2.4f * dt)
+        b.vx *= drag
+        b.vy *= drag
+        b.vrot *= exp(-1.5f * dt)
+        b.vy += sink * 2.5f * dt
+        val oldY = b.y
+        var newY = b.y + b.vy * dt
+        b.x += b.vx * dt
+        b.rot += b.vrot * dt
+        wall(place, b)
+        if (b.vy > 0f) {
+            val s = landing(place, list, b, oldY, newY)
+            if (s != null) {
+                b.y = restY(place, s, b)
+                b.vy = 0f
+                b.resting = true
+                b.restOwner = s.owner
+                b.inside = if (s.interior) s.owner else -1
+                listener.onLand(b, 0.2f)
+                return
+            }
+        }
+        if (newY - b.h < place.ceiling) {
+            newY = place.ceiling + b.h
+            b.vy = 0f
+        }
+        b.y = newY
+    }
+
     /** Where [b] would come to rest if it fell from where it is now, or null in zero gravity or with nothing below. */
     fun previewRest(place: PlaceId, b: Body): Float? {
         if (zeroG(place)) return null
@@ -369,6 +438,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                 b.squashV += 9f
                 listener.onBounce(b, impact)
                 world.fixtures[s.owner]?.let { it.anim = 1f }
+                attractions.bounced(place, b, world.fixtures[s.owner])
             }
             impact * e > 0.5f -> {
                 b.vy = -impact * e
@@ -431,6 +501,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
             p.held -> Pose.HELD
             p.mode == Mode.SEATED -> world.fixtures[p.holder]?.spec?.spots?.getOrNull(p.slot)?.pose ?: Pose.SIT
             (p.floatTime > 0f || floating) && !p.resting && p.mode == Mode.FREE -> Pose.FLOAT
+            p.place?.let { underwater(it) } == true && !p.resting && p.mode == Mode.FREE -> Pose.SWIM
             p.mode == Mode.FREE && !p.resting && poolAt(p.x, p.y) != null -> Pose.SWIM
             else -> Pose.STAND
         }
@@ -448,6 +519,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
     // ------------------------------------------------------------------ seats
 
     fun seatPoint(f: Fixture, spot: Int): FloatArray {
+        attractions.seatPoint(f, spot)?.let { return it }
         val s = f.spec.spots[spot]
         var x = f.x + s.dx + f.shiftX
         var y = f.y + s.dy + f.shiftY
@@ -669,7 +741,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                     }
                 }
             }
-            else -> Unit
+            else -> attractions.step(place, f, dt)
         }
     }
 
@@ -815,7 +887,9 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         f.tapTime = time
         f.anim = 1f
         val top = f.top
+        if (attractions.tap(place, f, dx, dy)) return
         when (f.type) {
+            FixtureType.CANDY_FLOSS_STAND, FixtureType.POPCORN_CART -> dispense(place, f, dx)
             FixtureType.FRIDGE, FixtureType.WARDROBE, FixtureType.CHEST, FixtureType.DISPLAY_CASE, FixtureType.TENT, FixtureType.SAUNA -> {
                 f.open = !f.open
                 invalidate(place)
@@ -1100,7 +1174,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                 f.count++
                 if (f.count % 4 == 3) Made(ThingType.ICE_CREAM, 4) else Made(ThingType.SPACE_FOOD, f.count % ThingType.SPACE_FOOD.variants)
             }
-            else -> return
+            else -> attractions.dispensed(f) ?: return
         }
         val y = when (f.type) {
             FixtureType.POTION_RACK, FixtureType.TOOL_WALL -> f.y - 0.01f
@@ -1108,6 +1182,8 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
             FixtureType.COCOA_STAND -> f.y - 0.16f
             FixtureType.CHICKEN_COOP -> f.y - 0.08f
             FixtureType.FOOD_DISPENSER -> f.y - 0.1f
+            FixtureType.CANDY_FLOSS_STAND -> f.y - 0.22f
+            FixtureType.POPCORN_CART -> f.y - 0.3f
             else -> f.top
         }
         val t = world.addThing(made.type, made.variant, place, f.x + dx.coerceIn(-spec.w / 2 + 0.03f, spec.w / 2 - 0.03f), y)

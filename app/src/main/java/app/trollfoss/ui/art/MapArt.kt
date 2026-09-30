@@ -40,6 +40,12 @@ fun mapSpot(place: PlaceId): Offset = when (place) {
     PlaceId.CAFE -> Offset(0.6f, 0.63f)
     PlaceId.HOME -> Offset(0.4f, 0.74f)
     PlaceId.BEACH -> Offset(0.76f, 0.83f)
+    // Provisional spots for the newer places.
+    PlaceId.TIVOLI -> Offset(0.1f, 0.45f)
+    PlaceId.SHOP -> Offset(0.5f, 0.52f)
+    PlaceId.DOCTOR -> Offset(0.26f, 0.86f)
+    PlaceId.STAGE -> Offset(0.72f, 0.44f)
+    PlaceId.UNDERWATER -> Offset(0.93f, 0.9f)
 }
 
 /**
@@ -421,6 +427,11 @@ private class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float) {
                 PlaceId.MOUNTAIN -> cabin(this, base)
                 PlaceId.FARM -> barn(this, base)
                 PlaceId.SPACE -> station(this, p(spot.x, spot.y), hl)
+                PlaceId.TIVOLI -> drawHouse3d(base.x, base.y, s * 0.6f, s * 0.4f, s * 0.3f, s * 0.4f, Color(0xFFFFC83D), Color(0xFFFF4D6D), pen, n, sideWindows = 1)
+                PlaceId.SHOP -> drawHouse3d(base.x, base.y, s * 0.7f, s * 0.38f, s * 0.3f, s * 0.3f, Color(0xFFBFE3FF), Color(0xFF2F9BFF), pen, n, sideWindows = 1)
+                PlaceId.DOCTOR -> drawHouse3d(base.x, base.y, s * 0.66f, s * 0.42f, s * 0.3f, s * 0.36f, Color(0xFFF7F3EC), Color(0xFFE8304A), pen, n, sideWindows = 2)
+                PlaceId.STAGE -> drawHouse3d(base.x, base.y, s * 0.7f, s * 0.44f, s * 0.3f, s * 0.4f, Color(0xFFC9A4FF), Color(0xFF5B32C9), pen, n, sideWindows = 1)
+                PlaceId.UNDERWATER -> drawOval(Color(0xFF2F7FE8), Offset(base.x - s * 0.4f, base.y - s * 0.2f), Size(s * 0.8f, s * 0.3f))
             }
         }
     }

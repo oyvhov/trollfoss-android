@@ -47,6 +47,26 @@ object Secrets {
         Secret("space_launch", PlaceId.SPACE, 0.35f, 0.18f, event = true, on = 0),
         Secret("space_gravity", PlaceId.SPACE, 1.35f, 0.55f, event = true, on = 3),
         Secret("space_orrery", PlaceId.SPACE, 1.8f, 0.45f, event = true, on = 4),
+
+        Secret("tivoli_top", PlaceId.TIVOLI, 0.45f, 0.1f, event = true, on = 0),
+        Secret("tivoli_cans", PlaceId.TIVOLI, 3.04f, 0.42f, event = true, on = 5),
+        Secret("tivoli_jump", PlaceId.TIVOLI, 2.22f, 0.3f, event = true, on = 3),
+
+        Secret("shop_freezer", PlaceId.SHOP, 1.86f, 0.845f, inside = 4, on = 4),
+        Secret("shop_scan", PlaceId.SHOP, 2.72f, 0.52f, event = true, on = 6),
+        Secret("shop_scale", PlaceId.SHOP, 1.32f, 0.62f, event = true, on = 3),
+
+        Secret("doctor_xray", PlaceId.DOCTOR, 1.12f, 0.3f, event = true, on = 3),
+        Secret("doctor_cabinet", PlaceId.DOCTOR, 2.2f, 0.395f, inside = 5, on = 5),
+        Secret("doctor_heart", PlaceId.DOCTOR, 1.66f, 0.5f, event = true, on = 4),
+
+        Secret("stage_band", PlaceId.STAGE, 1.0f, 0.42f, event = true, on = 0),
+        Secret("stage_disco", PlaceId.STAGE, 1.0f, 0.33f, event = true),
+        Secret("stage_boom", PlaceId.STAGE, 1.95f, 0.45f, event = true, on = 4),
+
+        Secret("sea_clam", PlaceId.UNDERWATER, 1.39f, 0.87f, inside = 2, on = 2),
+        Secret("sea_wreck", PlaceId.UNDERWATER, 0.57f, 0.85f, inside = 0, on = 0),
+        Secret("sea_octopus", PlaceId.UNDERWATER, 2.98f, 0.52f, event = true, on = 5),
     )
 
     fun byId(id: String): Secret? = all.firstOrNull { it.id == id }

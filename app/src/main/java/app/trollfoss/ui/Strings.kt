@@ -29,6 +29,11 @@ object S {
         PlaceId.MOUNTAIN -> txt("Fjellet")
         PlaceId.FARM -> txt("Garden", "Gården")
         PlaceId.SPACE -> txt("Romstasjonen")
+        PlaceId.TIVOLI -> txt("Tivoliet")
+        PlaceId.SHOP -> txt("Butikken")
+        PlaceId.DOCTOR -> txt("Legekontoret")
+        PlaceId.STAGE -> txt("Scena", "Scenen")
+        PlaceId.UNDERWATER -> txt("Havbotnen", "Havbunnen")
     }
 
     val map = txt("Kart")

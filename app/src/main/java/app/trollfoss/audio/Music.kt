@@ -11,7 +11,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /** One loop per place, one for the map, a lullaby for the night and dance music for the radio. */
-enum class MusicTheme { MAP, HOME, CAFE, SALON, BEACH, FOREST, LAB, PARK, FARM, SPACE, RADIO, NIGHT }
+enum class MusicTheme { MAP, HOME, CAFE, SALON, BEACH, FOREST, LAB, PARK, FARM, SPACE, RADIO, NIGHT, TIVOLI, SHOP, DOCTOR, STAGE, SEA }
 
 /**
  * Composes calm, looping background music in code: chords on a soft pad, a plucked arpeggio or bell
@@ -174,6 +174,70 @@ object MusicComposer {
             fourOnFloor = true,
             padLevel = 0.07,
             seed = 47,
+        ),
+        // Oom-pah and a cheeky organ-like pluck: the tivoli.
+        MusicTheme.TIVOLI to Recipe(
+            bpm = 132.0,
+            chords = listOf(intArrayOf(60, 64, 67), intArrayOf(55, 59, 62, 65), intArrayOf(60, 64, 67), intArrayOf(65, 69, 72), intArrayOf(62, 65, 69), intArrayOf(55, 59, 62, 65)),
+            bass = intArrayOf(36, 31, 36, 41, 38, 31),
+            arpeggio = intArrayOf(-1, 1, 2, -1, 1, 2, 0, 2),
+            arpeggioShift = 12,
+            pluckDecay = 9.0,
+            arpeggioLevel = 0.24,
+            bells = intArrayOf(79, 81, 84, 86, 88),
+            bellChance = 0.3,
+            drums = true,
+            padLevel = 0.06,
+            seed = 71,
+        ),
+        // Easy, a little bossa: the shop.
+        MusicTheme.SHOP to Recipe(
+            bpm = 98.0,
+            chords = listOf(intArrayOf(62, 65, 69, 72), intArrayOf(55, 59, 62, 65), intArrayOf(60, 64, 67, 71), intArrayOf(57, 60, 64, 67)),
+            bass = intArrayOf(38, 43, 36, 45),
+            arpeggio = intArrayOf(0, -1, 3, 1, -1, 2, -1, 3),
+            pluckDecay = 6.0,
+            arpeggioLevel = 0.16,
+            drums = true,
+            padLevel = 0.1,
+            seed = 73,
+        ),
+        // Calm and kind: the doctor.
+        MusicTheme.DOCTOR to Recipe(
+            bpm = 74.0,
+            chords = listOf(intArrayOf(65, 69, 72, 76), intArrayOf(60, 64, 67, 72), intArrayOf(62, 65, 69, 72), intArrayOf(58, 62, 65, 69)),
+            bass = intArrayOf(41, 36, 38, 34),
+            arpeggio = intArrayOf(0, 2, 3, 2, 1, 2, 3, -1),
+            pluckDecay = 4.0,
+            arpeggioLevel = 0.14,
+            bells = intArrayOf(77, 81, 84, 88),
+            bellChance = 0.2,
+            padLevel = 0.15,
+            seed = 79,
+        ),
+        // Pop with a backbeat: the stage.
+        MusicTheme.STAGE to Recipe(
+            bpm = 118.0,
+            chords = listOf(intArrayOf(60, 64, 67), intArrayOf(67, 71, 74), intArrayOf(69, 72, 76), intArrayOf(65, 69, 72)),
+            bass = intArrayOf(36, 43, 45, 41),
+            arpeggio = intArrayOf(0, 0, 2, 1, 0, 0, 2, 1),
+            arpeggioShift = 12,
+            pluckDecay = 12.0,
+            arpeggioLevel = 0.24,
+            drums = true,
+            fourOnFloor = true,
+            padLevel = 0.07,
+            seed = 83,
+        ),
+        // Deep, slow and shimmering: the sea floor.
+        MusicTheme.SEA to Recipe(
+            bpm = 54.0,
+            chords = listOf(intArrayOf(52, 59, 64, 66), intArrayOf(48, 55, 60, 62), intArrayOf(50, 57, 62, 64), intArrayOf(47, 54, 59, 61)),
+            bass = intArrayOf(28, 24, 26, 23),
+            bells = intArrayOf(71, 74, 76, 78, 83, 86),
+            bellChance = 0.5,
+            padLevel = 0.24,
+            seed = 89,
         ),
         // A lullaby for the night.
         MusicTheme.NIGHT to Recipe(

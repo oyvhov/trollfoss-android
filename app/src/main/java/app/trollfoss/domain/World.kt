@@ -153,6 +153,8 @@ class PersonAnim {
     var lastSip = -10f
     /** Seconds of cream left on the face after a cake in the face. */
     var cream = 0f
+    /** Seconds of octopus ink left on the face. */
+    var ink = 0f
     /** Seconds left of a helpless giggle fit from tickling. */
     var tickle = 0f
 }

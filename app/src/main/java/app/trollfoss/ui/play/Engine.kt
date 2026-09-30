@@ -338,7 +338,9 @@ class Engine(
     }
 
     private fun updatePeople(dt: Float) {
+        listen(dt)
         val radio = world.fixturesIn(place).firstOrNull { it.type == FixtureType.RADIO && it.on }
+        val discoOn = disco() != null
         val held = grabs.values.filter { it.moved }.mapNotNull { heldBody(it) }
         val finger = grabs.values.firstOrNull()?.let { toScene(it.finger) }
         for (b in world.bodiesIn(place)) {
@@ -393,7 +395,7 @@ class Engine(
             a.lookY += (ly - a.lookY) * min(1f, dt * 7f)
 
             // Dancing to the radio.
-            a.dance = if (a.cheer > 0f || (radio != null && a.pose == Pose.STAND && p.resting && abs(p.x - radio.x) < 1.6f)) {
+            a.dance = if (a.cheer > 0f || (discoOn && a.pose == Pose.STAND) || (radio != null && a.pose == Pose.STAND && p.resting && abs(p.x - radio.x) < 1.6f)) {
                 time * 2.07f * PI.toFloat() + 0.001f
             } else {
                 0f
@@ -486,6 +488,23 @@ class Engine(
                     particles.add(Particle(PKind.SMOKE, x + (random.nextFloat() - 0.5f) * 0.1f, f.y + f.shiftY, (random.nextFloat() - 0.5f) * 0.3f, 0.2f, 1.2f, 0.03f, Color(0xFFE8ECF5)))
                 f.type == FixtureType.BATH && f.on && random.nextFloat() < dt * 2f ->
                     particles.add(Particle(PKind.BUBBLE, x + (random.nextFloat() - 0.5f) * 0.3f, f.y - 0.11f, 0f, -0.06f, 1.5f, 0.012f, Color.White))
+            }
+        }
+        if (sim.underwater(place)) {
+            for (b in world.bodiesIn(place)) {
+                if (b is Person && visible(b) && random.nextFloat() < dt * 0.7f) {
+                    val mouth = Anatomy.at(b, Part.MOUTH)
+                    particles.add(Particle(PKind.BUBBLE, mouth[0] + 0.01f, mouth[1], 0.01f, -0.12f, 2.2f, 0.008f + random.nextFloat() * 0.005f, Color.White))
+                }
+            }
+            if (random.nextFloat() < dt * 0.9f) particles.add(Particle(PKind.BUBBLE, cam + random.nextFloat() * viewport, 0.95f, 0f, -0.1f, 5f, 0.006f, Color.White))
+            if (particles.count < 220 && random.nextFloat() < dt * 0.25f) {
+                val fromLeft = random.nextBoolean()
+                val y = 0.25f + random.nextFloat() * 0.45f
+                val color = listOf(Color(0xFFFFB02E), Color(0xFF2FD18B), Color(0xFFFF6F91), Color(0xFF7CCBFF))[random.nextInt(4)]
+                repeat(3 + random.nextInt(4)) { k ->
+                    particles.add(Particle(PKind.FISH, (if (fromLeft) cam - 0.1f - k * 0.05f else cam + viewport + 0.1f + k * 0.05f), y + (k % 3) * 0.025f, if (fromLeft) 0.16f else -0.16f, 0f, 16f, 0.012f, color))
+                }
             }
         }
         // Critters: butterflies in the grass by day, birds crossing the sky.
@@ -1174,13 +1193,30 @@ class Engine(
             }
             Fx.SPIN -> s(Sfx.SWISH, 0.6f, 1.2f)
             Fx.BOING -> s(Sfx.BOING, 0.4f, 1.2f)
-            Fx.SQUEAK -> s(Sfx.SQUEAK, 0.8f)
+            Fx.SQUEAK -> if (param == 1) {
+                // Microphone feedback: everyone winces, then giggles.
+                s(Sfx.SQUEAK, 0.7f, 1.8f)
+                s(Sfx.SQUEAK, 0.5f, 2f)
+                for (o in world.bodiesIn(place)) if (o is Person && abs(o.x - x) < 1f && !o.held) faces(o, Face.OOH, 0.5f, Face.GRIN, 0.8f)
+            } else {
+                s(Sfx.SQUEAK, 0.8f)
+            }
             Fx.STRUM -> {
                 val root = listOf(0, 5, 7, 3)[param % 4]
                 for ((i, n) in listOf(0, 4, 7).withIndex()) pending += (time + i * 0.05f) to { s(Sfx.NOTE, 0.5f, 2f.pow((root + n - 12) / 12f)) }
                 particles.add(Particle(PKind.NOTE, x, y - 0.05f, 0.05f, -0.12f, 1.5f, 0.012f, T.Grape))
             }
-            Fx.DRUM -> s(Sfx.DRUM, 0.8f)
+            Fx.DRUM -> when (param) {
+                1 -> {
+                    s(Sfx.DRUM, 0.75f, 1.7f)
+                    s(Sfx.CLICK, 0.5f, 0.8f)
+                }
+                2 -> {
+                    s(Sfx.SPRAY, 0.6f, 1.5f)
+                    particles.burst(PKind.SPARK, x, y, 5, 0.35f, 0.009f, T.Sun)
+                }
+                else -> s(Sfx.DRUM, 0.9f, 0.75f)
+            }.also { drummerHit(fixture) }
             Fx.RING -> s(Sfx.RING, 0.7f)
             Fx.VROOM -> s(Sfx.VROOM, if (param == 2) 0.9f else 0.7f, if (param == 2) 0.75f else 1f)
             Fx.FIREWORK -> {
@@ -1192,6 +1228,72 @@ class Engine(
                 }
             }
             Fx.HOP -> s(Sfx.TAP, 0.4f)
+            Fx.BUMP -> {
+                s(Sfx.BONK, 0.8f, 0.7f)
+                shake = max(shake, 0.3f)
+                particles.burst(PKind.STAR, x, y, 6, 0.4f, 0.011f, T.Sun, up = 0.3f, life = 0.7f)
+                person(param)?.let { faces(it, Face.OOH, 0.3f, Face.LAUGH, 1.2f); voiceLater(it, Sfx.GIGGLE) }
+            }
+            Fx.SCAN -> {
+                s(Sfx.BEEP, 0.6f, 1.4f)
+                particles.add(Particle(PKind.SPARK, x, y - 0.01f, 0f, -0.05f, 0.4f, 0.012f, T.Berry))
+            }
+            Fx.KNOCK -> {
+                s(Sfx.THUD, 0.8f, 1.3f)
+                for (i in 0 until 4) pending += (time + 0.08f + i * 0.09f) to { s(Sfx.TICK, 0.6f, 0.6f + i * 0.15f) }
+                pending += (time + 0.5f) to { s(Sfx.FANFARE, 0.7f) }
+                particles.burst(PKind.CONFETTI, x, y, 24, 0.8f, 0.012f, up = 0.6f, life = 1.6f)
+                laughAround(x, null, 0.5f, 1.2f)
+            }
+            Fx.XYLO -> {
+                s(Sfx.NOTE, 0.75f, 2f.pow(PENTATONIC[(param + 2).coerceIn(0, PENTATONIC.size - 1)] / 12f) * 2f)
+                particles.add(Particle(PKind.NOTE, x, y - 0.03f, (random.nextFloat() - 0.5f) * 0.1f, -0.14f, 1.4f, 0.012f, listOf(T.Grape, T.Berry, T.Sea, T.Mint)[param % 4]))
+            }
+            Fx.SING -> person(param)?.let { singer ->
+                // A little tune on the figure's own voice, with an echo from the speakers.
+                val tune = intArrayOf(5, 7, 8, 7, 5, 9)
+                for ((i, n) in tune.withIndex()) {
+                    val rate = 2f.pow(PENTATONIC[n] / 12f)
+                    pending += (time + i * 0.21f) to {
+                        host.sfx(Sfx.OOH, 0.55f, (singer.voice * rate).coerceIn(0.5f, 2f))
+                        singer.anim.talk = 0.3f
+                    }
+                    pending += (time + i * 0.21f + 0.14f) to { host.sfx(Sfx.OOH, 0.18f, (singer.voice * rate).coerceIn(0.5f, 2f)) }
+                }
+                singer.anim.face = Face.GRIN
+                singer.anim.faceTime = 1.6f
+                repeat(5) { particles.add(Particle(PKind.NOTE, x + (random.nextFloat() - 0.5f) * 0.1f, y, (random.nextFloat() - 0.5f) * 0.12f, -0.12f, 1.6f, 0.013f, listOf(T.Grape, T.Berry, T.Sea)[it % 3])) }
+                laughAround(x, singer, 1.3f, 1.2f)
+            }
+            Fx.BOOM -> {
+                s(Sfx.DRUM, 1f, 0.45f)
+                s(Sfx.RUMBLE, 0.5f, 1.6f)
+                shake = max(shake, 0.6f)
+                repeat(3) { k -> particles.add(Particle(PKind.DUST, x, y, 0f, 0f, 0.5f + k * 0.15f, 0.04f + k * 0.03f, Color.White)) }
+                for (o in world.bodiesIn(place)) {
+                    if (o !is Person || abs(o.x - x) > 0.8f || o.held) continue
+                    if (o.anim.pose == Pose.STAND && o.anim.hop == 0f) o.anim.hopV = 2.2f
+                    faces(o, Face.WOW, 0.4f, Face.LAUGH, 1f)
+                }
+            }
+            Fx.DISCO -> {
+                s(if (param == 1) Sfx.SPARKLE else Sfx.CLICK, 0.8f)
+                host.radio(param == 1)
+            }
+            Fx.FOG -> {
+                s(Sfx.SPRAY, 0.6f, 0.6f)
+                repeat(18) { particles.add(Particle(PKind.SMOKE, x, y, 0.15f + random.nextFloat() * 0.35f, -0.02f - random.nextFloat() * 0.05f, 2.2f + random.nextFloat(), 0.03f, Color.White)) }
+            }
+            Fx.BUBBLES -> {
+                s(Sfx.BUBBLE, 0.6f, 0.9f + random.nextFloat() * 0.4f)
+                particles.burst(PKind.BUBBLE, x, y, if (param == 1) 12 else 6, 0.2f, 0.012f, Color.White, up = 0.25f, life = 1.6f)
+            }
+            Fx.INK -> {
+                s(Sfx.SPLAT, 0.7f, 1.3f)
+                s(Sfx.BLOOP, 0.6f, 0.8f)
+                repeat(14) { particles.add(Particle(PKind.SMOKE, x + (random.nextFloat() - 0.5f) * 0.1f, y, (random.nextFloat() - 0.5f) * 0.5f, -0.05f - random.nextFloat() * 0.1f, 1.6f, 0.028f, Color(0xFF3B2A55))) }
+                person(param)?.let { faces(it, Face.OOH, 0.6f, Face.LAUGH, 1.4f); laughAround(it.x, it, 0.7f, 0.8f) }
+            }
             Fx.PRRT -> {
                 s(Sfx.PRRT, 0.9f, 0.9f + random.nextFloat() * 0.25f)
                 repeat(6) { particles.add(Particle(PKind.SMOKE, x + (random.nextFloat() - 0.5f) * 0.05f, y - 0.01f, (random.nextFloat() - 0.5f) * 0.25f, -0.05f - random.nextFloat() * 0.1f, 1f, 0.012f, Color(0xFFE9F7D6))) }
@@ -1349,6 +1451,43 @@ class Engine(
 
     private fun person(id: Int): Person? = world.bodies[id] as? Person
 
+    /** Whoever sits at the drums bounces along. */
+    private fun drummerHit(f: Fixture?) {
+        val drummer = world.seatedAt(f ?: return, 0) ?: return
+        drummer.anim.hopV = 1.1f
+        drummer.anim.face = Face.GRIN
+        drummer.anim.faceTime = 0.5f
+    }
+
+    private var lastBeat = -10f
+
+    /** A stethoscope held against someone's chest: «dunk-dunk». */
+    private fun listen(dt: Float) {
+        for (g in grabs.values) {
+            val scope = heldBody(g) as? Thing ?: continue
+            if (scope.type != ThingType.STETHOSCOPE) continue
+            val tip = Offset(scope.x + scope.w * 0.28f, scope.y - scope.h * 0.2f)
+            val patient = world.bodiesIn(place).filterIsInstance<Person>().firstOrNull { p ->
+                val chest = Anatomy.at(p, Part.BODY)
+                hypot(chest[0] - tip.x, chest[1] - tip.y) < max(0.07f, p.h * 0.25f)
+            } ?: continue
+            if (time - lastBeat < 0.75f) continue
+            lastBeat = time
+            val rate = 0.55f + 0.2f / max(0.5f, patient.scale)
+            host.sfx(Sfx.DRUM, 0.8f, rate)
+            pending += (time + 0.16f) to { host.sfx(Sfx.DRUM, 0.6f, rate * 1.05f) }
+            val chest = Anatomy.at(patient, Part.BODY)
+            particles.add(Particle(PKind.HEART, chest[0], chest[1] - 0.03f, 0f, -0.15f, 0.9f, 0.014f, T.Berry))
+            patient.anim.face = Face.GRIN
+            patient.anim.faceTime = 0.6f
+            sim.unlock("doctor_heart")
+        }
+        if (dt < 0f) Unit
+    }
+
+    /** Is the disco ball spinning here? Then everyone dances. */
+    private fun disco(): Fixture? = world.fixturesIn(place).firstOrNull { it.type == FixtureType.DISCO_BALL && it.on }
+
     /** Everyone close by laughs, a moment later. At most two voices, so it stays a giggle, not a din. */
     private fun laughAround(x: Float, except: Person?, delay: Float = 0.45f, reach: Float = 0.7f) {
         var voices = 0
@@ -1494,6 +1633,7 @@ class Engine(
             }
         }
         drawPlaceFront(place, cam, u, pen)
+        disco()?.let { drawDisco(it) }
         drawHints(lw)
         for (b in list) if (b is Person && !b.held) drawBubbles(b, pen)
 
@@ -1545,8 +1685,9 @@ class Engine(
                         scale((1f + sq * 0.22f) * pop * a.facing, (1f - sq * 0.22f) * pop, pivot = Offset.Zero) {
                             val carried = world.carried(b)
                             val holding = carried.any { it.slot == Slot.HAND.ordinal }
-                            drawPerson(b.species, b.look, a.pose, a, b.h * u, pen, holding, seed = b.id * 0.37f)
+                            if (xrayed(b)) drawSkeleton(b, pen) else drawPerson(b.species, b.look, a.pose, a, b.h * u, pen, holding, seed = b.id * 0.37f)
                             if (a.cream > 0f) drawCream(b, pen)
+                            if (a.ink > 0f) drawInk(b, pen)
                             for (t in carried.sortedBy { it.slot }) drawCarried(b, t, pen)
                         }
                     }
@@ -1569,6 +1710,63 @@ class Engine(
                 }
             }
         }
+    }
+
+    private fun xrayed(p: Person): Boolean =
+        p.mode == Mode.SEATED && world.fixtures[p.holder]?.let { it.type == FixtureType.XRAY && it.on } == true
+
+    /**
+     * What the X-ray shows: a friendly skeleton in the figure's pose, skull grinning, bones glowing,
+     * wiggling a little because being X-rayed tickles.
+     */
+    private fun DrawScope.drawSkeleton(p: Person, pen: Pen) {
+        val h = p.h * u
+        val bone = Color(0xFFF4FFF8)
+        val glow = Color(0xFF7CFFB2).copy(alpha = 0.35f)
+        val wiggle = sin(time * 9f) * h * 0.015f
+        val w = h * (if (p.species == Species.FOLK) 1f else 1.6f)
+        fun b(x1: Float, y1: Float, x2: Float, y2: Float, width: Float = 0.045f) {
+            drawLine(glow, Offset(x1 * w, y1 * h), Offset(x2 * w, y2 * h), strokeWidth = h * (width + 0.03f), cap = StrokeCap.Round)
+            drawLine(Ink.line, Offset(x1 * w, y1 * h), Offset(x2 * w, y2 * h), strokeWidth = h * width + pen.lw * 1.6f, cap = StrokeCap.Round)
+            drawLine(bone, Offset(x1 * w, y1 * h), Offset(x2 * w, y2 * h), strokeWidth = h * width, cap = StrokeCap.Round)
+        }
+        // Legs, pelvis, spine, ribs, arms.
+        b(-0.08f, -0.02f, -0.07f, -0.24f)
+        b(0.08f, -0.02f, 0.07f, -0.24f)
+        b(-0.1f, -0.26f, 0.1f, -0.26f, 0.05f)
+        b(0f, -0.26f, 0f, -0.55f, 0.035f)
+        for (k in 0 until 3) {
+            val y = -0.33f - k * 0.065f
+            b(-0.12f + k * 0.01f, y, 0.12f - k * 0.01f, y, 0.025f)
+        }
+        b(-0.14f, -0.5f, -0.24f, -0.28f + wiggle / h)
+        b(0.14f, -0.5f, 0.24f, -0.28f - wiggle / h)
+        // The skull.
+        val c = Offset(0f, -0.71f * h)
+        val r = Anatomy.headRadius(p.species) * h
+        drawCircle(glow, r * 1.25f, c)
+        drawCircle(bone, r, c)
+        drawCircle(Ink.line, r, c, style = Stroke(pen.lw))
+        for (s in listOf(-1f, 1f)) drawOval(Ink.line, Offset(c.x + s * r * 0.38f - r * 0.2f, c.y - r * 0.25f), Size(r * 0.4f, r * 0.46f))
+        drawLine(Ink.line, Offset(c.x - r * 0.35f, c.y + r * 0.5f), Offset(c.x + r * 0.35f, c.y + r * 0.5f), strokeWidth = pen.lw)
+        for (k in -2..2) drawLine(Ink.line, Offset(c.x + k * r * 0.14f, c.y + r * 0.38f), Offset(c.x + k * r * 0.14f, c.y + r * 0.62f), strokeWidth = pen.lw * 0.7f)
+    }
+
+    /** Octopus ink: dark splodges round the eyes and a surprised little mouth. */
+    private fun DrawScope.drawInk(p: Person, pen: Pen) {
+        val alpha = min(1f, p.anim.ink / 0.8f)
+        val f = Anatomy.fraction(p.species, p.anim.pose, Part.HEAD)
+        val c = Offset(f[0] * p.h * u, f[1] * p.h * u)
+        val r = Anatomy.headRadius(p.species) * p.h * u
+        val ink = Color(0xFF3B2A55).copy(alpha = 0.85f * alpha)
+        for ((bx, by, br) in listOf(Triple(-0.45f, 0.05f, 0.42f), Triple(0.45f, 0.05f, 0.42f), Triple(0f, -0.35f, 0.35f), Triple(0.2f, 0.45f, 0.25f), Triple(-0.6f, -0.3f, 0.2f))) {
+            drawCircle(ink, r * br, Offset(c.x + bx * r, c.y + by * r))
+        }
+        for (s in listOf(-1f, 1f)) {
+            drawCircle(Color.White.copy(alpha = alpha), r * 0.14f, Offset(c.x + s * r * 0.42f, c.y + r * 0.02f))
+            drawCircle(Ink.line.copy(alpha = alpha), r * 0.07f, Offset(c.x + s * r * 0.42f, c.y + r * 0.02f))
+        }
+        if (pen.lw < 0f) Unit
     }
 
     /** Cream all over the face after a cake in the face, with a cherry on top. Eyes stay free. */
@@ -1637,6 +1835,23 @@ class Engine(
                 drawRect(Color.White.copy(alpha = alpha), Offset(cx - dp(6f), by - dp(3f)), Size(dp(12f), dp(3f)))
                 drawText(layout, topLeft = Offset(cx - layout.size.width / 2f, by - h + dp(5f)))
             }
+        }
+    }
+
+    /** Coloured spots sweeping over walls and floor from the spinning disco ball. */
+    private fun DrawScope.drawDisco(ball: Fixture) {
+        drawRect(Color(0xFF1B1036).copy(alpha = 0.28f), Offset(0f, -top), Size(size.width, size.height + top))
+        val colors = listOf(T.Berry, T.Sun, T.Sea, T.Mint, T.Grape, Color(0xFFFF9F43))
+        val origin = Offset(sx(ball.x), sy(ball.y - 0.07f))
+        for (k in 0 until 9) {
+            val a = ball.angle * (if (k % 2 == 0) 1f else -0.7f) + k * 0.7f
+            val x = ball.x + sin(a) * (0.5f + (k % 3) * 0.35f)
+            val y = 0.45f + (kotlin.math.cos(a * 1.3f) * 0.5f + 0.5f) * 0.45f
+            val c = Offset(sx(x), sy(y))
+            val r = (0.05f + (k % 3) * 0.015f) * u
+            val color = colors[k % colors.size]
+            drawLine(color.copy(alpha = 0.10f), origin, c, strokeWidth = r * 0.9f, cap = StrokeCap.Round)
+            drawCircle(Brush.radialGradient(listOf(color.copy(alpha = 0.55f), Color.Transparent), c, r), r, c, blendMode = BlendMode.Plus)
         }
     }
 

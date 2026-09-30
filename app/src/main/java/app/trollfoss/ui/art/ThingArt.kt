@@ -198,6 +198,18 @@ private fun DrawScope.thing(type: ThingType, v: Int, used: Int, w: Float, h: Flo
     ThingType.WHOOPEE -> thWhoopee(v, w, h, pen)
     ThingType.BANANA_PEEL -> thBananaPeel(w, h, pen)
     ThingType.PEPPER -> thPepper(w, h, pen)
+
+    // Tivoli, shop, doctor, stage and sea
+    ThingType.CANDY_FLOSS -> thCandyFloss(v, w, h, pen)
+    ThingType.POPCORN -> thPopcorn(w, h, pen)
+    ThingType.SODA -> thSoda(v, used, w, h, pen)
+    ThingType.SYRUP -> thSyrup(w, h, pen)
+    ThingType.BANDAGE -> thBandage(w, h, pen)
+    ThingType.THERMOMETER -> thThermometer(w, h, pen)
+    ThingType.STETHOSCOPE -> thStethoscope(w, h, pen)
+    ThingType.MICROPHONE -> thMicrophone(w, h, pen)
+    ThingType.PEARL -> thPearl(w, h, pen)
+    ThingType.DIVING_MASK -> thDivingMask(w, h, pen)
 }
 
 // ------------------------------------------------------------------ bites and cooking

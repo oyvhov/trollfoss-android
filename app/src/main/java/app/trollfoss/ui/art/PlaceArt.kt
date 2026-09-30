@@ -21,6 +21,11 @@ fun DrawScope.drawPlaceBack(place: PlaceId, cam: Float, u: Float, pen: Pen) {
         PlaceId.LAB -> labBack(st, pen)
         PlaceId.FARM -> farmBack(st, pen)
         PlaceId.SPACE -> spaceBack(st, pen)
+        // Stand-ins until the new places have their own backgrounds.
+        PlaceId.TIVOLI -> farmBack(st, pen)
+        PlaceId.SHOP, PlaceId.DOCTOR -> cafeBack(st, pen)
+        PlaceId.STAGE -> salonBack(st, pen)
+        PlaceId.UNDERWATER -> beachBack(st, pen)
     }
 }
 

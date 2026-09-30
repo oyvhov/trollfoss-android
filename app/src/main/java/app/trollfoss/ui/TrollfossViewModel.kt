@@ -316,7 +316,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         val theme = when {
             screen == Screen.Map -> MusicTheme.MAP
             radioOn && screen == Screen.Play -> MusicTheme.RADIO
-            night && place != PlaceId.SPACE -> MusicTheme.NIGHT
+            night && place != PlaceId.SPACE && place != PlaceId.UNDERWATER && place != PlaceId.STAGE -> MusicTheme.NIGHT
             else -> when (place) {
                 PlaceId.HOME -> MusicTheme.HOME
                 PlaceId.CAFE -> MusicTheme.CAFE
@@ -327,6 +327,11 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
                 PlaceId.MOUNTAIN -> MusicTheme.PARK
                 PlaceId.FARM -> MusicTheme.FARM
                 PlaceId.SPACE -> MusicTheme.SPACE
+                PlaceId.TIVOLI -> MusicTheme.TIVOLI
+                PlaceId.SHOP -> MusicTheme.SHOP
+                PlaceId.DOCTOR -> MusicTheme.DOCTOR
+                PlaceId.STAGE -> MusicTheme.STAGE
+                PlaceId.UNDERWATER -> MusicTheme.SEA
             }
         }
         music.play(theme)

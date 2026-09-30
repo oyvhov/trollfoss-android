@@ -226,6 +226,7 @@ class Jokes(private val sim: Sim, private val random: Random) {
     private fun PersonAnim.cool(dt: Float) {
         slipCool = max(0f, slipCool - dt)
         cream = max(0f, cream - dt)
+        ink = max(0f, ink - dt)
     }
 
     companion object {

@@ -32,7 +32,8 @@ data class SurfaceSpec(
 data class SpotSpec(val dx: Float, val dy: Float, val pose: Pose, val hidden: Boolean = false)
 
 /** What a fixture does to things put into or onto it. */
-enum class Machine { NONE, STOVE, OVEN, BLENDER, CAULDRON, CAMPFIRE, FISHING, FOUNTAIN, TOILET, DISPENSER, BUILD, GARDEN }
+/** [TARGET]: knocked over by things thrown into its drop zone. [BELT]: a conveyor that scans what rides it. */
+enum class Machine { NONE, STOVE, OVEN, BLENDER, CAULDRON, CAMPFIRE, FISHING, FOUNTAIN, TOILET, DISPENSER, BUILD, GARDEN, TARGET, BELT }
 
 class FixtureSpec(
     val w: Float,
@@ -90,6 +91,21 @@ enum class FixtureType {
 
     // Space station
     ROCKET_SHIP, CONTROL_PANEL, PORTHOLE, GRAVITY_LEVER, ORRERY, SPACE_BED, FOOD_DISPENSER,
+
+    // Tivoli
+    FERRIS_WHEEL, CAROUSEL, TRAMPOLINE, CANDY_FLOSS_STAND, POPCORN_CART, CAN_TOSS, BUMPER_CAR,
+
+    // Shop
+    SHOP_SHELF, SCALE, FREEZER, SODA_FRIDGE, CHECKOUT, CART,
+
+    // Doctor
+    HEIGHT_CHART, XRAY, EXAM_BED, MEDICINE_CABINET, DOCTOR_DESK, EYE_CHART,
+
+    // Stage
+    STAGE_PLATFORM, DRUM_KIT, MIC_STAND, XYLOPHONE, SPEAKER, DISCO_BALL, SMOKE_MACHINE,
+
+    // Under water
+    SHIPWRECK, KELP, GIANT_CLAM, CORAL, SUBMARINE, OCTOPUS,
     ;
 
     val spec: FixtureSpec get() = specs.getValue(this)
@@ -321,6 +337,115 @@ enum class FixtureType {
             SPACE_BED -> FixtureSpec(0.14f, 0.32f, wall = true, spots = listOf(seat(0f, -0.1f)))
             FOOD_DISPENSER -> FixtureSpec(0.16f, 0.28f, machine = Machine.DISPENSER)
             LAMP_POST -> FixtureSpec(0.08f, 0.50f, light = RRect(-0.4f, -0.8f, 0.4f, 0.05f))
+
+            // Tivoli. The wheel's and the carousel's spots move; see Sim.seatPoint.
+            FERRIS_WHEEL -> FixtureSpec(
+                0.80f, 0.78f, front = true,
+                spots = List(4) { seat(0f, -0.42f) },
+                light = RRect(-0.45f, -0.85f, 0.45f, 0f),
+            )
+            CAROUSEL -> FixtureSpec(0.74f, 0.62f, front = true, spots = List(3) { seat(0f, -0.2f) }, light = RRect(-0.45f, -0.7f, 0.45f, 0f))
+            TRAMPOLINE -> FixtureSpec(0.40f, 0.10f, surfaces = listOf(SurfaceSpec(-0.18f, 0.18f, -0.08f, bounce = 1f)))
+            CANDY_FLOSS_STAND -> FixtureSpec(0.28f, 0.42f, surfaces = listOf(SurfaceSpec(-0.13f, 0.13f, -0.2f)), machine = Machine.DISPENSER)
+            POPCORN_CART -> FixtureSpec(0.24f, 0.40f, machine = Machine.DISPENSER, light = RRect(-0.2f, -0.45f, 0.2f, 0f))
+            CAN_TOSS -> FixtureSpec(
+                0.36f, 0.50f,
+                surfaces = listOf(SurfaceSpec(-0.17f, 0.17f, -0.2f)),
+                machine = Machine.TARGET,
+                dropZone = RRect(-0.12f, -0.38f, 0.12f, -0.2f),
+            )
+            BUMPER_CAR -> FixtureSpec(0.22f, 0.13f, front = true, spots = listOf(seat(0f, -0.075f)))
+
+            // Shop
+            SHOP_SHELF -> FixtureSpec(
+                0.36f, 0.44f,
+                surfaces = listOf(
+                    SurfaceSpec(-0.16f, 0.16f, -0.03f),
+                    SurfaceSpec(-0.16f, 0.16f, -0.17f),
+                    SurfaceSpec(-0.16f, 0.16f, -0.31f),
+                    SurfaceSpec(-0.18f, 0.18f, -0.44f),
+                ),
+            )
+            SCALE -> FixtureSpec(0.16f, 0.06f, surfaces = listOf(SurfaceSpec(-0.075f, 0.075f, -0.05f)))
+            FREEZER -> FixtureSpec(
+                0.44f, 0.22f,
+                container = RRect(-0.2f, -0.2f, 0.2f, -0.04f),
+                glass = true,
+                surfaces = listOf(
+                    SurfaceSpec(-0.19f, 0.19f, -0.05f, interior = true),
+                    SurfaceSpec(-0.21f, 0.21f, -0.22f, closedOnly = true),
+                ),
+            )
+            SODA_FRIDGE -> FixtureSpec(
+                0.24f, 0.42f,
+                container = RRect(-0.1f, -0.38f, 0.1f, -0.03f),
+                glass = true,
+                surfaces = listOf(
+                    SurfaceSpec(-0.1f, 0.1f, -0.04f, interior = true),
+                    SurfaceSpec(-0.1f, 0.1f, -0.16f, interior = true),
+                    SurfaceSpec(-0.1f, 0.1f, -0.28f, interior = true),
+                    SurfaceSpec(-0.12f, 0.12f, -0.42f),
+                ),
+                light = RRect(-0.2f, -0.45f, 0.2f, 0f),
+            )
+            CHECKOUT -> FixtureSpec(
+                0.56f, 0.20f, front = true,
+                surfaces = listOf(SurfaceSpec(-0.27f, 0.27f, -0.2f)),
+                spots = listOf(seat(0.2f, -0.12f)),
+                machine = Machine.BELT,
+            )
+            CART -> FixtureSpec(
+                0.26f, 0.28f, front = true,
+                surfaces = listOf(SurfaceSpec(-0.1f, 0.06f, -0.12f)),
+                spots = listOf(seat(0.08f, -0.16f)),
+            )
+
+            // Doctor
+            HEIGHT_CHART -> FixtureSpec(0.12f, 0.5f, wall = true)
+            XRAY -> FixtureSpec(0.30f, 0.44f, front = true, spots = listOf(SpotSpec(0f, -0.01f, Pose.STAND)), light = RRect(-0.25f, -0.5f, 0.25f, 0f))
+            EXAM_BED -> FixtureSpec(
+                0.44f, 0.17f,
+                surfaces = listOf(SurfaceSpec(-0.2f, 0.2f, -0.17f)),
+                spots = listOf(SpotSpec(0.02f, -0.17f, Pose.LIE)),
+            )
+            MEDICINE_CABINET -> FixtureSpec(
+                0.26f, 0.24f, wall = true,
+                container = RRect(-0.11f, -0.22f, 0.11f, -0.02f),
+                surfaces = listOf(
+                    SurfaceSpec(-0.11f, 0.11f, -0.02f, interior = true),
+                    SurfaceSpec(-0.11f, 0.11f, -0.12f, interior = true),
+                ),
+            )
+            DOCTOR_DESK -> FixtureSpec(0.36f, 0.18f, surfaces = listOf(SurfaceSpec(-0.18f, 0.18f, -0.18f)))
+            EYE_CHART -> FixtureSpec(0.16f, 0.22f, wall = true)
+
+            // Stage
+            STAGE_PLATFORM -> FixtureSpec(1.5f, 0.12f, surfaces = listOf(SurfaceSpec(-0.75f, 0.75f, -0.12f)), light = RRect(-0.8f, -0.9f, 0.8f, 0f))
+            DRUM_KIT -> FixtureSpec(0.36f, 0.30f, front = true, spots = listOf(seat(0.02f, -0.11f)))
+            MIC_STAND -> FixtureSpec(0.07f, 0.34f)
+            XYLOPHONE -> FixtureSpec(0.34f, 0.16f)
+            SPEAKER -> FixtureSpec(0.18f, 0.34f, surfaces = listOf(SurfaceSpec(-0.09f, 0.09f, -0.34f)))
+            DISCO_BALL -> FixtureSpec(0.12f, 0.14f, wall = true, light = RRect(-0.6f, -0.2f, 0.6f, 0.9f))
+            SMOKE_MACHINE -> FixtureSpec(0.14f, 0.10f)
+
+            // Under water
+            SHIPWRECK -> FixtureSpec(
+                0.80f, 0.50f,
+                container = RRect(-0.12f, -0.26f, 0.12f, -0.04f),
+                surfaces = listOf(
+                    SurfaceSpec(-0.11f, 0.11f, -0.05f, interior = true),
+                    SurfaceSpec(-0.36f, 0.3f, -0.36f),
+                ),
+            )
+            KELP -> FixtureSpec(0.14f, 0.60f)
+            GIANT_CLAM -> FixtureSpec(
+                0.26f, 0.14f,
+                container = RRect(-0.1f, -0.1f, 0.1f, -0.02f),
+                surfaces = listOf(SurfaceSpec(-0.09f, 0.09f, -0.03f, interior = true)),
+            )
+            CORAL -> FixtureSpec(0.30f, 0.22f, surfaces = listOf(SurfaceSpec(-0.1f, 0.1f, -0.22f)))
+            SUBMARINE -> FixtureSpec(0.46f, 0.26f, front = true, spots = listOf(seat(-0.08f, -0.08f), seat(0.1f, -0.08f)), light = RRect(0.15f, -0.25f, 0.6f, 0f))
+            OCTOPUS -> FixtureSpec(0.30f, 0.28f)
         }
     }
 }
