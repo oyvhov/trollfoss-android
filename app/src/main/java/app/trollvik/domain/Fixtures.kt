@@ -1,0 +1,298 @@
+package app.trollvik.domain
+
+/** How a figure is posed. Seats decide it; physics decides the rest. */
+enum class Pose { STAND, SIT, LIE, HELD, SWIM, FLOAT }
+
+/**
+ * A rectangle relative to a fixture's bottom centre, in scene units. Up is negative, so [top] is
+ * smaller than [bottom].
+ */
+data class RRect(val left: Float, val top: Float, val right: Float, val bottom: Float) {
+    fun contains(dx: Float, dy: Float): Boolean = dx in left..right && dy in top..bottom
+    val width: Float get() = right - left
+    val height: Float get() = bottom - top
+}
+
+/** A flat top that things can rest on, from [x1] to [x2] at height [dy] above the fixture's bottom. */
+data class SurfaceSpec(
+    val x1: Float,
+    val x2: Float,
+    val dy: Float,
+    /** Inside a cupboard: only there while the cupboard is open, and hides what rests on it when shut. */
+    val interior: Boolean = false,
+    /** A lid: only there while the cupboard is shut. */
+    val closedOnly: Boolean = false,
+    /** Extra spring. 1 is a trampoline. */
+    val bounce: Float = 0f,
+    /** Ice: things glide on it instead of stopping. */
+    val slippery: Boolean = false,
+)
+
+/** A place for a figure to sit or lie. [hidden] spots are inside something and vanish when it shuts. */
+data class SpotSpec(val dx: Float, val dy: Float, val pose: Pose, val hidden: Boolean = false)
+
+/** What a fixture does to things put into or onto it. */
+enum class Machine { NONE, STOVE, OVEN, BLENDER, CAULDRON, CAMPFIRE, FISHING, FOUNTAIN, TOILET, DISPENSER }
+
+class FixtureSpec(
+    val w: Float,
+    val h: Float,
+    /** Hangs on the wall: its y is the bottom edge on the wall, and it is drawn behind floor fixtures. */
+    val wall: Boolean = false,
+    /** Has a front layer (a blanket, a bath side, a boat hull) drawn over whoever is in it. */
+    val front: Boolean = false,
+    val surfaces: List<SurfaceSpec> = emptyList(),
+    val spots: List<SpotSpec> = emptyList(),
+    /** The inside of a cupboard. Present means the fixture opens and shuts when tapped. */
+    val container: RRect? = null,
+    /** Glass fronts show what is inside even when shut. */
+    val glass: Boolean = false,
+    val machine: Machine = Machine.NONE,
+    /** Where a dropped thing is taken by the [machine]. */
+    val dropZone: RRect? = null,
+    /** Water inside the fixture (a bath, a fountain basin); its top is the waterline. */
+    val pool: RRect? = null,
+    /** Light source offset and reach, used at night when the fixture is on. */
+    val light: RRect? = null,
+    /** Bobs on the water, taking its seats with it. */
+    val floats: Boolean = false,
+)
+
+/**
+ * Every piece of furniture and every machine. Positions in place blueprints are the bottom centre;
+ * [FixtureSpec] describes the rest relative to that point.
+ */
+enum class FixtureType {
+    // Home
+    BED, SOFA, CHAIR, STOOL, TABLE, ROUND_TABLE, COUNTER, SHELF, BOOKCASE, FRIDGE, WARDROBE, CHEST,
+    STOVE, SINK, BATH, TOILET, MIRROR, LAMP, TV, RADIO, PIANO, WINDOW, MAILBOX, CLOCK, PLANT_BIG, WOOD_STOVE,
+
+    // Café
+    CASH_REGISTER, OVEN, BLENDER, FRUIT_CRATE, ICE_CREAM_MACHINE, DISPLAY_CASE, FLOUR_SACK,
+
+    // Salon
+    SALON_CHAIR, DRYER_HOOD, HAIR_WASH, CLOTHES_RACK,
+
+    // Lab
+    POTION_RACK, CAULDRON, TELESCOPE, CRYSTAL_BALL, SPELLBOOK,
+
+    // Beach
+    PIER, FISHING_SPOT, BOAT, UMBRELLA, LOUNGER, SANDCASTLE,
+
+    // Forest
+    TENT, CAMPFIRE, LOG, STUMP, OWL_TREE,
+
+    // Mountain
+    PINE_TREE, SAUNA, SLED_HILL, SNOWMAN, SKI_JUMP, ICE_POND, COCOA_STAND, BENCH, LAMP_POST,
+    ;
+
+    val spec: FixtureSpec get() = specs.getValue(this)
+
+    val opens: Boolean get() = spec.container != null
+
+    companion object {
+        private val specs: Map<FixtureType, FixtureSpec> by lazy { entries.associateWith(::build) }
+
+        private fun seat(dx: Float, dy: Float) = SpotSpec(dx, dy, Pose.SIT)
+
+        private fun build(type: FixtureType): FixtureSpec = when (type) {
+            BED -> FixtureSpec(
+                0.40f, 0.17f, front = true,
+                surfaces = listOf(SurfaceSpec(-0.17f, 0.17f, -0.105f)),
+                spots = listOf(SpotSpec(0.02f, -0.105f, Pose.LIE)),
+            )
+            SOFA -> FixtureSpec(0.40f, 0.17f, spots = listOf(seat(-0.09f, -0.075f), seat(0.09f, -0.075f)))
+            CHAIR -> FixtureSpec(0.10f, 0.20f, spots = listOf(seat(0f, -0.085f)))
+            STOOL -> FixtureSpec(
+                0.08f, 0.12f,
+                surfaces = listOf(SurfaceSpec(-0.035f, 0.035f, -0.12f)),
+                spots = listOf(seat(0f, -0.12f)),
+            )
+            TABLE -> FixtureSpec(0.30f, 0.13f, surfaces = listOf(SurfaceSpec(-0.15f, 0.15f, -0.13f)))
+            ROUND_TABLE -> FixtureSpec(0.16f, 0.13f, surfaces = listOf(SurfaceSpec(-0.08f, 0.08f, -0.13f)))
+            COUNTER -> FixtureSpec(0.30f, 0.17f, surfaces = listOf(SurfaceSpec(-0.15f, 0.15f, -0.17f)))
+            SHELF -> FixtureSpec(0.26f, 0.03f, wall = true, surfaces = listOf(SurfaceSpec(-0.13f, 0.13f, -0.03f)))
+            BOOKCASE -> FixtureSpec(
+                0.20f, 0.38f,
+                surfaces = listOf(
+                    SurfaceSpec(-0.09f, 0.09f, -0.02f),
+                    SurfaceSpec(-0.09f, 0.09f, -0.14f),
+                    SurfaceSpec(-0.09f, 0.09f, -0.26f),
+                    SurfaceSpec(-0.1f, 0.1f, -0.38f),
+                ),
+            )
+            FRIDGE -> FixtureSpec(
+                0.17f, 0.36f,
+                container = RRect(-0.07f, -0.33f, 0.07f, -0.02f),
+                surfaces = listOf(
+                    SurfaceSpec(-0.07f, 0.07f, -0.02f, interior = true),
+                    SurfaceSpec(-0.07f, 0.07f, -0.12f, interior = true),
+                    SurfaceSpec(-0.07f, 0.07f, -0.22f, interior = true),
+                    SurfaceSpec(-0.085f, 0.085f, -0.36f),
+                ),
+            )
+            WARDROBE -> FixtureSpec(
+                0.24f, 0.38f,
+                container = RRect(-0.1f, -0.35f, 0.1f, -0.02f),
+                surfaces = listOf(
+                    SurfaceSpec(-0.1f, 0.1f, -0.02f, interior = true),
+                    SurfaceSpec(-0.1f, 0.1f, -0.19f, interior = true),
+                    SurfaceSpec(-0.12f, 0.12f, -0.38f),
+                ),
+            )
+            CHEST -> FixtureSpec(
+                0.18f, 0.10f,
+                container = RRect(-0.08f, -0.09f, 0.08f, -0.015f),
+                surfaces = listOf(
+                    SurfaceSpec(-0.075f, 0.075f, -0.015f, interior = true),
+                    SurfaceSpec(-0.09f, 0.09f, -0.10f, closedOnly = true),
+                ),
+            )
+            STOVE -> FixtureSpec(
+                0.18f, 0.20f,
+                surfaces = listOf(SurfaceSpec(-0.08f, 0.08f, -0.20f)),
+                machine = Machine.STOVE,
+                dropZone = RRect(-0.09f, -0.32f, 0.09f, -0.18f),
+            )
+            SINK -> FixtureSpec(
+                0.18f, 0.20f,
+                surfaces = listOf(
+                    SurfaceSpec(-0.06f, 0.06f, -0.165f),
+                    SurfaceSpec(-0.09f, -0.066f, -0.20f),
+                    SurfaceSpec(0.066f, 0.09f, -0.20f),
+                ),
+            )
+            BATH -> FixtureSpec(
+                0.40f, 0.15f, front = true,
+                surfaces = listOf(SurfaceSpec(-0.16f, 0.16f, -0.035f)),
+                spots = listOf(seat(0f, -0.035f)),
+                pool = RRect(-0.17f, -0.11f, 0.17f, -0.035f),
+            )
+            TOILET -> FixtureSpec(
+                0.12f, 0.18f,
+                spots = listOf(seat(0f, -0.085f)),
+                machine = Machine.TOILET,
+                dropZone = RRect(-0.05f, -0.16f, 0.05f, -0.07f),
+            )
+            MIRROR -> FixtureSpec(0.12f, 0.17f, wall = true)
+            LAMP -> FixtureSpec(0.10f, 0.34f, light = RRect(-0.35f, -0.65f, 0.35f, 0.05f))
+            TV -> FixtureSpec(0.30f, 0.31f, light = RRect(-0.3f, -0.45f, 0.3f, 0f))
+            RADIO -> FixtureSpec(0.10f, 0.07f)
+            PIANO -> FixtureSpec(
+                0.34f, 0.26f,
+                surfaces = listOf(SurfaceSpec(-0.17f, 0.17f, -0.26f)),
+                dropZone = RRect(-0.15f, -0.165f, 0.15f, -0.12f),
+            )
+            WINDOW -> FixtureSpec(0.20f, 0.22f, wall = true)
+            MAILBOX -> FixtureSpec(0.08f, 0.10f, wall = true)
+            CLOCK -> FixtureSpec(0.09f, 0.13f, wall = true)
+            PLANT_BIG -> FixtureSpec(0.12f, 0.26f)
+            WOOD_STOVE -> FixtureSpec(
+                0.17f, 0.32f,
+                surfaces = listOf(SurfaceSpec(-0.075f, 0.075f, -0.32f)),
+                machine = Machine.CAMPFIRE,
+                dropZone = RRect(-0.08f, -0.45f, 0.08f, -0.3f),
+                light = RRect(-0.4f, -0.55f, 0.4f, 0.05f),
+            )
+
+            CASH_REGISTER -> FixtureSpec(0.10f, 0.08f)
+            OVEN -> FixtureSpec(
+                0.20f, 0.24f,
+                container = RRect(-0.075f, -0.17f, 0.075f, -0.035f),
+                surfaces = listOf(
+                    SurfaceSpec(-0.075f, 0.075f, -0.035f, interior = true),
+                    SurfaceSpec(-0.1f, 0.1f, -0.24f),
+                ),
+                machine = Machine.OVEN,
+            )
+            BLENDER -> FixtureSpec(0.07f, 0.15f, machine = Machine.BLENDER, dropZone = RRect(-0.06f, -0.28f, 0.06f, -0.08f))
+            FRUIT_CRATE -> FixtureSpec(0.16f, 0.10f, machine = Machine.DISPENSER)
+            ICE_CREAM_MACHINE -> FixtureSpec(0.14f, 0.24f, machine = Machine.DISPENSER)
+            DISPLAY_CASE -> FixtureSpec(
+                0.26f, 0.18f,
+                container = RRect(-0.12f, -0.16f, 0.12f, -0.02f),
+                glass = true,
+                surfaces = listOf(
+                    SurfaceSpec(-0.12f, 0.12f, -0.02f, interior = true),
+                    SurfaceSpec(-0.12f, 0.12f, -0.09f, interior = true),
+                    SurfaceSpec(-0.13f, 0.13f, -0.18f),
+                ),
+            )
+            FLOUR_SACK -> FixtureSpec(0.11f, 0.13f, machine = Machine.DISPENSER)
+
+            SALON_CHAIR -> FixtureSpec(0.14f, 0.20f, spots = listOf(seat(0f, -0.10f)))
+            DRYER_HOOD -> FixtureSpec(0.14f, 0.34f, front = true, spots = listOf(seat(0f, -0.09f)))
+            HAIR_WASH -> FixtureSpec(0.18f, 0.19f, spots = listOf(seat(0f, -0.08f)))
+            CLOTHES_RACK -> FixtureSpec(0.32f, 0.30f, machine = Machine.DISPENSER)
+
+            POTION_RACK -> FixtureSpec(0.32f, 0.10f, wall = true, machine = Machine.DISPENSER)
+            CAULDRON -> FixtureSpec(
+                0.22f, 0.17f,
+                machine = Machine.CAULDRON,
+                dropZone = RRect(-0.11f, -0.32f, 0.11f, -0.1f),
+                light = RRect(-0.25f, -0.4f, 0.25f, 0.05f),
+            )
+            TELESCOPE -> FixtureSpec(0.14f, 0.30f)
+            CRYSTAL_BALL -> FixtureSpec(0.10f, 0.13f, light = RRect(-0.15f, -0.25f, 0.15f, 0.05f))
+            SPELLBOOK -> FixtureSpec(0.16f, 0.17f)
+
+            PIER -> FixtureSpec(1.0f, 0.30f, surfaces = listOf(SurfaceSpec(-0.5f, 0.5f, -0.26f)))
+            FISHING_SPOT -> FixtureSpec(0.10f, 0.10f, machine = Machine.FISHING)
+            BOAT -> FixtureSpec(0.36f, 0.13f, front = true, floats = true, spots = listOf(seat(-0.08f, -0.05f), seat(0.08f, -0.05f)))
+            UMBRELLA -> FixtureSpec(0.26f, 0.38f)
+            LOUNGER -> FixtureSpec(0.30f, 0.10f, spots = listOf(SpotSpec(0.01f, -0.07f, Pose.LIE)))
+            SANDCASTLE -> FixtureSpec(0.16f, 0.15f)
+
+            TENT -> FixtureSpec(
+                0.34f, 0.25f,
+                container = RRect(-0.13f, -0.2f, 0.13f, -0.01f),
+                surfaces = listOf(SurfaceSpec(-0.12f, 0.12f, -0.01f, interior = true)),
+                spots = listOf(SpotSpec(0f, -0.01f, Pose.LIE, hidden = true)),
+            )
+            CAMPFIRE -> FixtureSpec(
+                0.16f, 0.10f,
+                surfaces = listOf(SurfaceSpec(-0.05f, 0.05f, -0.10f)),
+                machine = Machine.CAMPFIRE,
+                dropZone = RRect(-0.08f, -0.28f, 0.08f, -0.05f),
+                light = RRect(-0.5f, -0.6f, 0.5f, 0.1f),
+            )
+            LOG -> FixtureSpec(0.26f, 0.08f, spots = listOf(seat(-0.07f, -0.07f), seat(0.07f, -0.07f)))
+            STUMP -> FixtureSpec(
+                0.09f, 0.08f,
+                surfaces = listOf(SurfaceSpec(-0.04f, 0.04f, -0.08f)),
+                spots = listOf(seat(0f, -0.08f)),
+            )
+            OWL_TREE -> FixtureSpec(0.36f, 0.72f)
+
+            PINE_TREE -> FixtureSpec(0.38f, 0.74f)
+            SAUNA -> FixtureSpec(
+                0.38f, 0.33f,
+                container = RRect(-0.15f, -0.25f, 0.15f, -0.02f),
+                surfaces = listOf(SurfaceSpec(-0.15f, 0.15f, -0.02f, interior = true)),
+                spots = listOf(SpotSpec(-0.075f, -0.075f, Pose.SIT, hidden = true), SpotSpec(0.075f, -0.075f, Pose.SIT, hidden = true)),
+                light = RRect(-0.3f, -0.45f, 0.3f, 0.05f),
+            )
+            SLED_HILL -> FixtureSpec(0.52f, 0.34f, spots = listOf(seat(-0.19f, -0.32f)))
+            SNOWMAN -> FixtureSpec(0.16f, 0.24f)
+            SKI_JUMP -> FixtureSpec(0.58f, 0.44f, spots = listOf(seat(-0.23f, -0.42f)))
+            ICE_POND -> FixtureSpec(
+                0.62f, 0.03f,
+                surfaces = listOf(SurfaceSpec(-0.31f, 0.31f, -0.006f, slippery = true)),
+                machine = Machine.FOUNTAIN,
+                dropZone = RRect(-0.06f, -0.14f, 0.06f, 0.01f),
+            )
+            BENCH -> FixtureSpec(0.32f, 0.12f, spots = listOf(seat(-0.08f, -0.07f), seat(0.08f, -0.07f)))
+            COCOA_STAND -> FixtureSpec(0.22f, 0.34f, surfaces = listOf(SurfaceSpec(-0.1f, 0.1f, -0.15f)), machine = Machine.DISPENSER)
+            LAMP_POST -> FixtureSpec(0.08f, 0.50f, light = RRect(-0.4f, -0.8f, 0.4f, 0.05f))
+        }
+    }
+}
+
+/** The potions on the lab's rack, left to right. */
+val POTION_ROW = listOf(
+    ThingType.POTION_GROW,
+    ThingType.POTION_SHRINK,
+    ThingType.POTION_RAINBOW,
+    ThingType.POTION_FLOAT,
+    ThingType.POTION_NORMAL,
+)

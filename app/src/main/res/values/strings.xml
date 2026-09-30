@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- All child-facing text lives in Kotlin (ui/Strings.kt): the app switches between nynorsk and
+         bokmål on its own, independent of the device language. -->
+    <string name="app_name">Trollvik</string>
+</resources>

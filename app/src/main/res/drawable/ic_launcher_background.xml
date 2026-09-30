@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:pathData="M0,0h108v108h-108z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="54"
+                android:centerY="40"
+                android:gradientRadius="78"
+                android:startColor="#FF9ADAFF"
+                android:endColor="#FF2F7FE8" />
+        </aapt:attr>
+    </path>
+    <!-- Sea at the bottom with a soft wave. -->
+    <path android:fillColor="#FF1F63C9" android:pathData="M0,84 Q13,79 27,84 T54,84 T81,84 T108,84 V108 H0 Z" />
+    <path android:fillColor="#55FFFFFF" android:pathData="M0,86 Q13,81 27,86 T54,86 T81,86 T108,86 V88 Q94,84 81,88 T54,88 T27,88 T0,88 Z" />
+</vector>
