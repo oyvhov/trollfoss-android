@@ -82,13 +82,20 @@ class WorldStore(private val file: File) {
             put("discoveries", JSONArray(world.discoveries.toList()))
             put("fixtures", JSONArray().apply {
                 world.fixtures.values.forEach { f ->
-                    if (f.open || f.on || f.mode != 0 || f.count != 0) {
+                    val moved = WorldFactory.moved(f)
+                    if (f.open || f.on || f.mode != 0 || f.count != 0 || moved) {
                         put(JSONObject().apply {
                             put("id", f.id)
                             put("open", f.open)
                             put("on", f.on)
                             put("mode", f.mode)
                             put("count", f.count)
+                            // Furniture the child has moved keeps its new spot.
+                            if (moved) {
+                                put("x", f.x.toDouble())
+                                put("y", f.y.toDouble())
+                                put("depth", f.depth.toDouble())
+                            }
                         })
                     }
                 }
@@ -169,6 +176,11 @@ class WorldStore(private val file: File) {
                 f.on = o.optBoolean("on", false)
                 f.mode = o.optInt("mode", 0)
                 f.count = o.optInt("count", 0)
+                if (o.has("x")) {
+                    f.x = o.optDouble("x", f.x.toDouble()).toFloat()
+                    f.y = o.optDouble("y", f.y.toDouble()).toFloat()
+                    f.depth = o.optDouble("depth", f.depth.toDouble()).toFloat()
+                }
             }
 
             var maxId = 0

@@ -13,11 +13,19 @@ object WorldFactory {
             defs.forEachIndexed { index, def ->
                 val depth = if (def.on >= 0) defs[def.on].y + 0.0004f else def.y
                 val f = Fixture(fixtureId(place, index), place, def.type, def.x, def.y, def.variant, depth)
+                if (def.on >= 0) f.host = fixtureId(place, def.on)
                 // Street lamps are lit, so the park and the beach glow when night falls.
                 if (def.type == FixtureType.LAMP_POST) f.on = true
                 world.fixtures[f.id] = f
             }
         }
+    }
+
+    /** True when the child has moved [f] away from where the blueprint puts it. */
+    fun moved(f: Fixture): Boolean {
+        val index = f.id - f.place.ordinal * 100
+        val def = Places.spec(f.place).fixtures.getOrNull(index) ?: return false
+        return kotlin.math.abs(f.x - def.x) > 0.0005f || kotlin.math.abs(f.y - def.y) > 0.0005f
     }
 
     fun create(random: Random = Random(2026)): World {

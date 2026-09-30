@@ -163,8 +163,14 @@ class PersonAnim {
  * A piece of furniture or a machine in a place. Its state is saved; the rest comes from the blueprint.
  * [depth] is where it stands on the floor band; for a radio on a table it is the table's depth.
  */
-class Fixture(val id: Int, val place: PlaceId, val type: FixtureType, val x: Float, val y: Float, val variant: Int = 0, val depth: Float = y) {
+class Fixture(val id: Int, val place: PlaceId, val type: FixtureType, var x: Float, var y: Float, val variant: Int = 0, var depth: Float = y) {
     var open = false
+
+    /** The fixture this one stands on (a radio on a table), or -1. Set from the blueprint, never saved. */
+    var host = -1
+
+    /** How far a piece of furniture is lifted while the child moves it (0 to 1). Never saved. */
+    var lift = 0f
     var on = false
     var mode = 0
     var count = 0

@@ -1473,6 +1473,67 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         if (!quiet) listener.onRemove(t)
     }
 
+    // ------------------------------------------------------------------ home designer
+
+    /** Furniture the child may pick up and move. Water-bound and built-in things stay put. */
+    fun movable(f: Fixture): Boolean = when (f.type) {
+        FixtureType.PIER, FixtureType.FISHING_SPOT, FixtureType.BOAT, FixtureType.ICE_POND, FixtureType.STAGE_PLATFORM,
+        FixtureType.SHIPWRECK -> false
+        // Small things on furniture (the radio on the table) go with their furniture; running rides wait.
+        else -> f.host < 0 && !(f.on && f.type in MOVING)
+    }
+
+    /**
+     * Where a moved piece of furniture may stand: on the floor band for floor furniture, on the wall for
+     * wall furniture, and never off the ends of the place or into water.
+     */
+    fun clampFixture(place: PlaceId, f: Fixture, x: Float, y: Float): FloatArray {
+        val half = f.spec.w / 2f
+        var cx = x.coerceIn(half + 0.01f, place.width - half - 0.01f)
+        val cy = if (f.spec.wall) {
+            y.coerceIn(place.ceiling + f.spec.h + 0.02f, place.back - 0.01f)
+        } else {
+            // Only where there is dry floor.
+            val band = surfaces(place).filter { it.band }
+            val onBand = band.firstOrNull { cx >= it.x1 && cx <= it.x2 } ?: band.minByOrNull { minOf(kotlin.math.abs(cx - it.x1), kotlin.math.abs(cx - it.x2)) }
+            if (onBand != null) cx = cx.coerceIn(onBand.x1 + min(half, (onBand.x2 - onBand.x1) / 2f), onBand.x2 - min(half, (onBand.x2 - onBand.x1) / 2f))
+            y.coerceIn(place.back + 0.004f, PlaceId.FRONT)
+        }
+        return floatArrayOf(cx, cy)
+    }
+
+    /** Moves a piece of furniture with everything on it, in it, seated on it and standing on it. */
+    fun moveFixture(place: PlaceId, f: Fixture, x: Float, y: Float) {
+        val dx = x - f.x
+        val dy = y - f.y
+        if (dx == 0f && dy == 0f) return
+        shiftFixture(place, f, dx, dy)
+        invalidate(place)
+    }
+
+    private fun shiftFixture(place: PlaceId, f: Fixture, dx: Float, dy: Float) {
+        f.x += dx
+        f.y += dy
+        f.depth += dy
+        for (b in world.bodiesIn(place)) {
+            if (b.held || b.mode != Mode.FREE) continue
+            if ((b.resting && b.restOwner == f.id) || b.inside == f.id) {
+                b.x += dx
+                b.y += dy
+                if (!b.ground.isNaN()) b.ground += dy
+            }
+        }
+        for (other in world.fixturesIn(place)) if (other.host == f.id) shiftFixture(place, other, dx, dy)
+    }
+
+    /** Where a glimt is now: glimt on furniture follow the furniture when the child moves it. */
+    fun secretAt(s: Secret): FloatArray {
+        if (s.on < 0) return floatArrayOf(s.x, s.y)
+        val f = world.fixtures[s.place.ordinal * 100 + s.on] ?: return floatArrayOf(s.x, s.y)
+        val def = Places.spec(s.place).fixtures[s.on]
+        return floatArrayOf(s.x + f.x - def.x, s.y + f.y - def.y)
+    }
+
     // ------------------------------------------------------------------ discovery
 
     fun unlock(id: String) {
@@ -1509,6 +1570,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         const val GROW_SECONDS = 6f
         const val PORTHOLE_VIEWS = 6
         val RIDES = setOf(FixtureType.SLED_HILL, FixtureType.SKI_JUMP)
+        val MOVING = setOf(FixtureType.ROCKET_SHIP, FixtureType.SUBMARINE, FixtureType.FERRIS_WHEEL, FixtureType.CAROUSEL, FixtureType.BUMPER_CAR, FixtureType.TRACTOR)
         const val GRAVITY = 5.2f
         const val MAX_THINGS = 70
         const val TV_CHANNELS = 6

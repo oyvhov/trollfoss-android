@@ -166,9 +166,12 @@ class Engine(
         class FromBag(val body: Body) : Target
         object BagButton : Target
         object Pan : Target
+
+        /** A piece of furniture picked up with a long press, to be moved («heimedesignar»). */
+        class Furniture(val fixture: Fixture) : Target
     }
 
-    private class Grab(val target: Target, val down: Offset, val downTime: Long) {
+    private class Grab(var target: Target, val down: Offset, val downTime: Long, val born: Float) {
         var moved = false
         var offX = 0f
         var offY = 0f
@@ -238,9 +241,11 @@ class Engine(
             if (body.y >= place.back) body.ground = min(body.y, PlaceId.FRONT)
         }
 
+        moveFurniture(dt)
+
         // A thing carried to the screen edge takes the camera with it.
-        if (grabs.values.any { it.moved && heldBody(it) != null }) {
-            val edge = grabs.values.filter { it.moved && heldBody(it) != null }.map { it.finger.x }
+        if (grabs.values.any { it.moved && (heldBody(it) != null || it.target is Target.Furniture) }) {
+            val edge = grabs.values.filter { it.moved && (heldBody(it) != null || it.target is Target.Furniture) }.map { it.finger.x }
             for (x in edge) {
                 if (x < widthPx * 0.08f) cam -= 1.3f * dt
                 if (x > widthPx * 0.92f) cam += 1.3f * dt
@@ -554,7 +559,7 @@ class Engine(
     // ---------------------------------------------------------------------------------- input
 
     fun down(id: Long, at: Offset, uptime: Long) {
-        val grab = Grab(pick(at), at, uptime)
+        val grab = Grab(pick(at), at, uptime, time)
         grab.tracker.addPosition(uptime, at)
         val body = heldBody(grab)
         if (body != null) {
@@ -600,13 +605,70 @@ class Engine(
                     host.sfx(Sfx.ZIP, 0.6f)
                 }
                 Target.Pan -> tapScene(at)
+                is Target.Furniture -> putDown(t.fixture)
             }
             return
         }
         when {
             body != null && body.held -> drop(g, body, vx, vy)
             g.target is Target.Pan -> camV = -vx
+            g.target is Target.Furniture -> putDown((g.target as Target.Furniture).fixture)
         }
+    }
+
+    /**
+     * «Heimedesignar»: a long press on a piece of furniture picks it up; it follows the finger along the
+     * floor and in depth, taking along whatever is on it, and lands with a thump where it is let go.
+     */
+    private fun moveFurniture(dt: Float) {
+        for (g in grabs.values) {
+            if (g.target is Target.Pan && !g.moved && time - g.born > LONG_PRESS) {
+                val p = toScene(g.finger)
+                val f = fixtureAt(p)
+                if (f != null && sim.movable(f)) {
+                    g.target = Target.Furniture(f)
+                    g.moved = true
+                    g.offX = f.x - p.x
+                    g.offY = f.y - p.y
+                    f.anim = 1f
+                    host.sfx(Sfx.PICK, 0.7f, 0.7f)
+                    host.haptic()
+                    particles.burst(PKind.SPARK, f.x, f.y - f.spec.h / 2, 8, 0.4f, 0.011f)
+                    // Folk nearby are impressed.
+                    for (o in world.bodiesIn(place)) if (o is Person && abs(o.x - f.x) < 0.6f && !o.held) { o.anim.face = Face.WOW; o.anim.faceTime = 0.8f }
+                }
+            }
+        }
+        val follow = 1f - exp(-18f * dt)
+        val grabbed = HashSet<Int>()
+        for (g in grabs.values) {
+            val f = (g.target as? Target.Furniture)?.fixture ?: continue
+            grabbed += f.id
+            val p = toScene(g.finger)
+            val want = sim.clampFixture(place, f, p.x + g.offX, p.y + g.offY)
+            sim.moveFixture(place, f, f.x + (want[0] - f.x) * follow, f.y + (want[1] - f.y) * follow)
+            f.lift = min(1f, f.lift + dt * 6f)
+        }
+        for (f in world.fixturesIn(place)) if (f.id !in grabbed && f.lift > 0f) f.lift = max(0f, f.lift - dt * 5f)
+    }
+
+    private fun putDown(f: Fixture) {
+        f.anim = 1f
+        host.sfx(Sfx.THUD, 0.6f, 0.9f + random.nextFloat() * 0.2f)
+        particles.burst(PKind.DUST, f.x, f.y, 8, 0.35f, 0.014f, up = 0.05f, life = 0.6f)
+        shake = max(shake, 0.15f)
+        host.changed()
+    }
+
+    /** The front-most piece of furniture under a scene point. */
+    private fun fixtureAt(p: Offset): Fixture? {
+        for (f in world.fixturesIn(place).sortedByDescending { fixtureKey(it) }) {
+            val fx = f.x + f.shiftX
+            val fy = f.y + f.shiftY
+            val pad = 0.012f
+            if (p.x in (fx - f.spec.w / 2 - pad)..(fx + f.spec.w / 2 + pad) && p.y in (fy - f.spec.h - pad)..(fy + pad)) return f
+        }
+        return null
     }
 
     fun cancel() {
@@ -968,16 +1030,10 @@ class Engine(
             }
         }
         // A fixture? Front-most first, wall fixtures last.
-        val fixtures = world.fixturesIn(place).sortedByDescending { fixtureKey(it) }
-        for (f in fixtures) {
-            val fx = f.x + f.shiftX
-            val fy = f.y + f.shiftY
-            val pad = 0.012f
-            if (p.x in (fx - f.spec.w / 2 - pad)..(fx + f.spec.w / 2 + pad) && p.y in (fy - f.spec.h - pad)..(fy + pad)) {
-                sim.tap(place, f, p.x - fx, p.y - fy)
-                host.changed()
-                return
-            }
+        fixtureAt(p)?.let { f ->
+            sim.tap(place, f, p.x - (f.x + f.shiftX), p.y - (f.y + f.shiftY))
+            host.changed()
+            return
         }
         particles.burst(PKind.SPARK, p.x, p.y, 4, 0.25f, 0.008f, Color.White)
     }
@@ -1613,9 +1669,10 @@ class Engine(
             when (l.kind) {
                 0 -> {
                     val f = l.ref as Fixture
+                    if (f.lift > 0f) drawLifted(f)
                     translate(sx(f.x + f.shiftX), sy(f.y + f.shiftY)) {
-                        val bounce = if (motion) 1f + f.anim * 0.05f else 1f
-                        scale(bounce, 2f - bounce, pivot = Offset.Zero) {
+                        val bounce = (if (motion) 1f + f.anim * 0.05f else 1f) + f.lift * 0.03f
+                        scale(bounce, 2f - bounce + f.lift * 0.06f, pivot = Offset.Zero) {
                             drawFixtureBack(f, u, pen, if (f.spec.machine == app.trollfoss.domain.Machine.BLENDER || f.spec.machine == app.trollfoss.domain.Machine.CAULDRON || f.spec.machine == app.trollfoss.domain.Machine.BUILD) world.inMachine(f) else emptyList())
                         }
                     }
@@ -1836,6 +1893,16 @@ class Engine(
                 drawText(layout, topLeft = Offset(cx - layout.size.width / 2f, by - h + dp(5f)))
             }
         }
+    }
+
+    /** A glowing ring on the floor under furniture being moved, so the new spot is clear. */
+    private fun DrawScope.drawLifted(f: Fixture) {
+        val w = (f.spec.w + 0.06f) * u
+        val c = Offset(sx(f.x + f.shiftX), sy(f.y))
+        val pulse = 1f + sin(time * 8f) * 0.05f
+        val rect = androidx.compose.ui.geometry.Rect(c.x - w / 2 * pulse, c.y - w * 0.09f, c.x + w / 2 * pulse, c.y + w * 0.09f)
+        drawOval(T.SunTop.copy(alpha = 0.35f * f.lift), rect.topLeft, rect.size)
+        drawOval(Color.White.copy(alpha = 0.9f * f.lift), rect.topLeft, rect.size, style = Stroke(dp(3f), pathEffect = PathEffect.dashPathEffect(floatArrayOf(dp(10f), dp(7f)), time * dp(30f))))
     }
 
     /** Coloured spots sweeping over walls and floor from the spinning disco ball. */
@@ -2157,6 +2224,9 @@ class Engine(
     private companion object {
         /** Piano keys on a friendly pentatonic scale, in semitones from middle C an octave up. */
         val PENTATONIC = intArrayOf(-12, -10, -8, -5, -3, 0, 2, 4, 7, 9)
+
+        /** Seconds a finger must rest on furniture before it can be moved. */
+        const val LONG_PRESS = 0.45f
 
         /** How many pictures [drawChatIcon] knows. */
         const val CHAT_ICONS = 6
