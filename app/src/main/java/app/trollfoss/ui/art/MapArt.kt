@@ -27,25 +27,26 @@ import kotlin.math.min
 import kotlin.math.sin
 
 /**
- * Where each place sits on the map, as fractions of the map's width and height. Spots are far enough
- * apart for 90 dp buttons on a landscape phone (at least 0.13 apart across or 0.27 apart up and down).
+ * Where each place sits on the map, as fractions of the map's width and height. The spots lie in three
+ * rows (mountains, the valley, the waterfront) at least 0.27 apart up and down, and 0.14 apart along a
+ * row, so 90 dp buttons never overlap on a landscape phone. They keep clear of the close button (top
+ * left), the gear (top right) and the two round buttons (bottom left).
  */
 fun mapSpot(place: PlaceId): Offset = when (place) {
-    PlaceId.MOUNTAIN -> Offset(0.16f, 0.25f)
-    PlaceId.SPACE -> Offset(0.8f, 0.19f)
-    PlaceId.LAB -> Offset(0.62f, 0.3f)
-    PlaceId.FOREST -> Offset(0.38f, 0.45f)
-    PlaceId.FARM -> Offset(0.84f, 0.54f)
-    PlaceId.SALON -> Offset(0.2f, 0.63f)
-    PlaceId.CAFE -> Offset(0.6f, 0.63f)
-    PlaceId.HOME -> Offset(0.4f, 0.74f)
-    PlaceId.BEACH -> Offset(0.76f, 0.83f)
-    // Provisional spots for the newer places.
-    PlaceId.TIVOLI -> Offset(0.1f, 0.45f)
-    PlaceId.SHOP -> Offset(0.5f, 0.52f)
-    PlaceId.DOCTOR -> Offset(0.26f, 0.86f)
-    PlaceId.STAGE -> Offset(0.72f, 0.44f)
-    PlaceId.UNDERWATER -> Offset(0.93f, 0.9f)
+    PlaceId.MOUNTAIN -> Offset(0.19f, 0.24f)
+    PlaceId.LAB -> Offset(0.62f, 0.25f)
+    PlaceId.SPACE -> Offset(0.81f, 0.19f)
+    PlaceId.TIVOLI -> Offset(0.12f, 0.54f)
+    PlaceId.SHOP -> Offset(0.26f, 0.55f)
+    PlaceId.FOREST -> Offset(0.4f, 0.53f)
+    PlaceId.DOCTOR -> Offset(0.54f, 0.53f)
+    PlaceId.CAFE -> Offset(0.68f, 0.55f)
+    PlaceId.FARM -> Offset(0.86f, 0.53f)
+    PlaceId.SALON -> Offset(0.32f, 0.83f)
+    PlaceId.HOME -> Offset(0.46f, 0.82f)
+    PlaceId.STAGE -> Offset(0.6f, 0.84f)
+    PlaceId.BEACH -> Offset(0.74f, 0.83f)
+    PlaceId.UNDERWATER -> Offset(0.88f, 0.84f)
 }
 
 /**
@@ -220,11 +221,11 @@ private class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float) {
     fun fields(d: DrawScope) = with(d) {
         val colors = listOf(Color(0xFFEBCB5E), Color(0xFFB5DC76), Color(0xFFB98B5A), Color(0xFFD8E48A))
         val f = floatArrayOf(
-            0.7f, 0.47f, 0.79f, 0.46f, 0.78f, 0.53f, 0.69f, 0.54f,
-            0.79f, 0.46f, 0.9f, 0.45f, 0.9f, 0.5f, 0.78f, 0.51f,
-            0.9f, 0.45f, 1.0f, 0.44f, 1.0f, 0.52f, 0.9f, 0.52f,
-            0.69f, 0.54f, 0.78f, 0.53f, 0.77f, 0.62f, 0.68f, 0.63f,
-            0.9f, 0.52f, 1.0f, 0.52f, 1.0f, 0.62f, 0.91f, 0.62f,
+            0.77f, 0.46f, 0.86f, 0.45f, 0.86f, 0.52f, 0.77f, 0.53f,
+            0.86f, 0.45f, 0.94f, 0.44f, 0.94f, 0.5f, 0.86f, 0.51f,
+            0.94f, 0.44f, 1.0f, 0.44f, 1.0f, 0.52f, 0.94f, 0.52f,
+            0.77f, 0.53f, 0.83f, 0.53f, 0.83f, 0.63f, 0.76f, 0.64f,
+            0.92f, 0.53f, 1.0f, 0.53f, 1.0f, 0.62f, 0.93f, 0.63f,
         )
         val rows = ArrayList<Offset>(80)
         for (k in 0 until 5) {
@@ -245,11 +246,11 @@ private class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float) {
 
     fun fjord(d: DrawScope) = with(d) {
         val sea = Path().apply {
-            moveTo(0.26f * w, 1.02f * h)
-            quadraticTo(0.42f * w, 0.92f * h, 0.56f * w, 0.9f * h)
-            quadraticTo(0.66f * w, 0.885f * h, 0.76f * w, 0.9f * h)
-            quadraticTo(0.88f * w, 0.9f * h, 0.94f * w, 0.8f * h)
-            quadraticTo(0.98f * w, 0.74f * h, 1.02f * w, 0.72f * h)
+            moveTo(0.42f * w, 1.02f * h)
+            quadraticTo(0.49f * w, 0.945f * h, 0.58f * w, 0.93f * h)
+            quadraticTo(0.68f * w, 0.915f * h, 0.78f * w, 0.905f * h)
+            quadraticTo(0.84f * w, 0.9f * h, 0.86f * w, 0.8f * h)
+            quadraticTo(0.89f * w, 0.7f * h, 1.02f * w, 0.66f * h)
             lineTo(1.02f * w, 1.02f * h)
             close()
         }
@@ -258,17 +259,17 @@ private class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float) {
         drawPath(sea, Ink.line, style = pen.stroke)
         val waves = Path()
         for (i in 0 until 9) {
-            val x = 0.5f + wrap(hash01(i, 821) * 0.5f + t * 0.006f, 0.5f)
-            val y = 0.92f + hash01(i, 822) * 0.07f
-            if (y < 0.93f && x < 0.6f) continue
+            val x = 0.6f + wrap(hash01(i, 821) * 0.4f + t * 0.006f, 0.4f)
+            val y = 0.93f + hash01(i, 822) * 0.06f
+            if (x > 0.84f && y < 0.95f) continue
             waves.moveTo((x - 0.012f) * w, y * h)
             waves.quadraticTo(x * w, (y - 0.012f) * h, (x + 0.012f) * w, y * h)
         }
         drawPath(waves, Color.White, alpha = 0.7f * (1f - 0.4f * n), style = Stroke(pen.lw, cap = StrokeCap.Round))
         // A little sailboat tacking to and fro.
-        val bx = 0.72f + 0.12f * sin(t * 0.08f)
+        val bx = 0.95f + 0.025f * sin(t * 0.08f)
         val dir = if (cos(t * 0.08f) >= 0f) 1f else -1f
-        val c = p(bx, 0.955f + 0.004f * sin(t * 1.3f))
+        val c = p(bx, 0.76f + 0.004f * sin(t * 1.3f))
         withTransform({ scale(dir, 1f, pivot = c) }) {
             val bs = s * 0.55f
             val hull = Path().apply { poly(c.x - bs * 0.5f, c.y - bs * 0.15f, c.x + bs * 0.5f, c.y - bs * 0.15f, c.x + bs * 0.34f, c.y, c.x - bs * 0.34f, c.y) }
@@ -281,14 +282,14 @@ private class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float) {
             val stroke = Stroke(pen.lw * 1.2f, cap = StrokeCap.Round, join = StrokeJoin.Round)
             for (i in 0 until 3) {
                 val a = t * 0.3f + i * 2.1f
-                val g = p(0.86f + 0.05f * cos(a), 0.74f + 0.025f * sin(a) + i * 0.02f)
+                val g = p(0.94f + 0.03f * cos(a), 0.88f + 0.025f * sin(a) + i * 0.02f)
                 drawGull(g, h * 0.018f, 0.5f + 0.5f * sin(t * 4f + i), stroke, 1f - n / 0.7f)
             }
         }
     }
 
-    private val riverX = floatArrayOf(0.5f, 0.47f, 0.5f, 0.56f, 0.63f, 0.67f)
-    private val riverY = floatArrayOf(0.47f, 0.58f, 0.68f, 0.78f, 0.86f, 0.93f)
+    private val riverX = floatArrayOf(0.5f, 0.482f, 0.5f, 0.53f, 0.535f, 0.52f)
+    private val riverY = floatArrayOf(0.47f, 0.6f, 0.7f, 0.79f, 0.87f, 0.97f)
 
     fun river(d: DrawScope) = with(d) {
         val xs = FloatArray(riverX.size) { riverX[it] * w }
@@ -301,12 +302,12 @@ private class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float) {
             path, Color.White, alpha = 0.55f * (1f - 0.4f * n),
             style = Stroke(pen.lw * 1.2f, cap = StrokeCap.Round, pathEffect = PathEffect.dashPathEffect(floatArrayOf(h * 0.03f, h * 0.05f), -t * h * 0.04f)),
         )
-        // A wooden footbridge between home and the café.
-        val a = p(0.47f, 0.715f)
-        val b = p(0.535f, 0.69f)
-        capsule(a, b, h * 0.024f, night(Color(0xFFC98A55), 0.5f), pen)
-        drawLine(night(Color(0xFFA0663B), 0.5f), Offset(a.x, a.y - h * 0.012f), Offset(b.x, b.y - h * 0.012f), strokeWidth = pen.lw)
-        drawLine(night(Color(0xFFA0663B), 0.5f), Offset(a.x, a.y + h * 0.012f), Offset(b.x, b.y + h * 0.012f), strokeWidth = pen.lw)
+        // Wooden footbridges: by the waterfall and down by the concert house.
+        for ((a, b) in listOf(p(0.455f, 0.6f) to p(0.51f, 0.595f), p(0.505f, 0.87f) to p(0.565f, 0.868f))) {
+            capsule(a, b, h * 0.024f, night(Color(0xFFC98A55), 0.5f), pen)
+            drawLine(night(Color(0xFFA0663B), 0.5f), Offset(a.x, a.y - h * 0.012f), Offset(b.x, b.y - h * 0.012f), strokeWidth = pen.lw)
+            drawLine(night(Color(0xFFA0663B), 0.5f), Offset(a.x, a.y + h * 0.012f), Offset(b.x, b.y + h * 0.012f), strokeWidth = pen.lw)
+        }
     }
 
     /** The great waterfall pouring from the central mountain into its pool, with foam, mist and a rainbow. */
@@ -355,13 +356,18 @@ private class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float) {
 
     fun roads(d: DrawScope) = with(d) {
         val r = floatArrayOf(
-            0.2f, 0.675f, 0.3f, 0.72f, 0.4f, 0.785f,
-            0.4f, 0.785f, 0.5f, 0.7f, 0.6f, 0.675f,
-            0.6f, 0.675f, 0.68f, 0.76f, 0.76f, 0.875f,
-            0.6f, 0.675f, 0.72f, 0.6f, 0.84f, 0.585f,
-            0.3f, 0.72f, 0.33f, 0.58f, 0.38f, 0.495f,
-            0.2f, 0.675f, 0.12f, 0.5f, 0.16f, 0.295f,
-            0.6f, 0.675f, 0.64f, 0.5f, 0.62f, 0.345f,
+            0.12f, 0.585f, 0.19f, 0.6f, 0.26f, 0.595f,
+            0.26f, 0.595f, 0.33f, 0.59f, 0.4f, 0.575f,
+            0.4f, 0.575f, 0.47f, 0.6f, 0.54f, 0.575f,
+            0.54f, 0.575f, 0.61f, 0.6f, 0.68f, 0.595f,
+            0.68f, 0.595f, 0.77f, 0.6f, 0.86f, 0.575f,
+            0.26f, 0.595f, 0.31f, 0.72f, 0.32f, 0.875f,
+            0.32f, 0.875f, 0.39f, 0.88f, 0.46f, 0.865f,
+            0.46f, 0.865f, 0.53f, 0.87f, 0.6f, 0.885f,
+            0.6f, 0.885f, 0.67f, 0.9f, 0.74f, 0.875f,
+            0.68f, 0.595f, 0.73f, 0.72f, 0.74f, 0.875f,
+            0.26f, 0.595f, 0.2f, 0.42f, 0.19f, 0.285f,
+            0.68f, 0.595f, 0.66f, 0.42f, 0.62f, 0.295f,
         )
         val path = Path()
         for (i in r.indices step 6) {
@@ -373,11 +379,11 @@ private class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float) {
     }
 
     private val trees = floatArrayOf(
-        0.33f, 0.4f, 0.3f, 0.43f, 0.26f, 0.44f, 0.31f, 0.48f, 0.44f, 0.51f,
-        0.03f, 0.46f, 0.1f, 0.45f, 0.07f, 0.5f, 0.04f, 0.56f, 0.12f, 0.55f, 0.07f, 0.61f,
-        0.68f, 0.43f, 0.72f, 0.46f, 0.66f, 0.49f, 0.75f, 0.42f,
-        0.08f, 0.82f, 0.13f, 0.86f, 0.05f, 0.9f, 0.18f, 0.9f, 0.11f, 0.95f, 0.24f, 0.94f,
-        0.56f, 0.52f, 0.3f, 0.85f,
+        0.34f, 0.43f, 0.31f, 0.46f, 0.37f, 0.46f, 0.28f, 0.44f,
+        0.03f, 0.46f, 0.07f, 0.43f, 0.04f, 0.65f, 0.09f, 0.68f, 0.05f, 0.74f, 0.13f, 0.72f,
+        0.72f, 0.44f, 0.75f, 0.41f, 0.7f, 0.47f,
+        0.06f, 0.84f, 0.12f, 0.88f, 0.04f, 0.93f, 0.18f, 0.94f, 0.25f, 0.72f,
+        0.9f, 0.66f, 0.96f, 0.64f,
     )
 
     fun forest(d: DrawScope) = with(d) {
@@ -395,7 +401,7 @@ private class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float) {
     }
 
     fun cottages(d: DrawScope) = with(d) {
-        val c = floatArrayOf(0.29f, 0.79f, 0.31f, 0.66f, 0.53f, 0.82f, 0.69f, 0.7f, 0.1f, 0.73f, 0.47f, 0.62f)
+        val c = floatArrayOf(0.18f, 0.7f, 0.39f, 0.7f, 0.62f, 0.7f, 0.8f, 0.7f, 0.44f, 0.66f, 0.66f, 0.74f)
         val walls = listOf(Color(0xFFFFE08A), Color(0xFFF7F4EE), Color(0xFFA9D3F0), Color(0xFFC0463A), Color(0xFFF7F4EE), Color(0xFFFFB9A0))
         for (i in c.indices step 2) {
             val b = p(c[i], c[i + 1])
@@ -409,7 +415,7 @@ private class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float) {
         val base = p(spot.x, spot.y + 0.045f)
         val bounce = if (hl) abs(sin(t * 3.4f)) * h * 0.03f else 0f
         val grow = if (hl) 1.12f + 0.03f * sin(t * 6.8f) else 1f
-        if (place != PlaceId.SPACE) {
+        if (place != PlaceId.SPACE && place != PlaceId.UNDERWATER) {
             if (hl) drawOval(Pal.sun, Offset(base.x - s * 0.75f, base.y - s * 0.14f), Size(s * 1.5f, s * 0.28f), alpha = 0.55f)
             drawOval(Ink.shadow, Offset(base.x - s * 0.55f, base.y - s * 0.08f), Size(s * 1.1f, s * 0.16f))
         }
@@ -427,13 +433,173 @@ private class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float) {
                 PlaceId.MOUNTAIN -> cabin(this, base)
                 PlaceId.FARM -> barn(this, base)
                 PlaceId.SPACE -> station(this, p(spot.x, spot.y), hl)
-                PlaceId.TIVOLI -> drawHouse3d(base.x, base.y, s * 0.6f, s * 0.4f, s * 0.3f, s * 0.4f, Color(0xFFFFC83D), Color(0xFFFF4D6D), pen, n, sideWindows = 1)
-                PlaceId.SHOP -> drawHouse3d(base.x, base.y, s * 0.7f, s * 0.38f, s * 0.3f, s * 0.3f, Color(0xFFBFE3FF), Color(0xFF2F9BFF), pen, n, sideWindows = 1)
-                PlaceId.DOCTOR -> drawHouse3d(base.x, base.y, s * 0.66f, s * 0.42f, s * 0.3f, s * 0.36f, Color(0xFFF7F3EC), Color(0xFFE8304A), pen, n, sideWindows = 2)
-                PlaceId.STAGE -> drawHouse3d(base.x, base.y, s * 0.7f, s * 0.44f, s * 0.3f, s * 0.4f, Color(0xFFC9A4FF), Color(0xFF5B32C9), pen, n, sideWindows = 1)
-                PlaceId.UNDERWATER -> drawOval(Color(0xFF2F7FE8), Offset(base.x - s * 0.4f, base.y - s * 0.2f), Size(s * 0.8f, s * 0.3f))
+                PlaceId.TIVOLI -> ferrisWheel(this, base)
+                PlaceId.SHOP -> shop(this, base)
+                PlaceId.DOCTOR -> clinic(this, base)
+                PlaceId.STAGE -> concertHouse(this, base)
+                PlaceId.UNDERWATER -> diveSpot(this, base)
             }
         }
+    }
+
+    /** The tivoli: a turning ferris wheel with coloured gondolas, and a striped tent. */
+    private fun ferrisWheel(d: DrawScope, b: Offset) = with(d) {
+        val tent = Path().apply {
+            poly(b.x + s * 0.3f, b.y - s * 0.26f, b.x + s * 0.62f, b.y - s * 0.26f, b.x + s * 0.62f, b.y, b.x + s * 0.3f, b.y)
+            poly(b.x + s * 0.26f, b.y - s * 0.24f, b.x + s * 0.46f, b.y - s * 0.5f, b.x + s * 0.66f, b.y - s * 0.24f)
+        }
+        drawPath(tent, night(Color(0xFFFFF6EC), 0.4f))
+        clipPath(tent) { for (k in 0 until 4) drawRect(night(Color(0xFFE94F4F), 0.4f), Offset(b.x + s * (0.28f + k * 0.1f), b.y - s * 0.52f), Size(s * 0.05f, s * 0.52f)) }
+        drawPath(tent, Ink.line, style = pen.thin)
+        val hub = Offset(b.x - s * 0.1f, b.y - s * 0.52f)
+        val r = s * 0.42f
+        val legs = Path().apply {
+            moveTo(hub.x - s * 0.24f, b.y)
+            lineTo(hub.x, hub.y)
+            lineTo(hub.x + s * 0.24f, b.y)
+        }
+        drawPath(legs, Ink.line, style = Stroke(s * 0.05f + pen.lw * 2f, cap = StrokeCap.Round))
+        drawPath(legs, night(Color(0xFFB9C0CC), 0.4f), style = Stroke(s * 0.05f, cap = StrokeCap.Round))
+        val turn = t * 0.25f
+        val spokes = ArrayList<Offset>(16)
+        for (k in 0 until 8) {
+            val a = turn + k * 0.785f
+            spokes.add(hub)
+            spokes.add(Offset(hub.x + cos(a) * r, hub.y + sin(a) * r))
+        }
+        drawPoints(spokes, PointMode.Lines, night(Color(0xFF8A93A3), 0.4f), strokeWidth = pen.lw)
+        drawCircle(Ink.line, r, hub, style = Stroke(s * 0.045f + pen.lw * 2f))
+        drawCircle(night(Color(0xFFFF6B8A), 0.35f), r, hub, style = Stroke(s * 0.045f))
+        val lit = ramp((n - 0.2f) / 0.5f)
+        if (lit > 0f) {
+            val bulbs = ArrayList<Offset>(16)
+            for (k in 0 until 16) bulbs.add(Offset(hub.x + cos(turn + k * 0.3927f) * r, hub.y + sin(turn + k * 0.3927f) * r))
+            drawPoints(bulbs, PointMode.Points, Color(0xFFFFE27A), strokeWidth = s * 0.09f, cap = StrokeCap.Round, alpha = 0.4f * lit)
+            drawPoints(bulbs, PointMode.Points, Color(0xFFFFF3B0), strokeWidth = s * 0.04f, cap = StrokeCap.Round, alpha = lit)
+        }
+        val cols = listOf(Color(0xFFFFC83D), Color(0xFF5AA9E6), Color(0xFF5CE0A0), Color(0xFFD77BFF))
+        for (k in 0 until 8) {
+            val a = turn + k * 0.785f
+            val c = Offset(hub.x + cos(a) * r, hub.y + sin(a) * r)
+            inkedRound(Rect(c.x - s * 0.06f, c.y, c.x + s * 0.06f, c.y + s * 0.09f), s * 0.025f, night(cols[k % cols.size], 0.4f), pen, shade = false)
+        }
+        inkedCircle(hub, s * 0.05f, night(Color(0xFFFFC83D), 0.4f), pen, shade = false)
+    }
+
+    /** The shop: a bright box with a big window, a striped awning and a basket sign. */
+    private fun shop(d: DrawScope, b: Offset) = with(d) {
+        val body = Rect(b.x - s * 0.4f, b.y - s * 0.5f, b.x + s * 0.4f, b.y)
+        box3d(body, s * 0.4f, night(Color(0xFFF7F4EF), 0.4f), pen, top = night(Color(0xFFB9C0CC), 0.4f))
+        val lit = ramp((n - 0.35f) / 0.4f)
+        val glass = lerp(night(Color(0xFF9FD3F2), 0.4f), Color(0xFFFFE9A0), lit)
+        drawRect(glass, Offset(body.left + s * 0.07f, body.top + s * 0.2f), Size(s * 0.42f, s * 0.24f))
+        drawRect(Ink.line, Offset(body.left + s * 0.07f, body.top + s * 0.2f), Size(s * 0.42f, s * 0.24f), style = pen.thin)
+        drawRect(night(Color(0xFF2FB57A), 0.4f), Offset(body.right - s * 0.26f, body.top + s * 0.22f), Size(s * 0.18f, s * 0.28f))
+        drawRect(Ink.line, Offset(body.right - s * 0.26f, body.top + s * 0.22f), Size(s * 0.18f, s * 0.28f), style = pen.thin)
+        val aw = Path().apply { poly(body.left - s * 0.02f, body.top + s * 0.1f, body.right + s * 0.02f, body.top + s * 0.1f, body.right + s * 0.06f, body.top + s * 0.2f, body.left - s * 0.06f, body.top + s * 0.2f) }
+        drawPath(aw, night(Color.White, 0.4f))
+        clipPath(aw) { for (k in 0 until 6) drawRect(night(Color(0xFF2FB57A), 0.4f), Offset(body.left - s * 0.06f + k * s * 0.16f, body.top + s * 0.08f), Size(s * 0.08f, s * 0.14f)) }
+        drawPath(aw, Ink.line, style = pen.thin)
+        val sign = Offset(b.x, body.top - s * 0.14f)
+        inkedCircle(sign, s * 0.12f, night(Color.White, 0.4f), pen, shade = false)
+        drawArc(Ink.line, 180f, 180f, false, Offset(sign.x - s * 0.045f, sign.y - s * 0.07f), Size(s * 0.09f, s * 0.09f), style = Stroke(pen.lw))
+        val basket = Path().apply { poly(sign.x - s * 0.07f, sign.y - s * 0.02f, sign.x + s * 0.07f, sign.y - s * 0.02f, sign.x + s * 0.05f, sign.y + s * 0.06f, sign.x - s * 0.05f, sign.y + s * 0.06f) }
+        drawPath(basket, night(Color(0xFF3E7BD6), 0.4f))
+    }
+
+    /** The doctor's: a white clinic with a friendly heart sign. */
+    private fun clinic(d: DrawScope, b: Offset) = with(d) {
+        drawHouse3d(b.x, b.y, s * 0.72f, s * 0.46f, s * 0.26f, s * 0.42f, Color(0xFFF7F7F4), Color(0xFFF08CA8), pen, n, door = Color(0xFF7FD3B0), sideWindows = 2)
+        val c = Offset(b.x + s * 0.5f, b.y - s * 0.7f)
+        drawLine(Ink.line, Offset(c.x, c.y + s * 0.12f), Offset(c.x, b.y - s * 0.44f), strokeWidth = pen.lw * 1.2f)
+        val hs = s * 0.14f
+        val heart = Path().apply {
+            moveTo(c.x, c.y + hs * 0.95f)
+            cubicTo(c.x - hs * 1.6f, c.y - hs * 0.05f, c.x - hs * 0.7f, c.y - hs * 1.3f, c.x, c.y - hs * 0.45f)
+            cubicTo(c.x + hs * 0.7f, c.y - hs * 1.3f, c.x + hs * 1.6f, c.y - hs * 0.05f, c.x, c.y + hs * 0.95f)
+            close()
+        }
+        inked(heart, night(Color(0xFFE94F6A), 0.3f), pen, shade = false)
+        drawLine(Color.White, Offset(c.x - hs * 0.35f, c.y), Offset(c.x + hs * 0.35f, c.y), strokeWidth = hs * 0.22f, cap = StrokeCap.Round)
+        drawLine(Color.White, Offset(c.x, c.y - hs * 0.35f), Offset(c.x, c.y + hs * 0.35f), strokeWidth = hs * 0.22f, cap = StrokeCap.Round)
+    }
+
+    /** The concert house: round, with a pointed roof, glowing windows, a star and notes floating up. */
+    private fun concertHouse(d: DrawScope, b: Offset) = with(d) {
+        val rx = s * 0.42f
+        val ry = s * 0.12f
+        val top = b.y - s * 0.46f
+        val wall = night(Color(0xFFE9DDFB), 0.4f)
+        val body = Path().apply {
+            moveTo(b.x - rx, top)
+            lineTo(b.x - rx, b.y)
+            arcTo(Rect(b.x - rx, b.y - ry, b.x + rx, b.y + ry), 180f, -180f, false)
+            lineTo(b.x + rx, top)
+            close()
+        }
+        drawPath(body, Brush.horizontalGradient(listOf(wall.lighten(0.2f), wall, wall.darken(0.2f)), startX = b.x - rx, endX = b.x + rx))
+        drawPath(body, Ink.line, style = pen.stroke)
+        val lit = ramp((n - 0.3f) / 0.4f)
+        val win = lerp(night(Color(0xFF8C6BD9), 0.4f), Color(0xFFFFD66B), lit)
+        for (k in 0 until 5) {
+            val wx = b.x - rx * 0.8f + k * rx * 0.4f
+            drawRoundRect(win, Offset(wx - s * 0.03f, top + s * 0.14f), Size(s * 0.06f, s * 0.16f), androidx.compose.ui.geometry.CornerRadius(s * 0.03f))
+        }
+        val roof = Path().apply {
+            moveTo(b.x - rx * 1.08f, top + ry * 0.2f)
+            quadraticTo(b.x, top + ry * 1.8f, b.x + rx * 1.08f, top + ry * 0.2f)
+            lineTo(b.x, top - s * 0.42f)
+            close()
+        }
+        inked(roof, night(Color(0xFF8B5CF6), 0.4f), pen)
+        val star = starPath(Offset(b.x, top - s * 0.5f), s * 0.1f, s * 0.045f, sin(t) * 10f)
+        inked(star, Pal.sun, pen, shade = false)
+        for (k in 0 until 2) {
+            val ph = wrap(t * 0.3f + k * 0.5f, 1f)
+            val nc = Offset(b.x + s * (0.5f + 0.12f * sin(ph * 6f + k)), top - s * (0.1f + ph * 0.5f))
+            drawCircle(Ink.line, s * 0.035f, nc, alpha = 1f - ph)
+            drawLine(Ink.line, Offset(nc.x + s * 0.03f, nc.y), Offset(nc.x + s * 0.03f, nc.y - s * 0.12f), strokeWidth = pen.lw, alpha = 1f - ph)
+        }
+    }
+
+    /** The sea floor dive spot: a bobbing buoy with a flag, a periscope peeking up and rising bubbles. */
+    private fun diveSpot(d: DrawScope, b: Offset) = with(d) {
+        val bob = sin(t * 1.6f) * s * 0.03f
+        for (k in 0 until 2) {
+            val ph = wrap(t * 0.4f + k * 0.5f, 1f)
+            val rw = s * (0.4f + ph * 0.6f)
+            drawOval(Color.White, Offset(b.x - rw, b.y - rw * 0.18f), Size(rw * 2f, rw * 0.36f), alpha = 0.6f * (1f - ph), style = Stroke(pen.lw))
+        }
+        for (k in 0 until 4) {
+            val ph = wrap(t * 0.5f + k / 4f, 1f)
+            drawCircle(Color.White, s * (0.025f + 0.02f * ph), Offset(b.x + s * (0.28f + 0.05f * sin(ph * 8f + k)), b.y - s * 0.02f - ph * s * 0.35f), alpha = 0.8f * (1f - ph), style = Stroke(pen.lw))
+        }
+        // Periscope.
+        val px = b.x - s * 0.34f
+        val look = sin(t * 0.5f)
+        drawLine(Ink.line, Offset(px, b.y + s * 0.02f), Offset(px, b.y - s * 0.36f), strokeWidth = s * 0.06f + pen.lw * 2f, cap = StrokeCap.Round)
+        drawLine(night(Color(0xFFFFC83D), 0.4f), Offset(px, b.y + s * 0.02f), Offset(px, b.y - s * 0.36f), strokeWidth = s * 0.06f, cap = StrokeCap.Round)
+        val head = Rect(px - s * 0.04f + look * s * 0.04f, b.y - s * 0.44f, px + s * 0.1f + look * s * 0.04f, b.y - s * 0.34f)
+        inkedRound(head, s * 0.03f, night(Color(0xFFFFC83D), 0.4f), pen, shade = false)
+        drawCircle(night(Color(0xFF5AA9E6), 0.3f), s * 0.025f, Offset(head.right - s * 0.03f, head.center.y))
+        // Buoy.
+        val c = Offset(b.x, b.y + bob)
+        val float = Path().apply {
+            moveTo(c.x - s * 0.22f, c.y)
+            quadraticTo(c.x - s * 0.24f, c.y - s * 0.3f, c.x, c.y - s * 0.34f)
+            quadraticTo(c.x + s * 0.24f, c.y - s * 0.3f, c.x + s * 0.22f, c.y)
+            quadraticTo(c.x, c.y + s * 0.08f, c.x - s * 0.22f, c.y)
+            close()
+        }
+        drawPath(float, night(Color.White, 0.4f))
+        clipPath(float) { drawRect(night(Color(0xFFE94F4F), 0.4f), Offset(c.x - s * 0.3f, c.y - s * 0.22f), Size(s * 0.6f, s * 0.1f)) }
+        drawPath(float, Ink.line, style = pen.stroke)
+        drawLine(Ink.line, Offset(c.x, c.y - s * 0.34f), Offset(c.x, c.y - s * 0.7f), strokeWidth = pen.lw * 1.2f)
+        val flag = Path().apply { poly(c.x, c.y - s * 0.7f, c.x + s * 0.24f + sin(t * 4f) * s * 0.02f, c.y - s * 0.62f, c.x, c.y - s * 0.54f) }
+        inked(flag, night(Color(0xFFE94F4F), 0.4f), pen, shade = false)
+        drawLine(Color.White, Offset(c.x + s * 0.02f, c.y - s * 0.66f), Offset(c.x + s * 0.16f, c.y - s * 0.6f), strokeWidth = pen.lw * 1.4f)
+        val lit = ramp((n - 0.3f) / 0.4f)
+        if (lit > 0f && wrap(t, 1.4f) < 0.5f) drawCircle(Color(0xFFFFE27A), s * 0.06f, Offset(c.x, c.y - s * 0.72f), alpha = lit)
     }
 
     private fun cafe(d: DrawScope, b: Offset) = with(d) {
