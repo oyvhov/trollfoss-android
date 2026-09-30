@@ -137,7 +137,7 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                         itemsIndexed(List(n) { it }) { _, i ->
                             val chosen = if (wall) current.wall == i else current.floor == i
                             Tile(chosen = chosen, onClick = { if (wall) engine.restyle(wall = i) else engine.restyle(floor = i) }) {
-                                Canvas(Modifier.size(80.dp)) {
+                                CachedThumb(if (wall) "wall:$i" else "floor:$i", 80.dp) {
                                     val r = Rect(4.dp.toPx(), 4.dp.toPx(), size.width - 4.dp.toPx(), size.height - 4.dp.toPx())
                                     val pen = Pen(2.dp.toPx())
                                     if (wall) drawWallSwatch(i, r, pen) else drawFloorSwatch(i, r, pen)
@@ -217,7 +217,7 @@ private fun LockBadge(item: CatalogueItem) {
 /** A small drawing of a piece of furniture, scaled to fit its card. */
 @Composable
 private fun FurnitureThumb(type: FixtureType, variant: Int, place: PlaceId, locked: Boolean) {
-    Canvas(Modifier.size(88.dp).graphicsLayer { alpha = if (locked) 0.45f else 1f }) {
+    CachedThumb("fixture:$type:$variant", 88.dp, Modifier.graphicsLayer { alpha = if (locked) 0.45f else 1f }) {
         drawFixtureThumb(type, variant, Rect(0f, 0f, size.width, size.height))
     }
 }

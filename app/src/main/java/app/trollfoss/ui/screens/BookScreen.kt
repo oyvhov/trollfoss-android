@@ -187,7 +187,7 @@ private fun StickersPage(vm: TrollfossViewModel) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         for (i in 0 until maxOf(12, count + 6)) {
-            Canvas(Modifier.size(86.dp)) {
+            CachedThumb(if (i < count) "sticker:$i" else "sticker:empty", 86.dp) {
                 val r = size.minDimension / 2f - 4f
                 if (i < count) {
                     val (type, variant) = STICKER_ART[i % STICKER_ART.size]

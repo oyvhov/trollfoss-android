@@ -1931,10 +1931,14 @@ class Engine(
                         scale((1f + sq * 0.22f) * pop * a.facing, (1f - sq * 0.22f) * pop, pivot = Offset.Zero) {
                             val carried = world.carried(b)
                             val holding = carried.any { it.slot == Slot.HAND.ordinal }
-                            if (xrayed(b)) drawSkeleton(b, pen) else drawPerson(b.species, b.look, a.pose, a, b.h * u, pen, holding, seed = b.id * 0.37f)
-                            if (a.cream > 0f) drawCream(b, pen)
-                            if (a.ink > 0f) drawInk(b, pen)
-                            for (t in carried.sortedBy { it.slot }) drawCarried(b, t, pen)
+                            val figure: DrawScope.(Float) -> Unit = { t ->
+                                val p = Pen(pen.lw, t, pen.night, pen.weather, pen.rainbow)
+                                if (xrayed(b)) drawSkeleton(b, p) else drawPerson(b.species, b.look, a.pose, a, b.h * u, p, holding, seed = b.id * 0.37f)
+                                if (a.cream > 0f) drawCream(b, p)
+                                if (a.ink > 0f) drawInk(b, p)
+                                for (t2 in carried.sortedBy { it.slot }) drawCarried(b, t2, p)
+                            }
+                            if (!stampPerson(b, pen, figure)) figure(pen.t)
                         }
                     }
                 }
@@ -2103,13 +2107,18 @@ class Engine(
         val bounds = Rect(-w / 2 - 0.14f * u, -h - 0.4f * u, w / 2 + 0.34f * u, 0.12f * u)
         val night = look.night / 10f
         val rainbow = look.rainbow / 5f
+        val draw: DrawScope.(Float) -> Unit = { t ->
+            val p = Pen(pen.lw, t, night, pen.weather, rainbow)
+            if (layer == 0) drawFixtureBack(f, u, p, emptyList()) else drawFixtureFront(f, u, p)
+        }
         return with(sprites) {
-            stamp(look, bounds, pen.t) { t ->
-                val p = Pen(pen.lw, t, night, pen.weather, rainbow)
-                if (layer == 0) drawFixtureBack(f, u, p, emptyList()) else drawFixtureFront(f, u, p)
-            }
+            // Still art is stamped; art that moves by itself is redrawn a few times a second.
+            stamp(look, bounds, pen.t, draw) || (animated(look) && stampSlow(SlowKey(f.id, layer), bounds, pen.t, SLOW_HZ, draw))
         }
     }
+
+    /** Identifies a slow picture: a fixture layer (layer 0 or 1), a thing (2) or a figure (3). */
+    private data class SlowKey(val id: Int, val layer: Int)
 
     private fun DrawScope.stampThing(b: Thing, pen: Pen): Boolean {
         if (b.cook != 0f) return false
@@ -2120,9 +2129,22 @@ class Engine(
         val bounds = Rect(-w / 2 - pad, -h - pad * 1.4f, w / 2 + pad * 1.4f, pad)
         val night = look.night / 10f
         val rainbow = look.rainbow / 5f
+        val draw: DrawScope.(Float) -> Unit = { t -> drawThing(b.type, b.variant, b.used, w, h, Pen(pen.lw, t, night, pen.weather, rainbow), 0f) }
         return with(sprites) {
-            stamp(look, bounds, pen.t) { t -> drawThing(b.type, b.variant, b.used, w, h, Pen(pen.lw, t, night, pen.weather, rainbow), 0f) }
+            stamp(look, bounds, pen.t, draw) || (animated(look) && stampSlow(SlowKey(b.id, 2), bounds, pen.t, SLOW_HZ, draw))
         }
+    }
+
+    /**
+     * A figure as a picture refreshed about a dozen times a second (faster while held). Hops, squash,
+     * tilt and spins are applied around it every frame, so movement stays smooth; only breathing,
+     * blinking and faces update at the slower rate.
+     */
+    private fun DrawScope.stampPerson(b: Person, pen: Pen, draw: DrawScope.(Float) -> Unit): Boolean {
+        val h = b.h * u
+        val lie = b.anim.pose == Pose.LIE
+        val bounds = Rect(-h * (if (lie) 0.95f else 0.8f), -h * 2.1f, h * (if (lie) 0.95f else 0.8f), h * 0.3f)
+        return with(sprites) { stampSlow(SlowKey(b.id, 3), bounds, pen.t, if (b.held) 24f else 13f, draw) }
     }
 
     /** A glowing ring on the floor under furniture being moved, so the new spot is clear. */
@@ -2467,6 +2489,9 @@ class Engine(
             FixtureType.OVEN, FixtureType.DRYER_HOOD, FixtureType.FISHING_SPOT, FixtureType.BLENDER, FixtureType.CAULDRON,
             FixtureType.ROCKET_SHIP, FixtureType.XRAY, FixtureType.CHECKOUT, FixtureType.ROBOT_VACUUM,
         )
+
+        /** How often art that moves by itself is redrawn into its picture. */
+        const val SLOW_HZ = 8f
 
         /** Seconds a finger must rest on furniture before it can be moved. */
         const val LONG_PRESS = 0.45f

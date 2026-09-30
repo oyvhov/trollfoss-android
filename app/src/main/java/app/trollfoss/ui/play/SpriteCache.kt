@@ -33,11 +33,67 @@ class SpriteCache(private val maxBytes: Long = 40L * 1024 * 1024) {
     private val live = HashSet<Any>()
     private var bytes = 0L
     private var madeThisFrame = 0
+
+    /**
+     * Pictures of art that moves by itself, redrawn a few times a second into the same bitmap. A
+     * wobbling price tag or a blinking figure looks just as alive at 8 to 15 pictures a second, and
+     * costs a fraction of drawing it every frame.
+     */
+    private class Slow(var image: ImageBitmap, var left: Float, var top: Float, var drawnAt: Float)
+
+    private val slow = HashMap<Any, Slow>()
+    private var refreshedThisFrame = 0
     private val scope = CanvasDrawScope()
 
     /** Call once per frame before drawing. */
     fun frame() {
         madeThisFrame = 0
+        refreshedThisFrame = 0
+    }
+
+    /**
+     * Stamps a picture of [key] that is redrawn at most [hz] times a second, and at most a couple of
+     * pictures per frame across all keys, so the work spreads out. Returns false only before the first
+     * picture exists and none could be drawn this frame; then the caller draws live.
+     */
+    fun DrawScope.stampSlow(key: Any, bounds: Rect, t: Float, hz: Float, draw: DrawScope.(t: Float) -> Unit): Boolean {
+        val left = floor(bounds.left)
+        val top = floor(bounds.top)
+        val w = ceil(bounds.right - left).toInt().coerceIn(1, MAX_SIDE)
+        val h = ceil(bounds.bottom - top).toInt().coerceIn(1, MAX_SIDE)
+        var s = slow[key]
+        val due = s == null || t - s.drawnAt >= 1f / hz || t < s.drawnAt
+        if (due && refreshedThisFrame < MAX_REFRESH_PER_FRAME) {
+            refreshedThisFrame++
+            if (s == null || s.image.width != w || s.image.height != h) {
+                s = Slow(ImageBitmap(w, h), left, top, t)
+                slow[key] = s
+            } else {
+                clear(s.image)
+                s.left = left
+                s.top = top
+                s.drawnAt = t
+            }
+            val image = s.image
+            scope.draw(Density(density, fontScale), LayoutDirection.Ltr, Canvas(image), Size(w.toFloat(), h.toFloat())) {
+                translate(-left, -top) { draw(t) }
+            }
+        }
+        if (s == null) return false
+        drawImage(s.image, Offset(s.left, s.top))
+        return true
+    }
+
+    /** True once [key] is known to move by itself. */
+    fun animated(key: Any): Boolean = key in live
+
+    /** Forgets slow pictures whose keys are gone (figures that left, furniture put away). */
+    fun keepSlow(keys: Set<Any>) {
+        slow.keys.retainAll(keys)
+    }
+
+    private fun clear(image: ImageBitmap) {
+        image.asAndroidBitmap().eraseColor(android.graphics.Color.TRANSPARENT)
     }
 
     /**
@@ -46,6 +102,7 @@ class SpriteCache(private val maxBytes: Long = 40L * 1024 * 1024) {
      * the art must be drawn live instead (it animates, or the picture is not made yet).
      */
     fun DrawScope.stamp(key: Any, bounds: Rect, t: Float, draw: DrawScope.(t: Float) -> Unit): Boolean {
+        if (key in live) return false
         if (key in live) return false
         val sprite = sprites[key] ?: make(key, bounds, t, draw) ?: return false
         drawImage(sprite.image, Offset(sprite.left, sprite.top))
@@ -126,11 +183,13 @@ class SpriteCache(private val maxBytes: Long = 40L * 1024 * 1024) {
     fun clear() {
         sprites.clear()
         live.clear()
+        slow.clear()
         bytes = 0L
     }
 
     private companion object {
         const val MAX_NEW_PER_FRAME = 3
+        const val MAX_REFRESH_PER_FRAME = 3
         const val MAX_SIDE = 2400
     }
 }

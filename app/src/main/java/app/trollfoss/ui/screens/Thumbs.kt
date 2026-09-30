@@ -1,6 +1,13 @@
 package app.trollfoss.ui.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.translate
@@ -57,3 +64,37 @@ fun DrawScope.drawSpeciesThumb(species: Species, box: Rect, look: Look = Look())
 
 /** A square box of [side] pixels centred on [c]. */
 fun square(c: Offset, side: Float): Rect = Rect(c.x - side / 2f, c.y - side / 2f, c.x + side / 2f, c.y + side / 2f)
+
+/**
+ * Small pictures drawn once into bitmaps and reused. The panels and cards show dozens of detailed
+ * drawings; as bitmaps they cost the GPU next to nothing, even on slow tablets.
+ */
+object ThumbCache {
+    private val images = LinkedHashMap<String, androidx.compose.ui.graphics.ImageBitmap>(96, 0.75f, true)
+    private val scope = androidx.compose.ui.graphics.drawscope.CanvasDrawScope()
+
+    fun get(key: String, px: Int, density: Float, draw: DrawScope.() -> Unit): androidx.compose.ui.graphics.ImageBitmap {
+        val full = "$key@$px"
+        images[full]?.let { return it }
+        val image = androidx.compose.ui.graphics.ImageBitmap(px, px)
+        scope.draw(
+            androidx.compose.ui.unit.Density(density),
+            androidx.compose.ui.unit.LayoutDirection.Ltr,
+            androidx.compose.ui.graphics.Canvas(image),
+            androidx.compose.ui.geometry.Size(px.toFloat(), px.toFloat()),
+        ) { draw() }
+        image.prepareToDraw()
+        images[full] = image
+        while (images.size > 160) images.remove(images.keys.first())
+        return image
+    }
+}
+
+/** A cached picture of [side], drawn once by [draw] for each [key]. */
+@Composable
+fun CachedThumb(key: String, side: Dp, modifier: Modifier = Modifier, draw: DrawScope.() -> Unit) {
+    val density = LocalDensity.current
+    val px = with(density) { side.roundToPx() }.coerceAtLeast(1)
+    val image = remember(key, px) { ThumbCache.get(key, px, density.density, draw) }
+    Image(image, contentDescription = null, modifier = modifier.size(side))
+}

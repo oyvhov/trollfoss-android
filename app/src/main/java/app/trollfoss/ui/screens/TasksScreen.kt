@@ -112,7 +112,7 @@ private fun TaskCard(vm: TrollfossViewModel, task: Task, progress: Int, done: Bo
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Box(Modifier.size(150.dp), contentAlignment = Alignment.Center) {
-            Canvas(Modifier.size(150.dp)) { drawTaskPicture(task) }
+            CachedThumb("task:${task.id}", 150.dp) { drawTaskPicture(task) }
             if (stamp.value > 0.01f) {
                 Canvas(Modifier.size(120.dp).graphicsLayer { scaleX = stamp.value; scaleY = stamp.value; alpha = (2.2f - stamp.value).coerceIn(0f, 1f) }) {
                     rotate(-14f) {

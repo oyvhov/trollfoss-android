@@ -238,7 +238,7 @@ private fun androidx.compose.foundation.layout.BoxScope.TaskBanner(vm: Trollfoss
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            if (t != null) Canvas(Modifier.size(84.dp)) { drawTaskPicture(t) }
+            if (t != null) CachedThumb("task:${t.id}", 84.dp) { drawTaskPicture(t) }
             IconCanvas(Icons.Check, Modifier.size(56.dp))
             IconCanvas(DesignIcons.Sticker, Modifier.size(56.dp))
         }
