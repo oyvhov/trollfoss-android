@@ -163,6 +163,62 @@ fun blobPath(vararg points: Float): Path {
     return path
 }
 
+/**
+ * «Skrå-3D»: the world is drawn in oblique projection. Depth runs up and to the right: a point [d]
+ * units further back is drawn at (+DX·d, +DY·d) units on screen. No shrinking with distance, so every
+ * size in the domain stays true.
+ */
+object Oblique {
+    const val DX = 0.5f
+    const val DY = -0.36f
+
+    /** Screen offset in pixels for [depth] units of depth at [u] pixels per unit. */
+    fun offset(depth: Float, u: Float): Offset = Offset(DX * depth * u, DY * depth * u)
+}
+
+/**
+ * A box in oblique 3D: the [front] face as given, a lit top face and a shaded right side receding by
+ * [depth] pixels of depth (converted with [Oblique]). Draw details on the front face afterwards.
+ */
+fun DrawScope.box3d(front: Rect, depth: Float, color: Color, pen: Pen, top: Color = color.lighten(0.18f), side: Color = color.darken(0.22f), radius: Float = 0f) {
+    val dx = Oblique.DX * depth
+    val dy = Oblique.DY * depth
+    val topFace = Path().apply {
+        moveTo(front.left, front.top)
+        lineTo(front.left + dx, front.top + dy)
+        lineTo(front.right + dx, front.top + dy)
+        lineTo(front.right, front.top)
+        close()
+    }
+    val sideFace = Path().apply {
+        moveTo(front.right, front.top)
+        lineTo(front.right + dx, front.top + dy)
+        lineTo(front.right + dx, front.bottom + dy)
+        lineTo(front.right, front.bottom)
+        close()
+    }
+    drawPath(sideFace, side)
+    drawPath(sideFace, Ink.line, style = pen.stroke)
+    drawPath(topFace, top)
+    drawPath(topFace, Ink.line, style = pen.stroke)
+    if (radius > 0f) inkedRound(front, radius, color, pen) else inked(Path().apply { addRect(front) }, color, pen)
+}
+
+/** A flat oblique top (a table top, a shelf board) from [left] to [right] at height [y], [depth] pixels deep. */
+fun DrawScope.topFace3d(left: Float, right: Float, y: Float, depth: Float, color: Color, pen: Pen) {
+    val dx = Oblique.DX * depth
+    val dy = Oblique.DY * depth
+    val face = Path().apply {
+        moveTo(left, y)
+        lineTo(left + dx, y + dy)
+        lineTo(right + dx, y + dy)
+        lineTo(right, y)
+        close()
+    }
+    drawPath(face, color)
+    drawPath(face, Ink.line, style = pen.stroke)
+}
+
 /** A four-pointed twinkle, used for sparkles and glimt. */
 fun DrawScope.twinkle(center: Offset, radius: Float, color: Color, alpha: Float = 1f) {
     val path = Path().apply {

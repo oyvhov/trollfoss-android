@@ -19,7 +19,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /** What a particle looks like and how it moves. */
-enum class PKind { DUST, SPARK, HEART, CRUMB, STEAM, BUBBLE, CONFETTI, NOTE, ZZZ, LEAF, SNOW, DROP, FIREWORK, SMOKE, STAR }
+enum class PKind { DUST, SPARK, HEART, CRUMB, STEAM, BUBBLE, CONFETTI, NOTE, ZZZ, LEAF, SNOW, DROP, FIREWORK, SMOKE, STAR, BUTTERFLY, BIRD }
 
 /** A short-lived bit of life: dust, sparkles, hearts, crumbs, notes. Positions are in scene units. */
 class Particle(
@@ -85,9 +85,15 @@ class Particles(private val random: Random = Random.Default) {
                 PKind.DUST, PKind.SPARK, PKind.STAR -> 0.3f
                 PKind.LEAF, PKind.SNOW -> 0.25f
                 PKind.HEART, PKind.NOTE, PKind.ZZZ, PKind.STEAM, PKind.BUBBLE, PKind.SMOKE -> -0.25f
+                PKind.BUTTERFLY, PKind.BIRD -> 0f
             }
             p.vy += g * dt
-            val drag = if (p.kind == PKind.CONFETTI || p.kind == PKind.LEAF || p.kind == PKind.SNOW) 2.2f else 1.2f
+            val drag = when (p.kind) {
+                PKind.CONFETTI, PKind.LEAF, PKind.SNOW -> 2.2f
+                PKind.BUTTERFLY, PKind.BIRD -> 0f
+                else -> 1.2f
+            }
+            if (p.kind == PKind.BUTTERFLY) p.vy = sin(p.life * 2.3f + p.size * 500f) * 0.12f
             p.vx *= 1f - min(1f, drag * dt)
             if (p.kind == PKind.LEAF || p.kind == PKind.SNOW || p.kind == PKind.CONFETTI) p.x += sin(p.life * 5f + p.size * 300f) * 0.05f * dt
             p.x += p.vx * dt
@@ -157,6 +163,23 @@ class Particles(private val random: Random = Random.Default) {
                 PKind.FIREWORK -> {
                     drawCircle(p.color.copy(alpha = fade), r * 0.6f, c)
                     drawLine(p.color.copy(alpha = fade * 0.5f), c, Offset(c.x - p.vx * u * 0.05f, c.y - p.vy * u * 0.05f), strokeWidth = r * 0.6f, cap = StrokeCap.Round)
+                }
+                PKind.BUTTERFLY -> {
+                    val flap = kotlin.math.abs(sin(p.life * 18f))
+                    for (side in listOf(-1f, 1f)) {
+                        drawOval(p.color.copy(alpha = fade), Offset(c.x + (if (side < 0) -r * 1.6f * flap else 0f), c.y - r * 0.9f), Size(r * 1.6f * flap, r * 1.4f))
+                        drawOval(p.color.copy(alpha = fade * 0.8f), Offset(c.x + (if (side < 0) -r * 1.1f * flap else 0f), c.y), Size(r * 1.1f * flap, r * 0.9f))
+                    }
+                    drawLine(Ink.line.copy(alpha = fade), Offset(c.x, c.y - r * 0.8f), Offset(c.x, c.y + r * 0.8f), strokeWidth = lw * 0.9f, cap = StrokeCap.Round)
+                }
+                PKind.BIRD -> {
+                    val flap = sin(p.life * 9f) * r * 0.7f
+                    val path = Path().apply {
+                        moveTo(c.x - r * 1.6f, c.y - flap)
+                        quadraticTo(c.x - r * 0.7f, c.y - r * 0.6f, c.x, c.y)
+                        quadraticTo(c.x + r * 0.7f, c.y - r * 0.6f, c.x + r * 1.6f, c.y - flap)
+                    }
+                    drawPath(path, Ink.line.copy(alpha = min(1f, fade * 0.8f)), style = Stroke(lw * 1.1f, cap = StrokeCap.Round))
                 }
             }
         }

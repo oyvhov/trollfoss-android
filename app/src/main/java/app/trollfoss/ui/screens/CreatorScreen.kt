@@ -66,6 +66,10 @@ import app.trollfoss.ui.TrollfossViewModel
 import app.trollfoss.ui.art.Pen
 import app.trollfoss.ui.art.argb
 import app.trollfoss.ui.art.drawPerson
+import app.trollfoss.ui.art.inked
+import app.trollfoss.ui.art.inkedCircle
+import app.trollfoss.ui.art.inkedOval
+import app.trollfoss.ui.art.inkedRound
 import app.trollfoss.ui.components.BigButton
 import app.trollfoss.ui.components.CloseButton
 import app.trollfoss.ui.components.GameText
@@ -331,14 +335,7 @@ private fun PartTab(part: Part, look: Look, selected: Boolean, onClick: () -> Un
             .semantics { contentDescription = part.label.get(app.trollfoss.domain.Maalform.NYNORSK) },
         contentAlignment = Alignment.Center,
     ) {
-        Canvas(Modifier.fillMaxSize().padding(4.dp)) {
-            if (part.color) {
-                drawCircle(part.swatch(look.index(part).coerceAtLeast(0)), size.minDimension * 0.34f)
-                drawCircle(T.Ink, size.minDimension * 0.34f, style = androidx.compose.ui.graphics.drawscope.Stroke(3f))
-                drawCircle(Color.White.copy(alpha = 0.6f), size.minDimension * 0.08f, Offset(size.width * 0.4f, size.height * 0.38f))
-            }
-            if (!part.color || part == Part.SKIN) drawCrop(look, part.crop(), 0f, small = true)
-        }
+        Canvas(Modifier.fillMaxSize().padding(6.dp)) { drawPartIcon(part, look) }
     }
 }
 
@@ -357,6 +354,92 @@ private fun Choice(part: Part, i: Int, look: Look, selected: Boolean, onClick: (
     ) {
         if (!part.color) Canvas(Modifier.fillMaxSize()) { drawCrop(look.with(part, i).safe(), part.crop(), 0f) }
         else if (selected) Canvas(Modifier.fillMaxSize()) { Icons.Check(this) }
+    }
+}
+
+/** A small picture for each workshop category, coloured with the figure's current choice. */
+private fun DrawScope.drawPartIcon(part: Part, look: Look) {
+    val s = size.minDimension
+    val pen = Pen(max(2f, s * 0.06f))
+    val c = center
+    fun drop(color: Color) {
+        val path = androidx.compose.ui.graphics.Path().apply {
+            moveTo(c.x, c.y - s * 0.42f)
+            cubicTo(c.x + s * 0.34f, c.y - s * 0.02f, c.x + s * 0.3f, c.y + s * 0.4f, c.x, c.y + s * 0.4f)
+            cubicTo(c.x - s * 0.3f, c.y + s * 0.4f, c.x - s * 0.34f, c.y - s * 0.02f, c.x, c.y - s * 0.42f)
+            close()
+        }
+        inked(path, color, pen)
+        drawCircle(Color.White.copy(alpha = 0.7f), s * 0.06f, Offset(c.x - s * 0.1f, c.y + s * 0.05f))
+    }
+    when (part) {
+        Part.SKIN -> {
+            inkedCircle(c, s * 0.38f, part.swatch(look.skin), pen)
+            drawCircle(T.Ink, s * 0.05f, Offset(c.x - s * 0.13f, c.y - s * 0.04f))
+            drawCircle(T.Ink, s * 0.05f, Offset(c.x + s * 0.13f, c.y - s * 0.04f))
+            drawArc(T.Ink, 20f, 140f, false, Offset(c.x - s * 0.12f, c.y + s * 0.02f), androidx.compose.ui.geometry.Size(s * 0.24f, s * 0.16f), style = androidx.compose.ui.graphics.drawscope.Stroke(pen.lw))
+        }
+        Part.HEIGHT -> {
+            inkedRound(androidx.compose.ui.geometry.Rect(c.x - s * 0.14f, c.y - s * 0.44f, c.x + s * 0.14f, c.y + s * 0.44f), s * 0.06f, T.Sun, pen)
+            for (i in 0 until 6) drawLine(T.Ink, Offset(c.x - s * 0.14f, c.y - s * 0.34f + i * s * 0.14f), Offset(c.x - s * (if (i % 2 == 0) 0.02f else 0.07f), c.y - s * 0.34f + i * s * 0.14f), strokeWidth = pen.lw * 0.7f)
+        }
+        Part.HAIR, Part.EARS -> drawCrop(look, Crop.HEAD, 0f, small = true)
+        Part.HAIR_COLOR -> drop(part.swatch(look.hairColor))
+        Part.TOP_COLOR -> drop(part.swatch(look.topColor))
+        Part.BOTTOM_COLOR -> drop(part.swatch(look.bottomColor))
+        Part.EYES -> {
+            val eye = androidx.compose.ui.geometry.Rect(c.x - s * 0.42f, c.y - s * 0.26f, c.x + s * 0.42f, c.y + s * 0.26f)
+            val path = androidx.compose.ui.graphics.Path().apply {
+                moveTo(eye.left, c.y)
+                quadraticTo(c.x, eye.top - s * 0.1f, eye.right, c.y)
+                quadraticTo(c.x, eye.bottom + s * 0.1f, eye.left, c.y)
+                close()
+            }
+            inked(path, Color.White, pen, shade = false)
+            drawCircle(Color(0xFF7A5634), s * 0.17f, c)
+            drawCircle(T.Ink, s * 0.09f, c)
+            drawCircle(Color.White, s * 0.04f, Offset(c.x - s * 0.05f, c.y - s * 0.05f))
+        }
+        Part.TOP -> {
+            val shirt = androidx.compose.ui.graphics.Path().apply {
+                moveTo(c.x - s * 0.14f, c.y - s * 0.38f)
+                lineTo(c.x - s * 0.44f, c.y - s * 0.18f)
+                lineTo(c.x - s * 0.32f, c.y + s * 0.0f)
+                lineTo(c.x - s * 0.24f, c.y - s * 0.06f)
+                lineTo(c.x - s * 0.24f, c.y + s * 0.4f)
+                lineTo(c.x + s * 0.24f, c.y + s * 0.4f)
+                lineTo(c.x + s * 0.24f, c.y - s * 0.06f)
+                lineTo(c.x + s * 0.32f, c.y + s * 0.0f)
+                lineTo(c.x + s * 0.44f, c.y - s * 0.18f)
+                lineTo(c.x + s * 0.14f, c.y - s * 0.38f)
+                quadraticTo(c.x, c.y - s * 0.26f, c.x - s * 0.14f, c.y - s * 0.38f)
+                close()
+            }
+            inked(shirt, part.swatch(look.topColor), pen)
+        }
+        Part.BOTTOM -> {
+            val pants = androidx.compose.ui.graphics.Path().apply {
+                moveTo(c.x - s * 0.28f, c.y - s * 0.38f)
+                lineTo(c.x + s * 0.28f, c.y - s * 0.38f)
+                lineTo(c.x + s * 0.32f, c.y + s * 0.42f)
+                lineTo(c.x + s * 0.06f, c.y + s * 0.42f)
+                lineTo(c.x, c.y - s * 0.06f)
+                lineTo(c.x - s * 0.06f, c.y + s * 0.42f)
+                lineTo(c.x - s * 0.32f, c.y + s * 0.42f)
+                close()
+            }
+            inked(pants, part.swatch(look.bottomColor), pen)
+        }
+        Part.SHOES -> {
+            val shoe = androidx.compose.ui.geometry.Rect(c.x - s * 0.42f, c.y - s * 0.12f, c.x + s * 0.42f, c.y + s * 0.3f)
+            inkedRound(shoe, s * 0.2f, part.swatch(look.shoes), pen)
+            drawLine(Color.White, Offset(shoe.left + s * 0.08f, shoe.bottom - s * 0.07f), Offset(shoe.right - s * 0.08f, shoe.bottom - s * 0.07f), strokeWidth = pen.lw)
+        }
+        Part.EXTRA -> {
+            for (side in listOf(-1f, 1f)) {
+                inkedOval(androidx.compose.ui.geometry.Rect(c.x + (if (side < 0) -s * 0.42f else s * 0.02f), c.y - s * 0.14f, c.x + (if (side < 0) -s * 0.02f else s * 0.42f), c.y + s * 0.14f), argb(Palette.hairs[look.hairColor]), pen)
+            }
+        }
     }
 }
 

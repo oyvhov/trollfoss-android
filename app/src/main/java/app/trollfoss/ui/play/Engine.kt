@@ -133,6 +133,11 @@ class Engine(
     private val flights = ArrayList<Flight>()
     private val grabs = HashMap<Long, Grab>()
     private var lastBabble = 0f
+    private var shake = 0f
+
+    /** Where a held thing would go if let go now: a glowing ring there, and a figure that reacts. */
+    private class Preview(val at: Offset, val radius: Float)
+    private val previews = ArrayList<Preview>()
 
     private class Flight(val from: Offset, var t: Float = 0f)
 
@@ -225,6 +230,8 @@ class Engine(
             clampCam()
         }
 
+        shake *= exp(-7f * dt)
+        updatePreviews()
         updatePeople(dt)
         particles.update(dt)
         ambient(dt)
@@ -232,6 +239,76 @@ class Engine(
         bagCount = world.bag().size
     }
 
+    private fun accepts(f: Fixture, t: Thing): Boolean = when (f.spec.machine) {
+        app.trollfoss.domain.Machine.BLENDER -> !f.on && world.inMachine(f).size < 3
+        app.trollfoss.domain.Machine.CAULDRON -> !f.on && world.inMachine(f).size < 2
+        app.trollfoss.domain.Machine.TOILET -> true
+        app.trollfoss.domain.Machine.FOUNTAIN -> t.type == ThingType.COIN
+        app.trollfoss.domain.Machine.BUILD -> if (t.type.buildTool) world.inMachine(f).isNotEmpty() else world.inMachine(f).size < 2
+        app.trollfoss.domain.Machine.GARDEN -> (t.type == ThingType.SEEDS && f.mode == 0) || (t.type == ThingType.WATERING_CAN && f.mode in 1..2)
+        else -> false
+    }
+
+    /**
+     * Anticipation: while something is carried, show where it would land and let the figure there react
+     * — a mouth opens for food, eyes look up for a hat. Children learn the rules without words.
+     */
+    private fun updatePreviews() {
+        previews.clear()
+        for (g in grabs.values) {
+            if (!g.moved) continue
+            val body = heldBody(g) ?: continue
+            if (hypot(g.finger.x - bagCenter.x, g.finger.y - bagCenter.y) < bagRadius * 1.4f) continue
+            when (body) {
+                is Thing -> {
+                    val center = Offset(body.x, body.y - body.h / 2)
+                    val finger = toScene(g.finger)
+                    val machine = world.fixturesIn(place).firstOrNull { f ->
+                        val zone = f.spec.dropZone ?: return@firstOrNull false
+                        val fx = f.x + f.shiftX
+                        (zone.contains(finger.x - fx, finger.y - f.y) || zone.contains(center.x - fx, center.y - f.y)) && accepts(f, body)
+                    }
+                    if (machine != null) {
+                        val zone = machine.spec.dropZone!!
+                        previews += Preview(Offset(machine.x + machine.shiftX + (zone.left + zone.right) / 2, machine.y + max(zone.top, -machine.spec.h) + 0.02f), 0.05f)
+                        continue
+                    }
+                    val target = giveTarget(body, center) ?: continue
+                    val (p, part) = target
+                    val a = Anatomy.at(p, part)
+                    val k = max(0.6f, p.h / 0.31f)
+                    previews += Preview(Offset(a[0], a[1] - p.anim.hop - (if (part == Part.HAT) 0.02f * k else 0f)), 0.035f * k)
+                    when (part) {
+                        Part.MOUTH -> {
+                            p.anim.face = Face.OOH
+                            p.anim.faceTime = 0.25f
+                        }
+                        Part.HAT, Part.HAIR, Part.GLASSES, Part.BODY -> {
+                            p.anim.face = Face.WOW
+                            p.anim.faceTime = 0.25f
+                        }
+                        else -> Unit
+                    }
+                }
+                is Person -> {
+                    val seat = sim.freeSeatNear(place, body, body.x, body.y, 0.13f) ?: continue
+                    val point = sim.seatPoint(seat.first, seat.second)
+                    previews += Preview(Offset(point[0], point[1] - 0.01f), 0.045f)
+                }
+            }
+        }
+    }
+
+    private fun DrawScope.drawPreviews(lw: Float) {
+        for (p in previews) {
+            val c = Offset(sx(p.at.x), sy(p.at.y))
+            val pulse = 1f + sin(time * 8f) * 0.12f
+            val r = p.radius * u * pulse
+            drawCircle(Brush.radialGradient(listOf(T.SunTop.copy(alpha = 0.5f), Color.Transparent), c, r * 1.6f), r * 1.6f, c)
+            drawCircle(Color.White.copy(alpha = 0.9f), r, c, style = Stroke(lw * 2.2f))
+            drawCircle(T.Sun, r, c, style = Stroke(lw * 1.2f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(r * 0.35f, r * 0.25f), time * r)))
+        }
+    }
     private fun heldBody(g: Grab): Body? = when (val t = g.target) {
         is Target.Hold -> t.body
         is Target.FromBag -> t.body
@@ -336,6 +413,21 @@ class Engine(
                 f.type == FixtureType.BATH && f.on && random.nextFloat() < dt * 2f ->
                     particles.add(Particle(PKind.BUBBLE, x + (random.nextFloat() - 0.5f) * 0.3f, f.y - 0.11f, 0f, -0.06f, 1.5f, 0.012f, Color.White))
             }
+        }
+        // Critters: butterflies in the grass by day, birds crossing the sky.
+        val day = night < 0.4f && world.weather == Weather.SUN
+        if (day && (place == PlaceId.FARM || place == PlaceId.FOREST || place == PlaceId.BEACH) && particles.count < 200 && random.nextFloat() < dt * 0.35f) {
+            val fromLeft = random.nextBoolean()
+            val x = if (fromLeft) cam - 0.05f else cam + viewport + 0.05f
+            if (place != PlaceId.BEACH) {
+                particles.add(Particle(PKind.BUTTERFLY, x, 0.62f + random.nextFloat() * 0.2f, if (fromLeft) 0.12f else -0.12f, 0f, 16f, 0.011f, listOf(T.Sun, T.Berry, T.SeaTop, Color.White)[random.nextInt(4)]))
+            } else {
+                particles.add(Particle(PKind.BIRD, x, 0.1f + random.nextFloat() * 0.2f, if (fromLeft) 0.22f else -0.22f, 0f, 14f, 0.014f, Color.White))
+            }
+        }
+        if (place.outdoor && place != PlaceId.BEACH && night < 0.5f && random.nextFloat() < dt * 0.08f) {
+            val fromLeft = random.nextBoolean()
+            particles.add(Particle(PKind.BIRD, if (fromLeft) cam - 0.05f else cam + viewport + 0.05f, 0.08f + random.nextFloat() * 0.18f, if (fromLeft) 0.25f else -0.25f, 0f, 12f, 0.012f, Color.White))
         }
         // Weather motion.
         val snowing = world.weather == Weather.SNOW || place == PlaceId.MOUNTAIN
@@ -786,6 +878,15 @@ class Engine(
             val loud = min(1f, speed / 3f)
             host.sfx(if (body is Person || speed > 2f) Sfx.THUD else Sfx.DROP, 0.25f + loud * 0.5f, 0.9f + random.nextFloat() * 0.2f)
         }
+        if (speed > 2.2f) shake = max(shake, min(1f, speed / (if (body is Person) 4f else 6f)))
+        if (speed > 1.2f) {
+            // Neighbours notice a crash.
+            for (other in world.bodiesIn(place)) {
+                if (other !is Person || other === body || abs(other.x - body.x) > 0.3f || other.anim.face == Face.SLEEP) continue
+                other.anim.face = Face.OOH
+                other.anim.faceTime = 0.6f
+            }
+        }
         if (body is Person && speed > 2.3f) {
             body.anim.face = Face.DIZZY
             body.anim.faceTime = 1.4f
@@ -1036,6 +1137,29 @@ class Engine(
         val weather = if (place == PlaceId.MOUNTAIN && world.weather == Weather.SUN) Weather.SNOW else world.weather
         val pen = Pen(lw, if (motion) time else 0f, night, weather, rainbow)
 
+        val sx0 = if (motion) sin(time * 61f) * shake * dp(6f) else 0f
+        val sy0 = if (motion) sin(time * 47f + 1f) * shake * dp(5f) else 0f
+        withTransform({ translate(sx0, sy0) }) {
+            drawWorld(pen, lw)
+        }
+        drawVignette()
+        drawWeather(weather)
+        drawFlights()
+        drawBag(text, pen)
+        if (flash > 0f) drawRect(Color.White.copy(alpha = flash * 0.85f))
+        drawNameTagsLate(text)
+    }
+
+    private var lateText: List<Body> = emptyList()
+
+    private fun DrawScope.drawNameTagsLate(text: TextMeasurer) = drawNameTags(lateText, text)
+
+    private fun DrawScope.drawVignette() {
+        val r = max(size.width, size.height) * 0.72f
+        drawRect(Brush.radialGradient(listOf(Color.Transparent, Color.Transparent, Ink.line.copy(alpha = 0.2f)), center, r))
+    }
+
+    private fun DrawScope.drawWorld(pen: Pen, lw: Float) {
         drawPlaceBack(place, cam, u, pen)
 
         val fixtures = world.fixturesIn(place).sortedWith(compareBy<Fixture> { if (it.spec.wall) 0 else 1 }.thenBy { it.id })
@@ -1065,18 +1189,15 @@ class Engine(
         }
         drawPlaceFront(place, cam, u, pen)
 
+        drawPreviews(lw)
         for (b in list) if (b.held) {
             drawShadow(b)
             drawBody(b, pen)
         }
 
         particles.draw(this, u, cam, lw)
-        drawNameTags(list, text)
         drawNight(lw)
-        drawWeather(weather)
-        drawFlights()
-        drawBag(text, pen)
-        if (flash > 0f) drawRect(Color.White.copy(alpha = flash * 0.85f))
+        lateText = list
     }
 
     private fun DrawScope.drawShadow(b: Body) {
@@ -1115,6 +1236,12 @@ class Engine(
                 }
             }
             is Thing -> {
+                val speed = hypot(b.vx, b.vy)
+                if (!b.held && !b.resting && speed > 2.2f && motion) {
+                    val c = Offset(sx(b.x), sy(b.y - b.h / 2))
+                    val tail = Offset(sx(b.x - b.vx * 0.05f), sy(b.y - b.h / 2 - b.vy * 0.05f))
+                    drawLine(Brush.linearGradient(listOf(Color.White.copy(alpha = 0f), Color.White.copy(alpha = 0.45f)), tail, c), tail, c, strokeWidth = min(b.w, b.h) * u * 0.7f, cap = StrokeCap.Round)
+                }
                 val bob = if (sim.zeroG(place) && !b.held) sin(time * 1.3f + b.id) * 0.004f else 0f
                 translate(sx(b.x), sy(b.y + bob)) {
                     rotate(b.rot, pivot = Offset(0f, -b.h * u * 0.5f)) {
