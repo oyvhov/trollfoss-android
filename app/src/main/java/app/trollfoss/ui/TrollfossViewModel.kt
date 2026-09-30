@@ -130,11 +130,14 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         music.enabled = settings.music
     }
 
+    private var debugSkip = 0
+
     /** The engine for the place on screen. A new one is made when the child travels. */
     fun engineFor(place: PlaceId, motion: Boolean): Engine {
         engine?.let { cams[it.place] = it.cam }
         val start = cams[place] ?: defaultCam(place)
         return Engine(world, place, sim, this, motion, start).also {
+            it.skip = debugSkip
             engine = it
             radioOn = world.fixturesIn(place).any { f -> f.type == FixtureType.RADIO && f.on }
             updateMusic()
@@ -372,7 +375,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     /** Debug builds only: jump straight to a place or screen for screenshots. */
-    fun debug(placeName: String?, screenName: String?, nightOn: String?, weatherName: String?, secrets: Int, wishes: Boolean = false) {
+    fun debug(placeName: String?, screenName: String?, nightOn: String?, weatherName: String?, secrets: Int, wishes: Boolean = false, skip: Int = 0) {
         placeName?.let { name -> PlaceId.entries.firstOrNull { it.name.equals(name, true) }?.let { travel(it) } }
         when (screenName?.lowercase()) {
             "map" -> open(Screen.Map)
@@ -388,6 +391,8 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
             Secrets.all.take(secrets).forEach { world.found += it.id }
             found = world.found.size
         }
+        debugSkip = skip
+        engine?.skip = skip
         // Everyone in the place wishes for something right away.
         if (wishes) world.people().filter { it.place == place }.forEach { it.anim.nextWish = 0.2f + it.id % 5 * 0.4f }
         splash = false

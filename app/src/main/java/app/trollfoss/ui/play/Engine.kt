@@ -132,6 +132,7 @@ class Engine(
     var rainbow = 0f
     private var flash = 0f
     private val particles = Particles(random)
+    private val sprites = SpriteCache()
 
     /** Where the glimt counter sits on screen, so found stars can fly to it. Set by the HUD. */
     var counterTarget = Offset(0f, 0f)
@@ -1648,8 +1649,39 @@ class Engine(
         drawRect(Brush.radialGradient(listOf(Color.Transparent, Color.Transparent, Ink.line.copy(alpha = 0.2f)), center, r))
     }
 
+    // Debug-only frame profiler: where the drawing time goes, logged every few seconds.
+    private val prof = LongArray(8)
+    private val profTypes = HashMap<String, Long>()
+    private var profFrames = 0
+    private inline fun <T> timed(slot: Int, key: String? = null, block: () -> T): T {
+        if (!app.trollfoss.BuildConfig.DEBUG) return block()
+        val t0 = System.nanoTime()
+        val r = block()
+        val d = System.nanoTime() - t0
+        prof[slot] += d
+        if (key != null) profTypes[key] = (profTypes[key] ?: 0L) + d
+        return r
+    }
+
+    private fun profLog() {
+        if (!app.trollfoss.BuildConfig.DEBUG) return
+        if (++profFrames < 120) return
+        val names = listOf("back", "fixtures", "bodies", "front", "overlay", "particles", "night", "total")
+        val line = names.indices.joinToString(" ") { "${names[it]}=${"%.1f".format(prof[it] / 1e6 / profFrames)}" }
+        val top = profTypes.entries.sortedByDescending { it.value }.take(8).joinToString(" ") { "${it.key}=${"%.2f".format(it.value / 1e6 / profFrames)}" }
+        android.util.Log.d("TrollfossPerf", "$place ms/frame: $line | top: $top")
+        prof.fill(0L)
+        profTypes.clear()
+        profFrames = 0
+    }
+
+    /** Debug-only: layers to leave out when measuring (1 back, 2 fixtures, 4 bodies, 8 front/particles/night). */
+    var skip = 0
+
     private fun DrawScope.drawWorld(pen: Pen, lw: Float) {
-        drawPlaceBack(place, cam, u, pen)
+        val t0 = System.nanoTime()
+        sprites.frame()
+        if (skip and 1 == 0) timed(0) { drawPlaceBack(place, cam, u, pen) }
 
         // One list for furniture, glimt and bodies, sorted back to front.
         layers.clear()
@@ -1664,39 +1696,46 @@ class Engine(
         for (s in sim.visibleSecrets(place)) layers += Layer(glimtKey(s), 2, s)
         val list = drawList()
         for (b in list) if (!b.held) layers += Layer(bodyKey(b), 3, b)
+        if (skip and 2 != 0) layers.removeAll { it.kind < 2 }
+        if (skip and 4 != 0) layers.removeAll { it.kind == 3 }
         layers.sortWith(layerOrder)
         for (l in layers) {
             when (l.kind) {
-                0 -> {
+                0 -> timed(1, f0(l)) {
                     val f = l.ref as Fixture
                     if (f.lift > 0f) drawLifted(f)
                     translate(sx(f.x + f.shiftX), sy(f.y + f.shiftY)) {
                         val bounce = (if (motion) 1f + f.anim * 0.05f else 1f) + f.lift * 0.03f
                         scale(bounce, 2f - bounce + f.lift * 0.06f, pivot = Offset.Zero) {
-                            drawFixtureBack(f, u, pen, if (f.spec.machine == app.trollfoss.domain.Machine.BLENDER || f.spec.machine == app.trollfoss.domain.Machine.CAULDRON || f.spec.machine == app.trollfoss.domain.Machine.BUILD) world.inMachine(f) else emptyList())
+                            val contents = if (f.spec.machine == app.trollfoss.domain.Machine.BLENDER || f.spec.machine == app.trollfoss.domain.Machine.CAULDRON || f.spec.machine == app.trollfoss.domain.Machine.BUILD) world.inMachine(f) else emptyList()
+                            if (!stampFixture(f, 0, pen, contents.isEmpty())) drawFixtureBack(f, u, pen, contents)
                         }
                     }
                 }
-                1 -> {
+                1 -> timed(1, f0(l)) {
                     // The front layer squashes with the back, so a duvet or a bath side stays in place.
                     val f = l.ref as Fixture
                     translate(sx(f.x + f.shiftX), sy(f.y + f.shiftY)) {
                         val bounce = (if (motion) 1f + f.anim * 0.05f else 1f) + f.lift * 0.03f
-                        scale(bounce, 2f - bounce + f.lift * 0.06f, pivot = Offset.Zero) { drawFixtureFront(f, u, pen) }
+                        scale(bounce, 2f - bounce + f.lift * 0.06f, pivot = Offset.Zero) {
+                            if (!stampFixture(f, 1, pen, true)) drawFixtureFront(f, u, pen)
+                        }
                     }
                 }
                 2 -> drawGlimt(l.ref as Secret, lw)
-                else -> {
+                else -> timed(2, if (l.ref is Person) "person" else "thing") {
                     val b = l.ref as Body
                     drawShadow(b)
                     drawBody(b, pen)
                 }
             }
         }
-        drawPlaceFront(place, cam, u, pen)
-        disco()?.let { drawDisco(it) }
-        drawHints(lw)
-        for (b in list) if (b is Person && !b.held) drawBubbles(b, pen)
+        if (skip and 8 == 0) timed(3) { drawPlaceFront(place, cam, u, pen) }
+        timed(4) {
+            disco()?.let { drawDisco(it) }
+            drawHints(lw)
+            for (b in list) if (b is Person && !b.held) drawBubbles(b, pen)
+        }
 
         drawPreviews(lw)
         for (b in list) if (b.held) {
@@ -1704,10 +1743,16 @@ class Engine(
             drawBody(b, pen)
         }
 
-        particles.draw(this, u, cam, lw)
-        drawNight(lw)
+        timed(5) { particles.draw(this, u, cam, lw) }
+        timed(6) { drawNight(lw) }
         lateText = list
+        if (app.trollfoss.BuildConfig.DEBUG) {
+            prof[7] += System.nanoTime() - t0
+            profLog()
+        }
     }
+
+    private fun f0(l: Layer): String? = if (app.trollfoss.BuildConfig.DEBUG) (l.ref as Fixture).type.name else null
 
     private class Layer(val key: Float, val kind: Int, val ref: Any)
     private val layers = ArrayList<Layer>(128)
@@ -1765,7 +1810,7 @@ class Engine(
                 translate(sx(b.x), sy(b.y + bob)) {
                     rotate(b.rot, pivot = Offset(0f, -b.h * u * 0.5f)) {
                         scale((1f + sq * 0.25f) * pop, (1f - sq * 0.25f) * pop, pivot = Offset.Zero) {
-                            drawThing(b.type, b.variant, b.used, b.w * u, b.h * u, pen, b.cook)
+                            if (!stampThing(b, pen)) drawThing(b.type, b.variant, b.used, b.w * u, b.h * u, pen, b.cook)
                         }
                     }
                 }
@@ -1896,6 +1941,47 @@ class Engine(
                 drawRect(Color.White.copy(alpha = alpha), Offset(cx - dp(6f), by - dp(3f)), Size(dp(12f), dp(3f)))
                 drawText(layout, topLeft = Offset(cx - layout.size.width / 2f, by - h + dp(5f)))
             }
+        }
+    }
+
+    // ---------------------------------------------------------------------------------- sprites
+
+    /** What a piece of furniture looks like right now, as far as its picture goes. */
+    private data class FixtureLook(
+        val type: FixtureType, val variant: Int, val layer: Int, val open: Boolean, val on: Boolean, val mode: Int, val count: Int,
+        val night: Int, val weather: Weather, val rainbow: Int, val size: Int,
+    )
+
+    private data class ThingLook(val type: ThingType, val variant: Int, val used: Int, val night: Int, val weather: Weather, val rainbow: Int, val size: Int)
+
+    /** Stamps a cached picture of [f]'s [layer] (0 back, 1 front); false when it must be drawn live. */
+    private fun DrawScope.stampFixture(f: Fixture, layer: Int, pen: Pen, empty: Boolean): Boolean {
+        if (!empty || f.anim > 0.01f || f.lift > 0f || f.type in LIVE_FIXTURES || (f.on && f.type in LIVE_WHEN_ON)) return false
+        val look = FixtureLook(f.type, f.variant, layer, f.open, f.on, f.mode, f.count, (pen.night * 10f).toInt(), pen.weather, (pen.rainbow * 5f).toInt(), u.toInt())
+        val w = f.spec.w * u
+        val h = f.spec.h * u
+        val bounds = Rect(-w / 2 - 0.14f * u, -h - 0.4f * u, w / 2 + 0.34f * u, 0.12f * u)
+        val night = look.night / 10f
+        val rainbow = look.rainbow / 5f
+        return with(sprites) {
+            stamp(look, bounds, pen.t) { t ->
+                val p = Pen(pen.lw, t, night, pen.weather, rainbow)
+                if (layer == 0) drawFixtureBack(f, u, p, emptyList()) else drawFixtureFront(f, u, p)
+            }
+        }
+    }
+
+    private fun DrawScope.stampThing(b: Thing, pen: Pen): Boolean {
+        if (b.cook != 0f) return false
+        val look = ThingLook(b.type, b.variant, b.used, (pen.night * 10f).toInt(), pen.weather, (pen.rainbow * 5f).toInt(), u.toInt())
+        val w = b.w * u
+        val h = b.h * u
+        val pad = max(w, h) * 0.6f + pen.lw * 6f
+        val bounds = Rect(-w / 2 - pad, -h - pad * 1.4f, w / 2 + pad * 1.4f, pad)
+        val night = look.night / 10f
+        val rainbow = look.rainbow / 5f
+        return with(sprites) {
+            stamp(look, bounds, pen.t) { t -> drawThing(b.type, b.variant, b.used, w, h, Pen(pen.lw, t, night, pen.weather, rainbow), 0f) }
         }
     }
 
@@ -2228,6 +2314,19 @@ class Engine(
     private companion object {
         /** Piano keys on a friendly pentatonic scale, in semitones from middle C an octave up. */
         val PENTATONIC = intArrayOf(-12, -10, -8, -5, -3, 0, 2, 4, 7, 9)
+
+        /** Furniture whose picture follows moving parts (angles, wheels, rides): always drawn live. */
+        val LIVE_FIXTURES = setOf(
+            FixtureType.ORRERY, FixtureType.UMBRELLA, FixtureType.PINE_TREE, FixtureType.KELP, FixtureType.FERRIS_WHEEL,
+            FixtureType.CAROUSEL, FixtureType.DISCO_BALL, FixtureType.SUBMARINE, FixtureType.BUMPER_CAR, FixtureType.TRACTOR,
+            FixtureType.SLED_HILL, FixtureType.SKI_JUMP, FixtureType.CART, FixtureType.BOAT, FixtureType.OWL_TREE,
+        )
+
+        /** Furniture that animates from its own timers while it is on. */
+        val LIVE_WHEN_ON = setOf(
+            FixtureType.OVEN, FixtureType.DRYER_HOOD, FixtureType.FISHING_SPOT, FixtureType.BLENDER, FixtureType.CAULDRON,
+            FixtureType.ROCKET_SHIP, FixtureType.XRAY, FixtureType.CHECKOUT,
+        )
 
         /** Seconds a finger must rest on furniture before it can be moved. */
         const val LONG_PRESS = 0.45f
