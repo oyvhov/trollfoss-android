@@ -107,8 +107,9 @@ enum class FixtureType {
                 surfaces = listOf(SurfaceSpec(-0.17f, 0.17f, -0.105f)),
                 spots = listOf(SpotSpec(0.02f, -0.105f, Pose.LIE)),
             )
-            SOFA -> FixtureSpec(0.40f, 0.17f, spots = listOf(seat(-0.09f, -0.075f), seat(0.09f, -0.075f)))
-            CHAIR -> FixtureSpec(0.10f, 0.20f, spots = listOf(seat(0f, -0.085f)))
+            // Seats are also surfaces, so a teddy (or a whoopee cushion) can wait on them.
+            SOFA -> FixtureSpec(0.40f, 0.17f, surfaces = listOf(SurfaceSpec(-0.16f, 0.16f, -0.075f)), spots = listOf(seat(-0.09f, -0.075f), seat(0.09f, -0.075f)))
+            CHAIR -> FixtureSpec(0.10f, 0.20f, surfaces = listOf(SurfaceSpec(-0.04f, 0.04f, -0.085f)), spots = listOf(seat(0f, -0.085f)))
             STOOL -> FixtureSpec(
                 0.08f, 0.12f,
                 surfaces = listOf(SurfaceSpec(-0.035f, 0.035f, -0.12f)),
@@ -226,7 +227,7 @@ enum class FixtureType {
             )
             FLOUR_SACK -> FixtureSpec(0.11f, 0.13f, machine = Machine.DISPENSER)
 
-            SALON_CHAIR -> FixtureSpec(0.14f, 0.20f, spots = listOf(seat(0f, -0.10f)))
+            SALON_CHAIR -> FixtureSpec(0.14f, 0.20f, surfaces = listOf(SurfaceSpec(-0.05f, 0.05f, -0.10f)), spots = listOf(seat(0f, -0.10f)))
             DRYER_HOOD -> FixtureSpec(0.14f, 0.34f, front = true, spots = listOf(seat(0f, -0.09f)))
             HAIR_WASH -> FixtureSpec(0.18f, 0.19f, spots = listOf(seat(0f, -0.08f)))
             CLOTHES_RACK -> FixtureSpec(0.32f, 0.30f, machine = Machine.DISPENSER)
@@ -262,7 +263,7 @@ enum class FixtureType {
                 dropZone = RRect(-0.08f, -0.28f, 0.08f, -0.05f),
                 light = RRect(-0.5f, -0.6f, 0.5f, 0.1f),
             )
-            LOG -> FixtureSpec(0.26f, 0.08f, spots = listOf(seat(-0.07f, -0.07f), seat(0.07f, -0.07f)))
+            LOG -> FixtureSpec(0.26f, 0.08f, surfaces = listOf(SurfaceSpec(-0.12f, 0.12f, -0.07f)), spots = listOf(seat(-0.07f, -0.07f), seat(0.07f, -0.07f)))
             STUMP -> FixtureSpec(
                 0.09f, 0.08f,
                 surfaces = listOf(SurfaceSpec(-0.04f, 0.04f, -0.08f)),
@@ -287,7 +288,7 @@ enum class FixtureType {
                 machine = Machine.FOUNTAIN,
                 dropZone = RRect(-0.06f, -0.14f, 0.06f, 0.01f),
             )
-            BENCH -> FixtureSpec(0.32f, 0.12f, spots = listOf(seat(-0.08f, -0.07f), seat(0.08f, -0.07f)))
+            BENCH -> FixtureSpec(0.32f, 0.12f, surfaces = listOf(SurfaceSpec(-0.15f, 0.15f, -0.07f)), spots = listOf(seat(-0.08f, -0.07f), seat(0.08f, -0.07f)))
             COCOA_STAND -> FixtureSpec(0.22f, 0.34f, surfaces = listOf(SurfaceSpec(-0.1f, 0.1f, -0.15f)), machine = Machine.DISPENSER)
             TRACTOR -> FixtureSpec(0.52f, 0.36f, front = true, spots = listOf(seat(-0.07f, -0.19f)))
             HAY_BALE -> FixtureSpec(

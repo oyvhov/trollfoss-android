@@ -144,6 +144,10 @@ object Places {
                     t(ThingType.GUITAR, 2.04f, 0.93f),
                     t(ThingType.CANDLE, 2.33f, 0.63f, on = 14),
                     t(ThingType.PLANT_POT, 2.14f, 0.63f, on = 14),
+                    // Jokes: a whoopee cushion on the free half of the sofa, pepper by the bread, a banana.
+                    t(ThingType.WHOOPEE, 1.47f, 0.825f, 0, on = 7),
+                    t(ThingType.PEPPER, 3.38f, 0.77f, on = 20),
+                    t(ThingType.BANANA, 2.62f, 0.67f, on = 15),
                 ),
                 people = listOf(
                     PersonDef(Species.FOLK, Look(skin = 2, height = 1.14f, hair = 1, hairColor = 1, top = 1, topColor = 6, bottom = 0, bottomColor = 11, shoes = 12, extra = 2), 1.3f, seat = 7 to 0, name = "Øyvind"),
@@ -191,6 +195,8 @@ object Places {
                     t(ThingType.JUICE, 2.74f, 0.76f, on = 15),
                     t(ThingType.WAFFLE, 2.67f, 0.76f, on = 15),
                     t(ThingType.BANANA, 0.3f, 0.96f),
+                    t(ThingType.WHOOPEE, 2.34f, 0.815f, 1, on = 13),
+                    t(ThingType.PEPPER, 1.2f, 0.73f, on = 4),
                 ),
                 people = listOf(
                     PersonDef(Species.FOLK, Look(skin = 6, height = 1.03f, hair = 1, hairColor = 0, top = 0, topColor = 9, bottom = 0, bottomColor = 11, shoes = 11, extra = 3), 1.22f, y = 0.86f, hat = ThingType.CHEF_HAT, name = "Sondre"),

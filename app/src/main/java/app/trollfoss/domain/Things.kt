@@ -148,6 +148,14 @@ enum class ThingType(
     DRAGON_EGG(0.05f, 0.065f, Cat.MAGIC, glows = true),
     /** A real planet as a toy. Variant: 0 Mercury, 1 Venus, 2 Earth, 3 Moon, 4 Mars, 5 Jupiter, 6 Saturn, 7 Uranus, 8 Neptune, 9 Pluto. */
     PLANET(0.07f, 0.07f, Cat.MAGIC, bounce = 0.6f, rolls = true, variants = 10),
+
+    // Jokes
+    /** Sit on it and it says «prrrt». */
+    WHOOPEE(0.085f, 0.03f, Cat.TOY, bounce = 0.4f, variants = 2),
+    /** Left over after a banana. Whoever lands on it slips. */
+    BANANA_PEEL(0.075f, 0.022f, Cat.NATURE),
+    /** A pinch at the nose and … atsjo! */
+    PEPPER(0.028f, 0.06f, Cat.HOME),
     ;
 
     /** Head width of a grown-up figure; hats and glasses are drawn at this size and scaled to fit a head. */

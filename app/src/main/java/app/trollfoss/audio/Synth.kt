@@ -14,6 +14,9 @@ enum class Sfx {
     SPLASH, SIZZLE, DING, WHIRR, SNIP, SPRAY, FLUSH, SQUEAK, ZIP, SHUTTER, FANFARE, CLICK, NOTE, DRUM, RING,
     HORN, OWL, CUCKOO, REGISTER, POP, WHOOSH, CHIME, BUBBLE, BLOOP, TICK, FIREWORK, COIN, PAGE, SWISH, OPEN,
     SHUT, VROOM, MEOW, WOOF, CHIRP, ROAR, SNORE, MOO, BAA, CLUCK, NEIGH, BEEP, RUMBLE,
+
+    // Silly ones: humour is half the game.
+    BURP, HICCUP, PRRT, SNEEZE, SLIP, BONK, TICKLE, SPLAT,
 }
 
 /**
@@ -272,6 +275,47 @@ object Synth {
         Sfx.BEEP -> listOf(
             Tone(1200.0, 0.0, 0.09, 0.35, soft, decay = 8.0),
             Tone(1600.0, 0.1, 0.09, 0.3, soft, decay = 8.0),
+        )
+        // A deep, rolling «rrraap».
+        Sfx.BURP -> listOf(
+            Tone(118.0, 0.0, 0.55, 0.55, vowelO, decay = 1.6, slideTo = 86.0, vibrato = 1.6, vibratoHz = 24.0, attack = 0.03),
+            Tone(236.0, 0.0, 0.55, 0.25, buzzy, decay = 2.0, slideTo = 170.0, vibrato = 1.6, vibratoHz = 24.0, attack = 0.03),
+            Noise(0.0, 0.5, 0.18, 500.0, 300.0, decay = 2.5, seed = 12),
+        )
+        // «Hikk!»
+        Sfx.HICCUP -> listOf(
+            Tone(760.0, 0.0, 0.08, 0.5, vowelE, decay = 18.0, slideTo = 1250.0, attack = 0.004),
+            Noise(0.0, 0.03, 0.3, 2600.0, decay = 90.0, seed = 13),
+        )
+        // The whoopee cushion: a long flapping raspberry that droops at the end.
+        Sfx.PRRT -> listOf(
+            Tone(150.0, 0.0, 0.85, 0.55, buzzy, decay = 1.1, slideTo = 92.0, vibrato = 3.5, vibratoHz = 34.0, attack = 0.02),
+            Tone(300.0, 0.0, 0.85, 0.2, buzzy, decay = 1.3, slideTo = 180.0, vibrato = 3.5, vibratoHz = 34.0, attack = 0.02),
+            Noise(0.0, 0.8, 0.2, 400.0, 250.0, decay = 1.5, seed = 14),
+        )
+        // «Ah … ah … ATSJO!»
+        Sfx.SNEEZE -> listOf(
+            Tone(420.0, 0.0, 0.26, 0.35, vowelE, decay = 2.0, slideTo = 520.0, attack = 0.04),
+            Tone(520.0, 0.34, 0.3, 0.4, vowelE, decay = 2.0, slideTo = 680.0, attack = 0.04),
+            Noise(0.72, 0.32, 0.9, 5200.0, 1600.0, decay = 8.0, attack = 0.002, seed = 15),
+            Tone(620.0, 0.72, 0.28, 0.5, vowelO, decay = 8.0, slideTo = 300.0, attack = 0.002),
+        )
+        // A slide whistle up, then a woody bonk.
+        Sfx.SLIP -> listOf(
+            Tone(420.0, 0.0, 0.42, 0.42, soft, decay = 1.0, slideTo = 1700.0, vibrato = 0.2, vibratoHz = 8.0, attack = 0.02),
+            Tone(620.0, 0.5, 0.12, 0.5, pluck, decay = 22.0, slideTo = 440.0),
+            Noise(0.5, 0.05, 0.3, 1200.0, decay = 60.0, seed = 16),
+        )
+        Sfx.BONK -> listOf(
+            Tone(560.0, 0.0, 0.16, 0.6, pluck, decay = 22.0, slideTo = 420.0),
+            Tone(1120.0, 0.0, 0.08, 0.2, soft, decay = 40.0),
+            Noise(0.0, 0.03, 0.35, 1800.0, decay = 90.0, seed = 17),
+        )
+        // A helpless giggle fit.
+        Sfx.TICKLE -> syllables(9, 820.0, -22.0, 0.065, 0.025, vowelE, 0.38, seed = 21)
+        Sfx.SPLAT -> listOf(
+            Noise(0.0, 0.22, 0.8, 900.0, 250.0, decay = 12.0, seed = 18),
+            Tone(160.0, 0.0, 0.14, 0.4, soft, decay = 20.0, slideTo = 70.0),
         )
         Sfx.RUMBLE -> listOf(
             Noise(0.0, 1.2, 0.6, 120.0, 320.0, swell = true, seed = 9),

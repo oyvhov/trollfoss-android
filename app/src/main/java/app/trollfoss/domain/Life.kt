@@ -165,10 +165,17 @@ class Life(private val sim: Sim, private val random: Random) {
         if (!free) {
             a.still = 0f
             a.walkTo = Float.NaN
+            a.chase = -1
             return
         }
         a.still += dt
         if (a.still < SETTLE_SECONDS) return
+        // Food on the floor? The dog can't resist, the hens peck up seeds, the puffin grabs fish.
+        if (a.chase < 0) snack(place, p)?.let { food ->
+            a.chase = food.id
+            a.walkTo = food.x
+            a.walkGround = sim.groundOf(place, food)
+        }
         if (a.walkTo.isNaN()) {
             a.nextWalk -= dt
             if (a.nextWalk > 0f) return
@@ -186,14 +193,38 @@ class Life(private val sim: Sim, private val random: Random) {
         if (d < 0.004f) {
             a.walkTo = Float.NaN
             a.walkPhase = 0f
+            (world.bodies[a.chase] as? Thing)?.let { food ->
+                if (food.place == place && food.mode == Mode.FREE && !food.held && abs(food.x - p.x) < 0.06f) {
+                    sim.listener.onFx(Fx.GOBBLE, food.x, food.y, thing = food, param = p.id)
+                    sim.removeThing(food, quiet = true)
+                }
+            }
+            a.chase = -1
             return
         }
-        val step = min(d, speedOf(p.species) * dt)
+        val step = min(d, speedOf(p.species) * (if (a.chase >= 0) 2.2f else 1f) * dt)
         p.x += dx / d * step
         p.ground += dg / d * step
         p.y = p.ground
         if (abs(dx) > 0.004f) a.facing = if (dx < 0f) -1f else 1f
         a.walkPhase += step / (p.h * 0.18f)
+        sim.jokes.stepped(place, p)
+    }
+
+    /** Something tasty lying on the floor close by that this animal would go for. */
+    private fun snack(place: PlaceId, p: Person): Thing? {
+        val likes: (ThingType) -> Boolean = when (p.species) {
+            Species.DOG -> { t -> t.cat == Cat.FOOD && t != ThingType.DOUGH && t != ThingType.EGG }
+            Species.CAT, Species.PUFFIN -> { t -> t == ThingType.FISH || t == ThingType.GRILLED_FISH }
+            Species.CHICKEN -> { t -> t == ThingType.SEEDS }
+            else -> return null
+        }
+        val ground = sim.groundOf(place, p)
+        return world.bodiesIn(place).asSequence()
+            .filterIsInstance<Thing>()
+            .filter { it.mode == Mode.FREE && it.resting && !it.held && it.restOwner == -1 && likes(it.type) }
+            .filter { abs(it.x - p.x) < 0.9f && abs(sim.groundOf(place, it) - ground) < 0.15f && sim.poolAt(it.x, it.y) == null }
+            .minByOrNull { abs(it.x - p.x) }
     }
 
     private fun speedOf(s: Species): Float = when (s) {

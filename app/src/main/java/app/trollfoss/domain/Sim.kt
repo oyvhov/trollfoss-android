@@ -24,6 +24,9 @@ enum class Fx {
     CAST, CATCH, FLUSH, WISH, KEY, TICK, CUCKOO, TOOT, BUILD, CRUMBLE, OWL, SHAKE, PUSH, SLIDE, SPARKLE,
     PAGE, LOOK, REGISTER, PUMP, DRY, WATER, HATCH, GIFT, POOF, SPIN, BOING, SQUEAK, STRUM, DRUM, RING,
     VROOM, FIREWORK, HOP, CURTAIN, WHEE, CRACK, BEEP, RUMBLE, LAUNCH, GROW, HARVEST, HAMMER, GRAVITY,
+
+    // Slapstick; param is the figure it happened to.
+    PRRT, SLIP, ATSJO, PEPPER, BONK, FLUFF, SPLAT, BURP, HICCUP, GOBBLE,
 }
 
 interface SimListener {
@@ -39,7 +42,7 @@ interface SimListener {
 }
 
 /** What happened when a thing was given to a figure. */
-enum class Give { ATE, FINISHED, DRANK, POTION, WORE, HELD, HAIR, DRESSED, NONE }
+enum class Give { ATE, FINISHED, DRANK, POTION, WORE, HELD, HAIR, DRESSED, SNEEZE, NONE }
 
 /**
  * The rules of the island: gravity, water, cupboards, seats, machines and what figures do with
@@ -56,6 +59,9 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
 
     /** Wishes and wandering animals. */
     val life = Life(this, random)
+
+    /** Whoopee cushions, banana peels, sneezes and bonks. */
+    val jokes = Jokes(this, random)
     private var pools: List<Pool> = emptyList()
 
     fun invalidate(place: PlaceId) {
@@ -182,6 +188,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         val list = surfaces(place)
         for (b in world.bodiesIn(place)) {
             b.age += dt
+            if (b.cool > 0f) b.cool = max(0f, b.cool - dt)
             b.squashV += (-b.squash * 260f - b.squashV * 15f) * dt
             b.squash += b.squashV * dt
             when (b.mode) {
@@ -257,6 +264,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         b.vx *= exp(-0.2f * dt)
         b.vrot *= exp(-0.8f * dt)
         b.rot += b.vrot * dt
+        if (b is Thing && jokes.flying(place, b)) return
         val oldY = b.y
         var newY = b.y + b.vy * dt
         b.x += b.vx * dt
@@ -378,6 +386,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                 if (!(b is Thing && b.type.rolls) && !s.slippery) b.vx *= 0.35f
                 b.squashV += impact * 5f
                 listener.onLand(b, impact)
+                if (b is Person) jokes.landed(place, b)
             }
         }
     }
@@ -409,6 +418,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
     }
 
     private fun stepPerson(p: Person, dt: Float) {
+        jokes.step(p, dt)
         if (p.floatTime > 0f) {
             p.floatTime = max(0f, p.floatTime - dt)
             if (p.mode == Mode.FREE && !p.held) p.resting = false
@@ -500,6 +510,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         updatePose(p)
         if (f.type in RIDES) f.timer = 0f
         life.seated(p)
+        p.place?.let { jokes.seated(it, p) }
         return true
     }
 
@@ -1152,6 +1163,8 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                 listener.onFx(Fx.VROOM, t.x, t.y, thing = t)
             }
             ThingType.DUCK -> listener.onFx(Fx.SQUEAK, t.x, t.y - t.h, thing = t)
+            ThingType.WHOOPEE -> jokes.squeeze(t)
+            ThingType.PEPPER -> jokes.shake(place, t)
             ThingType.GUITAR -> listener.onFx(Fx.STRUM, t.x, t.y - t.h / 2, thing = t, param = random.nextInt(4))
             ThingType.DRUM -> listener.onFx(Fx.DRUM, t.x, t.y - t.h, thing = t)
             ThingType.PHONE -> listener.onFx(Fx.RING, t.x, t.y - t.h, thing = t)
@@ -1264,12 +1277,17 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
     fun give(p: Person, t: Thing, part: Part): Give {
         val type = t.type
         val result = giveTo(p, t, part)
-        if (result != Give.NONE) life.given(p, type)
+        if (result != Give.NONE && result != Give.SNEEZE) life.given(p, type)
+        if (result == Give.ATE || result == Give.DRANK || result == Give.FINISHED) jokes.ate(p, type, result, time)
         return result
     }
 
     private fun giveTo(p: Person, t: Thing, part: Part): Give {
         when {
+            t.type == ThingType.PEPPER && (part == Part.MOUTH || part == Part.GLASSES) -> {
+                jokes.pepper(p)
+                return Give.SNEEZE
+            }
             part == Part.MOUTH && t.type.edible -> {
                 t.used++
                 p.anim.chew = 1f

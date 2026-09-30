@@ -35,6 +35,7 @@ import app.trollfoss.domain.Fixture
 import app.trollfoss.domain.FixtureType
 import app.trollfoss.domain.Fx
 import app.trollfoss.domain.Give
+import app.trollfoss.domain.Jokes
 import app.trollfoss.domain.Mode
 import app.trollfoss.domain.Part
 import app.trollfoss.domain.Person
@@ -63,6 +64,7 @@ import app.trollfoss.ui.art.drawThing
 import app.trollfoss.ui.art.groundShadow
 import app.trollfoss.ui.art.headWidth
 import app.trollfoss.ui.art.lighten
+import app.trollfoss.ui.art.shine
 import app.trollfoss.ui.art.starPath
 import app.trollfoss.ui.art.twinkle
 import app.trollfoss.ui.components.Icons
@@ -358,6 +360,8 @@ class Engine(
             a.nameTag = max(0f, a.nameTag - dt)
             a.sayTime = max(0f, a.sayTime - dt)
             if (a.sayTime == 0f) a.chatWith = -1
+            a.spin = max(0f, a.spin - dt / 0.75f)
+            a.tickle = max(0f, a.tickle - dt)
             if (a.cheer > 0f) {
                 a.cheer -= dt
                 if (a.hop == 0f && a.pose == Pose.STAND) a.hopV = 1.7f
@@ -796,7 +800,7 @@ class Engine(
             val p = b as? Person ?: continue
             val k = max(0.6f, p.h / 0.31f)
             val parts = buildList {
-                if (t.type.edible) add(Part.MOUTH to 0.075f)
+                if (t.type.edible || t.type == ThingType.PEPPER) add(Part.MOUTH to (if (t.type == ThingType.PEPPER) 0.09f else 0.075f))
                 if (t.type.slot == Slot.HEAD) add(Part.HAT to 0.1f)
                 if (t.type.slot == Slot.FACE) add(Part.GLASSES to 0.07f)
                 if (t.type == ThingType.GARMENT) add(Part.BODY to 0.1f)
@@ -857,6 +861,13 @@ class Engine(
                 a.faceTime = 0.8f
                 host.sfx(Sfx.POP, 0.5f)
             }
+            Give.SNEEZE -> {
+                // «Ah … ah …» – the sound runs into the «ATSJO!» the sim sets off in a moment.
+                a.face = Face.OOH
+                a.faceTime = 0.8f
+                a.tilt = -8f
+                voice(p, Sfx.SNEEZE, 0.9f, own = true)
+            }
             Give.NONE -> Unit
         }
         host.haptic()
@@ -883,11 +894,20 @@ class Engine(
                 a.taps = if (time - a.lastTap < 1.6f) a.taps + 1 else 1
                 a.lastTap = time
                 if (a.pose == Pose.STAND || a.pose == Pose.FLOAT) a.hopV = 1.9f
-                if (a.taps >= 6) {
+                if (a.taps >= 9) {
                     a.face = Face.DIZZY
                     a.faceTime = 1.8f
                     a.taps = 0
+                    a.tickle = 0f
                     voice(b, Sfx.OOF, 0.8f)
+                } else if (a.taps >= 4) {
+                    // Tickles! A helpless giggle fit, tears of laughter and all.
+                    if (a.tickle < 0.5f) voice(b, Sfx.TICKLE, 0.8f)
+                    a.tickle = 1.8f
+                    a.face = Face.LAUGH
+                    a.faceTime = 1.8f
+                    val eyes = Anatomy.at(b, Part.GLASSES)
+                    repeat(2) { k -> particles.add(Particle(PKind.DROP, eyes[0] + (if (k == 0) -1f else 1f) * b.h * 0.1f, eyes[1], (if (k == 0) -1f else 1f) * 0.25f, -0.35f, 0.7f, 0.008f, Color(0xFF9ADAFF))) }
                 } else {
                     a.face = if (random.nextBoolean()) Face.LAUGH else Face.GRIN
                     a.faceTime = 1.1f
@@ -1172,6 +1192,103 @@ class Engine(
                 }
             }
             Fx.HOP -> s(Sfx.TAP, 0.4f)
+            Fx.PRRT -> {
+                s(Sfx.PRRT, 0.9f, 0.9f + random.nextFloat() * 0.25f)
+                repeat(6) { particles.add(Particle(PKind.SMOKE, x + (random.nextFloat() - 0.5f) * 0.05f, y - 0.01f, (random.nextFloat() - 0.5f) * 0.25f, -0.05f - random.nextFloat() * 0.1f, 1f, 0.012f, Color(0xFFE9F7D6))) }
+                val sitter = person(param)
+                if (sitter != null) {
+                    faces(sitter, Face.WOW, 0.7f, Face.GRIN, 1.6f)
+                    sitter.anim.hopV = 1.2f
+                    laughAround(x, sitter, 0.55f, 0.9f)
+                } else {
+                    laughAround(x, null, 0.3f, 0.5f)
+                }
+                host.haptic()
+            }
+            Fx.SLIP -> {
+                s(Sfx.SLIP, 0.9f)
+                person(param)?.let { p ->
+                    faces(p, Face.OOH, 0.9f, Face.DIZZY, 1.6f)
+                    pending += (time + 2.5f) to { if (p.anim.face == Face.DIZZY) faces(p, Face.LAUGH, 1.2f, Face.HAPPY, 0.1f) }
+                    laughAround(p.x, p, 0.9f, 0.9f)
+                }
+                host.haptic()
+            }
+            Fx.ATSJO -> {
+                shake = max(shake, 0.45f)
+                repeat(22) {
+                    val a = -PI.toFloat() * (0.15f + random.nextFloat() * 0.7f)
+                    val sp = 0.6f + random.nextFloat() * 0.9f
+                    particles.add(Particle(PKind.DUST, x, y + 0.02f, kotlin.math.cos(a) * sp * (if (it % 2 == 0) 1f else -1f), sin(a) * sp * 0.4f, 0.7f, 0.01f, Color.White))
+                }
+                person(param)?.let { p ->
+                    faces(p, Face.OOH, 0.5f, Face.GRIN, 1.4f)
+                    laughAround(p.x, p, 0.5f, 0.8f)
+                }
+                host.haptic()
+            }
+            Fx.PEPPER -> {
+                s(Sfx.SPRAY, 0.35f, 0.7f)
+                repeat(10) { particles.add(Particle(PKind.CRUMB, x + (random.nextFloat() - 0.5f) * 0.02f, y, (random.nextFloat() - 0.5f) * 0.3f, -0.2f - random.nextFloat() * 0.2f, 0.9f, 0.006f, Color(0xFF4A4452))) }
+            }
+            Fx.BONK -> {
+                s(Sfx.BONK, 0.9f, 0.9f + random.nextFloat() * 0.3f)
+                particles.burst(PKind.STAR, x, y - 0.04f, 6, 0.35f, 0.011f, T.Sun, up = 0.3f, life = 0.8f)
+                person(param)?.let { p ->
+                    faces(p, Face.DIZZY, 0.9f, Face.LAUGH, 1.2f)
+                    voice(p, Sfx.OOF, 0.6f)
+                    laughAround(p.x, p, 0.6f, 0.6f)
+                }
+            }
+            Fx.FLUFF -> {
+                s(Sfx.POOF, 0.7f, 1.3f)
+                repeat(14) { particles.add(Particle(PKind.LEAF, x + (random.nextFloat() - 0.5f) * 0.06f, y + (random.nextFloat() - 0.5f) * 0.06f, (random.nextFloat() - 0.5f) * 0.7f, -0.3f - random.nextFloat() * 0.4f, 2.6f, 0.012f, Color.White, random.nextFloat() * 360f, (random.nextFloat() - 0.5f) * 200f)) }
+                person(param)?.let { p ->
+                    faces(p, Face.OOH, 0.35f, Face.LAUGH, 1.4f)
+                    voiceLater(p, Sfx.GIGGLE)
+                }
+            }
+            Fx.SPLAT -> {
+                s(Sfx.SPLAT, 0.9f)
+                shake = max(shake, 0.25f)
+                particles.burst(PKind.CRUMB, x, y, 16, 0.6f, 0.012f, Color(0xFFFFF4E0), up = 0.2f)
+                particles.burst(PKind.CRUMB, x, y, 6, 0.5f, 0.01f, Color(0xFFFF6F91), up = 0.2f)
+                person(param)?.let { p ->
+                    faces(p, Face.WOW, 1.0f, Face.YUM, 1.4f)
+                    voiceLater(p, Sfx.YUM)
+                    laughAround(p.x, p, 0.4f, 0.9f)
+                }
+                host.haptic()
+            }
+            Fx.BURP -> person(param)?.let { p ->
+                voice(p, Sfx.BURP, 0.9f, own = true)
+                particles.add(Particle(PKind.BUBBLE, x + 0.01f, y, 0.05f, -0.12f, 1.2f, 0.018f, Color.White))
+                faces(p, Face.OOH, 0.6f, Face.GRIN, 1.5f)
+                laughAround(p.x, p, 0.5f, 0.8f)
+            }
+            Fx.HICCUP -> person(param)?.let { p ->
+                voice(p, Sfx.HICCUP, 0.75f, own = true)
+                if (p.anim.pose == Pose.STAND && p.anim.hop == 0f) p.anim.hopV = 1.8f
+                p.anim.face = Face.OOH
+                p.anim.faceTime = 0.3f
+                particles.add(Particle(PKind.BUBBLE, x, y, 0.02f, -0.15f, 0.9f, 0.01f, Color.White))
+            }
+            Fx.GOBBLE -> {
+                s(Sfx.CHOMP, 0.8f)
+                particles.burst(PKind.CRUMB, x, y - 0.02f, 8, 0.4f, 0.008f, Color(0xFFD9A15A), up = 0.1f)
+                person(param)?.let { dog ->
+                    dog.anim.face = Face.YUM
+                    dog.anim.faceTime = 1.4f
+                    dog.anim.hopV = 1.6f
+                    voiceLater(dog, Sfx.YUM)
+                    particles.burst(PKind.HEART, dog.x, dog.y - dog.h, 3, 0.2f, 0.014f, up = 0.3f)
+                    // The owners notice: «hey!» … then they laugh.
+                    for (o in world.bodiesIn(place)) {
+                        if (o !is Person || o.species != Species.FOLK || abs(o.x - x) > 0.9f || o.anim.face == Face.SLEEP) continue
+                        faces(o, Face.OOH, 0.6f, Face.LAUGH, 1.2f)
+                    }
+                }
+            }
             Fx.CURTAIN -> s(Sfx.SWISH, 0.5f, 1.3f)
             Fx.WHEE -> {
                 s(Sfx.WHOOSH, 0.8f)
@@ -1204,8 +1321,8 @@ class Engine(
         }
     }
 
-    private fun voice(p: Person, sfx: Sfx, volume: Float) {
-        val animal = when (p.species) {
+    private fun voice(p: Person, sfx: Sfx, volume: Float, own: Boolean = false) {
+        val animal = if (own) null else when (p.species) {
             Species.CAT -> Sfx.MEOW
             Species.DOG -> Sfx.WOOF
             Species.BUNNY -> Sfx.CHIRP
@@ -1224,7 +1341,39 @@ class Engine(
             Species.FOLK -> p.voice
             else -> p.voice.coerceIn(0.85f, 1.2f)
         }
-        host.sfx(animal ?: sfx, volume, rate)
+        // Silly voices: a balloon in the hand is helium, shrunk figures squeak and giants rumble.
+        val helium = if (world.carried(p).any { it.type == ThingType.BALLOON }) 1.6f else 1f
+        val size = (1f / p.scale).pow(0.7f)
+        host.sfx(animal ?: sfx, volume, (rate * helium * size).coerceIn(0.5f, 2f))
+    }
+
+    private fun person(id: Int): Person? = world.bodies[id] as? Person
+
+    /** Everyone close by laughs, a moment later. At most two voices, so it stays a giggle, not a din. */
+    private fun laughAround(x: Float, except: Person?, delay: Float = 0.45f, reach: Float = 0.7f) {
+        var voices = 0
+        for (o in world.bodiesIn(place)) {
+            if (o !is Person || o === except || abs(o.x - x) > reach || o.anim.face == Face.SLEEP || o.held) continue
+            val loud = voices < 2
+            voices++
+            val wait = delay + random.nextFloat() * 0.3f
+            pending += (time + wait) to {
+                o.anim.face = Face.LAUGH
+                o.anim.faceTime = 1.5f
+                if (o.anim.pose == Pose.STAND) o.anim.hopV = 1.4f
+                if (loud) voice(o, Sfx.GIGGLE, 0.5f)
+            }
+        }
+    }
+
+    /** A face now, another a moment later: surprise first, then a laugh or a sheepish grin. */
+    private fun faces(p: Person, first: Face, firstTime: Float, then: Face, thenTime: Float) {
+        p.anim.face = first
+        p.anim.faceTime = firstTime + 0.05f
+        pending += (time + firstTime) to {
+            p.anim.face = then
+            p.anim.faceTime = thenTime
+        }
     }
 
     // ---------------------------------------------------------------------------------- drawing
@@ -1390,11 +1539,14 @@ class Engine(
                 val bob = (if (a.pose == Pose.FLOAT) sin(time * 1.6f + b.id) * 0.008f else 0f) - step
                 val sway = if (walking) sin(a.walkPhase * PI.toFloat()) * 4f else 0f
                 translate(sx(b.x), sy(b.y - a.hop + bob)) {
-                    rotate(a.tilt + sway + (if (a.pose == Pose.FLOAT) sin(time + b.id) * 6f else 0f), pivot = Offset(0f, -b.h * u * 0.5f)) {
+                    val spin = if (a.spin > 0f) (1f - a.spin) * 360f * (if (b.id % 2 == 0) 1f else -1f) else 0f
+                    val giggle = if (a.tickle > 0f) sin(time * 38f) * 7f * min(1f, a.tickle) else 0f
+                    rotate(a.tilt + sway + spin + giggle + (if (a.pose == Pose.FLOAT) sin(time + b.id) * 6f else 0f), pivot = Offset(0f, -b.h * u * 0.5f)) {
                         scale((1f + sq * 0.22f) * pop * a.facing, (1f - sq * 0.22f) * pop, pivot = Offset.Zero) {
                             val carried = world.carried(b)
                             val holding = carried.any { it.slot == Slot.HAND.ordinal }
                             drawPerson(b.species, b.look, a.pose, a, b.h * u, pen, holding, seed = b.id * 0.37f)
+                            if (a.cream > 0f) drawCream(b, pen)
                             for (t in carried.sortedBy { it.slot }) drawCarried(b, t, pen)
                         }
                     }
@@ -1417,6 +1569,28 @@ class Engine(
                 }
             }
         }
+    }
+
+    /** Cream all over the face after a cake in the face, with a cherry on top. Eyes stay free. */
+    private fun DrawScope.drawCream(p: Person, pen: Pen) {
+        val a = p.anim
+        val alpha = min(1f, a.cream / 0.8f)
+        val f = Anatomy.fraction(p.species, a.pose, Part.HEAD)
+        val c = Offset(f[0] * p.h * u, f[1] * p.h * u)
+        val r = Anatomy.headRadius(p.species) * p.h * u
+        val cream = Color(0xFFFFFBF2).copy(alpha = alpha)
+        val blobs = listOf(-0.62f to 0.3f, 0.62f to 0.3f, 0f to 0.62f, -0.25f to -0.72f, 0.3f to -0.78f, 0f to 0.95f)
+        for ((bx, by) in blobs) {
+            val o = Offset(c.x + bx * r, c.y + by * r)
+            drawCircle(Ink.line.copy(alpha = alpha), r * 0.34f + pen.lw * 0.6f, o)
+        }
+        for ((bx, by) in blobs) drawCircle(cream, r * 0.34f, Offset(c.x + bx * r, c.y + by * r))
+        // Drips, and the cherry.
+        val drip = min(1f, (Jokes.CREAM_SECONDS - a.cream) / 2f)
+        drawLine(cream, Offset(c.x - r * 0.1f, c.y + r * 0.95f), Offset(c.x - r * 0.1f, c.y + r * (1.05f + drip * 0.35f)), strokeWidth = r * 0.14f, cap = StrokeCap.Round)
+        drawCircle(Color(0xFFE8304A).copy(alpha = alpha), r * 0.16f, Offset(c.x + r * 0.3f, c.y - r * 1.02f))
+        drawCircle(Ink.line.copy(alpha = alpha), r * 0.16f, Offset(c.x + r * 0.3f, c.y - r * 1.02f), style = Stroke(pen.lw * 0.8f))
+        shine(Offset(c.x + r * 0.25f, c.y - r * 1.07f), r * 0.08f, r * 0.06f, alpha * 0.9f)
     }
 
     /** Draws a carried thing inside the figure's own transform, so it moves and squashes with it. */
@@ -1490,6 +1664,19 @@ class Engine(
         val head = Anatomy.at(p, Part.HEAD)
         val hat = Anatomy.at(p, Part.HAT)
         val lw = pen.lw
+        // Dizzy: little stars circle the head.
+        if (a.face == Face.DIZZY) {
+            val hw = headWidth(p.species, p.h)
+            for (k in 0 until 3) {
+                val ang = time * 5f + k * 2.094f
+                val depth = sin(ang)
+                val c = Offset(sx(head[0] + kotlin.math.cos(ang) * hw * 0.55f), sy(hat[1] - p.anim.hop + 0.012f + depth * 0.012f))
+                val r = (0.011f + depth * 0.003f) * u
+                val star = starPath(c, r, r * 0.45f, time * 200f)
+                drawPath(star, T.Sun)
+                drawPath(star, Ink.line, style = Stroke(lw * 0.8f))
+            }
+        }
         val w = a.wish
         if (w != null) {
             val born = bubbleBorn[p.id] ?: (time - 1f)

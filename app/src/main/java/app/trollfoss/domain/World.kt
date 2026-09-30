@@ -59,6 +59,9 @@ sealed class Body(val id: Int) {
     /** The fixture this body rests on, -1 for the floor, -2 for nothing. */
     var restOwner = -2
 
+    /** Seconds before this body can bonk someone again. */
+    var cool = 0f
+
     abstract val w: Float
     abstract val h: Float
 }
@@ -130,9 +133,28 @@ class PersonAnim {
     var walkGround = 0f
     var nextWalk = 2f
     var walkPhase = 0f
+    /** The snack an animal is heading for, or -1. */
+    var chase = -1
 
     /** 1 facing right, -1 facing left (animals turn to where they walk). */
     var facing = 1f
+
+    // Slapstick (see Jokes).
+    /** A slip on a banana peel: 1 at the start of the spin, down to 0. */
+    var spin = 0f
+    var slipCool = 0f
+    /** Seconds until «ATSJO!». */
+    var sneeze = 0f
+    /** Seconds until a burp. */
+    var burp = 0f
+    var hiccups = 0f
+    var nextHic = 0f
+    var sips = 0
+    var lastSip = -10f
+    /** Seconds of cream left on the face after a cake in the face. */
+    var cream = 0f
+    /** Seconds left of a helpless giggle fit from tickling. */
+    var tickle = 0f
 }
 
 /**

@@ -181,6 +181,7 @@ object Gifts {
         Made(ThingType.CUPCAKE, 3), Made(ThingType.LOLLIPOP, 1), Made(ThingType.ICE_CREAM, 4), Made(ThingType.WAFFLE),
         Made(ThingType.POTION_RAINBOW), Made(ThingType.POTION_FLOAT), Made(ThingType.DRAGON_EGG), Made(ThingType.VIKING_HELMET),
         Made(ThingType.GARMENT, Garment.pack(5, 6)), Made(ThingType.GARMENT, Garment.pack(2, 8)), Made(ThingType.SWIM_RING), Made(ThingType.PHONE),
+        Made(ThingType.WHOOPEE, 0), Made(ThingType.WHOOPEE, 1), Made(ThingType.PEPPER), Made(ThingType.BANANA),
     )
 
     /** The same day always gives the same gift, so it feels like a real delivery. */

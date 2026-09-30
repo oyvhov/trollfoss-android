@@ -193,6 +193,11 @@ private fun DrawScope.thing(type: ThingType, v: Int, used: Int, w: Float, h: Flo
     ThingType.STAR_JAR -> thStarJar(w, h, pen)
     ThingType.DRAGON_EGG -> thDragonEgg(cook, w, h, pen)
     ThingType.PLANET -> thPlanet(v, w, h, pen)
+
+    // Jokes
+    ThingType.WHOOPEE -> thWhoopee(v, w, h, pen)
+    ThingType.BANANA_PEEL -> thBananaPeel(w, h, pen)
+    ThingType.PEPPER -> thPepper(w, h, pen)
 }
 
 // ------------------------------------------------------------------ bites and cooking
