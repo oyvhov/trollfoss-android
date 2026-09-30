@@ -37,6 +37,9 @@ enum class Fx {
     // Figures acting on their own: settling in a seat or bed, getting up again.
     SETTLE, WAKE,
 
+    // Heileberget: the cable car, the echo, the eagle and the summit.
+    CABLE, ARRIVE, ECHO, SCREECH, SUMMIT,
+
     // Easter eggs.
     QUAKE, KING, DUCK, STARRAIN, JIG,
 }
@@ -1659,7 +1662,8 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     /** Furniture the child may pick up and move. Water-bound and built-in things stay put. */
     fun movable(f: Fixture): Boolean = when (f.type) {
         FixtureType.PIER, FixtureType.FISHING_SPOT, FixtureType.BOAT, FixtureType.ICE_POND, FixtureType.STAGE_PLATFORM,
-        FixtureType.SHIPWRECK -> false
+        FixtureType.SHIPWRECK, FixtureType.CABLE_CAR, FixtureType.CABLE_STATION, FixtureType.ROCK_LEDGE, FixtureType.SUMMIT_ROCK,
+        FixtureType.ECHO_ROCK, FixtureType.MOUNTAIN_HUT, FixtureType.EAGLE_NEST, FixtureType.SUMMIT_FLAG -> false
         // Small things on furniture (the radio on the table) go with their furniture; running rides wait.
         else -> f.host < 0 && !(f.on && f.type in MOVING)
     }
@@ -1752,7 +1756,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         const val GROW_SECONDS = 6f
         const val PORTHOLE_VIEWS = 6
         val RIDES = setOf(FixtureType.SLED_HILL, FixtureType.SKI_JUMP)
-        val MOVING = setOf(FixtureType.ROCKET_SHIP, FixtureType.SUBMARINE, FixtureType.FERRIS_WHEEL, FixtureType.CAROUSEL, FixtureType.BUMPER_CAR, FixtureType.TRACTOR)
+        val MOVING = setOf(FixtureType.CABLE_CAR, FixtureType.ROCKET_SHIP, FixtureType.SUBMARINE, FixtureType.FERRIS_WHEEL, FixtureType.CAROUSEL, FixtureType.BUMPER_CAR, FixtureType.TRACTOR)
         const val GRAVITY = 5.2f
         const val MAX_THINGS = 70
         const val TV_CHANNELS = 6

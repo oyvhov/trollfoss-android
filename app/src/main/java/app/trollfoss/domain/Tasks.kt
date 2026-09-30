@@ -4,7 +4,7 @@ package app.trollfoss.domain
 enum class Deed {
     MADE, ATE, WORE, DRESSED, HAIRCUT, SEATED, FED, BROUGHT, PHOTO, SECRET, WISH, TIDY, PAINT, FURNISH,
     PRRT, SNEEZE, SLIP, SPLAT, BURP, CATCH, BREW, WHEE, SCAN, XRAY, HEART, SING, DISCO, INK, LAUNCH,
-    GRAVITY, HARVEST, BUILD, VROOM, HATCH, KNOCK, BOUNCE, SNOWMAN, GIFT,
+    GRAVITY, HARVEST, BUILD, VROOM, HATCH, KNOCK, BOUNCE, SNOWMAN, GIFT, CABLE, ECHO, SUMMIT,
 }
 
 /**
@@ -110,6 +110,9 @@ class TaskBook(private val world: World) {
             Task("feed_horse", PlaceId.FARM, 1, thing = ThingType.CARROT, species = Species.HORSE) { d, _, _, _, s -> d == Deed.FED && s in setOf(Species.HORSE, Species.COW, Species.SHEEP) },
             Task("hatch", PlaceId.FOREST, 1, thing = ThingType.DRAGON_EGG, match = deed(Deed.HATCH)),
             Task("marshmallow", PlaceId.FOREST, 1, FixtureType.CAMPFIRE, ThingType.TOASTED_MARSHMALLOW) { d, _, t, _, _ -> d == Deed.MADE && t == ThingType.TOASTED_MARSHMALLOW },
+            Task("cable_car", PlaceId.HEILEBERGET, 1, FixtureType.CABLE_CAR, match = deed(Deed.CABLE)),
+            Task("echo", PlaceId.HEILEBERGET, 1, FixtureType.ECHO_ROCK, icon = "note", match = deed(Deed.ECHO)),
+            Task("summit", PlaceId.HEILEBERGET, 1, FixtureType.SUMMIT_FLAG, match = deed(Deed.SUMMIT)),
             Task("ski_jump", PlaceId.MOUNTAIN, 1, FixtureType.SKI_JUMP) { d, _, _, f, _ -> d == Deed.WHEE && f == FixtureType.SKI_JUMP },
             Task("snowman", PlaceId.MOUNTAIN, 1, FixtureType.SNOWMAN, match = deed(Deed.SNOWMAN)),
             Task("bedtime", PlaceId.HOME, 1, FixtureType.BED, icon = "zzz") { d, _, _, f, _ -> d == Deed.SEATED && f in setOf(FixtureType.BED, FixtureType.BUNK_BED) },

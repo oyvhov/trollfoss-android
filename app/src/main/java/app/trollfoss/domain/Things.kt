@@ -171,6 +171,12 @@ enum class ThingType(
     STETHOSCOPE(0.07f, 0.07f, Cat.TOOL),
     MICROPHONE(0.025f, 0.08f, Cat.TOY),
     PEARL(0.025f, 0.025f, Cat.MAGIC, glows = true, rolls = true),
+
+    // Heileberget
+    /** Worn at the eyes, like glasses: everything is far away. */
+    BINOCULARS(0.11f, 0.06f, Cat.GLASSES),
+    /** Hot cocoa in a steel flask; three sips. */
+    THERMOS(0.035f, 0.085f, Cat.DRINK, bites = 3),
     DIVING_MASK(0.14f, 0.07f, Cat.GLASSES),
     ;
 

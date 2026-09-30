@@ -174,7 +174,79 @@ class Attractions(private val sim: Sim, private val random: Random) {
                 }
             }
             FixtureType.DISCO_BALL -> if (f.on) f.angle += dt * 1.4f
+            FixtureType.CABLE_CAR -> cable(place, f, dt)
+            FixtureType.SUMMIT_FLAG -> summit(place, f, dt)
             else -> Unit
+        }
+    }
+
+    // ------------------------------------------------------------------ Heileberget
+
+    /** The cabin glides along its cable between the two stations in about seven seconds. */
+    private fun cable(place: PlaceId, f: Fixture, dt: Float) {
+        if (!f.on) {
+            f.bob = 0f
+            f.angle *= exp(-4f * dt)
+            return
+        }
+        val up = f.mode == 0
+        f.timer = min(1f, f.timer + dt / CABLE_SECONDS)
+        val p = ease(f.timer)
+        val q = if (up) p else 1f - p
+        f.shiftX = CABLE_TRAVEL * q
+        f.shiftY = -CABLE_RISE * q
+        // The cabin sways a little under its cable, and more when it sets off and stops.
+        f.angle = sin(sim.time * 2.1f) * 0.05f + (if (f.timer < 0.12f || f.timer > 0.88f) sin(sim.time * 5f) * 0.05f else 0f)
+        f.bob = sin(sim.time * 3.3f) * 0.003f
+        if (f.timer >= 1f) {
+            f.on = false
+            f.timer = 0f
+            f.mode = if (up) 1 else 0
+            f.shiftX = if (up) CABLE_TRAVEL else 0f
+            f.shiftY = if (up) -CABLE_RISE else 0f
+            listener.onFx(Fx.ARRIVE, f.x + f.shiftX, f.y + f.shiftY - 0.1f, f)
+            var rode = false
+            for (spot in f.spec.spots.indices) {
+                val rider = world.seatedAt(f, spot) ?: continue
+                rode = true
+                // Out onto the platform, with a hop.
+                val feet = sim.seatPoint(f, spot)
+                rider.mode = Mode.FREE
+                rider.holder = -1
+                rider.x = feet[0] + (if (spot == 0) -0.04f else 0.04f)
+                rider.y = feet[1] - 0.02f
+                rider.ground = f.depth + 0.02f
+                rider.vy = -0.9f
+                rider.vx = if (up) 0.35f else -0.35f
+                rider.resting = false
+                rider.restOwner = -2
+                rider.anim.hopV = 1.5f
+            }
+            if (rode && up) {
+                sim.unlock("berg_cable")
+                sim.tasks.record(Deed.CABLE, place, fixture = f.type)
+            }
+        }
+    }
+
+    /** The flag goes up when someone stands on the summit, and comes down again when the summit is empty. */
+    private fun summit(place: PlaceId, f: Fixture, dt: Float) {
+        val someone = world.bodiesIn(place).any { it is Person && it.resting && !it.held && it.restOwner == f.host }
+        if (someone) {
+            f.timer = 0f
+            if (f.mode == 0) {
+                f.mode = 1
+                f.anim = 1f
+                listener.onFx(Fx.SUMMIT, f.x, f.y - f.spec.h, f)
+                sim.unlock("berg_top")
+                sim.tasks.record(Deed.SUMMIT, place, fixture = f.type)
+            }
+        } else if (f.mode == 1) {
+            f.timer += dt
+            if (f.timer > 6f) {
+                f.mode = 0
+                f.timer = 0f
+            }
         }
     }
 
@@ -268,6 +340,41 @@ class Attractions(private val sim: Sim, private val random: Random) {
                 listener.onFx(Fx.BOOM, f.x, f.y - f.spec.h / 2, f)
                 if (f.count >= 3) sim.unlock("stage_boom")
             }
+            FixtureType.CABLE_CAR -> callCabin(f)
+            FixtureType.CABLE_STATION -> {
+                val cabin = world.fixturesIn(place).firstOrNull { it.type == FixtureType.CABLE_CAR }
+                // A tap on a station rings its bell and calls the cabin if it is at the other end.
+                listener.onFx(Fx.BEEP, f.x, top, f, param = 1)
+                if (cabin != null && !cabin.on && (f.x < place.width / 2f) == (cabin.mode == 1)) callCabin(cabin)
+            }
+            FixtureType.ECHO_ROCK -> {
+                f.count++
+                val shouter = world.bodiesIn(place).filterIsInstance<Person>()
+                    .filter { !it.held && abs(it.x - f.x) < 0.9f && it.mode != Mode.BAG }
+                    .minByOrNull { abs(it.x - f.x) }
+                listener.onFx(Fx.ECHO, f.x, top, f, param = shouter?.id ?: -1)
+                sim.tasks.record(Deed.ECHO, place, fixture = f.type)
+                if (f.count >= 3) sim.unlock("berg_echo")
+            }
+            FixtureType.EAGLE_NEST -> {
+                f.count++
+                listener.onFx(Fx.SCREECH, f.x, f.y - 0.1f, f)
+                // A feather drifts down from the nest.
+                val feather = world.addThing(ThingType.FEATHER, 0, place, f.x, f.y - 0.1f)
+                feather.vx = 0.15f
+                feather.vy = -0.4f
+                feather.ground = (place.back + PlaceId.FRONT) / 2f
+                listener.onSpawn(feather)
+            }
+            FixtureType.SUMMIT_FLAG -> {
+                f.anim = 1f
+                listener.onFx(Fx.BEEP, f.x, top, f, param = 2)
+            }
+            FixtureType.MOUNTAIN_HUT -> {
+                f.open = !f.open
+                sim.invalidate(place)
+                listener.onFx(if (f.open) Fx.OPEN else Fx.CLOSE, f.x, f.y - f.spec.h / 2, f)
+            }
             FixtureType.DISCO_BALL -> {
                 f.on = !f.on
                 listener.onFx(Fx.DISCO, f.x, f.y, f, param = if (f.on) 1 else 0)
@@ -299,6 +406,17 @@ class Attractions(private val sim: Sim, private val random: Random) {
             else -> return false
         }
         return true
+    }
+
+    /** Sets the cabin off towards the other station, if it is standing still. */
+    private fun callCabin(f: Fixture) {
+        if (f.on) {
+            listener.onFx(Fx.BEEP, f.x + f.shiftX, f.y + f.shiftY - f.spec.h, f, param = 0)
+            return
+        }
+        f.on = true
+        f.timer = 0f
+        listener.onFx(Fx.CABLE, f.x + f.shiftX, f.y + f.shiftY - 0.1f, f, param = f.mode)
     }
 
     /** What the tivoli stands hand out. */
@@ -367,6 +485,11 @@ class Attractions(private val sim: Sim, private val random: Random) {
         const val BELT_SPEED = 0.13f
         const val XYLO_BARS = 8
         const val INK_SECONDS = 5f
+
+        /** The cabin's trip: seconds, how far across and how far up (scene units). */
+        const val CABLE_SECONDS = 7f
+        const val CABLE_TRAVEL = 3.15f
+        const val CABLE_RISE = 0.39f
 
         /** A little waltz on the pentatonic scale the piano uses (indices into it). */
         val CAROUSEL_TUNE = intArrayOf(5, 7, 8, 7, 5, 3, 5, 7, 5, 3, 2, 0, 2, 3, 5, 3)
