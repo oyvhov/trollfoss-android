@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import app.trollfoss.domain.PlaceId
+import app.trollfoss.domain.RoomStyle
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -44,17 +45,22 @@ private val stageStatic = Memo { u ->
     StageStatic(buildPlanks(u, -0.3f, 3.8f, back, 0.09f, 83), stars, slats)
 }
 
-internal fun DrawScope.stageBack(st: Stage, pen: Pen) {
+internal fun DrawScope.stageBack(st: Stage, pen: Pen, styles: List<RoomStyle> = emptyList()) {
     val u = st.u
     val t = pen.t
     val n = pen.night
     val back = PlaceId.STAGE.back
     val ss = stageStatic.of(u)
     val glow = 0.6f + 0.4f * n
-    drawRect(
-        Brush.verticalGradient(listOf(Color(0xFF1B0D24), Color(0xFF3E1F4A)), startY = SKY_TOP * u, endY = back * u),
-        Offset(0f, SKY_TOP * u), Size(st.w, (back - SKY_TOP) * u),
-    )
+    val paper = styles.wallOf(0)
+    if (paper > 0) {
+        paperWall(st, paper, back)
+    } else {
+        drawRect(
+            Brush.verticalGradient(listOf(Color(0xFF1B0D24), Color(0xFF3E1F4A)), startY = SKY_TOP * u, endY = back * u),
+            Offset(0f, SKY_TOP * u), Size(st.w, (back - SKY_TOP) * u),
+        )
+    }
     // The starry backdrop behind the stage.
     if (st.sees(STAGE_L, STAGE_R)) {
         val bd = st.rect(0.3f, 0.1f, 1.7f, back)
@@ -69,9 +75,11 @@ internal fun DrawScope.stageBack(st: Stage, pen: Pen) {
     }
     // Acoustic panels on the house side.
     if (st.sees(1.95f, 3.6f)) {
-        drawRect(Color(0xFF4A2657), st.o(1.98f, 0.1f), Size(2f * u, (back - 0.12f) * u))
-        inScene(st) { drawPoints(ss.slats, PointMode.Lines, Color(0xFF5E3470), strokeWidth = 0.02f * u) }
-        drawLine(Ink.line, st.o(1.98f, 0.1f), st.o(3.9f, 0.1f), strokeWidth = pen.lw * 0.7f)
+        if (paper == 0) {
+            drawRect(Color(0xFF4A2657), st.o(1.98f, 0.1f), Size(2f * u, (back - 0.12f) * u))
+            inScene(st) { drawPoints(ss.slats, PointMode.Lines, Color(0xFF5E3470), strokeWidth = 0.02f * u) }
+            drawLine(Ink.line, st.o(1.98f, 0.1f), st.o(3.9f, 0.1f), strokeWidth = pen.lw * 0.7f)
+        }
         houseWall(st, pen)
     }
     skirting(st, pen, back, Color(0xFF2A1433))
@@ -79,7 +87,7 @@ internal fun DrawScope.stageBack(st: Stage, pen: Pen) {
     curtain(st, pen, left = false)
     valance(st, pen)
 
-    plankFloor(st, pen, ss.planks, back, Color(0xFF6A4430))
+    if (styles.floorOf(0) > 0) layFloor(st, styles.floorOf(0), back) else plankFloor(st, pen, ss.planks, back, Color(0xFF6A4430))
     wallShadow(st, back)
     truss(st, pen)
     beams(st, pen)
