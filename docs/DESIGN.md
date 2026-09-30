@@ -1,250 +1,153 @@
-# Topa – designunderlag
+# Trollfoss – designunderlag
 
-> **Topa** er ei lita øy full av liv og løyndommar. Ein digital leikekasse for barn frå 4 til 10 år:
-> ingen reglar, ingen poeng, ingen tap – berre figurar, ting og stader som svarar når du rører dei.
+> **Trollfoss** er ei lita bygd under ein stor foss, der folk, dyr og troll bur saman. Ein digital
+> leikekasse for barn frå 4 til 10 år: ingen reglar, ingen poeng, ingen tap – berre figurar, ting og
+> stader som svarar når du rører dei.
 
-Dette dokumentet er fasiten for korleis Topa skal sjå ut, låte og kjennast. Koden følgjer det, og
-nye idear blir målte mot det. Sjå òg `docs/AI_INSTRUCTIONS.md` for bygg, test og release.
+Dette dokumentet er fasiten for korleis Trollfoss skal sjå ut, låte og kjennast. Levande versjon med
+figurar du kan dra rundt: `docs/design/trollfoss-designunderlag.html`. Teiknereglane for koden ligg i
+`docs/ART_GUIDE.md`, bygg og release i `docs/AI_INSTRUCTIONS.md`.
 
 ---
 
 ## 1. Visjon og haldning
 
-Topa høyrer til sjangeren *digitalt dukkehus* (som Toca Boca World): barnet flyttar figurar og ting
-rundt, finn på historier og oppdagar kva ting gjer. Vi kopierer **ikkje** figurar, stader, namn eller
-grafikk frå andre spel. Topa har sin eigen verd, sin eigen figurstil og eigne idear.
+Trollfoss høyrer til sjangeren *digitalt dukkehus* (som Toca Boca World), men lånar ingenting derifrå:
+ikkje namn, figurar, stader eller grafikk. Verda er nordisk: raude trehus med torvtak, fjord og foss,
+granskog, snøfjell, nordlys, lusekofte og bunad, brunost og vaflar – og troll.
 
-**Fire søyler**
-
-| Søyle | Kva det betyr i praksis |
+| Søyle | I praksis |
 | --- | --- |
-| **Alt er levande** | Ingenting står heilt stille. Figurar pustar, blunkar og ser etter fingeren. Ting sprett, skvisar seg når dei landar og snurrar når dei blir kasta. Skyer driv, fuglar flyg, vatnet bølgjer. |
-| **Alt kan rørast** | Kvar ting kan plukkast opp, kastast, givast til ein figur, puttast i noko eller prøvast på noko. Om ein kombinasjon gir meining for eit barn, skal han gjere *noko*. |
-| **Oppdaging utan press** | Løyndommar (glimt), oppskrifter i trollgryta og dagens pakke gir små mål for dei som vil ha det – utan tidsfrist, poeng eller tap. Dette rettar opp den vanlegaste kritikken av sjangeren: at det blir formålslaust. |
-| **Nordisk varme** | Lusekofte, brunost, vaflar, skillingsbollar, nordlys, vikinghjelm og ei hytte i skogen. Kjent for norske barn, eksotisk for andre. |
+| **Alt er levande** | Figurar pustar, blunkar og ser etter fingeren. Ting skvisar seg når dei landar og snurrar når dei blir kasta. Fossen dundrar, skyer driv, nordlyset bølgjer. |
+| **Alt kan rørast** | Kvar ting kan plukkast opp, kastast, givast til nokon eller puttast i noko. Gir kombinasjonen meining for eit barn, skjer det noko. |
+| **Oppdaging utan press** | 21 løynde glimt, oppskrifter i trollgryta og dagens pakke – små mål for dei som vil, aldri tidsfrist, poeng eller tap. |
+| **Nordisk og litt magisk** | Kjent for norske barn, eksotisk for andre. Trolla er snille og litt tullete. |
 
-**Kva Topa aldri gjer:** reklame, kjøp i appen, konto, sporing, nedteljing, straff, poengtavler,
-tekst barnet må lese for å kunne leike.
+**Aldri:** reklame, kjøp i appen, konto, sporing, nedteljing, straff, poengtavle, tekst barnet må lese.
 
 ---
 
-## 2. Verda
+## 2. Verda: bygda Trollfoss
 
-Topa er ei øy. Kartet er heimeskjermen for reiser; kvar stad er ei brei scene ein kan sveipe
-sidelengs i.
+Kartet viser bygda ovanfrå: fjorden, elva og den store fossen i midten, fjella bak. Kvar stad er ei
+brei scene ein sveipar sidelengs i.
 
-| Stad | Id | Stemning og farge | Hjartet i staden |
+| Stad | Id | Stemning | Hjartet i staden |
 | --- | --- | --- | --- |
-| **Heime** | `HOME` | Fersken og varmt tre. Soverom, stove, kjøkken og bad på rad. | Seng, klesskap, TV, radio (dansemusikk), piano, kjøleskap, komfyr, badekar, do (spyler ting til hittegodskista), postkasse med dagens pakke. |
-| **Kafeen** | `CAFE` | Mynte og krem, rutete golv. | Bakaromn (deig → brød, bollar, kake), blender (frukt → smoothie i fruktfargen), fruktkasse og is-maskin som gir nye ting, kakedisk. |
-| **Salongen** | `SALON` | Rosa og lilla, terrazzo. | Frisørstolar med spegel, saks, føn, kam, fargesprayar, hattehylle og klesstativ med plagg som byter overdel. |
-| **Stranda** | `BEACH` | Himmelblått, turkis sjø, varm sand. | Brygge med fiskeplass, båt, badering, sandslott, parasoll, fyrtårn. Ting flyt eller søkk. |
-| **Skogen** | `FOREST` | Djupt grønt, kveldsoransje. | Telt, bål (grille pølse, riste marshmallow), stubbar å sitje på, ugle i treet, sopp, nordlys om natta. |
-| **Trolllabben** | `LAB` | Djup lilla med grøne glødar. | Trollgryta (blandar to ting til noko nytt), eliksirar (stor, liten, farge, sveve, tilbake), teleskop, krystallkule, den vesle draken Glo som ristar mat. |
-| **Parken** | `PARK` | Graset grønt og himmel. | Huske, sklie, trampoline, fontene (kast ein mynt …), ballongselgar, benk. |
+| **Raudstova** | `HOME` | Raudt trehus inni: soverom, stove, kjøkken, bad. | Seng, rosemåla kiste (hittegods), vedomn, radio (dansemusikk), piano, gjøkur, kjøleskap, komfyr, badekar, do, postkasse med dagens pakke. |
+| **Bakeriet** | `CAFE` | Mynte og krem, rutete golv. | Omn (deig + eple = kake), blender (frukt = smoothie), fruktkasse, is-maskin, kakedisk, vaflar og skillingsbollar. |
+| **Frisøren** | `SALON` | Rosa og lilla, terrazzo. | Frisørstolar, saks, føn, kam, fargesprayar, klesstativ med lusekofte og bunad, hattehylle. |
+| **Fiskeværet** | `BEACH` | Sommar ved fjorden, raude rorbuer. | Brygge og fiskeplass (kvar femte fangst er skatt), færing, sandslott, fyrlykt, måkar, lundefugl. |
+| **Fossen** | `FOREST` | Granskog ved foten av fossen. | Fossebasseng med regnbogedis, telt, bål (pølser, marshmallow, drakeegg), stubbar, ugle i bjørka, elgkalv, nordlys om natta. |
+| **Trollhola** | `LAB` | Grotta bak fossen, krystallar som lyser. | Trollgryta (to ting blir til noko nytt), eliksirar, teleskop, krystallkule, trolldomsbok med hint, draken Glo. |
+| **Fjellet** | `MOUNTAIN` | Vinter heile året. Snø, stavkyrkje langt borte. | Akebakke, hoppbakke, snømann, badstu, islagd tjern med ønskehol, kakaobu. |
 
-Kvar stad har **tre glimt** – løynde stjerner. Nokre ligg under ting, nokre inni ting, nokre kjem
-fram når du gjer noko (fiskar opp ei kiste, kastar mynt i fontena, sløkkjer alle lys om natta).
+Kvar stad har **tre glimt**: under ting, inni ting, eller dei dukkar opp når du gjer noko (fiskar opp
+ei kiste, hoppar tre gonger i hoppbakken, kastar mynt i ønskeholet, er ved fossen når nordlyset kjem).
 
 ---
 
-## 3. Figurane – «toparar»
+## 3. Figurane
 
-Toparar er runde og mjuke som leiketøy av gummi: stort hovud, kort kropp, korte bein og stutte armar
-med runde hender. Dei er ikkje menneskelege kopiar; hud kan vere alt frå ljos til djup brun – og
-også blå, grøn eller lilla for troll og vesen.
-
-**Byggjeklossar (figurverkstaden)**
+Folket i Trollfoss er runde som leiketøy: stort hovud, kort kropp, stutte armar. Hud frå ljos til djup
+brun – og mosegrøn, blå eller lilla for troll og vesen. Trolløyre, katteøyre, kaninøyre eller
+bjørneøyre.
 
 | Del | Val |
 | --- | --- |
-| Hud | 8 menneskelege tonar + 6 eventyrfargar |
-| Høgd | Barn, ungdom, vaksen (0,78 – 1,15) |
+| Hud | 8 menneskelege tonar + 6 troll- og vesenfargar |
+| Høgd | Barn, ungdom, vaksen, høg |
 | Frisyre | Skalla, kort, pannelugg, krøller, lang, fletter, knute, pigg, bob |
-| Hårfarge | 10 fargar, også rosa, blå og grøn |
-| Auge | Runde, glade, søvnige, vippe, prikk |
-| Øyre | Vanlege, katt, kanin, bjørn, troll (spisse) |
-| Overdel | T-skjorte, hettegenser, kjole, stripar, selebukse, **lusekofte** |
-| Underdel | Bukse, shorts, skjørt – eigen farge |
-| Sko | Eigen farge |
-| Ekstra | Fregner, raude kinn, skjegg |
+| Hårfarge | 10, også rosa, blå og grøn |
+| Auge | Runde, store, søvnige, vipper, prikkar |
+| Øyre | Vanlege, katt, kanin, bjørn, troll |
+| Overdel | T-skjorte, hettegenser, kjole, stripar, selebukse, **lusekofte**, **bunad** |
+| Underdel | Bukse, shorts, skjørt |
+| Ekstra | Fregner, skjegg, bart |
 
-**Dyr og vesen:** katt, hund, kanin og draken Glo. Dei kan plukkast opp, sitje, sove, ete og bere
-hatt.
+**Dyr og vesen:** katt, hund, kanin, **elgkalv**, **lundefugl** og draken **Glo**.
 
-**Liv i figuren**
-
-* Pustar (lett opp og ned), blunkar tilfeldig, ser etter fingeren og etter ting som flyg.
-* Plukka opp: overraska andlet, beina sparkar, armane går opp, ein liten «oi!».
-* Sleppt: skvis og strekk ved landing, støvpuff, «dunk».
-* Trykk: fnis, hopp og nytt andlet. Mange trykk på rad: svimmel.
-* Et: gomlar tre bitar (synlege bitemerke i maten), smular, hjarte og «mmm».
-* Radio på: figurane i nærleiken dansar i takt.
-* I seng om natta: søv med «Zzz».
-* Eliksirar: veks, krympar, byter farge eller svevar opp til taket ei stund.
-* Kvar figur har si eiga røysthøgd; alle snakkar tulleord laga av syntetiske pip.
+**Liv:** pustar, blunkar, ser etter fingeren. Plukka opp: «oi!», sparkar med beina. Sleppt: skvis og
+dunk. Trykk: fnis og hopp. Et: gomlar med synlege bitemerke. Radio: dansar. Seng om natta: søv.
+Eliksirar: veks, krympar, byter farge, svevar. Kvar figur har si eiga røysthøgd.
 
 ---
 
 ## 4. Samhandling – verbet er «dra»
 
-Alt skjer med éin finger, men fleire fingrar kan dra fleire ting samtidig (nettbrett med to barn).
-
 | Gest | Verknad |
 | --- | --- |
-| Dra ting eller figur | Løftar, følgjer fingeren med litt etterheng og helling etter farten. |
-| Slepp | Fell med tyngdekraft til næraste flate under (golv, bord, hylle, seng). |
-| Slepp med fart | Kast. Ting snurrar, ballar sprett, ballongar stig. |
-| Dra på tomt område | Panorer scena. Ting ved kanten av skjermen får scena til å gli. |
-| Trykk | Ting og møblar gjer det dei gjer: lampa lyser, TV-en byter kanal, pakken opnar seg. |
+| Dra | Løftar ting eller figur; følgjer fingeren med etterheng og helling. |
+| Slepp | Fell til næraste flate under. På ein figur: munn = et, hovud = hatt, auge = briller, kropp = plagg, hår = frisørverktøy, hand = held. |
+| Kast | Ting snurrar, ballar sprett, ballongar stig, is glir. |
+| Trykk | Lampa lyser, TV-en byter kanal, pakken opnar seg, snømannen veks. |
+| Dra på tomt område | Panorer scena. |
 
-**Kva skjer når ein ting blir sleppt på ein figur** (næraste sone vinn):
+Møblar er **flater**, **plassar** (stol, seng, akebakke, hoppbakke, badstu), **skap** og **maskinar**.
+**Sekken** nede til høgre er korleis ting og figurar reiser mellom stadene.
 
-| Sone | Ting | Resultat |
+---
+
+## 5. Visuell stil – «nordisk leikekasse», kvass og detaljert
+
+* **Former:** runde og mjuke på alt menneskeskapt; naturen kan vere kvassare (granbar, fjell, is).
+* **Strek:** varm blekkfarge `#2B2140`, `0,0034 × scenehøgd` – tynnare enn før, så detaljane får plass.
+  Fine detaljar (treårer, strikkemønster, rosemåling, sømmar) med halv strek i ein mørkare tone.
+* **Skugge:** kvass to-tone cel-skugge: ein hard skuggesigd nede til høgre, lys frå oppe til venstre.
+  Éin liten glans på blanke ting.
+* **Nordisk palett:** falunraud `#B8342B`, gran `#1F7048`, torvtak `#6FAE5A`, fjord `#2F6FB8`,
+  bjørk `#F2EEE6`, tre `#C98A55`, snø `#F4F8FF`, nordlys `#7CFFB2`/`#D77BFF`, rosemåling
+  (raud, gul, grøn, blå).
+* **Grensesnitt:** blanke 3D-knappar i hjørna (sol `#FFC83D`, bær `#FF4D6D`, sjø `#2F9BFF`,
+  mynte `#2FD18B`, drue `#8B5CF6`), raud X lukkar alt, `GameText` for dei få orda.
+
+---
+
+## 6. Rørsle
+
+| Hending | Animasjon | Tid |
 | --- | --- | --- |
-| Munn | Mat, drikke, eliksir | Et, drikk eller får eliksirverknad |
-| Hovud | Hatt | Tek på hatten (den gamle dett av) |
-| Auge | Briller | Tek på brillene |
-| Kropp | Plagg | Byter overdel – det gamle plagget dett av, så det er alltid mogleg å byte tilbake |
-| Hår | Saks / føn / kam / spray | Kortare / krøllete / pent / ny hårfarge |
-| Hand | Alt anna | Held tingen – han følgjer med når figuren blir flytta og når han reiser |
-
-**Møblar**
-
-* **Flater** (bord, hyller, benkar) tek imot ting.
-* **Plassar** (stol, seng, huske, båt, bad) tek imot figurar som snappar på plass med rett positur.
-* **Skap** (kjøleskap, klesskap, kiste, telt) opnar og lukkar seg ved trykk; ting inni blir borte
-  når det er lukka og er der når du opnar igjen.
-* **Maskinar** (komfyr, omn, blender, bål, gryte, fiskeplass) gjer om ting.
-
-**Sekken** (nede til høgre) er korleis ting og figurar reiser: slepp noko på sekken, reis via kartet,
-opne sekken og dra det ut. Figurar tek med seg det dei held.
-
----
-
-## 5. Oppdaging
-
-| System | Korleis |
-| --- | --- |
-| **Glimt** | 21 løynde stjerner, 3 per stad. Når alle er funne, dukkar det opp ei gullkrone i postkassa. |
-| **Oppdagingsboka** | Alt barnet har laga i gryta, omnen, blenderen, bålet og på komfyren blir teikna inn. Tomme ruter viser silhuett – eit hint utan ord. |
-| **Dagens pakke** | Éin pakke i postkassa kvar dag (lokal dato, ingen nett). Trykk for å opne med konfetti. |
-| **Dag og natt** | Sol/måne-knappen byter med ein mjuk overgang. Om natta: stjerner, nordlys ute, lamper som lyser, figurar som søv. |
-| **Vêr** | Sol, regn og snø. Når regnet sluttar, kjem ein regnboge. |
-
----
-
-## 6. Visuell stil – «mjuk leikekasse»
-
-**Former:** runde hjørne overalt, ingen spisse kantar utan grunn. Alt ser ut som det kan klemmast.
-
-**Strek:** ein varm, mørk blekk-kontur (`Ink #2B2140`) rundt alle figurar, ting og møblar.
-Strekbreidda følgjer skjermen (`0,0045 × scenehøgd`), så alt har same tjukkleik uansett storleik.
-
-**Skugge:** to-tone cel-skugge. Grunnfarge, ljosare topp (20 % mot kvitt) og ein mjuk mørkare botn
-(15 % mot blekk). Éin liten kvit glans på blanke ting. Mjuk oval skugge på golvet under alt.
-
-**Fargepalett – grensesnitt**
-
-| Token | Hovud | Topp | Djup | Bruk |
-| --- | --- | --- | --- | --- |
-| `Sun` | `#FFC83D` | `#FFE58A` | `#D98A00` | Hovudhandling, sol, glimt |
-| `Berry` | `#FF4D6D` | `#FF8FA3` | `#C21F45` | Raud X (lukk), hjarte |
-| `Sea` | `#2F9BFF` | `#7CCBFF` | `#1560C0` | Kart og reise |
-| `Mint` | `#2FD18B` | `#86F2BF` | `#14935C` | Lag / ferdig |
-| `Grape` | `#8B5CF6` | `#C4A6FF` | `#5B32C9` | Magi, boka |
-| `Cream` | `#FFF7EA` | – | `#F3E3C8` | Panel |
-| `Ink` | `#2B2140` | – | – | Kontur, tekstkant |
-| `Night` | `#1D1A4A` | `#3B2F7A` | – | Natt, foreldresida |
-
-**Stadfargar** er definerte i `ui/art/PlaceArt.kt` og held seg innanfor tre-fire kulørar per stad.
-
-**Tekst:** nesten ingen. Der det finst (logo, foreldreside), brukar vi `GameText`: svært feit
-systemskrift med mørk kontur og fall-skugge.
-
-**Grensesnitt i spelet (HUD)** – runde, blanke 3D-knappar (`PressSurface`) i hjørna, minst 64 dp:
-
-```
-┌──────────────────────────────────────────────────────────┐
-│ (Kart)                              (✦ 5)  (☀/☾)  (☂) (📷)│
-│                                                          │
-│                     scena – sveip ←→                      │
-│                                                          │
-│ (Verkstad)                                        (Sekk) │
-└──────────────────────────────────────────────────────────┘
-```
-
----
-
-## 7. Rørsle – reglane for animasjon
-
-| Hending | Animasjon | Tid / fjør |
-| --- | --- | --- |
-| Knappetrykk | Søkk ned på kanten + skalering 0,965 | 70 ms / demping 0,68 |
-| Plukk opp | Løft 4 %, skvis 1,08 × 0,92 | fjør, 120 ms |
-| Følgje finger | Lerp mot fingeren, helling ±18° etter fart | 18 per sekund |
-| Landing | Skvis 1,25 × 0,75 og tilbake med overskot | 260 ms, demping 0,45 |
-| Kast | Snurr etter fart, sprett med ball-restitusjon 0,72 | fysikk |
-| Idle-pust | Skala-y ±1,5 % | 2,4 s periode |
-| Blunk | Auge lukka | 120 ms, kvar 2–6 s |
-| Dag ↔ natt | Himmel og lys glir | 1,6 s |
-| Reise | Luftballong flyg over kartet, iris-overgang | 1,4 s |
-| Glimt funne | Stjerna flyg i boge til teljaren, gnistar | 700 ms |
+| Knappetrykk | Søkk ned på kanten, skalering 0,95 | 70 ms |
+| Plukk opp | Løft og skvis, «oi!» | fjør |
+| Landing | Skvis 1,25 × 0,75 og sprett tilbake | 260 ms |
+| Kast | Snurr etter fart, sprett | fysikk |
+| Pust / blunk | Kroppen opp og ned / augo lukkar seg | 2,4 s / kvar 2–6 s |
+| Dag ↔ natt | Himmel, lys og nordlys glir | 1,6 s |
+| Reise | Luftballong over kartet | 1,4 s |
+| Glimt | Stjerna flyg i boge til teljaren | 700 ms |
 
 Alle tidsstyrte rørsler stoppar når Android har slått av animasjonar.
 
 ---
 
-## 8. Lyd
+## 7. Lyd
 
-* **Effektar** er syntetiserte i kode (ingen lydfiler): pop, dunk, boing, gomle, slurp, fnis,
-  magisk glissando, sprut, fres, pling, spyling, klikk, lukkar, konfetti.
-* **Røyster:** korte, tonehøgde-styrte tulle-pip. Kvar figur har si eiga høgd.
-* **Musikk:** roleg loop per stad laga i kode (same motor som Komet), dempa om natta. Radioen spelar
-  eigen dansemusikk.
-* Aldri stressande lyd. Ingen alarmar.
+Alle effektar er syntetiserte i kode: pop, dunk, boing, gomle, fnis, magi, plask, fres, pling, spyling,
+knirk, lukkar. Figurane snakkar tulleord i si eiga tonehøgd. Rolege loopar per stad, lullaby om natta,
+dansemusikk frå radioen.
 
 ---
 
-## 9. Skjermar
+## 8. Skjermar
 
-| Skjerm | Innhald |
-| --- | --- |
-| **Opning** | Logoen hoppar inn bokstav for bokstav, ein topar vinkar, deretter rett inn i sist brukte stad. |
-| **Stad** | Scena med HUD. |
-| **Kart** | Øya ovanfrå, animert sjø, skyer og båt. Trykk på ein stad → ballongen flyg dit. |
-| **Figurverkstaden** | Stor figur i midten som reagerer på kvart val; kategoriar som runde ikon; terning for tilfeldig figur; «ferdig» sender figuren heim med konfetti. |
-| **Oppdagingsboka** | Glimt per stad, oppskrifter og gåver – bilete, ingen tekst. |
-| **Foreldre** | Bak eit gongestykke: lyd, musikk, haptikk, målform, appoppdateringar, nullstill verda, personvern. |
+Opning (logoen hoppar inn), stad med knappar i hjørna, kart, figurverkstad, oppdagingsbok og foreldreside
+bak eit gongestykke (lyd, musikk, målform, oppdatering, nullstill).
 
 ---
 
-## 10. Android
+## 9. Android og oppdatering
 
-* **Liggjande** (`sensorLandscape`) på både mobil og nettbrett – eit dukkehus er breitt.
-  Scena er éi eining høg (skjermhøgda); breidda varierer frå 2,4 til 3,6 einingar.
-* **Oppslukande:** systemlinjene er skjulte og kjem fram med sveip.
-* Min. Android 8.0 (API 26), mål API 36. Kotlin + Jetpack Compose, all grafikk teikna på `Canvas`.
-* Lagring: éi JSON-fil (`files/trollfoss.json`), atomisk skriving, autolagring etter endringar.
-* **Oppdatering gjennom GitHub:** same kontrakt som Komet. Éin signert universal-APK per release på
-  `oyvhov/trollfoss-android`, SHA-256 frå GitHub, kontroll av pakke, versjon og signatur før Android får
-  spørsmål. Ein vaksen startar nedlastinga på foreldresida.
-* Ytelse: éin spel-løkke (`withFrameNanos`) oppdaterer fysikken; éin `Canvas` teiknar scena.
-  Mål: 60 fps med 80 ting på eit mellomklassenettbrett.
+Liggjande på mobil og nettbrett, oppslukande. Kotlin + Jetpack Compose, alt teikna på `Canvas`. Min.
+Android 8.0. Lagring i `files/trollfoss.json`. Oppdatering som Komet: éin signert APK per release på
+`oyvhov/trollfoss-android`; appen kontrollerer SHA-256, pakke, versjon og signatur, og ein vaksen
+startar installasjonen.
 
 ---
 
-## 11. Tryggleik og personvern
-
-Ingen reklame, analyse, konto eller kjøp. Einaste nettkontakt er oppdateringssjekken mot GitHub,
-som kan slåast av. Bilete frå kameraknappen blir verande i appen.
-
----
-
-## 12. Vegkart
+## 10. Vegkart
 
 | Versjon | Innhald |
 | --- | --- |
 | 1.0 | Sju stader, kart, figurverkstad, fysikk, mat, klede, frisør, trollgryte, glimt, dagens pakke, dag/natt, vêr, sekk, foreldreside, GitHub-oppdatering. |
-| 1.1 | Heimedesignar (tapet, golv, flytte møblar), fotoalbum med deling. |
-| 1.2 | Nye stader: skule, sjukehus, fjellhytte med ski. Sesongpynt (jul, 17. mai). |
+| 1.1 | Heimedesignar, fotoalbum med deling, fleire dyr og klede. |
+| 1.2 | Skule, legekontor og stavkyrkje, sesongpynt (jul, 17. mai). |

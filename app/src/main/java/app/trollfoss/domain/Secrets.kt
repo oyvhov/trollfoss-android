@@ -27,7 +27,7 @@ object Secrets {
 
         Secret("forest_tent", PlaceId.FOREST, 0.7f, 0.845f, inside = 1),
         Secret("forest_owl", PlaceId.FOREST, 0.3f, 0.47f, event = true),
-        Secret("forest_night", PlaceId.FOREST, 2.9f, 0.22f, event = true),
+        Secret("forest_night", PlaceId.FOREST, 2.7f, 0.22f, event = true),
 
         Secret("lab_mix", PlaceId.LAB, 0.98f, 0.62f, event = true),
         Secret("lab_telescope", PlaceId.LAB, 1.74f, 0.52f, event = true),
