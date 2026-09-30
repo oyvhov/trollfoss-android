@@ -14,6 +14,18 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
     MOUNTAIN(3.8f, true, 0.88f, 0.02f),
     FARM(4.4f, true, 0.88f, 0.02f),
     SPACE(3.6f, false, 0.90f, 0.07f),
+    ;
+
+    /**
+     * The floor is a band with depth («skrå-3D»): the back wall meets the floor at [back], the front edge
+     * is [FRONT]. Things and figures stand anywhere in between; the further back, the higher on screen.
+     * [floor] is the usual depth for furniture.
+     */
+    val back: Float get() = if (outdoor) 0.78f else 0.80f
+
+    companion object {
+        const val FRONT = 0.97f
+    }
 }
 
 /** A stretch of ground. Places with water have a sea or pond bed lower than the land. */
