@@ -44,6 +44,7 @@ class MainActivity : ComponentActivity() {
             secrets = extras.getInt("secrets", 0),
             wishes = extras.getBoolean("wishes", false),
             skip = extras.getInt("skip", 0),
+            task = extras.getString("task"),
         )
     }
 

@@ -30,6 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
@@ -69,7 +71,7 @@ import app.trollfoss.ui.theme.T
 import java.io.File
 import kotlin.math.max
 
-private enum class Tab { SECRETS, RECIPES, PHOTOS }
+private enum class Tab { SECRETS, RECIPES, STICKERS, PHOTOS }
 
 /** The discovery book: glimt found per place, recipes made, and photos taken. */
 @OptIn(ExperimentalLayoutApi::class)
@@ -89,7 +91,8 @@ fun BookScreen(vm: TrollfossViewModel) {
                     val label = when (t) {
                         Tab.SECRETS -> "${S.secrets.str()} ${vm.found}/${Secrets.all.size}"
                         Tab.RECIPES -> "${S.recipes.str()} ${vm.discoveries}/${Recipes.book.size}"
-                        Tab.PHOTOS -> "${S.photos.str()} ${vm.photos.size}"
+                        Tab.STICKERS -> "${S.stickers.str()} ${vm.stickers}"
+                    Tab.PHOTOS -> "${S.photos.str()} ${vm.photos.size}"
                     }
                     TabChip(label, selected = tab == t) { tab = t }
                 }
@@ -98,7 +101,8 @@ fun BookScreen(vm: TrollfossViewModel) {
                 when (tab) {
                     Tab.SECRETS -> SecretsPage(vm)
                     Tab.RECIPES -> RecipesPage(vm)
-                    Tab.PHOTOS -> PhotosPage(vm)
+                    Tab.STICKERS -> StickersPage(vm)
+                Tab.PHOTOS -> PhotosPage(vm)
                 }
             }
         }
@@ -156,6 +160,46 @@ private fun SecretsPage(vm: TrollfossViewModel) {
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+/** What each sticker shows, in the order they are earned. */
+private val STICKER_ART = listOf(
+    ThingType.STAR_JAR to 0, ThingType.PLANET to 2, ThingType.CROWN to 1, ThingType.TEDDY to 0, ThingType.DUCK to 0,
+    ThingType.ICE_CREAM to 3, ThingType.PLANET to 6, ThingType.CUPCAKE to 1, ThingType.BALLOON to 2, ThingType.ROCKET to 0,
+    ThingType.GEM to 2, ThingType.STARFISH to 0, ThingType.FLOWER to 2, ThingType.LOLLIPOP to 1, ThingType.PEARL to 0,
+    ThingType.DRAGON_EGG to 0, ThingType.GUITAR to 0, ThingType.CANDY_FLOSS to 0, ThingType.WATERMELON to 0, ThingType.PLANET to 4,
+    ThingType.MUSHROOM to 0, ThingType.SHELL to 0, ThingType.WAND to 0, ThingType.CLOUDBERRY to 0, ThingType.POPCORN to 0,
+    ThingType.PLANET to 5, ThingType.GIFT to 3, ThingType.SPACE_HELMET to 0, ThingType.BIRDHOUSE to 0, ThingType.WHOOPEE to 0,
+)
+
+/** The sticker album: one round sticker per task done, and empty places for the next ones. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun StickersPage(vm: TrollfossViewModel) {
+    val count = vm.stickers
+    FlowRow(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(end = 60.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        for (i in 0 until maxOf(12, count + 6)) {
+            Canvas(Modifier.size(86.dp)) {
+                val r = size.minDimension / 2f - 4f
+                if (i < count) {
+                    val (type, variant) = STICKER_ART[i % STICKER_ART.size]
+                    val tint = listOf(T.SunTop, T.MintTop, T.SeaTop, T.BerryTop, T.GrapeTop)[i % 5]
+                    drawCircle(Color.White, r + 3f, center)
+                    drawCircle(tint, r - 3f, center)
+                    drawCircle(Ink.line, r + 3f, center, style = Stroke(4f))
+                    drawThingThumb(type, variant, square(center, r * 1.3f))
+                    drawOval(Color.White.copy(alpha = 0.4f), Offset(center.x - r * 0.6f, center.y - r * 0.8f), Size(r * 0.7f, r * 0.35f))
+                } else {
+                    drawCircle(T.CreamDeep.copy(alpha = 0.35f), r, center)
+                    drawCircle(T.CreamLine.copy(alpha = 0.6f), r, center, style = Stroke(4f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(14f, 10f))))
                 }
             }
         }
