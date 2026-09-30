@@ -277,6 +277,8 @@ private val EAT_CAKE = floatArrayOf(-0.46f, -0.86f, 0.46f, -0.1f)
 private val EAT_APPLE = floatArrayOf(-0.49f, -0.84f, 0.49f, -0.03f)
 private val EAT_FISH = floatArrayOf(-0.5f, -0.95f, 0.3f, -0.05f)
 private val EAT_CHEESE = floatArrayOf(-0.3f, -0.82f, 0.46f, -0.02f)
+private val EAT_FLOSS = floatArrayOf(-0.5f, -0.99f, 0.5f, -0.46f)
+private val EAT_POPCORN = floatArrayOf(-0.48f, -0.99f, 0.48f, -0.6f)
 
 private fun eatBox(type: ThingType): FloatArray = when (type) {
     ThingType.ICE_CREAM -> EAT_SCOOP
@@ -288,6 +290,8 @@ private fun eatBox(type: ThingType): FloatArray = when (type) {
     ThingType.APPLE -> EAT_APPLE
     ThingType.GRILLED_FISH, ThingType.FISH -> EAT_FISH
     ThingType.BROWN_CHEESE -> EAT_CHEESE
+    ThingType.CANDY_FLOSS -> EAT_FLOSS
+    ThingType.POPCORN -> EAT_POPCORN
     else -> EAT_ALL
 }
 
@@ -307,6 +311,7 @@ private fun fleshOf(type: ThingType): Color? = when (type) {
     ThingType.TOASTED_MARSHMALLOW, ThingType.MARSHMALLOW -> Color(0xFFFFFFFF)
     ThingType.POTATO -> Color(0xFFFFF0B8)
     ThingType.FRIED_EGG -> Color(0xFFFFFFFF)
+    ThingType.CANDY_FLOSS -> Color(0xFFFFF4FA)
     else -> null
 }
 
