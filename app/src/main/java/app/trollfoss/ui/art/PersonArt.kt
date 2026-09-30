@@ -75,6 +75,10 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
 
     val breath = sin(t * 2.6f)
     val dancing = a.dance > 0f
+    // Walking: feet lift in turn and the hands swing the other way, frontal so it reads as a waddle.
+    val walking = pose == Pose.STAND && !a.walkTo.isNaN() && !dancing
+    val stepL = if (walking) kotlin.math.max(0f, sin(a.walkPhase * PI.toFloat())) else 0f
+    val stepR = if (walking) kotlin.math.max(0f, -sin(a.walkPhase * PI.toFloat())) else 0f
     val bob = when {
         dancing -> -abs(sin(a.dance)) * 0.03f
         pose == Pose.STAND -> breath * 0.004f
@@ -101,7 +105,7 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
         }
     } else {
         for (side in listOf(-1f, 1f)) {
-            val lift = side * kick + if (side < 0) danceStep else -danceStep
+            val lift = side * kick + (if (side < 0) danceStep else -danceStep) - (if (side < 0) stepL else stepR) * 0.05f
             val spread = if (pose == Pose.FLOAT) 0.9f else 1f
             val hip = o(side * 0.07f * spread, -0.16f + bob)
             val ankle = o(side * 0.078f * spread, -0.055f + lift)
@@ -177,6 +181,12 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
             a.wave > 0f -> {
                 if (!holding) handR = o(0.28f + sin(t * 14f) * 0.03f, -0.66f) else handL = o(-0.28f + sin(t * 14f) * 0.03f, -0.66f)
             }
+        }
+        if (walking && !holding) {
+            handL = o(-0.235f, -0.25f - (stepR - stepL) * 0.04f)
+            handR = o(0.245f, -0.245f + (stepR - stepL) * 0.04f)
+        } else if (walking) {
+            handL = o(-0.235f, -0.25f - (stepR - stepL) * 0.04f)
         }
         val longSleeves = look.top == 1 || look.top == 5 || look.top == 6 || overalls
         val sleeve = if (overalls || look.top == 6) ShirtWhite else topColor

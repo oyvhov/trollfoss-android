@@ -159,6 +159,14 @@ class PersonAnim {
     /** 1 facing right, -1 facing left (animals turn to where they walk). */
     var facing = 1f
 
+    // Folk who act on their own: where they are heading (0 stroll, 1 seat, 2 bed, 3 a friend) and why.
+    var goal = 0
+    var goalFixture = -1
+    var goalSpot = 0
+    /** 0 nothing; 1 went to bed by themselves; 2 sat down by themselves. They get up again on their own. */
+    var auto = 0
+    var autoTimer = 0f
+
     // Slapstick (see Jokes).
     /** A slip on a banana peel: 1 at the start of the spin, down to 0. */
     var spin = 0f

@@ -150,5 +150,47 @@ class FunTest {
         assertTrue(cat.x != start.first || cat.ground != start.second)
         assertTrue(cat.ground in PlaceId.HOME.back..PlaceId.FRONT)
     }
-}
 
+    @Test
+    fun `folk go to bed by themselves at night and get up when day comes`() {
+        val world = WorldFactory.create(Random(21))
+        val sim = sim(world)
+        val hedda = folk(world, PlaceId.HOME, "Hedda")
+        // Hedda gets out of bed and stands in the room; nobody wishes for anything.
+        hedda.mode = Mode.FREE
+        hedda.holder = -1
+        hedda.x = 1.8f
+        hedda.y = 0.92f
+        hedda.ground = 0.92f
+        hedda.resting = false
+        for (p in world.people()) p.anim.nextWish = 1e6f
+        world.night = true
+        step(sim, PlaceId.HOME, 90f)
+        val bed = world.fixturesIn(PlaceId.HOME).first { it.type == FixtureType.BED }
+        assertEquals(Mode.SEATED, hedda.mode)
+        assertEquals(bed.id, hedda.holder)
+        assertEquals(1, hedda.anim.auto)
+        assertTrue(events.any { it.first == Fx.SETTLE })
+        world.night = false
+        step(sim, PlaceId.HOME, 10f)
+        assertEquals(Mode.FREE, hedda.mode)
+        assertTrue(events.any { it.first == Fx.WAKE })
+    }
+
+    @Test
+    fun `folk stroll about by themselves in daytime`() {
+        val world = WorldFactory.create(Random(22))
+        val sim = sim(world)
+        val tuva = folk(world, PlaceId.HOME, "Tuva")
+        for (p in world.people()) p.anim.nextWish = 1e6f
+        val start = tuva.x
+        var moved = false
+        var t = 0f
+        while (t < 120f) {
+            sim.step(PlaceId.HOME, 1f / 60f)
+            if (kotlin.math.abs(tuva.x - start) > 0.1f || tuva.mode == Mode.SEATED) moved = true
+            t += 1f / 60f
+        }
+        assertTrue(moved)
+    }
+}

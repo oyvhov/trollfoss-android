@@ -1370,6 +1370,19 @@ class Engine(
                 }
             }
             Fx.HOP -> s(Sfx.TAP, 0.4f)
+            Fx.SETTLE -> {
+                // A little «ahh» as someone sits down, and a happy sigh when they lie down for the night.
+                s(if (param == 2) Sfx.HMM else Sfx.YUM, 0.4f, if (param == 2) 0.7f else 0.9f)
+                if (param == 2) repeat(1) { particles.add(Particle(PKind.ZZZ, x + 0.04f, y - 0.1f, 0.04f, -0.08f, 1.8f, 0.012f, Color.White)) }
+            }
+            Fx.WAKE -> {
+                s(Sfx.OOH, 0.4f, 0.9f)
+                person(fixture?.let { f -> world.bodiesIn(place).filterIsInstance<Person>().firstOrNull { abs(it.x - x) < 0.01f && it.anim.auto == 0 }?.id } ?: -1)?.let { p ->
+                    faces(p, Face.OOH, 0.8f, Face.HAPPY, 0.1f)
+                    p.anim.hopV = 1.3f
+                    if (param == 1) particles.burst(PKind.SPARK, p.x, p.y - p.h * 0.9f, 5, 0.3f, 0.01f, T.SunTop)
+                }
+            }
             Fx.PLACE -> {
                 s(Sfx.POP, 0.8f, 0.8f)
                 particles.burst(PKind.DUST, x, y + (fixture?.spec?.h ?: 0f) / 2, 10, 0.4f, 0.016f, up = 0.05f, life = 0.7f)
@@ -2144,7 +2157,12 @@ class Engine(
         val h = b.h * u
         val lie = b.anim.pose == Pose.LIE
         val bounds = Rect(-h * (if (lie) 0.95f else 0.8f), -h * 2.1f, h * (if (lie) 0.95f else 0.8f), h * 0.3f)
-        return with(sprites) { stampSlow(SlowKey(b.id, 3), bounds, pen.t, if (b.held) 24f else 13f, draw) }
+        val hz = when {
+            b.held -> 24f
+            !b.anim.walkTo.isNaN() -> 20f
+            else -> 13f
+        }
+        return with(sprites) { stampSlow(SlowKey(b.id, 3), bounds, pen.t, hz, draw) }
     }
 
     /** A glowing ring on the floor under furniture being moved, so the new spot is clear. */

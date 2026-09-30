@@ -33,6 +33,9 @@ enum class Fx {
 
     // Home designer and tidying.
     PLACE, STORE, PAINT, TIDY, HOME, TRASH, SUCK,
+
+    // Figures acting on their own: settling in a seat or bed, getting up again.
+    SETTLE, WAKE,
 }
 
 interface SimListener {

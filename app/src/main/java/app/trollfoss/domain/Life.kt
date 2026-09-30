@@ -27,8 +27,9 @@ class Life(private val sim: Sim, private val random: Random) {
         val people = world.bodiesIn(place).filterIsInstance<Person>()
         var active = people.count { it.anim.wish != null }
         val zeroG = sim.zeroG(place)
+        val swimming = sim.underwater(place)
         for (p in people) {
-            if (!zeroG) walk(place, p, dt)
+            if (!zeroG && !swimming) walk(place, p, dt)
             val a = p.anim
             val wish = a.wish
             if (wish != null) {
@@ -160,8 +161,16 @@ class Life(private val sim: Sim, private val random: Random) {
      */
     private fun walk(place: PlaceId, p: Person, dt: Float) {
         val a = p.anim
-        val free = p.species.pet && p.species != Species.DRAGON && !p.held && p.mode == Mode.FREE && p.resting &&
-            p.restOwner == -1 && p.floatTime <= 0f && p.inside < 0
+        val folk = p.species == Species.FOLK
+        if (p.mode == Mode.SEATED) {
+            a.still = 0f
+            a.walkTo = Float.NaN
+            if (folk) autoSeated(place, p, dt)
+            return
+        }
+        a.auto = 0
+        val free = (p.species.pet && p.species != Species.DRAGON || folk && a.wish == null && a.pose == Pose.STAND) &&
+            !p.held && p.mode == Mode.FREE && p.resting && p.restOwner == -1 && p.floatTime <= 0f && p.inside < 0
         if (!free) {
             a.still = 0f
             a.walkTo = Float.NaN
@@ -169,7 +178,7 @@ class Life(private val sim: Sim, private val random: Random) {
             return
         }
         a.still += dt
-        if (a.still < SETTLE_SECONDS) return
+        if (a.still < (if (folk) SETTLE_FOLK else SETTLE_SECONDS)) return
         // Food on the floor? The dog can't resist, the hens peck up seeds, the puffin grabs fish.
         if (a.chase < 0) snack(place, p)?.let { food ->
             a.chase = food.id
@@ -179,7 +188,9 @@ class Life(private val sim: Sim, private val random: Random) {
         if (a.walkTo.isNaN()) {
             a.nextWalk -= dt
             if (a.nextWalk > 0f) return
-            a.nextWalk = 3f + random.nextFloat() * 7f
+            a.nextWalk = if (folk) 9f + random.nextFloat() * 14f else 3f + random.nextFloat() * 7f
+            a.goal = 0
+            if (folk && chooseGoal(place, p)) return
             val tx = (p.x + (random.nextFloat() * 2f - 1f) * 0.35f).coerceIn(0.15f, place.width - 0.15f)
             val tg = (sim.groundOf(place, p) + (random.nextFloat() * 2f - 1f) * 0.06f).coerceIn(place.back + 0.01f, PlaceId.FRONT - 0.01f)
             val floor = sim.surfaces(place).any { it.band && tx >= it.x1 + 0.05f && tx <= it.x2 - 0.05f }
@@ -193,6 +204,7 @@ class Life(private val sim: Sim, private val random: Random) {
         if (d < 0.004f) {
             a.walkTo = Float.NaN
             a.walkPhase = 0f
+            if (folk) arrive(place, p)
             (world.bodies[a.chase] as? Thing)?.let { food ->
                 if (food.place == place && food.mode == Mode.FREE && !food.held && abs(food.x - p.x) < 0.06f) {
                     sim.listener.onFx(Fx.GOBBLE, food.x, food.y, thing = food, param = p.id)
@@ -202,13 +214,125 @@ class Life(private val sim: Sim, private val random: Random) {
             a.chase = -1
             return
         }
-        val step = min(d, speedOf(p.species) * (if (a.chase >= 0) 2.2f else 1f) * dt)
+        // A little faster when hurrying to bed or a friend, never in a rush.
+        val step = min(d, speedOf(p.species) * (if (a.chase >= 0) 2.2f else if (a.goal == 2 || a.goal == 3) 1.25f else 1f) * dt)
         p.x += dx / d * step
         p.ground += dg / d * step
         p.y = p.ground
         if (abs(dx) > 0.004f) a.facing = if (dx < 0f) -1f else 1f
-        a.walkPhase += step / (p.h * 0.18f)
+        a.walkPhase += step / (p.h * (if (folk) 0.26f else 0.18f))
         sim.jokes.stepped(place, p)
+    }
+
+    // ------------------------------------------------------------------ folk with a mind of their own
+
+    /** Seats folk may sit down on by themselves: the ordinary ones, never rides or things that float. */
+    private val sittable = setOf(
+        FixtureType.CHAIR, FixtureType.SOFA, FixtureType.STOOL, FixtureType.BENCH, FixtureType.LOG, FixtureType.STUMP,
+        FixtureType.HAY_BALE, FixtureType.BEANBAG, FixtureType.ARMCHAIR, FixtureType.LOUNGER, FixtureType.SALON_CHAIR,
+        FixtureType.HAIR_WASH, FixtureType.SPACE_BED,
+    )
+
+    private val beds = setOf(FixtureType.BED, FixtureType.BUNK_BED, FixtureType.LOUNGER)
+
+    /** Picks somewhere to go: bed at night, else a seat, a friend or just a stroll. Returns false for a stroll. */
+    private fun chooseGoal(place: PlaceId, p: Person): Boolean {
+        val a = p.anim
+        if (world.night) {
+            spotFor(place, p, lie = true, reach = 3.2f)?.let { (f, spot) ->
+                head(a, 2, f, spot, seatX(f, spot), f.depth + 0.03f)
+                return true
+            }
+        }
+        val roll = random.nextFloat()
+        if (roll < 0.4f) {
+            spotFor(place, p, lie = false, reach = 1.6f)?.let { (f, spot) ->
+                head(a, 1, f, spot, seatX(f, spot), f.depth + 0.03f)
+                return true
+            }
+        } else if (roll < 0.62f) {
+            val friend = world.bodiesIn(place).filterIsInstance<Person>()
+                .filter { it !== p && it.species == Species.FOLK && !it.held && it.mode == Mode.FREE && it.anim.face != Face.SLEEP && abs(it.x - p.x) in 0.3f..1.4f }
+                .minByOrNull { abs(it.x - p.x) }
+            if (friend != null) {
+                val side = if (friend.x > p.x) -1f else 1f
+                val tx = (friend.x + side * 0.24f).coerceIn(0.15f, place.width - 0.15f)
+                head(a, 3, null, 0, tx, sim.groundOf(place, friend))
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun head(a: PersonAnim, goal: Int, f: Fixture?, spot: Int, x: Float, ground: Float) {
+        a.goal = goal
+        a.goalFixture = f?.id ?: -1
+        a.goalSpot = spot
+        a.walkTo = x
+        a.walkGround = ground.coerceIn(0f, PlaceId.FRONT - 0.01f)
+    }
+
+    private fun seatX(f: Fixture, spot: Int): Float = f.x + f.shiftX + f.spec.spots[spot].dx
+
+    /** A free seat (or bed, if [lie]) within [reach] that a figure may use, one of the nearest three at random. */
+    private fun spotFor(place: PlaceId, p: Person, lie: Boolean, reach: Float): Pair<Fixture, Int>? {
+        val found = ArrayList<Triple<Fixture, Int, Float>>()
+        for (f in world.fixturesIn(place)) {
+            if (if (lie) f.type !in beds else f.type !in sittable) continue
+            f.spec.spots.forEachIndexed { i, s ->
+                if ((s.pose == Pose.LIE) != lie || s.hidden || world.seatedAt(f, i) != null) return@forEachIndexed
+                val d = abs(f.x + s.dx - p.x)
+                if (d <= reach && d > 0.05f) found += Triple(f, i, d)
+            }
+        }
+        val near = found.sortedBy { it.third }.take(3)
+        return near.randomOrNull(random)?.let { it.first to it.second }
+    }
+
+    /** Arrived: sit or lie down if that was the plan and the place is still free. */
+    private fun arrive(place: PlaceId, p: Person) {
+        val a = p.anim
+        val goal = a.goal
+        a.goal = 0
+        a.facing = 1f
+        if (goal != 1 && goal != 2) return
+        val f = world.fixtures[a.goalFixture] ?: return
+        if (a.goalSpot !in f.spec.spots.indices || world.seatedAt(f, a.goalSpot) != null) return
+        if (abs(p.x - seatX(f, a.goalSpot)) > 0.08f) return
+        if (sim.seat(p, f, a.goalSpot)) {
+            a.auto = if (goal == 2) 1 else 2
+            a.autoTimer = if (goal == 2) 2f + random.nextFloat() * 4f else 25f + random.nextFloat() * 50f
+            p.squashV += 5f
+            a.wish = null
+            sim.listener.onFx(Fx.SETTLE, p.x, p.y, f, param = goal)
+        }
+    }
+
+    /** Figures who sat or lay down by themselves get up again: seats after a while, beds when day comes. */
+    private fun autoSeated(place: PlaceId, p: Person, dt: Float) {
+        val a = p.anim
+        if (a.auto == 0) return
+        val f = world.fixtures[p.holder] ?: return
+        if (a.auto == 1) {
+            if (world.night) return
+            a.autoTimer -= dt
+        } else {
+            if (a.wish != null) return
+            a.autoTimer -= dt
+        }
+        if (a.autoTimer > 0f) return
+        // Up they get: a stretch, then down onto the floor in front of the furniture.
+        p.mode = Mode.FREE
+        p.holder = -1
+        p.resting = false
+        p.restOwner = -2
+        p.ground = f.depth + 0.03f
+        p.y = f.y + 0.02f
+        p.x = f.x + f.shiftX
+        p.vy = -0.6f
+        a.auto = 0
+        a.nextWalk = 6f + random.nextFloat() * 10f
+        sim.listener.onFx(Fx.WAKE, p.x, p.y, f, param = if (world.night) 0 else 1)
     }
 
     /** Something tasty lying on the floor close by that this animal would go for. */
@@ -238,5 +362,6 @@ class Life(private val sim: Sim, private val random: Random) {
         const val WISH_LIFE = 28f
         const val MAX_WISHES = 2
         const val SETTLE_SECONDS = 6f
+        const val SETTLE_FOLK = 12f
     }
 }
