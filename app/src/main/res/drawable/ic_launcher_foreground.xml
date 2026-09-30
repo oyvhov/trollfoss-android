@@ -4,27 +4,44 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- A sprout on top: Topa is an island that grows. -->
-    <path android:strokeColor="#FF2B2140" android:strokeWidth="3" android:strokeLineCap="round" android:pathData="M54,38 Q53,32 55,27" />
-    <path android:fillColor="#FF2FD18B" android:strokeColor="#FF2B2140" android:strokeWidth="2.4" android:pathData="M55,28 Q62,19 70,24 Q63,32 55,28 Z" />
-    <path android:fillColor="#FF86F2BF" android:strokeColor="#FF2B2140" android:strokeWidth="2.4" android:pathData="M54,30 Q46,22 39,27 Q46,35 54,30 Z" />
+    <!-- Rumle, the friendly troll under the falls, peeking up from the pool. -->
+    <group android:pivotX="54" android:pivotY="86" android:scaleX="0.84" android:scaleY="0.84" android:translateY="3">
+    <!-- Ears -->
+    <path android:fillColor="#FF7FB5A6" android:strokeColor="#FF2B2140" android:strokeWidth="2.6" android:strokeLineJoin="round"
+        android:pathData="M34,60 Q24,52 25,44 Q33,48 38,55 Z" />
+    <path android:fillColor="#FF7FB5A6" android:strokeColor="#FF2B2140" android:strokeWidth="2.6" android:strokeLineJoin="round"
+        android:pathData="M74,60 Q84,52 83,44 Q75,48 70,55 Z" />
     <!-- Head -->
-    <path android:fillColor="#FFFFB38A" android:strokeColor="#FF2B2140" android:strokeWidth="3.2"
-        android:pathData="M31,59 a23,22 0,1 1,46 0 a23,22 0,1 1,-46 0" />
-    <path android:fillColor="#33FFFFFF" android:pathData="M38,50 Q44,40 56,39 Q46,44 42,53 Z" />
+    <path android:fillColor="#FF6A9D8F" android:strokeColor="#FF2B2140" android:strokeWidth="3"
+        android:pathData="M33,64 Q33,42 54,41 Q75,42 75,64 Q75,84 54,84 Q33,84 33,64 Z" />
+    <path android:fillColor="#FF7FB5A6"
+        android:pathData="M35,62 Q35,44 54,43 Q70,44 71,58 Q66,76 50,80 Q36,76 35,62 Z" />
+    <path android:fillColor="#33FFFFFF" android:pathData="M39,54 Q43,45 53,44 Q45,49 42,57 Z" />
+    <!-- Hair tuft with a tiny sprig -->
+    <path android:fillColor="#FF5A3824" android:strokeColor="#FF2B2140" android:strokeWidth="2.4" android:strokeLineJoin="round"
+        android:pathData="M42,45 Q40,34 48,36 Q50,28 57,33 Q64,29 66,37 Q71,40 66,46 Q54,40 42,45 Z" />
+    <path android:strokeColor="#FF2B2140" android:strokeWidth="2" android:strokeLineCap="round" android:pathData="M57,33 Q58,27 61,24" />
+    <path android:fillColor="#FF2FD18B" android:strokeColor="#FF2B2140" android:strokeWidth="1.8" android:pathData="M61,25 Q67,20 71,24 Q66,29 61,25 Z" />
     <!-- Cheeks -->
-    <path android:fillColor="#66FF6F91" android:pathData="M36,66 a4,3 0,1 1,8 0 a4,3 0,1 1,-8 0" />
-    <path android:fillColor="#66FF6F91" android:pathData="M64,66 a4,3 0,1 1,8 0 a4,3 0,1 1,-8 0" />
+    <path android:fillColor="#59FF6F91" android:pathData="M37,68 a4.5,3 0,1 1,9 0 a4.5,3 0,1 1,-9 0" />
+    <path android:fillColor="#59FF6F91" android:pathData="M62,68 a4.5,3 0,1 1,9 0 a4.5,3 0,1 1,-9 0" />
     <!-- Eyes -->
     <path android:fillColor="#FFFFFFFF" android:strokeColor="#FF2B2140" android:strokeWidth="2"
-        android:pathData="M40.5,56 a5.5,7 0,1 1,11 0 a5.5,7 0,1 1,-11 0" />
+        android:pathData="M40.5,56 a5.5,6.5 0,1 1,11 0 a5.5,6.5 0,1 1,-11 0" />
     <path android:fillColor="#FFFFFFFF" android:strokeColor="#FF2B2140" android:strokeWidth="2"
-        android:pathData="M56.5,56 a5.5,7 0,1 1,11 0 a5.5,7 0,1 1,-11 0" />
-    <path android:fillColor="#FF2B2140" android:pathData="M43.5,57.5 a3.3,4 0,1 1,6.6 0 a3.3,4 0,1 1,-6.6 0" />
-    <path android:fillColor="#FF2B2140" android:pathData="M59.5,57.5 a3.3,4 0,1 1,6.6 0 a3.3,4 0,1 1,-6.6 0" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M46.4,55.4 a1.3,1.3 0,1 1,2.6 0 a1.3,1.3 0,1 1,-2.6 0" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M62.4,55.4 a1.3,1.3 0,1 1,2.6 0 a1.3,1.3 0,1 1,-2.6 0" />
-    <!-- Smile -->
+        android:pathData="M56.5,56 a5.5,6.5 0,1 1,11 0 a5.5,6.5 0,1 1,-11 0" />
+    <path android:fillColor="#FF2B2140" android:pathData="M44,57 a3.2,3.8 0,1 1,6.4 0 a3.2,3.8 0,1 1,-6.4 0" />
+    <path android:fillColor="#FF2B2140" android:pathData="M60,57 a3.2,3.8 0,1 1,6.4 0 a3.2,3.8 0,1 1,-6.4 0" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M46.6,55 a1.3,1.3 0,1 1,2.6 0 a1.3,1.3 0,1 1,-2.6 0" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M62.6,55 a1.3,1.3 0,1 1,2.6 0 a1.3,1.3 0,1 1,-2.6 0" />
+    <!-- Big friendly nose -->
+    <path android:fillColor="#FF8FC4B5" android:strokeColor="#FF2B2140" android:strokeWidth="2.4"
+        android:pathData="M47,66 Q47,59 54,59 Q61,59 61,66 Q61,72 54,72 Q47,72 47,66 Z" />
+    <path android:fillColor="#66FFFFFF" android:pathData="M50,63 a2.2,1.6 0,1 1,4.4 0 a2.2,1.6 0,1 1,-4.4 0" />
+    <!-- Smile with one tooth -->
     <path android:fillColor="#FF7A2440" android:strokeColor="#FF2B2140" android:strokeWidth="2.2" android:strokeLineJoin="round"
-        android:pathData="M46,67 Q54,76 62,67 Q54,70 46,67 Z" />
+        android:pathData="M45,75 Q54,83 63,75 Q54,78 45,75 Z" />
+    <path android:fillColor="#FFFFFFFF" android:strokeColor="#FF2B2140" android:strokeWidth="1.2"
+        android:pathData="M51,76.6 L51.5,79.6 L54.5,79.8 L55,77 Z" />
+    </group>
 </vector>

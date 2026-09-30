@@ -5,18 +5,32 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- Sky -->
     <path android:pathData="M0,0h108v108h-108z">
         <aapt:attr name="android:fillColor">
             <gradient
-                android:type="radial"
-                android:centerX="54"
-                android:centerY="40"
-                android:gradientRadius="78"
-                android:startColor="#FF9ADAFF"
-                android:endColor="#FF2F7FE8" />
+                android:type="linear"
+                android:startX="54"
+                android:startY="0"
+                android:endX="54"
+                android:endY="70"
+                android:startColor="#FFBFE7FF"
+                android:endColor="#FF6EBBF2" />
         </aapt:attr>
     </path>
-    <!-- Sea at the bottom with a soft wave. -->
-    <path android:fillColor="#FF1F63C9" android:pathData="M0,84 Q13,79 27,84 T54,84 T81,84 T108,84 V108 H0 Z" />
-    <path android:fillColor="#55FFFFFF" android:pathData="M0,86 Q13,81 27,86 T54,86 T81,86 T108,86 V88 Q94,84 81,88 T54,88 T27,88 T0,88 Z" />
+    <!-- Far mountains -->
+    <path android:fillColor="#FF8FA8D8" android:pathData="M0,46 L16,30 L28,40 L42,22 L54,34 L68,20 L82,36 L94,26 L108,40 V108 H0 Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M38,26 L42,22 L46,26 L43,27 Z M64,24 L68,20 L72,24 L69,25 Z" />
+    <!-- The cliff the falls come over -->
+    <path android:fillColor="#FF3F8A63" android:pathData="M0,40 Q14,34 30,38 L38,36 L70,36 L80,37 Q96,34 108,38 V108 H0 Z" />
+    <path android:fillColor="#FF5DB07F" android:pathData="M0,40 Q14,34 30,38 L38,36 L70,36 L80,37 Q96,34 108,38 V43 Q94,40 80,42 L30,43 Q14,40 0,45 Z" />
+    <path android:fillColor="#FF2F6B4D" android:pathData="M0,58 Q12,54 24,60 L24,108 H0 Z M84,60 Q96,54 108,58 V108 H84 Z" />
+    <!-- The waterfall -->
+    <path android:fillColor="#FFE8F7FF" android:pathData="M38,36 H70 Q72,62 76,88 H32 Q36,62 38,36 Z" />
+    <path android:fillColor="#FF9ED8FF" android:pathData="M43,40 H46 Q45,62 42,86 H39 Q42,62 43,40 Z M61,40 H64 Q66,62 68,86 H65 Q63,62 61,40 Z" />
+    <path android:fillColor="#FFB9E4FF" android:pathData="M52,44 H54 Q54.6,64 55,86 H53 Q52.6,64 52,44 Z" />
+    <!-- Pool with foam -->
+    <path android:fillColor="#FF2F7FE8" android:pathData="M0,86 Q27,80 54,84 T108,84 V108 H0 Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M30,86 Q36,79 44,84 Q50,78 56,83 Q63,78 70,84 Q77,80 80,86 Q55,90 30,86 Z" />
+    <path android:fillColor="#55FFFFFF" android:pathData="M0,94 Q13,90 27,94 T54,94 T81,94 T108,94 V96 Q94,92 81,96 T54,96 T27,96 T0,96 Z" />
 </vector>
