@@ -14,17 +14,17 @@ Ingen reglar, ingen poeng og ingenting å tape. Barnet flyttar figurar og ting r
 og oppdagar kva som skjer når ting møtest. Alt kan plukkast opp, kastast, givast til nokon eller
 puttast i noko.
 
-| Stad | Det du kan gjere |
-| --- | --- |
-| **Heime** | Leggje nokon i senga, slå på radioen og danse, lage mat, bade, spyle ting ned i do. |
-| **Bakeriet** | Bake kake av deig og eple, lage smoothie, hente is og frukt. |
-| **Frisøren** | Klippe, krølle og farge håret, prøve nye klede og hattar. |
-| **Stranda** | Fiske frå brygga, bade, byggje sandslott, ro båt. |
-| **Fossen** | Telt, bål, marshmallow og eit drakeegg som klekkjer. Nordlys om natta. |
-| **Trollhola** | Trollgryta blandar to ting til noko nytt. Eliksirar som gjer figurane store, små eller svevande. |
-| **Fjellet** | Akebakke, hoppbakke, snømann, badstu og ønskehol i isen. |
-| **Garden** | Køyre traktor, snikre i verkstaden, dyrke gulrøter og hente egg. |
-| **Romstasjonen** | Vektløyse, ekte planetar å leike med, og ein rakett som skyt opp. |
+  Stad   Det du kan gjere  
+  ---   ---  
+  **Heime**   Leggje nokon i senga, slå på radioen og danse, lage mat, bade, spyle ting ned i do.  
+  **Bakeriet**   Bake kake av deig og eple, lage smoothie, hente is og frukt.  
+  **Frisøren**   Klippe, krølle og farge håret, prøve nye klede og hattar.  
+  **Stranda**   Fiske frå brygga, bade, byggje sandslott, ro båt.  
+  **Fossen**   Telt, bål, marshmallow og eit drakeegg som klekkjer. Nordlys om natta.  
+  **Trollhola**   Trollgryta blandar to ting til noko nytt. Eliksirar som gjer figurane store, små eller svevande.  
+  **Fjellet**   Akebakke, hoppbakke, snømann, badstu og ønskehol i isen.  
+  **Garden**   Køyre traktor, snikre i verkstaden, dyrke gulrøter og hente egg.  
+  **Romstasjonen**   Vektløyse, ekte planetar å leike med, og ein rakett som skyt opp.  
 
 - **Figurverkstaden**: lag eigne figurar med hud, høgd, frisyre, klede og namn.
 - **27 løynde glimt**, ei **oppdagingsbok** med oppskrifter og **dagens pakke** i postkassa.

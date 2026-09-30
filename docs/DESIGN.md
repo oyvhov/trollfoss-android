@@ -22,8 +22,9 @@ trolla er det einaste eventyret.
 | --- | --- |
 | **Alt er levande** | Figurar pustar, blunkar og ser etter fingeren. Ting skvisar seg når dei landar og snurrar når dei blir kasta. Fossen dundrar, skyer driv, nordlyset bølgjer. |
 | **Alt kan rørast** | Kvar ting kan plukkast opp, kastast, givast til nokon eller puttast i noko. Gir kombinasjonen meining for eit barn, skjer det noko. |
-| **Oppdaging utan press** | 27 løynde glimt, oppskrifter i omn, gryte og verkstad, og dagens pakke – små mål for dei som vil, aldri tidsfrist, poeng eller tap. |
-| **Noko for alle** | Kjøkken og frisør, traktor og verktøy, fiskestang og akebrett, rakett og ekte planetar. |
+| **Oppdaging utan press** | 42 løynde glimt, ønskjebobler, oppskrifter i omn, gryte og verkstad, og dagens pakke – små mål for dei som vil, aldri tidsfrist, poeng eller tap. |
+| **Humor overalt** | Prompepute, bananskal, pepar som bles hatten av, kake i fjeset, hikke og rap, kiling, hunden som stel mat. Alle ler med, ingen blir lei seg. |
+| **Noko for alle** | Kjøkken og frisør, traktor og verktøy, fiskestang og akebrett, rakett og ekte planetar, tivoli, butikk, lege, konsertscene og havbotn. |
 | **Nordisk og litt magisk** | Kjent for norske barn, vanleg nok for alle andre. Trolla er snille og litt tullete. |
 
 **Aldri:** reklame, kjøp i appen, konto, sporing, nedteljing, straff, poengtavle, tekst barnet må lese.
@@ -32,8 +33,9 @@ trolla er det einaste eventyret.
 
 ## 2. Verda: bygda Trollfoss
 
-Kartet viser bygda ovanfrå: fjorden, elva og den store fossen i midten, fjella bak, garden på
-sletta og romstasjonen høgt oppe i lufta. Kvar stad er ei brei scene i skrå-3D (sjå §5) som ein
+Kartet viser bygda ovanfrå med **14 stader** i tre rader: fjella med trollhola og romstasjonen
+øvst, dalen med tivoli, butikk, foss, lege, bakeri og gard i midten, og strandlinja med frisør,
+heime, konserthus, strand og dykkebøya ytst. Kvar stad er ei brei scene i skrå-3D (sjå §5) som ein
 sveipar sidelengs i.
 
 | Stad | Id | Stemning | Hjartet i staden |
@@ -47,10 +49,15 @@ sveipar sidelengs i.
 | **Fjellet** | `MOUNTAIN` | Vinter heile året. | Akebakke, hoppbakke, snømann, badstu, islagd tjern med ønskehol, kakaobu, gatelykt. |
 | **Garden** | `FARM` | Raud låve, åker og traktor. | Traktor som køyrer, høyballar, hønsehus (gullegg), grønsakshage (så, vatn, hauste), vasstrau, arbeidsbenk (fuglekasse, båt, bil), verktøyvegg, vedstabel, dekk. Ku, sau, høner, fjordhest. |
 | **Romstasjonen** | `SPACE` | Vektlaust, stjerner i vindauget. | Rakett med nedteljing, kontrollpanel, koøyer med ekte planetar, tyngdespak, planetarium med dei åtte planetane og Pluto, romsenger, matautomat. |
+| **Tivoliet** | `TIVOLI` | Lyspærer, konfetti, fjorden bak. | Pariserhjul (over toppen: «wiii!»), karusell med eigen vals, radiobilar som krasjar, trampoline, sukkerspinn, popkorn, boksbombing med premie. |
+| **Butikken** | `SHOP` | Lys og moderne. | Hyller med varer, samleband som skannar med pip, vekt som veg kven som helst, frysedisk, brusskap, handlevogn som rullar med varene. |
+| **Legekontoret** | `DOCTOR` | Pastell og snille plakatar. | Røntgen som viser skjelettet, stetoskop som finn hjarteslaget, plaster, medisin (sur grimase!), undersøkingsbenk, høgdemålar. |
+| **Scena** | `STAGE` | Raude teppe, lyskastarar. | Trommer, xylofon, mikrofon (figuren syng), høgtalar som får alt til å hoppe, discokule som får alle til å danse, røykmaskin. |
+| **Havbotnen** | `UNDERWATER` | Lysstrålar gjennom vatnet. | Alt sym. Ubåt å køyre, kjempemusling med perle, skipsvrak, tare, korallar, blekksprut som sprutar blekk. |
 
-Kvar stad har **tre glimt** (27 i alt): under ting, inni ting, eller dei dukkar opp når du gjer noko
-(fiskar opp ei kiste, hoppar i hoppbakken, kastar mynt i ønskeholet, køyrer traktoren, sender opp
-raketten, slår av tyngdekrafta).
+Kvar stad har **tre glimt** (42 i alt): under ting, inni ting, eller dei dukkar opp når du gjer noko
+(fiskar opp ei kiste, køyrer traktoren, sender opp raketten, slår av tyngdekrafta, tek pariserhjulet
+over toppen, skannar fem varer, røntgar nokon, spelar i band med trommer, xylofon og song).
 
 ---
 
@@ -82,7 +89,19 @@ frå verkstaden får eit ledig namn, og barnet kan skrive sitt eige.
 
 **Liv:** pustar, blunkar, ser etter fingeren. Plukka opp: «oi!», sparkar med beina. Sleppt: skvis og
 dunk. Trykk: fnis og hopp. Et: gomlar med synlege bitemerke. Radio: dansar. Seng om natta: søv.
-Eliksirar: veks, krympar, byter farge, svevar. Kvar figur har si eiga røysthøgd.
+Eliksirar: veks, krympar, byter farge, svevar. Kvar figur har si eiga røysthøgd – ballong i handa gir
+heliumstemme, krympa figurar pip og kjempar brummar.
+
+**Ønskjebobler:** figurar tenkjer på noko i ei bilettboble (ein ting som finst på staden, ei seng om
+natta, musikk eller ein ven). Oppfyller barnet ønsket: konfetti, jubel og kvar tredje gong ein liten
+pakke. Trykk på ein som ønskjer seg noko, så blinkar tingen dei vil ha. Figurar som står nær
+kvarandre pratar med bilettbobler, og dyr som får vere i fred tuslar rundt på golvet.
+
+**Humor:** prompepute på sofaen, bananskal etter bananen (den som landar på det, sklir og ser
+stjerner), pepar ved nasen gir «ATSJO!» som bles hatt og briller av, ting kasta i hovudet seier
+«bonk» (puter blir fjørsky), kake i fjeset gir krem og kirsebær, tre raske slurkar gir hikke, eit stort
+måltid kan ende med rap, mange raske trykk kilar, hunden stel mat frå golvet, blekkspruten sprutar
+blekk. Alle rundt ler.
 
 ---
 
@@ -95,6 +114,7 @@ Eliksirar: veks, krympar, byter farge, svevar. Kvar figur har si eiga røysthøg
 | Kast | Ting snurrar, ballar sprett, ballongar stig, is glir. |
 | Trykk | Lampa lyser, TV-en byter kanal, pakken opnar seg, snømannen veks. |
 | Dra på tomt område | Panorer scena. |
+| Hald inne på ein møbel | **Heimedesignar:** møbelen løftar seg og kan flyttast langs golvet og i djupna, med alt som står på han. |
 
 Møblar er **flater**, **plassar** (stol, seng, akebakke, hoppbakke, badstu), **skap** og **maskinar**.
 **Sekken** nede til høgre er korleis ting og figurar reiser mellom stadene.
@@ -141,8 +161,11 @@ Alle tidsstyrte rørsler stoppar når Android har slått av animasjonar.
 ## 7. Lyd
 
 Alle effektar er syntetiserte i kode: pop, dunk, boing, gomle, fnis, magi, plask, fres, pling, spyling,
-knirk, lukkar. Figurane snakkar tulleord i si eiga tonehøgd. Rolege loopar per stad, lullaby om natta,
-dansemusikk frå radioen.
+knirk, lukkar – og tulleljodane: rap, hikke, prompepute, «atsjo», glideløype-skli, bonk, kilelatter og
+splat. Figurane snakkar tulleord i si eiga tonehøgd og syng i mikrofonen. Eigen loop for kvar av dei
+14 stadene (tivolivals, butikkbossa, rolege legetonar, scenepop, drøymande havbotn), lullaby om
+natta, dansemusikk frå radioen og discokula, karusellmelodi og instrument i same pentatone skala, så
+alt barnet speler høyrest fint ut.
 
 ---
 
@@ -156,7 +179,10 @@ bak eit gongestykke (lyd, musikk, målform, oppdatering, nullstill).
 ## 9. Android og oppdatering
 
 Liggjande på mobil og nettbrett, oppslukande. Kotlin + Jetpack Compose, alt teikna på `Canvas`. Min.
-Android 8.0. Lagring i `files/trollfoss.json`. Oppdatering som Komet: éin signert APK per release på
+Android 8.0. Nettbrett zoomar ut så minst 2,05 scenebreidder får plass, med meir himmel eller vegg over.
+**Spelmotor:** stille møblar og ting blir teikna éin gong per utsjånad til eit bilete og stempla inn
+(«sprite cache»); det som rører seg sjølv, blir oppdaga automatisk og teikna levande. Figurane er alltid
+levande vektorteikning. Lagring i `files/trollfoss.json`. Oppdatering som Komet: éin signert APK per release på
 `oyvhov/trollfoss-android`; appen kontrollerer SHA-256, pakke, versjon og signatur, og ein vaksen
 startar installasjonen.
 
@@ -166,6 +192,6 @@ startar installasjonen.
 
 | Versjon | Innhald |
 | --- | --- |
-| 1.0 | Ni stader i skrå-3D, kart, figurverkstad med namn, fysikk med djupn og vektløyse, mat, klede, frisør, trollgryte, verkstad og traktor, rakett og planetar, 27 glimt, dagens pakke, dag/natt, vêr, sekk, foto, foreldreside, GitHub-oppdatering. |
-| 1.1 | Heimedesignar, fotoalbum med deling, fleire dyr og klede. |
-| 1.2 | Skule, legekontor og stavkyrkje, sesongpynt (jul, 17. mai). |
+| 1.0 | 14 stader i skrå-3D, kart, figurverkstad med namn, fysikk med djupn, vektløyse og symjing, mat, klede, frisør, trollgryte, verkstad og traktor, rakett og planetar, tivoli, butikk, lege, scene og havbotn, ønskjebobler, humor, heimedesignar, 42 glimt, dagens pakke, dag/natt, vêr, sekk, foto, foreldreside, GitHub-oppdatering. |
+| 1.1 | Fotoalbum med deling, fleire dyr (sel, katt-ungar), fleire klede og frisyrar. |
+| 1.2 | Skule og togstasjon, sesongpynt (jul, 17. mai). |
