@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import app.trollfoss.audio.Sfx
 import app.trollfoss.domain.Anatomy
 import app.trollfoss.domain.Body
+import app.trollfoss.domain.Decor
 import app.trollfoss.domain.Face
 import app.trollfoss.domain.Fixture
 import app.trollfoss.domain.FixtureType
@@ -138,6 +139,18 @@ class Engine(
     var counterTarget = Offset(0f, 0f)
 
     var bagOpen by mutableStateOf(false)
+
+    /** The home designer is open: furniture moves with a plain drag, and the panel below takes it away. */
+    var designMode by mutableStateOf(false)
+
+    /** Screen area of the designer panel; furniture let go over it goes into the store. */
+    var storeZone: Rect? = null
+
+    /** A piece of furniture is being dragged over the panel. */
+    var overStore by mutableStateOf(false)
+
+    /** Bumps whenever the designer changes something, so its panel redraws. */
+    var designVersion by mutableIntStateOf(0)
     var bagCount by mutableIntStateOf(0)
         private set
     var found by mutableIntStateOf(world.found.size)
@@ -243,6 +256,10 @@ class Engine(
         }
 
         moveFurniture(dt)
+        // Things flying home when tidied leave a trail of sparkles.
+        if (motion) for (b in world.bodiesIn(place)) if (b.flyT >= 0f && random.nextFloat() < dt * 30f) {
+            particles.add(Particle(PKind.SPARK, b.x, b.y - b.h / 2, 0f, 0f, 0.5f, 0.01f, T.SunTop))
+        }
 
         // A thing carried to the screen edge takes the camera with it.
         if (grabs.values.any { it.moved && (heldBody(it) != null || it.target is Target.Furniture) }) {
@@ -271,6 +288,7 @@ class Engine(
         app.trollfoss.domain.Machine.BLENDER -> !f.on && world.inMachine(f).size < 3
         app.trollfoss.domain.Machine.CAULDRON -> !f.on && world.inMachine(f).size < 2
         app.trollfoss.domain.Machine.TOILET -> true
+        app.trollfoss.domain.Machine.TRASH -> true
         app.trollfoss.domain.Machine.FOUNTAIN -> t.type == ThingType.COIN
         app.trollfoss.domain.Machine.BUILD -> if (t.type.buildTool) world.inMachine(f).isNotEmpty() else world.inMachine(f).size < 2
         app.trollfoss.domain.Machine.GARDEN -> (t.type == ThingType.SEEDS && f.mode == 0) || (t.type == ThingType.WATERING_CAN && f.mode in 1..2)
@@ -570,6 +588,15 @@ class Engine(
             if (grab.target is Target.FromBag) lift(grab, body)
         }
         if (grab.target is Target.Pan) camV = 0f
+        (grab.target as? Target.Furniture)?.fixture?.let { f ->
+            val p = toScene(at)
+            grab.offX = f.x - p.x
+            grab.offY = f.y - p.y
+            grab.moved = true
+            f.anim = 1f
+            host.sfx(Sfx.PICK, 0.7f, 0.7f)
+            host.haptic()
+        }
         grabs[id] = grab
     }
 
@@ -583,6 +610,7 @@ class Engine(
             heldBody(g)?.let { if (!it.held) lift(g, it) }
             if (g.target is Target.BagButton) bagOpen = true
         }
+        if (g.target is Target.Furniture) overStore = storeZone?.contains(at) == true
         if (g.moved && g.target is Target.Pan && grabs.count { it.value.target is Target.Pan } == 1) {
             cam -= dx / u
             clampCam()
@@ -613,8 +641,53 @@ class Engine(
         when {
             body != null && body.held -> drop(g, body, vx, vy)
             g.target is Target.Pan -> camV = -vx
-            g.target is Target.Furniture -> putDown((g.target as Target.Furniture).fixture)
+            g.target is Target.Furniture -> {
+                val f = (g.target as Target.Furniture).fixture
+                overStore = false
+                if (storeZone?.contains(at) == true && sim.designer.store(place, f)) {
+                    designVersion++
+                    host.changed()
+                } else {
+                    putDown(f)
+                }
+            }
         }
+    }
+
+    // ---------------------------------------------------------------------------------- home designer
+
+    private fun centerX(): Float = cam + viewport / 2f
+
+    /** The room in the middle of the screen, which wallpaper and floor choices apply to. */
+    val room: Int get() = Decor.roomAt(place, centerX())
+
+    /** Puts a piece from the catalogue in the middle of the screen. */
+    fun addFurniture(type: FixtureType, variant: Int) {
+        val y = if (type.spec.wall) 0.5f else (place.back + PlaceId.FRONT) / 2f
+        sim.designer.add(place, type, variant, centerX() + (random.nextFloat() - 0.5f) * 0.3f, y)?.let {
+            designVersion++
+            host.changed()
+        }
+    }
+
+    fun addFromStore(index: Int) {
+        val type = world.storage.getOrNull(index)?.type ?: return
+        val y = if (type.spec.wall) 0.5f else (place.back + PlaceId.FRONT) / 2f
+        sim.designer.unstore(place, index, centerX(), y)?.let {
+            designVersion++
+            host.changed()
+        }
+    }
+
+    fun restyle(wall: Int? = null, floor: Int? = null) {
+        sim.designer.restyle(place, room, wall, floor)
+        designVersion++
+        host.changed()
+    }
+
+    fun tidy() {
+        sim.designer.tidy(place)
+        host.changed()
     }
 
     /**
@@ -682,6 +755,12 @@ class Engine(
         if (hypot(at.x - bagCenter.x, at.y - bagCenter.y) < bagRadius * 1.1f) return Target.BagButton
         if (bagOpen) trayHit(at)?.let { return Target.FromBag(it) }
         val p = toScene(at)
+        // In the home designer furniture comes first.
+        if (designMode) fixtureAt(p)?.let { f ->
+            if (sim.movable(f)) return Target.Furniture(f)
+            f.anim = 1f
+            host.sfx(Sfx.HMM, 0.4f, 0.8f)
+        }
         val list = drawList()
         for (i in list.indices.reversed()) {
             val b = list[i]
@@ -1285,6 +1364,51 @@ class Engine(
                 }
             }
             Fx.HOP -> s(Sfx.TAP, 0.4f)
+            Fx.PLACE -> {
+                s(Sfx.POP, 0.8f, 0.8f)
+                particles.burst(PKind.DUST, x, y + (fixture?.spec?.h ?: 0f) / 2, 10, 0.4f, 0.016f, up = 0.05f, life = 0.7f)
+                particles.burst(PKind.SPARK, x, y, 8, 0.4f, 0.012f)
+            }
+            Fx.STORE -> {
+                s(Sfx.ZIP, 0.8f)
+                particles.burst(PKind.DUST, x, y, 12, 0.4f, 0.018f, up = 0.1f, life = 0.7f)
+            }
+            Fx.PAINT -> {
+                s(Sfx.SWISH, 0.8f, if (param == 0) 1.2f else 0.8f)
+                s(Sfx.SPARKLE, 0.5f)
+                repeat(16) { particles.add(Particle(PKind.SPARK, x + (random.nextFloat() - 0.5f) * 1.2f, if (param == 0) 0.2f + random.nextFloat() * 0.5f else 0.82f + random.nextFloat() * 0.13f, 0f, -0.05f, 0.9f, 0.012f, T.SunTop)) }
+            }
+            Fx.TIDY -> {
+                s(Sfx.MAGIC, 0.8f)
+                s(Sfx.WHOOSH, 0.7f, 1.3f)
+                for (o in world.bodiesIn(place)) if (o is Person && !o.held && visible(o)) faces(o, Face.WOW, 0.8f, Face.GRIN, 1f)
+            }
+            Fx.HOME -> {
+                s(Sfx.TAP, 0.35f, 1.2f + random.nextFloat() * 0.4f)
+                particles.burst(PKind.SPARK, x, y - (thing?.h ?: 0.03f) / 2, 4, 0.25f, 0.009f)
+            }
+            Fx.TRASH -> if (param == 0) {
+                s(Sfx.CLICK, 0.6f, 0.8f)
+            } else {
+                s(Sfx.CHOMP, 0.7f, 0.8f)
+                particles.burst(PKind.DUST, x, y, 5, 0.25f, 0.01f, up = 0.1f)
+                // Every fourth mouthful the bin burps. Everyone thinks that is very funny.
+                if (param % 4 == 0) {
+                    pending += (time + 0.5f) to {
+                        s(Sfx.BURP, 0.8f, 0.8f)
+                        particles.add(Particle(PKind.BUBBLE, x, y - 0.02f, 0.02f, -0.12f, 1.1f, 0.018f, Color.White))
+                    }
+                    laughAround(x, null, 0.9f, 0.9f)
+                }
+            }
+            Fx.SUCK -> {
+                s(Sfx.WHOOSH, 0.45f, 2f)
+                particles.burst(PKind.DUST, x, y, 4, 0.2f, 0.01f, up = 0f, life = 0.5f)
+                if (param % 5 == 0) {
+                    pending += (time + 0.4f) to { s(Sfx.BURP, 0.7f, 1.4f) }
+                    laughAround(x, null, 0.8f, 0.9f)
+                }
+            }
             Fx.BUMP -> {
                 s(Sfx.BONK, 0.8f, 0.7f)
                 shake = max(shake, 0.3f)
@@ -1583,7 +1707,12 @@ class Engine(
      * back, the earlier it is drawn. Wall fixtures come first of all. Things on a piece of furniture are
      * drawn just after it, figures in a seat just before the seat's front part.
      */
-    private fun fixtureKey(f: Fixture): Float = if (f.spec.wall) -10f + f.id * 0.00001f else f.depth
+    private fun fixtureKey(f: Fixture): Float = when {
+        f.spec.wall -> -10f + f.id * 0.00001f
+        // Rugs lie flat under everything on the floor.
+        f.type == FixtureType.RUG -> -1f + f.id * 0.00001f
+        else -> f.depth
+    }
 
     private fun bodyKey(b: Body): Float {
         if (b.mode == Mode.SEATED) world.fixtures[b.holder]?.let { return fixtureKey(it) + 0.0006f }
@@ -2325,7 +2454,7 @@ class Engine(
         /** Furniture that animates from its own timers while it is on. */
         val LIVE_WHEN_ON = setOf(
             FixtureType.OVEN, FixtureType.DRYER_HOOD, FixtureType.FISHING_SPOT, FixtureType.BLENDER, FixtureType.CAULDRON,
-            FixtureType.ROCKET_SHIP, FixtureType.XRAY, FixtureType.CHECKOUT,
+            FixtureType.ROCKET_SHIP, FixtureType.XRAY, FixtureType.CHECKOUT, FixtureType.ROBOT_VACUUM,
         )
 
         /** Seconds a finger must rest on furniture before it can be moved. */

@@ -1,7 +1,12 @@
 package app.trollfoss.data
 
 import app.trollfoss.domain.Body
+import app.trollfoss.domain.Decor
 import app.trollfoss.domain.Fixture
+import app.trollfoss.domain.FixtureType
+import app.trollfoss.domain.Places
+import app.trollfoss.domain.RoomStyle
+import app.trollfoss.domain.Stored
 import app.trollfoss.domain.Look
 import app.trollfoss.domain.Maalform
 import app.trollfoss.domain.Mode
@@ -82,6 +87,28 @@ class WorldStore(private val file: File) {
             put("found", JSONArray(world.found.toList()))
             put("unlocked", JSONArray(world.unlocked.toList()))
             put("discoveries", JSONArray(world.discoveries.toList()))
+            put("styles", JSONObject().apply { world.styles.forEach { (k, s) -> put(k, JSONArray(listOf(s.wall, s.floor))) } })
+            put("storage", JSONArray().apply { world.storage.forEach { put(JSONObject().put("type", it.type.name).put("variant", it.variant)) } })
+            put("stickers", JSONArray(world.stickers))
+            // Furniture the child added from the catalogue, and blueprint furniture put away in the store.
+            put("added", JSONArray().apply {
+                world.fixtures.values.filter { it.id % 100 >= Decor.FIRST_ADDED }.forEach { f ->
+                    put(JSONObject().apply {
+                        put("id", f.id)
+                        put("place", f.place.name)
+                        put("type", f.type.name)
+                        put("variant", f.variant)
+                        put("x", f.x.toDouble())
+                        put("y", f.y.toDouble())
+                        put("depth", f.depth.toDouble())
+                    })
+                }
+            })
+            put("removed", JSONArray().apply {
+                for (place in PlaceId.entries) {
+                    Places.spec(place).fixtures.indices.map { WorldFactory.fixtureId(place, it) }.filter { it !in world.fixtures }.forEach { put(it) }
+                }
+            })
             put("fixtures", JSONArray().apply {
                 world.fixtures.values.forEach { f ->
                     val moved = WorldFactory.moved(f)
@@ -123,6 +150,13 @@ class WorldStore(private val file: File) {
                     put("type", b.type.name)
                     put("variant", b.variant)
                     put("used", b.used)
+                    b.homePlace?.let { home ->
+                        put("home", home.name)
+                        put("homeOwner", b.homeOwner)
+                        put("homeDx", b.homeDx.toDouble())
+                        put("homeDy", b.homeDy.toDouble())
+                        put("homeInside", b.homeInside)
+                    }
                 }
                 is Person -> {
                     put("kind", "person")
@@ -169,6 +203,32 @@ class WorldStore(private val file: File) {
             world.found += strings(json.optJSONArray("found"))
             world.unlocked += strings(json.optJSONArray("unlocked"))
             world.discoveries += strings(json.optJSONArray("discoveries"))
+
+            json.optJSONArray("removed")?.let { removed -> for (i in 0 until removed.length()) world.fixtures.remove(removed.optInt(i, -1)) }
+            json.optJSONArray("added")?.let { added ->
+                for (i in 0 until added.length()) {
+                    val o = added.optJSONObject(i) ?: continue
+                    val place = enumOrNull<PlaceId>(o.optString("place")) ?: continue
+                    val type = enumOrNull<FixtureType>(o.optString("type")) ?: continue
+                    val y = o.optDouble("y", place.floor.toDouble()).toFloat()
+                    val f = Fixture(o.optInt("id", -1), place, type, o.optDouble("x", 1.0).toFloat(), y, o.optInt("variant", 0), o.optDouble("depth", y.toDouble()).toFloat())
+                    if (f.id % 100 in Decor.FIRST_ADDED..Decor.MAX_ADDED && f.id / 100 == place.ordinal) world.fixtures[f.id] = f
+                }
+            }
+            json.optJSONObject("styles")?.let { styles ->
+                for (key in styles.keys()) {
+                    val a = styles.optJSONArray(key) ?: continue
+                    world.styles[key] = RoomStyle(a.optInt(0, 0).coerceIn(0, Decor.WALLS - 1), a.optInt(1, 0).coerceIn(0, Decor.FLOORS - 1))
+                }
+            }
+            json.optJSONArray("storage")?.let { storage ->
+                for (i in 0 until storage.length()) {
+                    val o = storage.optJSONObject(i) ?: continue
+                    val type = enumOrNull<FixtureType>(o.optString("type")) ?: continue
+                    world.storage += Stored(type, o.optInt("variant", 0))
+                }
+            }
+            json.optJSONArray("stickers")?.let { s -> for (i in 0 until s.length()) world.stickers += s.optInt(i) }
 
             val fixtures = json.optJSONArray("fixtures") ?: JSONArray()
             for (i in 0 until fixtures.length()) {
@@ -222,7 +282,16 @@ class WorldStore(private val file: File) {
             val body: Body = when (o.optString("kind")) {
                 "thing" -> {
                     val type = enumOrNull<ThingType>(o.optString("type")) ?: return null
-                    Thing(id, type, o.optInt("variant", 0)).apply { used = o.optInt("used", 0).coerceIn(0, maxOf(0, type.bites - 1)) }
+                    Thing(id, type, o.optInt("variant", 0)).apply {
+                        used = o.optInt("used", 0).coerceIn(0, maxOf(0, type.bites - 1))
+                        enumOrNull<PlaceId>(o.optString("home"))?.let { home ->
+                            homePlace = home
+                            homeOwner = o.optInt("homeOwner", -1)
+                            homeDx = o.optDouble("homeDx", 0.0).toFloat()
+                            homeDy = o.optDouble("homeDy", 0.0).toFloat()
+                            homeInside = o.optBoolean("homeInside", false)
+                        }
+                    }
                 }
                 "person" -> {
                     val species = enumOrNull<Species>(o.optString("species")) ?: return null

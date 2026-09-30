@@ -38,6 +38,8 @@ object S {
 
     val map = txt("Kart")
     val workshop = txt("Figurverkstaden")
+    val designer = txt("Heimedesignar", "Hjemmedesigner")
+    val tasks = txt("Oppdrag")
     val book = txt("Oppdagingsboka", "Oppdagelsesboka")
     val night = txt("Natt")
     val day = txt("Dag")

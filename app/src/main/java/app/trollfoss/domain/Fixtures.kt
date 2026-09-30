@@ -33,7 +33,7 @@ data class SpotSpec(val dx: Float, val dy: Float, val pose: Pose, val hidden: Bo
 
 /** What a fixture does to things put into or onto it. */
 /** [TARGET]: knocked over by things thrown into its drop zone. [BELT]: a conveyor that scans what rides it. */
-enum class Machine { NONE, STOVE, OVEN, BLENDER, CAULDRON, CAMPFIRE, FISHING, FOUNTAIN, TOILET, DISPENSER, BUILD, GARDEN, TARGET, BELT }
+enum class Machine { NONE, STOVE, OVEN, BLENDER, CAULDRON, CAMPFIRE, FISHING, FOUNTAIN, TOILET, DISPENSER, BUILD, GARDEN, TARGET, BELT, TRASH }
 
 class FixtureSpec(
     val w: Float,
@@ -106,6 +106,9 @@ enum class FixtureType {
 
     // Under water
     SHIPWRECK, KELP, GIANT_CLAM, CORAL, SUBMARINE, OCTOPUS,
+
+    // Home designer catalogue, and tidying up
+    RUG, PICTURE, AQUARIUM, BEANBAG, ARMCHAIR, BUNK_BED, TOY_BOX, DESK, FLOWER_POT, TRASH_BIN, ROBOT_VACUUM,
     ;
 
     val spec: FixtureSpec get() = specs.getValue(this)
@@ -446,6 +449,30 @@ enum class FixtureType {
             CORAL -> FixtureSpec(0.30f, 0.22f, surfaces = listOf(SurfaceSpec(-0.1f, 0.1f, -0.22f)))
             SUBMARINE -> FixtureSpec(0.46f, 0.26f, front = true, spots = listOf(seat(-0.08f, -0.08f), seat(0.1f, -0.08f)), light = RRect(0.15f, -0.25f, 0.6f, 0f))
             OCTOPUS -> FixtureSpec(0.30f, 0.28f)
+
+            // Catalogue furniture. Variants are colours or motifs.
+            RUG -> FixtureSpec(0.46f, 0.01f)
+            PICTURE -> FixtureSpec(0.16f, 0.14f, wall = true)
+            AQUARIUM -> FixtureSpec(0.30f, 0.34f, surfaces = listOf(SurfaceSpec(-0.14f, 0.14f, -0.34f)), light = RRect(-0.2f, -0.4f, 0.2f, 0f))
+            BEANBAG -> FixtureSpec(0.18f, 0.12f, spots = listOf(seat(0f, -0.06f)))
+            ARMCHAIR -> FixtureSpec(0.20f, 0.20f, surfaces = listOf(SurfaceSpec(-0.07f, 0.07f, -0.08f)), spots = listOf(seat(0f, -0.08f)))
+            BUNK_BED -> FixtureSpec(
+                0.40f, 0.42f, front = true,
+                surfaces = listOf(SurfaceSpec(-0.17f, 0.17f, -0.1f), SurfaceSpec(-0.17f, 0.17f, -0.3f)),
+                spots = listOf(SpotSpec(0.02f, -0.1f, Pose.LIE), SpotSpec(0.02f, -0.3f, Pose.LIE)),
+            )
+            TOY_BOX -> FixtureSpec(
+                0.20f, 0.12f,
+                container = RRect(-0.09f, -0.11f, 0.09f, -0.015f),
+                surfaces = listOf(
+                    SurfaceSpec(-0.08f, 0.08f, -0.015f, interior = true),
+                    SurfaceSpec(-0.1f, 0.1f, -0.12f, closedOnly = true),
+                ),
+            )
+            DESK -> FixtureSpec(0.30f, 0.15f, surfaces = listOf(SurfaceSpec(-0.15f, 0.15f, -0.15f)))
+            FLOWER_POT -> FixtureSpec(0.09f, 0.14f)
+            TRASH_BIN -> FixtureSpec(0.10f, 0.14f, machine = Machine.TRASH, dropZone = RRect(-0.07f, -0.26f, 0.07f, -0.1f))
+            ROBOT_VACUUM -> FixtureSpec(0.10f, 0.03f)
         }
     }
 }

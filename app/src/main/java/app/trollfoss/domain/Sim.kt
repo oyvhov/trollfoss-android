@@ -30,6 +30,9 @@ enum class Fx {
 
     // Tivoli, shop, stage and sea.
     BUMP, SCAN, KNOCK, XYLO, SING, BOOM, DISCO, FOG, BUBBLES, INK,
+
+    // Home designer and tidying.
+    PLACE, STORE, PAINT, TIDY, HOME, TRASH, SUCK,
 }
 
 interface SimListener {
@@ -68,6 +71,9 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
 
     /** Rides, games, instruments and machines of the newer places. */
     val attractions = Attractions(this, random)
+
+    /** Furniture catalogue, store, wallpaper and tidying up. */
+    val designer = Designer(this, random)
     private var pools: List<Pool> = emptyList()
 
     fun invalidate(place: PlaceId) {
@@ -204,6 +210,10 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         for (b in world.bodiesIn(place)) {
             b.age += dt
             if (b.cool > 0f) b.cool = max(0f, b.cool - dt)
+            if (b.flyT >= 0f) {
+                designer.stepFlight(b, dt)
+                continue
+            }
             b.squashV += (-b.squash * 260f - b.squashV * 15f) * dt
             b.squash += b.squashV * dt
             when (b.mode) {
@@ -742,6 +752,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                     }
                 }
             }
+            FixtureType.ROBOT_VACUUM -> designer.stepVacuum(place, f, dt)
             else -> attractions.step(place, f, dt)
         }
     }
@@ -891,6 +902,20 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         if (attractions.tap(place, f, dx, dy)) return
         when (f.type) {
             FixtureType.CANDY_FLOSS_STAND, FixtureType.POPCORN_CART -> dispense(place, f, dx)
+            FixtureType.TOY_BOX -> {
+                f.open = !f.open
+                invalidate(place)
+                listener.onFx(if (f.open) Fx.OPEN else Fx.CLOSE, f.x, f.y - f.spec.h / 2, f)
+            }
+            FixtureType.ROBOT_VACUUM -> {
+                f.on = !f.on
+                f.timer = 0f
+                listener.onFx(if (f.on) Fx.ON else Fx.OFF, f.x + f.shiftX, top, f)
+            }
+            FixtureType.AQUARIUM -> listener.onFx(Fx.BUBBLES, f.x, f.y - f.spec.h * 0.6f, f)
+            FixtureType.FLOWER_POT -> listener.onFx(Fx.SHAKE, f.x, f.y - f.spec.h * 0.7f, f)
+            FixtureType.BEANBAG, FixtureType.ARMCHAIR, FixtureType.BUNK_BED -> listener.onFx(Fx.BOING, f.x, top, f)
+            FixtureType.TRASH_BIN -> listener.onFx(Fx.TRASH, f.x, top, f, param = 0)
             FixtureType.FRIDGE, FixtureType.WARDROBE, FixtureType.CHEST, FixtureType.DISPLAY_CASE, FixtureType.TENT, FixtureType.SAUNA -> {
                 f.open = !f.open
                 invalidate(place)
@@ -1327,6 +1352,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                 }
                 return false
             }
+            FixtureType.TRASH_BIN -> return designer.bin(place, f, t)
             FixtureType.ICE_POND -> {
                 if (t.type != ThingType.COIN) return false
                 listener.onFx(Fx.WISH, f.x, f.y - 0.05f, f, t)

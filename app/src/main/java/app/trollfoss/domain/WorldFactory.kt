@@ -57,7 +57,7 @@ object WorldFactory {
     private fun populate(world: World, sim: Sim, place: PlaceId, random: Random) {
         val spec = Places.spec(place)
         val taken = world.people().map { it.name }.filter { it.isNotBlank() }.toSet()
-        spec.things.forEach { world.addThing(it.type, it.variant, place, it.x, it.y).age = 10f }
+        val loose = spec.things.map { world.addThing(it.type, it.variant, place, it.x, it.y).also { t -> t.age = 10f } }
         val fixtures = world.fixturesIn(place)
         for (def in spec.people) {
             if (def.name.isNotBlank() && def.name in taken) continue
@@ -70,5 +70,26 @@ object WorldFactory {
             def.hand?.let { sim.give(person, world.addThing(it, def.handVariant, place, def.x, y), Part.HAND) }
         }
         sim.settle(place)
+        // Where each thing lies now is its home, for tidying up later.
+        for (t in loose) remember(world, t)
+    }
+
+    /** Makes the spot where [t] rests its home: on its furniture (following it if moved) or on the floor. */
+    fun remember(world: World, t: Thing) {
+        val place = t.place ?: return
+        t.homePlace = place
+        val owner = if (t.inside >= 0) t.inside else t.restOwner
+        val f = world.fixtures[owner]
+        if (f != null) {
+            t.homeOwner = f.id
+            t.homeDx = t.x - f.x
+            t.homeDy = t.y - f.y
+            t.homeInside = t.inside >= 0
+        } else {
+            t.homeOwner = -1
+            t.homeDx = t.x
+            t.homeDy = t.y
+            t.homeInside = false
+        }
     }
 }

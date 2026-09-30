@@ -128,6 +128,8 @@ object Places {
                     f(FixtureType.SHELF, 3.73f, 0.46f),          // 24
                     f(FixtureType.MIRROR, 4.07f, 0.52f),         // 25
                     fl(FixtureType.TOILET, 4.07f, depth = -0.08f),               // 26
+                    fl(FixtureType.TRASH_BIN, 2.9f, depth = 0.06f),              // 27
+                    fl(FixtureType.ROBOT_VACUUM, 1.22f, depth = 0.06f),          // 28
                 ),
                 things = listOf(
                     t(ThingType.PILLOW, 0.27f, 0.79f, 1, on = 2),
@@ -185,6 +187,7 @@ object Places {
                     fl(FixtureType.ROUND_TABLE, 2.72f, depth = -0.03f),          // 15
                     fl(FixtureType.CHAIR, 2.86f, depth = -0.03f),                // 16
                     f(FixtureType.WINDOW, 2.46f, 0.5f),          // 17
+                    fl(FixtureType.TRASH_BIN, 1.95f, depth = 0.06f),             // 18
                 ),
                 things = listOf(
                     t(ThingType.CAKE, 1.42f, 0.71f, on = 8),
@@ -453,6 +456,7 @@ object Places {
                     fl(FixtureType.CAN_TOSS, 3.04f, depth = -0.08f),              // 5
                     fl(FixtureType.BUMPER_CAR, 3.5f, depth = 0.03f),              // 6
                     fl(FixtureType.BUMPER_CAR, 4.05f, 1, depth = 0.03f),          // 7
+                    fl(FixtureType.TRASH_BIN, 2.47f, depth = 0.07f),              // 8
                 ),
                 things = listOf(
                     t(ThingType.CANDY_FLOSS, 0.99f, 0.68f, 0, on = 1),
@@ -484,6 +488,7 @@ object Places {
                     fl(FixtureType.SODA_FRIDGE, 2.14f, depth = -0.09f),           // 5
                     fl(FixtureType.CHECKOUT, 2.72f, depth = -0.01f),              // 6
                     fl(FixtureType.CART, 3.22f, depth = 0.05f),                   // 7
+                    fl(FixtureType.TRASH_BIN, 1.52f, depth = 0.05f),              // 8
                 ),
                 things = listOf(
                     t(ThingType.BREAD, 0.18f, 0.87f, on = 0),

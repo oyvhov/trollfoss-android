@@ -62,6 +62,15 @@ sealed class Body(val id: Int) {
     /** Seconds before this body can bonk someone again. */
     var cool = 0f
 
+    /** Flying home when the place is tidied: 0 to 1 along an arc, or -1 when not flying. Never saved. */
+    var flyT = -1f
+    var flyX0 = 0f
+    var flyY0 = 0f
+    var flyX1 = 0f
+    var flyY1 = 0f
+    /** Where it lands: a cupboard to be inside of, or -1. */
+    var flyInside = -1
+
     abstract val w: Float
     abstract val h: Float
 }
@@ -69,6 +78,17 @@ sealed class Body(val id: Int) {
 class Thing(id: Int, var type: ThingType, var variant: Int = 0) : Body(id) {
     /** Bites or sips taken. */
     var used = 0
+
+    /**
+     * Where this thing belongs, for tidying up: its place, and the fixture it lies on or in ([homeOwner],
+     * -1 for the floor) with its offset from that fixture (or its position on the floor). Things made
+     * during play have no home.
+     */
+    var homePlace: PlaceId? = null
+    var homeOwner = -1
+    var homeDx = 0f
+    var homeDy = 0f
+    var homeInside = false
 
     /** Seconds spent on something hot; not saved. */
     var cook = 0f
@@ -223,6 +243,15 @@ class World {
 
     /** Wishes the child has granted, all places together. */
     var wishesGranted = 0
+
+    /** Wallpaper and floor per room, keyed by [Decor.key]. */
+    val styles = HashMap<String, RoomStyle>()
+
+    /** Furniture the child has put away in the home designer's store. */
+    val storage = ArrayList<Stored>()
+
+    /** Stickers earned from tasks, by sticker number. They open special furniture in the catalogue. */
+    val stickers = ArrayList<Int>()
 
     fun nextZ(): Long = ++zCounter
 

@@ -1,0 +1,232 @@
+package app.trollfoss.ui.screens
+
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import app.trollfoss.audio.Sfx
+import app.trollfoss.domain.CatalogueItem
+import app.trollfoss.domain.Decor
+import app.trollfoss.domain.Fixture
+import app.trollfoss.domain.FixtureType
+import app.trollfoss.domain.PlaceId
+import app.trollfoss.domain.World
+import app.trollfoss.ui.art.Pen
+import app.trollfoss.ui.art.drawFixtureBack
+import app.trollfoss.ui.art.drawFixtureFront
+import app.trollfoss.ui.art.drawFloorSwatch
+import app.trollfoss.ui.art.drawWallSwatch
+import app.trollfoss.ui.components.DesignIcons
+import app.trollfoss.ui.components.GameText
+import app.trollfoss.ui.components.IconCanvas
+import app.trollfoss.ui.components.Icons
+import app.trollfoss.ui.components.LocalFeedback
+import app.trollfoss.ui.components.RoundButton
+import app.trollfoss.ui.components.Tones
+import app.trollfoss.ui.play.Engine
+import app.trollfoss.ui.theme.T
+import kotlin.math.max
+import kotlin.math.min
+
+private enum class DesignTab { FURNITURE, WALL, FLOOR, STORE, TIDY }
+
+/**
+ * The home designer's panel along the bottom of the screen: furniture from the catalogue, wallpaper and
+ * floors for the room in the middle of the screen, the store (drag furniture onto the panel to put it
+ * away) and the broom that tidies the whole place. Everything is pictures; nothing needs reading.
+ */
+@Composable
+fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> Unit, modifier: Modifier = Modifier) {
+    var tab by remember(place) { mutableIntStateOf(DesignTab.FURNITURE.ordinal) }
+    val feedback = LocalFeedback.current
+    val version = engine.designVersion
+    val glow by animateFloatAsState(if (engine.overStore) 1f else 0f, label = "store glow")
+    val tabs = DesignTab.entries.filter { (it != DesignTab.WALL && it != DesignTab.FLOOR) || Decor.decoratable(place) }
+
+    Column(
+        modifier
+            .fillMaxWidth()
+            .onGloballyPositioned { engine.storeZone = it.boundsInRoot() }
+            .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+            .background(if (glow > 0.01f) androidx.compose.ui.graphics.lerp(T.Cream, T.SunTop, glow) else T.Cream.copy(alpha = 0.97f))
+            .border(3.dp, T.Ink, RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            for (t in tabs) {
+                val on = t.ordinal == tab
+                RoundButton(
+                    description = t.name,
+                    onClick = { tab = t.ordinal },
+                    size = if (on) 54.dp else 46.dp,
+                    tone = if (on) Tones.Sun else Tones.Cream,
+                    icon = when (t) {
+                        DesignTab.FURNITURE -> DesignIcons.Sofa
+                        DesignTab.WALL -> DesignIcons.Wallpaper
+                        DesignTab.FLOOR -> DesignIcons.Floor
+                        DesignTab.STORE -> DesignIcons.Box
+                        DesignTab.TIDY -> DesignIcons.Broom
+                    },
+                )
+            }
+            Spacer(Modifier.weight(1f))
+            // How many stickers the child has: they open the special furniture.
+            Row(
+                Modifier.background(T.Grape, RoundedCornerShape(50)).border(2.dp, T.Ink, RoundedCornerShape(50)).padding(horizontal = 10.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                IconCanvas(DesignIcons.Sticker, Modifier.size(28.dp))
+                GameText("${world.stickers.size}", fontSize = 20.sp, style = MaterialTheme.typography.titleLarge, color = Color.White)
+            }
+            RoundButton("Ferdig", onClick = onClose, size = 54.dp, tone = Tones.Mint, icon = Icons.Check)
+        }
+
+        Box(Modifier.fillMaxWidth().height(104.dp)) {
+            // Read the version so the panel redraws after every change.
+            if (version < 0) Unit
+            when (DesignTab.entries[tab]) {
+                DesignTab.FURNITURE -> {
+                    val items = remember(place) { Decor.catalogue(place) }
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(end = 12.dp)) {
+                        itemsIndexed(items) { _, item ->
+                            val locked = item.stickers > world.stickers.size
+                            Tile(onClick = {
+                                if (locked) feedback.sfx(Sfx.HMM, 0.6f, 0.8f) else engine.addFurniture(item.type, item.variant)
+                            }) {
+                                FurnitureThumb(item.type, item.variant, place, locked)
+                                if (locked) LockBadge(item)
+                            }
+                        }
+                    }
+                }
+                DesignTab.WALL, DesignTab.FLOOR -> {
+                    val wall = DesignTab.entries[tab] == DesignTab.WALL
+                    val current = Decor.style(world, place, engine.room)
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(end = 12.dp)) {
+                        val n = if (wall) Decor.WALLS else Decor.FLOORS
+                        itemsIndexed(List(n) { it }) { _, i ->
+                            val chosen = if (wall) current.wall == i else current.floor == i
+                            Tile(chosen = chosen, onClick = { if (wall) engine.restyle(wall = i) else engine.restyle(floor = i) }) {
+                                Canvas(Modifier.size(78.dp)) {
+                                    val r = Rect(4.dp.toPx(), 4.dp.toPx(), size.width - 4.dp.toPx(), size.height - 4.dp.toPx())
+                                    val pen = Pen(2.dp.toPx())
+                                    if (wall) drawWallSwatch(i, r, pen) else drawFloorSwatch(i, r, pen)
+                                }
+                            }
+                        }
+                    }
+                }
+                DesignTab.STORE -> {
+                    if (world.storage.isEmpty()) {
+                        Row(Modifier.align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                            IconCanvas(DesignIcons.Box, Modifier.size(80.dp))
+                            // An empty store shows how to fill it: furniture flying into the box.
+                            IconCanvas(DesignIcons.Sofa, Modifier.size(56.dp).graphicsLayer { rotationZ = -12f })
+                        }
+                    } else {
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(end = 12.dp)) {
+                            itemsIndexed(world.storage.toList()) { index, stored ->
+                                Tile(onClick = { engine.addFromStore(index) }) { FurnitureThumb(stored.type, stored.variant, place, false) }
+                            }
+                        }
+                    }
+                }
+                DesignTab.TIDY -> {
+                    Row(Modifier.align(Alignment.Center), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(18.dp)) {
+                        RoundButton("Rydd", onClick = { engine.tidy() }, size = 96.dp, tone = Tones.Sun, icon = DesignIcons.Broom)
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** A square card in the panel. */
+@Composable
+private fun Tile(chosen: Boolean = false, onClick: () -> Unit, content: @Composable () -> Unit) {
+    val feedback = LocalFeedback.current
+    Box(
+        Modifier
+            .size(96.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(if (chosen) T.SunTop else Color.White)
+            .border(if (chosen) 4.dp else 2.5.dp, if (chosen) T.Sun else T.Ink, RoundedCornerShape(18.dp))
+            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                feedback.sfx(Sfx.TAP, 0.5f, 1f)
+                onClick()
+            },
+        contentAlignment = Alignment.Center,
+    ) { content() }
+}
+
+@Composable
+private fun LockBadge(item: CatalogueItem) {
+    Box(Modifier.size(96.dp)) {
+        Row(
+            Modifier.align(Alignment.BottomCenter).padding(bottom = 4.dp).background(T.Grape, RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            IconCanvas(DesignIcons.Sticker, Modifier.size(18.dp))
+            GameText("${item.stickers}", fontSize = 15.sp, style = MaterialTheme.typography.titleMedium, color = Color.White)
+        }
+        IconCanvas(Icons.Lock, Modifier.align(Alignment.TopEnd).padding(6.dp).size(26.dp))
+    }
+}
+
+/** A small drawing of a piece of furniture, scaled to fit its card. */
+@Composable
+private fun FurnitureThumb(type: FixtureType, variant: Int, place: PlaceId, locked: Boolean) {
+    val fixture = remember(type, variant) { Fixture(-1, place, type, 0f, 0f, variant) }
+    Canvas(Modifier.size(84.dp).graphicsLayer { alpha = if (locked) 0.45f else 1f }) {
+        drawThumb(fixture)
+    }
+}
+
+private fun DrawScope.drawThumb(f: Fixture) {
+    val spec = f.spec
+    // Leave room for the oblique top and side, which reach up and to the right.
+    val w = spec.w + 0.12f
+    val h = max(spec.h, 0.05f) + 0.12f
+    val u = min(size.width / w, size.height / h) * 0.92f
+    val pen = Pen(max(1.2f, u * 0.0045f))
+    translate(size.width / 2f - 0.05f * u, size.height / 2f + (max(spec.h, 0.05f) / 2f) * u + 0.03f * u) {
+        drawFixtureBack(f, u, pen)
+        if (spec.front || spec.glass) drawFixtureFront(f, u, pen)
+    }
+}

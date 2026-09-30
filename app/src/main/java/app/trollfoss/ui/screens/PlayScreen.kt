@@ -8,6 +8,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -52,6 +54,7 @@ import app.trollfoss.domain.Weather
 import app.trollfoss.ui.S
 import app.trollfoss.ui.TrollfossViewModel
 import app.trollfoss.ui.Screen
+import app.trollfoss.ui.components.DesignIcons
 import app.trollfoss.ui.components.GameText
 import app.trollfoss.ui.components.Icons
 import app.trollfoss.ui.components.RoundButton
@@ -143,8 +146,25 @@ fun PlayScreen(vm: TrollfossViewModel) {
             }, tone = Tones.Cream, tapSound = false, icon = Icons.Camera)
         }
 
-        // Bottom left: the figure workshop. The bag, bottom right, is drawn by the engine.
-        RoundButton(S.workshop.str(), onClick = { vm.open(Screen.Creator(null)) }, modifier = Modifier.align(Alignment.BottomStart).padding(16.dp), tone = Tones.Grape, icon = Icons.Workshop)
+        // Bottom left: the figure workshop and the home designer. The bag, bottom right, is drawn by the engine.
+        if (!engine.designMode) {
+            Row(Modifier.align(Alignment.BottomStart).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                RoundButton(S.workshop.str(), onClick = { vm.open(Screen.Creator(null)) }, tone = Tones.Grape, icon = Icons.Workshop)
+                RoundButton(S.designer.str(), onClick = { engine.designMode = true }, tone = Tones.Berry, icon = DesignIcons.Roller)
+            }
+        }
+        AnimatedVisibility(
+            visible = engine.designMode,
+            enter = slideInVertically { it } + fadeIn(),
+            exit = slideOutVertically { it } + fadeOut(),
+            modifier = Modifier.align(Alignment.BottomCenter),
+        ) {
+            DesignerPanel(engine, vm.world, place, onClose = {
+                engine.designMode = false
+                engine.storeZone = null
+                vm.scheduleSave()
+            })
+        }
 
         PlaceBanner(place.let { S.place(it).str() }, key = place)
 
