@@ -261,6 +261,7 @@ class Engine(
 
         moveFurniture(dt)
         updateSky(dt)
+        updateWeather(dt)
         // Things flying home when tidied leave a trail of sparkles.
         if (motion) for (b in world.bodiesIn(place)) if (b.flyT >= 0f && random.nextFloat() < dt * 30f) {
             particles.add(Particle(PKind.SPARK, b.x, b.y - b.h / 2, 0f, 0f, 0.5f, 0.01f, T.SunTop))
@@ -1854,6 +1855,7 @@ class Engine(
         }
         drawVignette()
         drawWeather(weather)
+        withTransform({ translate(0f, top) }) { drawLightning() }
         drawFlights()
         drawBag(text, pen)
         if (flash > 0f) drawRect(Color.White.copy(alpha = flash * 0.85f))
@@ -2237,6 +2239,82 @@ class Engine(
             else -> 13f
         }
         return with(sprites) { stampSlow(SlowKey(b.id, 3), bounds, pen.t, hz, draw) }
+    }
+
+    // ---------------------------------------------------------------------------------- thunder and greetings
+
+    private var lightning = 0f
+    private var boltX = 0f
+    private val bolt = FloatArray(14)
+    private var nextStrike = 8f
+    private var greeted = false
+
+    /** Rain outdoors sometimes brings lightning, and thunder a moment after it. */
+    private fun updateWeather(dt: Float) {
+        lightning = max(0f, lightning - dt * 3.2f)
+        if (!greeted) {
+            greeted = true
+            greetVisitors()
+        }
+        if (!motion || !place.outdoor || place == PlaceId.UNDERWATER || world.weather != Weather.RAIN) return
+        nextStrike -= dt
+        if (nextStrike > 0f) return
+        nextStrike = 7f + random.nextFloat() * 14f
+        lightning = 1f
+        boltX = cam + viewport * (0.15f + random.nextFloat() * 0.7f)
+        for (i in bolt.indices) bolt[i] = (random.nextFloat() - 0.5f) * 0.07f
+        // The flicker: a second flash right after the first.
+        pending += (time + 0.13f) to { lightning = 0.85f }
+        val delay = 0.35f + random.nextFloat() * 1.3f
+        pending += (time + delay) to {
+            host.sfx(Sfx.RUMBLE, 0.95f, 0.6f)
+            host.sfx(Sfx.THUD, 0.6f, 0.45f)
+            shake = max(shake, 0.35f)
+            for (o in world.bodiesIn(place)) {
+                if (o !is Person || o.held || o.anim.face == Face.SLEEP) continue
+                faces(o, Face.OOH, 0.6f, Face.GRIN, 1.2f)
+                if (o.anim.pose == Pose.STAND && o.anim.hop == 0f && random.nextFloat() < 0.6f) o.anim.hopV = 1.7f
+            }
+        }
+    }
+
+    private fun DrawScope.drawLightning() {
+        if (lightning <= 0.02f) return
+        val a = lightning
+        if (lightning > 0.55f) {
+            val path = androidx.compose.ui.graphics.Path()
+            var x = sx(boltX)
+            var y = -top
+            path.moveTo(x, y)
+            val steps = bolt.size
+            for (i in 0 until steps) {
+                x += bolt[i] * u
+                y += (heightPx + top) * 0.55f / steps
+                path.lineTo(x, y)
+            }
+            drawPath(path, Color.White.copy(alpha = 0.35f * a), style = Stroke(dp(10f), cap = StrokeCap.Round))
+            drawPath(path, Color.White.copy(alpha = a), style = Stroke(dp(3.5f), cap = StrokeCap.Round))
+        }
+        drawRect(Color(0xFFEAF2FF).copy(alpha = 0.55f * a), Offset(0f, -top), Size(size.width, size.height + top))
+    }
+
+    /** Arriving in a place: the folk in view look up and wave hello, one after another. */
+    private fun greetVisitors() {
+        var n = 0
+        for (o in world.bodiesIn(place)) {
+            if (o !is Person || o.species != Species.FOLK || o.held || o.anim.face == Face.SLEEP || !visible(o)) continue
+            val wait = 0.35f + n * 0.3f + random.nextFloat() * 0.25f
+            n++
+            pending += (time + wait) to {
+                if (!o.held && o.anim.face != Face.SLEEP) {
+                    o.anim.wave = 1.5f
+                    o.anim.face = Face.GRIN
+                    o.anim.faceTime = 1.4f
+                    if (n <= 3) voice(o, Sfx.BABBLE, 0.22f)
+                }
+            }
+            if (n >= 4) break
+        }
     }
 
     // ---------------------------------------------------------------------------------- the night sky

@@ -28,10 +28,19 @@ function RoundedPath($x, $y, $w, $h) {
 $ink = [System.Drawing.Color]::FromArgb(255, 43, 33, 64)
 $sun = [System.Drawing.Color]::FromArgb(255, 255, 200, 61)
 
-# A scene cut from a screenshot, without the buttons in the corners, in a rounded inked frame.
-function Scene($name, $x, $y, $w, $h, $g, [switch]$whole) {
+# A scene cut from a screenshot in a rounded inked frame. The picture is cropped to the frame's shape
+# (never stretched): a band without the corner buttons, centred on [$cx] (0 = left edge, 1 = right edge).
+function Scene($name, $x, $y, $w, $h, $g, [double]$cx = 0.5, [switch]$whole) {
     $img = Load $name
-    $src = if ($whole) { New-Object System.Drawing.Rectangle 0, 0, $img.Width, $img.Height } else { New-Object System.Drawing.Rectangle 0, 216, $img.Width, 648 }
+    if ($whole) {
+        $src = New-Object System.Drawing.Rectangle 0, 0, $img.Width, $img.Height
+    } else {
+        $bandTop = [int]($img.Height * 0.2); $bandH = [int]($img.Height * 0.6)
+        $srcW = [int][Math]::Min($img.Width, $bandH * $w / $h)
+        $srcH = if ($srcW -ge $bandH * $w / $h - 1) { $bandH } else { [int]($srcW * $h / $w) }
+        $left = [int][Math]::Max(0, [Math]::Min($img.Width - $srcW, $cx * $img.Width - $srcW / 2))
+        $src = New-Object System.Drawing.Rectangle $left, ($bandTop + [int](($bandH - $srcH) / 2)), $srcW, $srcH
+    }
     $p = RoundedPath $x $y $w $h
     $g.SetClip($p)
     $g.DrawImage($img, (New-Object System.Drawing.Rectangle $x, $y, $w, $h), $src, 'Pixel')
@@ -40,7 +49,6 @@ function Scene($name, $x, $y, $w, $h, $g, [switch]$whole) {
     $g.DrawPath($pen, $p)
     $pen.Dispose(); $p.Dispose(); $img.Dispose()
 }
-
 function NewCanvas($w, $h) {
     $b = New-Object System.Drawing.Bitmap $w, $h
     $g = [System.Drawing.Graphics]::FromImage($b)
@@ -90,9 +98,9 @@ $g.Dispose(); $sp.Dispose(); $logo.Dispose()
 $c = NewCanvas 1600 420; $bn = $c[0]; $g = $c[1]
 Background $g 1600 420 ([System.Drawing.Color]::FromArgb(255, 64, 44, 118)) ([System.Drawing.Color]::FromArgb(255, 28, 22, 60)) 35
 Glow $g -40 -60 560 560
-Scene 'tivoli' 860 80 330 250 $g
-Scene 'underwater' 1060 40 330 250 $g
-Scene 'stage' 1240 130 330 250 $g
+Scene 'tivoli' 880 36 430 193 $g -whole
+Scene 'underwater' 1010 130 430 193 $g -whole
+Scene 'stage' 1150 210 430 193 $g -whole
 $lg = [System.Drawing.Image]::FromFile((Join-Path $out 'logo.png')); $g.DrawImage($lg, 50, 70, 280, 280); $lg.Dispose()
 Title $g 'Trollfoss' 350 80 104
 Text $g 'Ei bygd under ein stor foss' 356 214 30 ([System.Drawing.Color]::White)
@@ -103,8 +111,8 @@ $bn.Save((Join-Path $out 'banner.png')); $g.Dispose(); $bn.Dispose()
 $c = NewCanvas 1280 640; $sc = $c[0]; $g = $c[1]
 Background $g 1280 640 ([System.Drawing.Color]::FromArgb(255, 70, 48, 128)) ([System.Drawing.Color]::FromArgb(255, 26, 20, 56)) 40
 Glow $g 20 20 560 600
-Scene 'home' 620 70 560 330 $g
-Scene 'forest-night' 700 290 520 300 $g
+Scene 'home' 600 60 620 279 $g -whole
+Scene 'forest-night' 660 310 580 261 $g -whole
 $lg = [System.Drawing.Image]::FromFile((Join-Path $out 'logo.png')); $g.DrawImage($lg, 70, 70, 250, 250); $lg.Dispose()
 Title $g 'Trollfoss' 50 324 112
 Text $g 'Ei bygd under ein stor foss' 54 462 34 $sun
