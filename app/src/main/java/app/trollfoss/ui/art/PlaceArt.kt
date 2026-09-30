@@ -21,11 +21,11 @@ fun DrawScope.drawPlaceBack(place: PlaceId, cam: Float, u: Float, pen: Pen) {
         PlaceId.LAB -> labBack(st, pen)
         PlaceId.FARM -> farmBack(st, pen)
         PlaceId.SPACE -> spaceBack(st, pen)
-        // Stand-ins until the new places have their own backgrounds.
-        PlaceId.TIVOLI -> farmBack(st, pen)
-        PlaceId.SHOP, PlaceId.DOCTOR -> cafeBack(st, pen)
-        PlaceId.STAGE -> salonBack(st, pen)
-        PlaceId.UNDERWATER -> beachBack(st, pen)
+        PlaceId.TIVOLI -> tivoliBack(st, pen)
+        PlaceId.SHOP -> shopBack(st, pen)
+        PlaceId.DOCTOR -> doctorBack(st, pen)
+        PlaceId.STAGE -> stageBack(st, pen)
+        PlaceId.UNDERWATER -> underwaterBack(st, pen)
     }
 }
 
@@ -37,6 +37,8 @@ fun DrawScope.drawPlaceFront(place: PlaceId, cam: Float, u: Float, pen: Pen) {
         PlaceId.FOREST -> forestFront(st, pen)
         PlaceId.MOUNTAIN -> mountainFront(st, pen)
         PlaceId.FARM -> farmFront(st, pen)
+        PlaceId.TIVOLI -> tivoliFront(st, pen)
+        PlaceId.UNDERWATER -> underwaterFront(st, pen)
         else -> Unit
     }
 }
