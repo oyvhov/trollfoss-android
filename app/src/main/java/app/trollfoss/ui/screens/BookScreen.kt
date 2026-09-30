@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -124,25 +125,27 @@ private fun TabChip(label: String, selected: Boolean, onClick: () -> Unit) {
 private fun SecretsPage(vm: TrollfossViewModel) {
     FlowRow(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(end = 60.dp),
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        // Fourteen places: five small cards a row, so the whole village fits on a phone.
         for (place in PlaceId.entries) {
             val secrets = Secrets.inPlace(place)
             Column(
                 Modifier
-                    .clip(RoundedCornerShape(22.dp))
+                    .width(138.dp)
+                    .clip(RoundedCornerShape(20.dp))
                     .background(T.Cream)
-                    .border(2.5.dp, T.Ink, RoundedCornerShape(22.dp))
-                    .padding(14.dp),
+                    .border(2.5.dp, T.Ink, RoundedCornerShape(20.dp))
+                    .padding(horizontal = 8.dp, vertical = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                GameText(S.place(place).str(), fontSize = 19.sp, style = MaterialTheme.typography.titleLarge, color = Color.White)
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                GameText(S.place(place).str(), fontSize = 16.sp, style = MaterialTheme.typography.titleLarge, color = Color.White)
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     for (s in secrets) {
                         val got = s.id in vm.world.found
-                        Canvas(Modifier.size(42.dp)) {
+                        Canvas(Modifier.size(36.dp)) {
                             val star = starPath(center, size.minDimension * 0.46f, size.minDimension * 0.2f)
                             if (got) {
                                 drawPath(star, T.Sun)
