@@ -191,23 +191,19 @@ private val homeStatic = Memo { u ->
     val splash = ArrayList<Offset>(80)
     val sx0 = 2.64f
     val sx1 = 3.1f
-    var ty = 0.52f
-    var tr = 0
-    while (ty <= 0.721f) {
+    for (tr in 0..8) {
+        val ty = 0.52f + tr * 0.025f
         splash.add(Offset(sx0 * u, ty * u))
         splash.add(Offset(sx1 * u, ty * u))
-        if (ty < 0.72f) {
-            var tx = sx0 + (tr % 2) * 0.03f
-            while (tx < sx1) {
-                if (tx > sx0) {
-                    splash.add(Offset(tx * u, ty * u))
-                    splash.add(Offset(tx * u, (ty + 0.025f) * u))
-                }
-                tx += 0.06f
+        if (tr == 8) continue
+        var tx = sx0 + (tr % 2) * 0.03f
+        while (tx < sx1) {
+            if (tx > sx0) {
+                splash.add(Offset(tx * u, ty * u))
+                splash.add(Offset(tx * u, (ty + 0.025f) * u))
             }
+            tx += 0.06f
         }
-        ty += 0.025f
-        tr++
     }
     // Square tiles on the bathroom wall.
     val bathTiles = ArrayList<Offset>(80)

@@ -136,7 +136,7 @@ internal fun DrawScope.labBack(st: Stage, pen: Pen) {
         Offset(0f, SKY_TOP * u),
         Size(st.w, (back - SKY_TOP) * u),
     )
-    val glow = 0.5f + 0.3f * sin(t * 1.2f)
+    val glow = 0.6f + 0.35f * sin(t * 1.2f)
     inScene(st) {
         drawPath(cs.holes, Color(0xFF130D24))
         drawPath(cs.holes, Ink.line, style = pen.thin)
@@ -145,7 +145,8 @@ internal fun DrawScope.labBack(st: Stage, pen: Pen) {
         drawPath(cs.ledges, Color(0xFF7A62B0))
         drawPath(cs.ledges, Ink.line, alpha = 0.5f, style = pen.thin)
         drawPath(cs.spirals, Color(0xFF1B1430), style = Stroke(pen.lw * 2.4f, cap = StrokeCap.Round))
-        drawPath(cs.spirals, Color(0xFF9DE8FF), alpha = glow, style = Stroke(pen.lw * 1.1f, cap = StrokeCap.Round))
+        drawPath(cs.spirals, Color(0xFF6FF2FF), alpha = 0.25f * glow, style = Stroke(pen.lw * 4f, cap = StrokeCap.Round))
+        drawPath(cs.spirals, Color(0xFFB9F6FF), alpha = glow, style = Stroke(pen.lw * 1.3f, cap = StrokeCap.Round))
     }
     crystals(st, pen, 0.07f, 0.42f, 0.1f, 22f, Color(0xFF6FF2FF), 0f)
     crystals(st, pen, 0.7f, 0.33f, 0.09f, -12f, Color(0xFFFF7BD8), 1.3f)

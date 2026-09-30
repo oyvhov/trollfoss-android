@@ -542,7 +542,7 @@ internal fun DrawScope.forestBack(st: Stage, pen: Pen) {
     drawSky(st, pen, Mood.FOREST, 0.66f)
     drawStars(st, pen, 0.5f)
     drawMoon(Offset(st.fx(0.26f, 0.04f), 0.11f * u), 0.038f * u, pen, ramp((n - 0.3f) / 0.5f))
-    drawAurora(st, pen, 1f, 0f, 0.36f)
+    drawAurora(st, pen, 1.3f, -0.02f, 0.38f)
     drawSun(Offset(st.fx(0.22f, 0.04f), 0.13f * u), 0.05f * u, pen, (1f - n) * (1f - overcast(pen)))
     drawRainbow(Offset(st.fx(0.4f, 0.08f), 0.66f * u), 0.5f * u, 0.016f * u, pen.rainbow)
     drawClouds(st, pen, 0.04f, 0.22f, 3, 0.06f, salt = 5)
