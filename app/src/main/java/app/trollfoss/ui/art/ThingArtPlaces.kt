@@ -174,7 +174,7 @@ internal fun DrawScope.thSoda(v: Int, used: Int, w: Float, h: Float, pen: Pen) {
     }
 }
 
-/** A bottle of medicine: amber glass, a label with a red cross, a dosing cup on the cap. */
+/** A bottle of medicine: amber glass, a label with a green pharmacy plus, a dosing cup on the cap. */
 internal fun DrawScope.thSyrup(w: Float, h: Float, pen: Pen) {
     fun o(x: Float, y: Float) = Offset(x * w, y * h)
     val amber = Color(0xFFC0692E)
@@ -200,7 +200,7 @@ internal fun DrawScope.thSyrup(w: Float, h: Float, pen: Pen) {
         addRoundRect(androidx.compose.ui.geometry.RoundRect(Rect(cx - a / 2, cy - a * 1.4f, cx + a / 2, cy + a * 1.4f), CornerRadius(a * 0.2f)))
         addRoundRect(androidx.compose.ui.geometry.RoundRect(Rect(cx - a * 1.4f, cy - a / 2, cx + a * 1.4f, cy + a / 2), CornerRadius(a * 0.2f)))
     }
-    drawPath(cross, Color(0xFFE8304A))
+    drawPath(cross, Color(0xFF2FB36B))
     // A see-through dosing cup sits upside down on the cap.
     val cup = thSketch(w, h) { m(-0.3f, -0.78f); l(0.3f, -0.78f); l(0.24f, -0.985f); l(-0.24f, -0.985f); z() }
     drawPath(cup, Color(0x88FFFFFF))
