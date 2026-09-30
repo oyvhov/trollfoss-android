@@ -253,9 +253,11 @@ internal fun DrawScope.thStarJar(w: Float, h: Float, pen: Pen) {
     drawPath(jar, ThingInk.glass)
     clipPath(jar) {
         val sc = o(0f, -0.4f + 0.03f * sin(pen.t * 1.5f))
-        thGlow(sc, w * 0.42f, Color(0xFFFFF3A0), 0.6f + 0.3f * pulse)
-        inked(starPath(sc, w * 0.26f, w * 0.12f, sin(pen.t) * 10f), Color(0xFFFFE066), pen)
-        drawCircle(Color(0xFFFFF7C2), w * 0.06f, sc)
+        thGlow(sc, w * 0.46f, Color(0xFFFFF3A0), 0.7f + 0.3f * pulse)
+        val star = starPath(sc, w * 0.32f, w * 0.15f, sin(pen.t) * 10f)
+        drawPath(star, Color(0xFFFFE066))
+        drawPath(star, Color(0xFFE0A21E), style = Stroke(pen.lw * 0.7f, join = StrokeJoin.Round))
+        drawCircle(Color(0xFFFFFBE0), w * 0.09f, sc)
         for (k in 0 until 3) {
             val a = pen.t * 1.2f + k * 2.1f
             thGlint(Offset(sc.x + cos(a) * w * 0.3f, sc.y + sin(a) * h * 0.22f), w * 0.1f, pen.t, 3f, k * 1.9f, Color(0xFFFFF7C2))

@@ -440,6 +440,10 @@ internal fun DrawScope.thSnowball(w: Float, h: Float, pen: Pen) {
         thSheen(o(0f, -0.5f), w * 0.5f, 0.6f)
     }
     drawPath(path, Ink.line, style = pen.stroke)
+    val clump = ThingInk.snowShade
+    drawArc(clump, 20f, 120f, false, o(-0.3f, -0.62f), Size(0.3f * w, 0.24f * h), style = Stroke(pen.lw * 0.55f, cap = StrokeCap.Round))
+    drawArc(clump, 30f, 110f, false, o(0.02f, -0.46f), Size(0.32f * w, 0.26f * h), style = Stroke(pen.lw * 0.55f, cap = StrokeCap.Round))
+    drawArc(clump, 200f, 100f, false, o(-0.16f, -0.3f), Size(0.26f * w, 0.2f * h), style = Stroke(pen.lw * 0.55f, cap = StrokeCap.Round))
     val sparkle = Color(0xFF9CC4F0)
     drawCircle(sparkle, w * 0.02f, o(0.18f, -0.34f))
     drawCircle(sparkle, w * 0.015f, o(-0.12f, -0.22f))
