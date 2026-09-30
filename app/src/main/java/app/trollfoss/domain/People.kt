@@ -14,6 +14,10 @@ enum class Species(val height: Float, val widthRatio: Float) {
     DRAGON(0.14f, 1.0f),
     ELK(0.17f, 0.8f),
     PUFFIN(0.11f, 0.8f),
+    COW(0.2f, 1.0f),
+    SHEEP(0.15f, 1.0f),
+    CHICKEN(0.1f, 0.8f),
+    HORSE(0.23f, 0.85f),
     ;
 
     val pet: Boolean get() = this != FOLK
@@ -84,6 +88,10 @@ object Palette {
         Species.DRAGON -> scales[index.mod(scales.size)]
         Species.ELK -> elk[index.mod(elk.size)]
         Species.PUFFIN -> 0xFF2B2140.toInt()
+        Species.COW -> intArrayOf(0xFFF5F1EA.toInt(), 0xFF8C5A36.toInt(), 0xFF3A3340.toInt())[index.mod(3)]
+        Species.SHEEP -> intArrayOf(0xFFF5F1EA.toInt(), 0xFFE8DCC8.toInt(), 0xFF3A3340.toInt())[index.mod(3)]
+        Species.CHICKEN -> intArrayOf(0xFFF5F1EA.toInt(), 0xFFC96A2B.toInt(), 0xFF3A3340.toInt())[index.mod(3)]
+        Species.HORSE -> intArrayOf(0xFFE3C08A.toInt(), 0xFFD6A96A.toInt())[index.mod(2)]
         else -> furs[index.mod(furs.size)]
     }
 }

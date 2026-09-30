@@ -117,6 +117,10 @@ class Fixture(val id: Int, val place: PlaceId, val type: FixtureType, val x: Flo
     var tapTime = -10f
     var bob = 0f
 
+    /** How far a vehicle has moved from its spot (the tractor drives, the rocket flies). */
+    var shiftX = 0f
+    var shiftY = 0f
+
     val spec: FixtureSpec get() = type.spec
 
     /** Top edge in scene units. */

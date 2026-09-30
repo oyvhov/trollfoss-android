@@ -19,7 +19,7 @@ enum class Fx {
     OPEN, CLOSE, ON, OFF, CHANNEL, DISPENSE, EMPTY, COOKED, BAKE, DING, BLEND, BLENDED, INTO, STIR, BREWED,
     CAST, CATCH, FLUSH, WISH, KEY, TICK, CUCKOO, TOOT, BUILD, CRUMBLE, OWL, SHAKE, PUSH, SLIDE, SPARKLE,
     PAGE, LOOK, REGISTER, PUMP, DRY, WATER, HATCH, GIFT, POOF, SPIN, BOING, SQUEAK, STRUM, DRUM, RING,
-    VROOM, FIREWORK, HOP, CURTAIN, WHEE, CRACK,
+    VROOM, FIREWORK, HOP, CURTAIN, WHEE, CRACK, BEEP, RUMBLE, LAUNCH, GROW, HARVEST, HAMMER, GRAVITY,
 }
 
 interface SimListener {
@@ -98,14 +98,26 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         is Person -> pool.line + body.h * (if (body.species == Species.FOLK) 0.55f else 0.45f)
     }
 
+    /** The space station floats in zero gravity until someone pulls the gravity lever. */
+    fun zeroG(place: PlaceId): Boolean =
+        place == PlaceId.SPACE && world.fixturesIn(place).firstOrNull { it.type == FixtureType.GRAVITY_LEVER }?.on != true
+
     /** Puts every body in [place] where it belongs: on the surface below it, in its seat or afloat. */
     fun settle(place: PlaceId) {
         val all = buildSurfaces(place, allInterior = true)
         pools = pools(place)
+        val floating = zeroG(place)
+        for (f in world.fixturesIn(place)) {
+            if (f.type == FixtureType.TRACTOR) f.shiftX = f.mode * TRACTOR_DRIVE
+        }
         for (b in world.bodiesIn(place)) {
             when (b.mode) {
                 Mode.SEATED -> (b as? Person)?.let { placeSeated(it) }
                 Mode.FREE -> {
+                    if (floating && b.inside < 0) {
+                        b.resting = false
+                        continue
+                    }
                     if (b is Thing && b.type.lift < 0f) {
                         b.y = place.ceiling + b.h
                         continue
@@ -134,6 +146,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
     fun step(place: PlaceId, dt: Float) {
         time += dt
         pools = pools(place)
+        floating = zeroG(place)
         val list = surfaces(place)
         val fixtures = world.fixturesIn(place)
         for (f in fixtures) stepFixture(place, f, dt)
@@ -156,6 +169,10 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         if (b.inside >= 0) {
             val box = world.fixtures[b.inside]
             if (box != null && !box.open) return
+        }
+        if (floating) {
+            stepFloating(place, b, list, dt)
+            return
         }
         val lift = liftOf(b)
         if (b.resting) {
@@ -242,6 +259,42 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         b.y = newY
     }
 
+    /**
+     * Zero gravity: nothing falls. Bodies drift, slow down a little, bounce softly off floor, ceiling,
+     * walls and furniture tops, and get a tiny nudge now and then so the station never looks frozen.
+     */
+    private fun stepFloating(place: PlaceId, b: Body, list: List<Surface>, dt: Float) {
+        b.resting = false
+        b.vx *= exp(-0.35f * dt)
+        b.vy *= exp(-0.35f * dt)
+        b.vrot *= exp(-0.3f * dt)
+        if (abs(b.vx) + abs(b.vy) < 0.03f && random.nextFloat() < dt * 0.6f) {
+            b.vx += (random.nextFloat() - 0.5f) * 0.06f
+            b.vy += (random.nextFloat() - 0.5f) * 0.06f
+            b.vrot += (random.nextFloat() - 0.5f) * 30f
+        }
+        val oldY = b.y
+        var newY = b.y + b.vy * dt
+        b.x += b.vx * dt
+        b.rot += b.vrot * dt
+        wall(place, b)
+        if (b.vy > 0f) {
+            val s = list.filter { b.x >= it.x1 && b.x <= it.x2 && it.y >= oldY - 0.0005f && it.y <= newY }.minByOrNull { it.y }
+            if (s != null) {
+                newY = s.y - 0.001f
+                b.vy = -max(abs(b.vy) * 0.55f, 0.04f)
+                if (abs(b.vy) > 0.3f) listener.onBounce(b, abs(b.vy))
+            }
+        }
+        if (newY - b.h < place.ceiling) {
+            newY = place.ceiling + b.h
+            b.vy = abs(b.vy) * 0.55f + 0.02f
+        }
+        b.y = newY
+    }
+
+    private var floating = false
+
     private fun land(b: Body, s: Surface) {
         val impact = b.vy
         b.y = s.y
@@ -311,7 +364,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         p.anim.pose = when {
             p.held -> Pose.HELD
             p.mode == Mode.SEATED -> world.fixtures[p.holder]?.spec?.spots?.getOrNull(p.slot)?.pose ?: Pose.SIT
-            p.floatTime > 0f && !p.resting -> Pose.FLOAT
+            (p.floatTime > 0f || floating) && !p.resting && p.mode == Mode.FREE -> Pose.FLOAT
             p.mode == Mode.FREE && !p.resting && poolAt(p.x, p.y) != null -> Pose.SWIM
             else -> Pose.STAND
         }
@@ -330,8 +383,8 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
 
     fun seatPoint(f: Fixture, spot: Int): FloatArray {
         val s = f.spec.spots[spot]
-        var x = f.x + s.dx
-        var y = f.y + s.dy
+        var x = f.x + s.dx + f.shiftX
+        var y = f.y + s.dy + f.shiftY
         when (f.type) {
             FixtureType.SALON_CHAIR -> y -= f.mode * 0.04f
             FixtureType.BOAT -> y += f.bob
@@ -436,6 +489,43 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
             FixtureType.OWL_TREE -> if (f.mode == 1) {
                 f.timer -= dt
                 if (f.timer <= 0f) f.mode = 0
+            }
+            FixtureType.TRACTOR -> {
+                val target = f.mode * TRACTOR_DRIVE
+                val step = 0.32f * dt
+                f.on = abs(target - f.shiftX) > 0.001f
+                f.shiftX = if (f.shiftX < target) min(target, f.shiftX + step) else max(target, f.shiftX - step)
+                if (f.on) f.bob = sin(time * 30f) * 0.003f else f.bob = 0f
+            }
+            FixtureType.ROCKET_SHIP -> if (f.on) {
+                f.timer += dt
+                val t = f.timer
+                f.shiftX = 0f
+                f.shiftY = when {
+                    t < 0.7f -> sin(t * 90f) * 0.004f
+                    t < 2.0f -> -((t - 0.7f) / 1.3f).let { it * it } * 1.6f
+                    t < 3.2f -> -1.6f
+                    t < 4.8f -> -(1f - ((t - 3.2f) / 1.6f).let { 1f - (1f - it) * (1f - it) }) * 1.6f
+                    else -> 0f
+                }
+                if (t >= 4.8f) {
+                    f.on = false
+                    f.timer = 0f
+                    f.shiftY = 0f
+                    listener.onFx(Fx.BOING, f.x, f.y, f)
+                }
+            }
+            FixtureType.ORRERY -> {
+                f.timer = max(0f, f.timer - dt)
+                f.angle += dt * (if (f.timer > 0f) 3.2f else 0.35f)
+            }
+            FixtureType.VEGETABLE_PATCH -> if (f.mode in 1..2) {
+                f.timer -= dt
+                if (f.timer <= 0f) {
+                    f.mode += 1
+                    f.timer = GROW_SECONDS
+                    listener.onFx(Fx.GROW, f.x, f.y - 0.05f, f, param = f.mode)
+                }
             }
             FixtureType.SLED_HILL, FixtureType.SKI_JUMP -> {
                 val rider = world.seatedAt(f, 0)
@@ -738,6 +828,64 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                 }
             }
             FixtureType.ICE_POND -> listener.onFx(Fx.CRACK, f.x + dx, f.y, f)
+            FixtureType.TRACTOR -> {
+                f.mode = 1 - f.mode
+                f.count++
+                listener.onFx(Fx.VROOM, f.x + f.shiftX, top, f, param = 2)
+                if (f.count >= 3) unlock("farm_drive")
+            }
+            FixtureType.ROCKET_SHIP -> {
+                if (f.on) return
+                if (world.seatedAt(f, 0) != null) {
+                    f.on = true
+                    f.timer = 0f
+                    listener.onFx(Fx.LAUNCH, f.x, f.y, f)
+                    unlock("space_launch")
+                } else {
+                    listener.onFx(Fx.RUMBLE, f.x, f.y, f)
+                }
+            }
+            FixtureType.CONTROL_PANEL -> {
+                f.mode = (f.mode + 1) % 8
+                world.fixturesIn(place).filter { it.type == FixtureType.PORTHOLE }.forEach { it.mode = (it.mode + 1) % PORTHOLE_VIEWS }
+                listener.onFx(Fx.BEEP, f.x + dx, top, f, param = f.mode)
+            }
+            FixtureType.GRAVITY_LEVER -> {
+                f.on = !f.on
+                f.count++
+                listener.onFx(Fx.GRAVITY, f.x, top, f, param = if (f.on) 1 else 0)
+                if (!f.on) world.bodiesIn(place).forEach { if (it.mode == Mode.FREE && it.inside < 0) { it.resting = false; it.vy -= 0.25f } }
+                if (f.count >= 2) unlock("space_gravity")
+            }
+            FixtureType.ORRERY -> {
+                f.timer = 3f
+                listener.onFx(Fx.SPARKLE, f.x, f.y - f.spec.h * 0.6f, f)
+                if (f.taps >= 3) unlock("space_orrery")
+            }
+            FixtureType.PORTHOLE -> {
+                f.mode = (f.mode + 1) % PORTHOLE_VIEWS
+                listener.onFx(Fx.SPARKLE, f.x, f.y - f.spec.h / 2, f)
+            }
+            FixtureType.VEGETABLE_PATCH -> when (f.mode) {
+                3 -> {
+                    f.mode = 0
+                    repeat(3) { i ->
+                        val veg = world.addThing(if ((i + f.count) % 2 == 0) ThingType.CARROT else ThingType.POTATO, 0, place, f.x - 0.12f + i * 0.12f, f.y - 0.02f)
+                        veg.vy = -1.6f - i * 0.2f
+                        veg.vx = (i - 1) * 0.3f
+                        veg.vrot = (i - 1) * 200f
+                        listener.onSpawn(veg)
+                    }
+                    f.count++
+                    listener.onFx(Fx.HARVEST, f.x, f.y - 0.05f, f)
+                }
+                else -> listener.onFx(Fx.HOP, f.x, top, f)
+            }
+            FixtureType.WORKBENCH -> listener.onFx(if (world.inMachine(f).isEmpty()) Fx.HOP else Fx.HAMMER, f.x, top, f)
+            FixtureType.WATER_TROUGH -> listener.onFx(Fx.WATER, f.x, top, f)
+            FixtureType.HAY_BALE, FixtureType.SPACE_BED -> listener.onFx(Fx.BOING, f.x, top, f)
+            FixtureType.CHICKEN_COOP, FixtureType.TOOL_WALL, FixtureType.WOOD_PILE, FixtureType.TIRE_STACK,
+            FixtureType.FOOD_DISPENSER -> dispense(place, f, dx)
             FixtureType.OWL_TREE -> {
                 f.mode = 1
                 f.timer = 2.5f
@@ -859,12 +1007,31 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                 f.count++
                 Made(listOf(ThingType.COCOA, ThingType.WAFFLE, ThingType.BUN, ThingType.BROWN_CHEESE, ThingType.CLOUDBERRY)[f.count % 5])
             }
+            FixtureType.CHICKEN_COOP -> {
+                f.count++
+                // Every sixth egg is golden, and the first golden egg brings out a glimt.
+                if (f.count % 6 == 0) {
+                    unlock("farm_egg")
+                    Made(ThingType.EGG, 1)
+                } else {
+                    Made(ThingType.EGG)
+                }
+            }
+            FixtureType.TOOL_WALL -> Made(TOOL_ROW[(((dx + spec.w / 2) / spec.w) * TOOL_ROW.size).toInt().coerceIn(0, TOOL_ROW.size - 1)])
+            FixtureType.WOOD_PILE -> Made(ThingType.PLANK)
+            FixtureType.TIRE_STACK -> Made(ThingType.TIRE)
+            FixtureType.FOOD_DISPENSER -> {
+                f.count++
+                if (f.count % 4 == 3) Made(ThingType.ICE_CREAM, 4) else Made(ThingType.SPACE_FOOD, f.count % ThingType.SPACE_FOOD.variants)
+            }
             else -> return
         }
         val y = when (f.type) {
-            FixtureType.POTION_RACK -> f.y - 0.01f
+            FixtureType.POTION_RACK, FixtureType.TOOL_WALL -> f.y - 0.01f
             FixtureType.CLOTHES_RACK -> f.y - 0.18f
             FixtureType.COCOA_STAND -> f.y - 0.16f
+            FixtureType.CHICKEN_COOP -> f.y - 0.08f
+            FixtureType.FOOD_DISPENSER -> f.y - 0.1f
             else -> f.top
         }
         val t = world.addThing(made.type, made.variant, place, f.x + dx.coerceIn(-spec.w / 2 + 0.03f, spec.w / 2 - 0.03f), y)
@@ -964,6 +1131,44 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
                 t.rot = 0f
                 t.held = false
                 return true
+            }
+            FixtureType.WORKBENCH -> {
+                val contents = world.inMachine(f)
+                if (t.type.buildTool) {
+                    // A tool builds what lies on the bench; the tool itself stays.
+                    if (contents.isEmpty()) return false
+                    val made = Recipes.workbench(contents.map { it.type })
+                    Recipes.keyFor(FixtureType.WORKBENCH, contents.map { it.type })?.let(::discover)
+                    contents.forEach { removeThing(it, quiet = true) }
+                    val built = world.addThing(made.type, made.variant, place, f.x, f.top - 0.02f)
+                    built.vy = -1.8f
+                    built.vx = 0.3f
+                    built.vrot = 200f
+                    listener.onSpawn(built)
+                    listener.onFx(Fx.HAMMER, f.x, f.top, f, built)
+                    unlock("farm_build")
+                    return false
+                }
+                if (contents.size >= 2) return false
+                take(t, f)
+            }
+            FixtureType.VEGETABLE_PATCH -> {
+                when {
+                    t.type == ThingType.SEEDS && f.mode == 0 -> {
+                        removeThing(t, quiet = true)
+                        f.mode = 1
+                        f.timer = GROW_SECONDS
+                        listener.onFx(Fx.GROW, f.x, f.y - 0.04f, f, param = 1)
+                        return true
+                    }
+                    t.type == ThingType.WATERING_CAN && f.mode in 1..2 -> {
+                        f.mode += 1
+                        f.timer = GROW_SECONDS
+                        listener.onFx(Fx.WATER, f.x, f.y - 0.1f, f)
+                        listener.onFx(Fx.GROW, f.x, f.y - 0.04f, f, param = f.mode)
+                    }
+                }
+                return false
             }
             FixtureType.ICE_POND -> {
                 if (t.type != ThingType.COIN) return false
@@ -1132,6 +1337,9 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
 
     companion object {
         const val PI_F = 3.1415927f
+        const val TRACTOR_DRIVE = 0.62f
+        const val GROW_SECONDS = 6f
+        const val PORTHOLE_VIEWS = 6
         val RIDES = setOf(FixtureType.SLED_HILL, FixtureType.SKI_JUMP)
         const val GRAVITY = 5.2f
         const val MAX_THINGS = 70

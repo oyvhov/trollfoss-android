@@ -109,6 +109,31 @@ object Recipes {
         }
     }
 
+    private val workbenchTable: Map<Pair<ThingType, ThingType>, Made> = listOf(
+        Triple(ThingType.PLANK, ThingType.PLANK, Made(ThingType.BIRDHOUSE)),
+        Triple(ThingType.PLANK, ThingType.TIRE, Made(ThingType.TOY_CAR, 1)),
+        Triple(ThingType.TIRE, ThingType.TIRE, Made(ThingType.TOY_CAR, 2)),
+        Triple(ThingType.PLANK, ThingType.STICK, Made(ThingType.SLED)),
+        Triple(ThingType.PLANK, ThingType.ROCK, Made(ThingType.DRUM)),
+        Triple(ThingType.STICK, ThingType.STICK, Made(ThingType.GUITAR)),
+        Triple(ThingType.PLANK, ThingType.TOY_CAR, Made(ThingType.SLED)),
+        Triple(ThingType.TIRE, ThingType.STICK, Made(ThingType.SWIM_RING)),
+    ).associate { (a, b, made) -> pair(a, b) to made }
+
+    /**
+     * The workbench builds what lies on it when a tool is dropped on it. One piece alone becomes a
+     * smaller thing; unknown pairs still make a wooden toy car, so every build is rewarded.
+     */
+    fun workbench(contents: List<ThingType>): Made {
+        if (contents.size >= 2) return workbenchTable[pair(contents[0], contents[1])] ?: Made(ThingType.TOY_CAR, 0)
+        return when (contents.singleOrNull()) {
+            ThingType.PLANK -> Made(ThingType.BIRDHOUSE)
+            ThingType.TIRE -> Made(ThingType.SWIM_RING)
+            ThingType.STICK -> Made(ThingType.WAND)
+            else -> Made(ThingType.TOY_CAR, 0)
+        }
+    }
+
     /** Everything the discovery book shows, in book order. */
     val book: List<Recipe> by lazy {
         buildList {
@@ -120,6 +145,7 @@ object Recipes {
             cauldronTable.forEach { (inputs, made) -> add(Recipe("pot_${inputs.first.name}_${inputs.second.name}", FixtureType.CAULDRON, listOf(inputs.first, inputs.second), made)) }
             add(Recipe("pot_pet", FixtureType.CAULDRON, listOf(ThingType.TEDDY, ThingType.WAND), Made(ThingType.TEDDY)))
             add(Recipe("fire_DRAGON_EGG", FixtureType.CAMPFIRE, listOf(ThingType.DRAGON_EGG), Made(ThingType.DRAGON_EGG)))
+            workbenchTable.forEach { (inputs, made) -> add(Recipe("bench_${inputs.first.name}_${inputs.second.name}", FixtureType.WORKBENCH, listOf(inputs.first, inputs.second), made)) }
         }
     }
 
@@ -131,6 +157,7 @@ object Recipes {
             FixtureType.STOVE -> inputs.singleOrNull()?.let { if (it == ThingType.DOUGH) "stove_DOUGH" else if (it in heat) "fire_${it.name}" else null }
             FixtureType.OVEN -> oven(inputs).singleOrNull()?.second
             FixtureType.BLENDER -> inputs.distinct().singleOrNull()?.takeIf { it.fruit }?.let { "blend_${it.name}" }
+            FixtureType.WORKBENCH -> if (sorted.size == 2 && workbenchTable.containsKey(pair(sorted[0], sorted[1]))) "bench_${sorted[0].name}_${sorted[1].name}" else null
             FixtureType.CAULDRON -> if (sorted.size == 2) {
                 if (cauldronMakesPet(sorted[0], sorted[1])) "pot_pet"
                 else cauldronTable[pair(sorted[0], sorted[1])]?.let { "pot_${sorted[0].name}_${sorted[1].name}" }

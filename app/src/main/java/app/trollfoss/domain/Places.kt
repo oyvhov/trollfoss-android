@@ -12,6 +12,8 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
     FOREST(3.4f, true, 0.88f, 0.02f),
     LAB(2.8f, false, 0.90f, 0.07f),
     MOUNTAIN(3.8f, true, 0.88f, 0.02f),
+    FARM(4.4f, true, 0.88f, 0.02f),
+    SPACE(3.6f, false, 0.90f, 0.07f),
 }
 
 /** A stretch of ground. Places with water have a sea or pond bed lower than the land. */
@@ -330,6 +332,76 @@ object Places {
                     PersonDef(Species.FOLK, Look(skin = 2, height = 1.14f, hair = 0, hairColor = 6, top = 6, topColor = 11, bottom = 0, bottomColor = 11, shoes = 12, extra = 2), 3.42f, hat = ThingType.NISSE_HAT),
                     PersonDef(Species.FOLK, Look(skin = 6, height = 1.03f, hair = 4, hairColor = 0, eyes = 3, top = 6, topColor = 0, bottom = 2, bottomColor = 11, shoes = 11), 2.84f, hand = ThingType.COCOA),
                     PersonDef(Species.DOG, Look(skin = 1), 2.02f),
+                ),
+            )
+            PlaceId.FARM -> PlaceSpec(
+                id,
+                grounds = listOf(Ground(0f, id.width, floor)),
+                water = null,
+                fixtures = listOf(
+                    fl(FixtureType.TRACTOR, 0.45f),              // 0
+                    fl(FixtureType.HAY_BALE, 1.62f),             // 1
+                    fl(FixtureType.CHICKEN_COOP, 2.0f),          // 2
+                    fl(FixtureType.VEGETABLE_PATCH, 2.5f),       // 3
+                    fl(FixtureType.WATER_TROUGH, 2.98f),         // 4
+                    fl(FixtureType.TIRE_STACK, 3.3f),            // 5
+                    fl(FixtureType.WORKBENCH, 3.7f),             // 6
+                    f(FixtureType.TOOL_WALL, 3.7f, 0.5f),        // 7
+                    fl(FixtureType.WOOD_PILE, 4.15f),            // 8
+                ),
+                things = listOf(
+                    t(ThingType.EGG, 1.94f, 0.87f),
+                    t(ThingType.SEEDS, 2.3f, 0.87f),
+                    t(ThingType.WATERING_CAN, 2.72f, 0.87f),
+                    t(ThingType.PLANK, 3.64f, 0.67f),
+                    t(ThingType.HAMMER, 3.8f, 0.67f),
+                    t(ThingType.CARROT, 2.45f, 0.87f),
+                    t(ThingType.MILK, 1.58f, 0.72f),
+                    t(ThingType.TIRE, 3.42f, 0.87f),
+                ),
+                people = listOf(
+                    PersonDef(Species.FOLK, Look(skin = 3, height = 1.14f, hair = 1, hairColor = 2, top = 4, topColor = 3, bottom = 0, bottomColor = 3, shoes = 12, extra = 3), 0.38f, seat = 0 to 0, hat = ThingType.CAP, hatVariant = 1),
+                    PersonDef(Species.FOLK, Look(skin = 5, height = 0.78f, hair = 5, hairColor = 0, eyes = 1, top = 3, topColor = 0, bottom = 1, bottomColor = 11, shoes = 1), 3.5f, hand = ThingType.WRENCH),
+                    PersonDef(Species.HORSE, Look(skin = 0), 1.28f),
+                    PersonDef(Species.CHICKEN, Look(skin = 0), 1.9f),
+                    PersonDef(Species.CHICKEN, Look(skin = 1), 2.12f),
+                    PersonDef(Species.SHEEP, Look(skin = 0), 2.72f),
+                    PersonDef(Species.COW, Look(skin = 0), 3.06f),
+                ),
+            )
+            PlaceId.SPACE -> PlaceSpec(
+                id,
+                grounds = listOf(Ground(0f, id.width, floor)),
+                water = null,
+                fixtures = listOf(
+                    fl(FixtureType.ROCKET_SHIP, 0.35f),          // 0
+                    fl(FixtureType.CONTROL_PANEL, 0.95f),        // 1
+                    f(FixtureType.PORTHOLE, 0.95f, 0.5f),        // 2
+                    fl(FixtureType.GRAVITY_LEVER, 1.35f),        // 3
+                    fl(FixtureType.ORRERY, 1.8f),                // 4
+                    f(FixtureType.SPACE_BED, 2.3f, 0.75f),       // 5
+                    fl(FixtureType.FOOD_DISPENSER, 2.75f),       // 6
+                    f(FixtureType.PORTHOLE, 3.2f, 0.5f, 1),      // 7
+                ),
+                things = listOf(
+                    t(ThingType.PLANET, 1.55f, 0.35f, 0),
+                    t(ThingType.PLANET, 1.95f, 0.28f, 1),
+                    t(ThingType.PLANET, 2.1f, 0.5f, 2),
+                    t(ThingType.PLANET, 2.3f, 0.3f, 3),
+                    t(ThingType.PLANET, 2.55f, 0.45f, 4),
+                    t(ThingType.PLANET, 2.8f, 0.25f, 5),
+                    t(ThingType.PLANET, 3.05f, 0.62f, 6),
+                    t(ThingType.PLANET, 3.3f, 0.35f, 7),
+                    t(ThingType.PLANET, 3.45f, 0.72f, 8),
+                    t(ThingType.PLANET, 1.2f, 0.3f, 9),
+                    t(ThingType.SPACE_FOOD, 1.0f, 0.6f, 1),
+                    t(ThingType.SPACE_HELMET, 2.95f, 0.8f),
+                    t(ThingType.ROCKET, 1.6f, 0.62f),
+                ),
+                people = listOf(
+                    PersonDef(Species.FOLK, Look(skin = 4, height = 1.03f, hair = 2, hairColor = 0, eyes = 1, top = 4, topColor = 9, bottom = 0, bottomColor = 9, shoes = 10), 0.35f, seat = 0 to 0, hat = ThingType.SPACE_HELMET),
+                    PersonDef(Species.FOLK, Look(skin = 0, height = 0.9f, hair = 8, hairColor = 5, eyes = 0, top = 4, topColor = 1, bottom = 0, bottomColor = 1, shoes = 10, extra = 1), 2.2f, y = 0.55f),
+                    PersonDef(Species.CAT, Look(skin = 1), 2.6f, y = 0.4f, hat = ThingType.SPACE_HELMET),
                 ),
             )
         }

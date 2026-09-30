@@ -42,7 +42,7 @@ enum class ThingType(
     ICE_CREAM(0.04f, 0.09f, Cat.FOOD, bites = 3, variants = 5),
     LOLLIPOP(0.035f, 0.09f, Cat.FOOD, bites = 3, variants = 4),
     BROWN_CHEESE(0.07f, 0.05f, Cat.FOOD, bites = 3),
-    EGG(0.035f, 0.045f, Cat.FOOD, rolls = true),
+    EGG(0.035f, 0.045f, Cat.FOOD, rolls = true, variants = 2),
     FRIED_EGG(0.07f, 0.02f, Cat.FOOD, bites = 2),
     FISH(0.1f, 0.045f, Cat.FOOD, buoyant = true),
     GRILLED_FISH(0.1f, 0.045f, Cat.FOOD, bites = 3),
@@ -51,6 +51,8 @@ enum class ThingType(
     MARSHMALLOW(0.03f, 0.1f, Cat.FOOD),
     TOASTED_MARSHMALLOW(0.03f, 0.1f, Cat.FOOD, bites = 2),
     DOUGH(0.06f, 0.04f, Cat.FOOD),
+    POTATO(0.045f, 0.035f, Cat.FOOD, bites = 2, rolls = true),
+    SPACE_FOOD(0.035f, 0.07f, Cat.FOOD, bites = 3, variants = 3),
 
     // Drinks and potions
     MILK(0.045f, 0.08f, Cat.DRINK, bites = 3, buoyant = true),
@@ -77,6 +79,7 @@ enum class ThingType(
     NISSE_HAT(0.12f, 0.13f, Cat.HAT),
     SUNGLASSES(0.13f, 0.05f, Cat.GLASSES),
     ROUND_GLASSES(0.13f, 0.05f, Cat.GLASSES),
+    SPACE_HELMET(0.17f, 0.15f, Cat.HAT),
     STAR_GLASSES(0.14f, 0.065f, Cat.GLASSES),
 
     /** A top on a hanger. The variant is `style * 16 + colour` (see [Garment]). */
@@ -108,6 +111,12 @@ enum class ThingType(
     BUCKET(0.06f, 0.06f, Cat.TOOL, variants = 3),
     SPADE(0.03f, 0.09f, Cat.TOOL),
     TOOTHBRUSH(0.015f, 0.07f, Cat.TOOL),
+    HAMMER(0.05f, 0.09f, Cat.TOOL),
+    SAW(0.11f, 0.05f, Cat.TOOL),
+    WRENCH(0.03f, 0.09f, Cat.TOOL),
+    SCREWDRIVER(0.02f, 0.08f, Cat.TOOL),
+    WATERING_CAN(0.09f, 0.07f, Cat.TOOL),
+    SEEDS(0.05f, 0.06f, Cat.NATURE),
 
     // Nature
     SHELL(0.04f, 0.03f, Cat.NATURE),
@@ -125,6 +134,9 @@ enum class ThingType(
     PILLOW(0.1f, 0.05f, Cat.HOME, variants = 4),
     PLANT_POT(0.06f, 0.1f, Cat.HOME),
     CANDLE(0.025f, 0.06f, Cat.HOME, glows = true),
+    PLANK(0.14f, 0.025f, Cat.HOME, buoyant = true),
+    TIRE(0.07f, 0.07f, Cat.TOY, bounce = 0.55f, rolls = true),
+    BIRDHOUSE(0.07f, 0.09f, Cat.HOME),
 
     // Magic and treasure
     GEM(0.04f, 0.04f, Cat.MAGIC, glows = true, variants = 5),
@@ -134,6 +146,8 @@ enum class ThingType(
     SLIME(0.06f, 0.035f, Cat.MAGIC, bounce = 0.55f, variants = 5),
     STAR_JAR(0.04f, 0.06f, Cat.MAGIC, glows = true),
     DRAGON_EGG(0.05f, 0.065f, Cat.MAGIC, glows = true),
+    /** A real planet as a toy. Variant: 0 Mercury, 1 Venus, 2 Earth, 3 Moon, 4 Mars, 5 Jupiter, 6 Saturn, 7 Uranus, 8 Neptune, 9 Pluto. */
+    PLANET(0.07f, 0.07f, Cat.MAGIC, bounce = 0.6f, rolls = true, variants = 10),
     ;
 
     /** Head width of a grown-up figure; hats and glasses are drawn at this size and scaled to fit a head. */
@@ -153,6 +167,9 @@ enum class ThingType(
 
     /** Tools that change hair when dropped on a figure's head. */
     val hairTool: Boolean get() = this == SCISSORS || this == HAIR_DRYER || this == COMB || this == SPRAY
+
+    /** Workshop tools: dropped on the workbench, they build what lies on it. */
+    val buildTool: Boolean get() = this == HAMMER || this == SAW || this == WRENCH || this == SCREWDRIVER
 
     val fruit: Boolean get() = this in FRUITS
 

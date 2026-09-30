@@ -32,7 +32,7 @@ data class SurfaceSpec(
 data class SpotSpec(val dx: Float, val dy: Float, val pose: Pose, val hidden: Boolean = false)
 
 /** What a fixture does to things put into or onto it. */
-enum class Machine { NONE, STOVE, OVEN, BLENDER, CAULDRON, CAMPFIRE, FISHING, FOUNTAIN, TOILET, DISPENSER }
+enum class Machine { NONE, STOVE, OVEN, BLENDER, CAULDRON, CAMPFIRE, FISHING, FOUNTAIN, TOILET, DISPENSER, BUILD, GARDEN }
 
 class FixtureSpec(
     val w: Float,
@@ -84,6 +84,12 @@ enum class FixtureType {
 
     // Mountain
     PINE_TREE, SAUNA, SLED_HILL, SNOWMAN, SKI_JUMP, ICE_POND, COCOA_STAND, BENCH, LAMP_POST,
+
+    // Farm
+    TRACTOR, HAY_BALE, CHICKEN_COOP, VEGETABLE_PATCH, WATER_TROUGH, WORKBENCH, TOOL_WALL, WOOD_PILE, TIRE_STACK,
+
+    // Space station
+    ROCKET_SHIP, CONTROL_PANEL, PORTHOLE, GRAVITY_LEVER, ORRERY, SPACE_BED, FOOD_DISPENSER,
     ;
 
     val spec: FixtureSpec get() = specs.getValue(this)
@@ -283,6 +289,36 @@ enum class FixtureType {
             )
             BENCH -> FixtureSpec(0.32f, 0.12f, spots = listOf(seat(-0.08f, -0.07f), seat(0.08f, -0.07f)))
             COCOA_STAND -> FixtureSpec(0.22f, 0.34f, surfaces = listOf(SurfaceSpec(-0.1f, 0.1f, -0.15f)), machine = Machine.DISPENSER)
+            TRACTOR -> FixtureSpec(0.52f, 0.36f, front = true, spots = listOf(seat(-0.07f, -0.19f)))
+            HAY_BALE -> FixtureSpec(
+                0.24f, 0.15f,
+                surfaces = listOf(SurfaceSpec(-0.11f, 0.11f, -0.15f)),
+                spots = listOf(seat(0f, -0.15f)),
+            )
+            CHICKEN_COOP -> FixtureSpec(0.32f, 0.32f, machine = Machine.DISPENSER)
+            VEGETABLE_PATCH -> FixtureSpec(0.44f, 0.06f, machine = Machine.GARDEN, dropZone = RRect(-0.22f, -0.22f, 0.22f, 0.02f))
+            WATER_TROUGH -> FixtureSpec(
+                0.32f, 0.13f,
+                surfaces = listOf(SurfaceSpec(-0.14f, 0.14f, -0.02f)),
+                pool = RRect(-0.14f, -0.1f, 0.14f, -0.02f),
+            )
+            WORKBENCH -> FixtureSpec(
+                0.36f, 0.2f,
+                surfaces = listOf(SurfaceSpec(-0.18f, 0.18f, -0.2f)),
+                machine = Machine.BUILD,
+                dropZone = RRect(-0.18f, -0.36f, 0.18f, -0.16f),
+            )
+            TOOL_WALL -> FixtureSpec(0.44f, 0.22f, wall = true, machine = Machine.DISPENSER)
+            WOOD_PILE -> FixtureSpec(0.26f, 0.14f, machine = Machine.DISPENSER)
+            TIRE_STACK -> FixtureSpec(0.14f, 0.2f, machine = Machine.DISPENSER)
+
+            ROCKET_SHIP -> FixtureSpec(0.34f, 0.66f, front = true, spots = listOf(seat(0f, -0.4f)), light = RRect(-0.2f, 0f, 0.2f, 0.3f))
+            CONTROL_PANEL -> FixtureSpec(0.36f, 0.2f, surfaces = listOf(SurfaceSpec(-0.17f, 0.17f, -0.2f)), light = RRect(-0.25f, -0.35f, 0.25f, 0f))
+            PORTHOLE -> FixtureSpec(0.3f, 0.3f, wall = true, light = RRect(-0.25f, -0.4f, 0.25f, 0.05f))
+            GRAVITY_LEVER -> FixtureSpec(0.1f, 0.22f)
+            ORRERY -> FixtureSpec(0.32f, 0.32f, light = RRect(-0.2f, -0.35f, 0.2f, -0.05f))
+            SPACE_BED -> FixtureSpec(0.14f, 0.32f, wall = true, spots = listOf(seat(0f, -0.1f)))
+            FOOD_DISPENSER -> FixtureSpec(0.16f, 0.28f, machine = Machine.DISPENSER)
             LAMP_POST -> FixtureSpec(0.08f, 0.50f, light = RRect(-0.4f, -0.8f, 0.4f, 0.05f))
         }
     }
@@ -295,4 +331,14 @@ val POTION_ROW = listOf(
     ThingType.POTION_RAINBOW,
     ThingType.POTION_FLOAT,
     ThingType.POTION_NORMAL,
+)
+
+/** The tools on the farm's tool wall, left to right. */
+val TOOL_ROW = listOf(
+    ThingType.HAMMER,
+    ThingType.SAW,
+    ThingType.WRENCH,
+    ThingType.SCREWDRIVER,
+    ThingType.WATERING_CAN,
+    ThingType.SEEDS,
 )

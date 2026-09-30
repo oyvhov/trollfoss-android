@@ -36,6 +36,14 @@ object Secrets {
         Secret("mountain_wish", PlaceId.MOUNTAIN, 3.1f, 0.62f, event = true),
         Secret("mountain_jump", PlaceId.MOUNTAIN, 2.56f, 0.46f, event = true),
         Secret("mountain_tree", PlaceId.MOUNTAIN, 0.24f, 0.6f, event = true),
+
+        Secret("farm_drive", PlaceId.FARM, 1.15f, 0.5f, event = true),
+        Secret("farm_egg", PlaceId.FARM, 2.0f, 0.46f, event = true),
+        Secret("farm_build", PlaceId.FARM, 3.7f, 0.55f, event = true),
+
+        Secret("space_launch", PlaceId.SPACE, 0.35f, 0.18f, event = true),
+        Secret("space_gravity", PlaceId.SPACE, 1.35f, 0.55f, event = true),
+        Secret("space_orrery", PlaceId.SPACE, 1.8f, 0.45f, event = true),
     )
 
     fun byId(id: String): Secret? = all.firstOrNull { it.id == id }
