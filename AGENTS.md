@@ -6,6 +6,8 @@ for teiknereglane.
 
 - Bygg og test: `powershell -NoProfile -ExecutionPolicy Bypass -File C:\topa\scripts\Build-Trollfoss.ps1` (legg til `-Release` for signert APK).
 - Emulator: `powershell -NoProfile -ExecutionPolicy Bypass -File C:\topa\scripts\Start-TrollfossEmulator.ps1`.
+- Nettbrett: `powershell -NoProfile -ExecutionPolicy Bypass -File C:\topa\scripts\Start-TrollfossTablet.ps1`
+  (Spole sin testemulator i JellyBin, 1920 × 1200 / 240 dpi). Test alltid både mobil og nettbrett.
 - Signeringsnøkkelen ligg i `.signing/trollfoss-release.jks` med passord i `signing.properties`. Begge er
   Git-ignorerte. **Lag aldri ein ny nøkkel** – då kan appen ikkje lenger oppdaterast.
 - Ny APK-release: følg `docs/RELEASE_WORKFLOW.md` (éin universal APK i ein publisert GitHub Release på
