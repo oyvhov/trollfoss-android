@@ -18,6 +18,7 @@ import app.trollfoss.domain.Palette
 import app.trollfoss.domain.PersonAnim
 import app.trollfoss.domain.Pose
 import app.trollfoss.domain.Species
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
@@ -637,9 +638,11 @@ private val STRANDED = setOf(1, 2, 4, 5, 6, 8)
 /** Animals sit up facing us. Origin at the bottom centre; head centre at -0.62 h. */
 private fun DrawScope.drawPet(species: Species, look: Look, pose: Pose, a: PersonAnim, h: Float, pen: Pen, seed: Float) {
     val t = pen.t + seed
-    if (species == Species.PUFFIN) {
-        drawPuffin(pose, a, h, pen, t)
-        return
+    when (species) {
+        Species.PUFFIN -> return drawPuffin(pose, a, h, pen, t)
+        Species.COW, Species.SHEEP, Species.HORSE -> return drawFarmAnimal(species, look, pose, a, h, pen, t)
+        Species.CHICKEN -> return drawChicken(look, pose, a, h, pen, t)
+        else -> Unit
     }
     fun o(x: Float, y: Float) = Offset(x * h, y * h)
     val fur = argb(Palette.furFor(species, look.skin))
@@ -926,6 +929,218 @@ private fun DrawScope.drawPuffin(pose: Pose, a: PersonAnim, h: Float, pen: Pen, 
         }
         drawPath(beak, Ink.line, style = pen.stroke)
     }
+}
+
+/** Eyes for animals: white with a pupil that follows, or closed arcs. */
+private fun DrawScope.animalEyes(c: Offset, r: Float, spread: Float, y: Float, a: PersonAnim, pen: Pen, closed: Boolean) {
+    for (side in listOf(-1f, 1f)) {
+        val e = Offset(c.x + side * r * spread, c.y + r * y)
+        if (closed || a.blink > 0f) {
+            val arc = Path().apply {
+                moveTo(e.x - r * 0.15f, e.y)
+                quadraticTo(e.x, e.y + r * 0.11f, e.x + r * 0.15f, e.y)
+            }
+            drawPath(arc, Ink.line, style = Stroke(pen.lw * 1.1f, cap = StrokeCap.Round))
+        } else {
+            val white = rect(e.x, e.y, r * 0.34f, r * 0.4f)
+            drawOval(Color.White, white.topLeft, white.size)
+            drawOval(Ink.line, white.topLeft, white.size, style = pen.thin)
+            val p = Offset(e.x + a.lookX * r * 0.06f, e.y + a.lookY * r * 0.07f + r * 0.03f)
+            drawCircle(Ink.line, r * 0.11f, p)
+            drawCircle(Color.White, r * 0.04f, Offset(p.x - r * 0.04f, p.y - r * 0.05f))
+        }
+    }
+}
+
+/**
+ * Cow, sheep and fjord horse: sitting up and facing us like the pets, with the head around -0.62 h and
+ * the muzzle over the mouth point at -0.49 h.
+ */
+private fun DrawScope.drawFarmAnimal(species: Species, look: Look, pose: Pose, a: PersonAnim, h: Float, pen: Pen, t: Float) {
+    fun o(x: Float, y: Float) = Offset(x * h, y * h)
+    val coat = argb(Palette.furFor(species, look.skin))
+    val held = pose == Pose.HELD
+    val closed = a.face == Face.SLEEP || pose == Pose.LIE
+    val breath = sin(t * 2.6f) * 0.005f
+    val chewing = a.chew > 0f || a.talk > 0f
+    val sway = sin(t * 2f) * 0.06f
+
+    // Tail
+    val tail = Path().apply {
+        moveTo(0.24f * h, -0.1f * h)
+        quadraticTo((0.46f + sway) * h, -0.14f * h, (0.4f + sway) * h, -0.36f * h)
+    }
+    drawPath(tail, Ink.line, style = Stroke(0.05f * h + pen.lw * 2, cap = StrokeCap.Round))
+    drawPath(tail, if (species == Species.HORSE) Color(0xFF3A3340) else coat.darken(0.15f), style = Stroke(0.05f * h, cap = StrokeCap.Round))
+
+    // Body
+    if (species == Species.SHEEP) {
+        // A cloud of wool.
+        val wool = Path()
+        for (i in 0 until 9) {
+            val ang = i / 9f * 2f * PI.toFloat()
+            val c = o(cos(ang) * 0.24f, -0.26f + sin(ang) * 0.2f + breath)
+            wool.addOval(Rect(c.x - 0.1f * h, c.y - 0.1f * h, c.x + 0.1f * h, c.y + 0.1f * h))
+        }
+        wool.addOval(Rect(-0.26f * h, -0.46f * h, 0.26f * h, -0.06f * h))
+        drawPath(wool, Ink.line, style = Stroke(pen.lw * 2f))
+        drawPath(wool, coat)
+        for (i in 0 until 6) drawArc(coat.darken(0.12f), 200f, 120f, false, o(-0.18f + i * 0.07f, -0.3f + (i % 2) * 0.08f), Size(0.07f * h, 0.05f * h), style = pen.thin)
+    } else {
+        val body = blobPath(
+            -0.27f * h, -0.02f * h, -0.32f * h, -0.25f * h, -0.19f * h, (-0.48f + breath) * h, 0.19f * h, (-0.48f + breath) * h,
+            0.32f * h, -0.25f * h, 0.27f * h, -0.02f * h,
+        )
+        inked(body, coat, pen)
+        if (species == Species.COW && look.skin == 0) {
+            clipPath(body) {
+                drawOval(Color(0xFF3A3340), o(-0.3f, -0.36f), Size(0.2f * h, 0.16f * h))
+                drawOval(Color(0xFF3A3340), o(0.08f, -0.2f), Size(0.22f * h, 0.14f * h))
+            }
+            drawPath(body, Ink.line, style = pen.stroke)
+        }
+    }
+    // Hooves
+    val dangle = if (held) sin(t * 12f) * 0.02f else 0f
+    for (side in listOf(-1f, 1f)) {
+        inkedRound(Rect((side * 0.1f - 0.06f) * h, (-0.09f + side * dangle) * h, (side * 0.1f + 0.06f) * h, (0f + side * dangle) * h), 0.03f * h, if (species == Species.SHEEP) Color(0xFF3A3340) else coat.darken(0.1f), pen)
+        drawRect(Color(0xFF3A3340), o(side * 0.1f - 0.06f, -0.025f + side * dangle), Size(0.12f * h, 0.025f * h))
+    }
+
+    val c = o(0f, -0.64f + breath)
+    val r = 0.3f * h
+    val face = when (species) {
+        Species.SHEEP -> if (look.skin == 2) Color(0xFF6E6A78) else Color(0xFF3A3340)
+        else -> coat
+    }
+    // Ears and horns
+    for (side in listOf(-1f, 1f)) {
+        rotate(side * (28f + sin(t * 2.4f + side) * 5f), pivot = Offset(c.x + side * r * 0.8f, c.y - r * 0.35f)) {
+            inkedOval(Rect(c.x + side * r * 0.8f - r * 0.3f, c.y - r * 0.5f, c.x + side * r * 0.8f + r * 0.3f, c.y - r * 0.22f), face, pen)
+            drawOval(EarPink.copy(alpha = 0.6f), Offset(c.x + side * r * 0.8f - r * 0.16f, c.y - r * 0.43f), Size(r * 0.32f, r * 0.13f))
+        }
+        if (species == Species.COW) {
+            val horn = Path().apply {
+                moveTo(c.x + side * r * 0.42f, c.y - r * 0.8f)
+                quadraticTo(c.x + side * r * 0.7f, c.y - r * 1.15f, c.x + side * r * 0.62f, c.y - r * 1.3f)
+                quadraticTo(c.x + side * r * 0.55f, c.y - r * 1.0f, c.x + side * r * 0.25f, c.y - r * 0.9f)
+                close()
+            }
+            inked(horn, Color(0xFFF3E6C8), pen)
+        }
+        if (species == Species.HORSE) {
+            val ear = Path().apply {
+                moveTo(c.x + side * r * 0.25f, c.y - r * 0.85f)
+                lineTo(c.x + side * r * 0.42f, c.y - r * 1.35f)
+                lineTo(c.x + side * r * 0.55f, c.y - r * 0.75f)
+                close()
+            }
+            inked(ear, coat, pen)
+        }
+    }
+    if (species == Species.HORSE) {
+        // A long face with a pale nose, like a fjord horse.
+        inkedOval(Rect(c.x - r * 0.62f, c.y - r * 1.0f, c.x + r * 0.62f, c.y + r * 0.95f), coat, pen)
+        drawOval(coat.lighten(0.35f), Offset(c.x - r * 0.46f, c.y + r * 0.25f), Size(r * 0.92f, r * 0.66f))
+        // The upright mane: cream at the sides with a dark stripe down the middle.
+        val mane = Path().apply {
+            moveTo(c.x - r * 0.22f, c.y - r * 0.82f)
+            lineTo(c.x - r * 0.16f, c.y - r * 1.32f)
+            lineTo(c.x + r * 0.16f, c.y - r * 1.32f)
+            lineTo(c.x + r * 0.22f, c.y - r * 0.82f)
+            close()
+        }
+        inked(mane, Color(0xFFF7EFD9), pen)
+        drawRect(Color(0xFF3A3340), Offset(c.x - r * 0.05f, c.y - r * 1.3f), Size(r * 0.1f, r * 0.48f))
+        animalEyes(c, r, 0.34f, -0.35f, a, pen, closed)
+        drawOval(Ink.line, Offset(c.x - r * 0.28f, c.y + r * 0.6f), Size(r * 0.13f, r * 0.1f))
+        drawOval(Ink.line, Offset(c.x + r * 0.15f, c.y + r * 0.6f), Size(r * 0.13f, r * 0.1f))
+        val m = Offset(c.x, c.y + r * 0.8f)
+        if (chewing || a.face == Face.OOH || a.face == Face.LAUGH) drawOval(MouthDark, Offset(m.x - r * 0.14f, m.y - r * 0.04f), Size(r * 0.28f, r * (0.08f + 0.06f * abs(sin(t * 16f)))))
+        else drawArc(Ink.line, 20f, 140f, false, Offset(m.x - r * 0.14f, m.y - r * 0.12f), Size(r * 0.28f, r * 0.14f), style = Stroke(pen.lw, cap = StrokeCap.Round))
+        return
+    }
+    inkedCircle(c, r, face, pen)
+    if (species == Species.SHEEP) {
+        // A woolly fringe on top.
+        for (i in -2..2) inkedCircle(Offset(c.x + i * r * 0.22f, c.y - r * (0.9f - abs(i) * 0.06f)), r * 0.2f, coat, pen)
+    }
+    if (species == Species.COW && look.skin != 1) drawOval(Color(0xFF3A3340), Offset(c.x - r * 0.9f, c.y - r * 0.8f), Size(r * 0.7f, r * 0.6f))
+    // Muzzle
+    val muzzle = Rect(c.x - r * 0.6f, c.y + r * 0.12f, c.x + r * 0.6f, c.y + r * 0.82f)
+    inkedOval(muzzle, if (species == Species.COW) Color(0xFFFFB3C1) else face.lighten(0.25f), pen)
+    drawOval(Ink.line.copy(alpha = 0.8f), Offset(c.x - r * 0.32f, c.y + r * 0.34f), Size(r * 0.14f, r * 0.12f))
+    drawOval(Ink.line.copy(alpha = 0.8f), Offset(c.x + r * 0.18f, c.y + r * 0.34f), Size(r * 0.14f, r * 0.12f))
+    animalEyes(c, r, 0.42f, -0.2f, a, pen, closed)
+    val m = Offset(c.x, c.y + r * 0.62f)
+    if (chewing || a.face == Face.OOH || a.face == Face.WOW || a.face == Face.LAUGH) {
+        drawOval(MouthDark, Offset(m.x - r * 0.16f, m.y - r * 0.05f), Size(r * 0.32f, r * (0.1f + 0.08f * abs(sin(t * 14f)))))
+    } else {
+        drawArc(Ink.line, 20f, 140f, false, Offset(m.x - r * 0.16f, m.y - r * 0.12f), Size(r * 0.32f, r * 0.14f), style = Stroke(pen.lw, cap = StrokeCap.Round))
+    }
+    if (species == Species.COW) {
+        // A cowbell on a red collar.
+        drawLine(Color(0xFFD2443A), o(-0.14f, -0.44f), o(0.14f, -0.44f), strokeWidth = 0.03f * h, cap = StrokeCap.Round)
+        val swing = sin(t * 3f) * 8f
+        rotate(swing, pivot = o(0f, -0.44f)) {
+            val bell = Path().apply {
+                moveTo(-0.035f * h, -0.44f * h)
+                lineTo(0.035f * h, -0.44f * h)
+                lineTo(0.05f * h, -0.36f * h)
+                lineTo(-0.05f * h, -0.36f * h)
+                close()
+            }
+            inked(bell, Color(0xFFFFC83D), pen)
+        }
+    }
+    drawOval(Ink.blush, Offset(c.x - r * 0.85f, c.y + r * 0.05f), Size(r * 0.3f, r * 0.16f))
+    drawOval(Ink.blush, Offset(c.x + r * 0.55f, c.y + r * 0.05f), Size(r * 0.3f, r * 0.16f))
+}
+
+/** A round little hen with a red comb. Origin at her feet. */
+private fun DrawScope.drawChicken(look: Look, pose: Pose, a: PersonAnim, h: Float, pen: Pen, t: Float) {
+    fun o(x: Float, y: Float) = Offset(x * h, y * h)
+    val feathers = argb(Palette.furFor(Species.CHICKEN, look.skin))
+    val held = pose == Pose.HELD
+    val closed = a.face == Face.SLEEP || pose == Pose.LIE
+    val peck = if (a.talk > 0f || a.chew > 0f) abs(sin(t * 14f)) * 0.03f else 0f
+    // Legs
+    for (side in listOf(-1f, 1f)) {
+        val kick = if (held) sin(t * 14f + side) * 0.04f else 0f
+        drawLine(Color(0xFFFF9F43), o(side * 0.08f, -0.2f), o(side * 0.1f, -0.03f + kick), strokeWidth = pen.lw * 1.6f, cap = StrokeCap.Round)
+        for (k in -1..1) drawLine(Color(0xFFFF9F43), o(side * 0.1f, -0.03f + kick), o(side * 0.1f + k * 0.05f, 0f + kick), strokeWidth = pen.lw * 1.3f, cap = StrokeCap.Round)
+    }
+    // Tail feathers
+    for (k in 0 until 3) {
+        rotate(-20f + k * 18f + sin(t * 2f) * 4f, pivot = o(0.2f, -0.45f)) {
+            inkedOval(Rect(0.18f * h, -0.72f * h, 0.3f * h, -0.44f * h), if (k == 1) feathers.darken(0.2f) else feathers, pen)
+        }
+    }
+    // Body
+    val flap = if (held) sin(t * 20f) * 25f else sin(t * 1.5f) * 3f
+    val body = blobPath(-0.3f * h, -0.24f * h, -0.24f * h, -0.52f * h, 0.12f * h, -0.56f * h, 0.3f * h, -0.34f * h, 0.2f * h, -0.14f * h, -0.16f * h, -0.14f * h)
+    inked(body, feathers, pen)
+    for (side in listOf(-1f, 1f)) {
+        rotate(side * flap, pivot = o(side * 0.18f, -0.4f)) {
+            inkedOval(Rect((side * 0.2f - 0.1f) * h, -0.44f * h, (side * 0.2f + 0.1f) * h, -0.24f * h), feathers.darken(0.1f), pen)
+        }
+    }
+    // Head
+    val c = o(0f, -0.68f + peck)
+    val r = 0.2f * h
+    for (k in -1..1) inkedCircle(Offset(c.x + k * r * 0.32f, c.y - r * (1.0f - abs(k) * 0.1f)), r * 0.24f, Color(0xFFE8413A), pen)
+    inkedCircle(c, r, feathers, pen)
+    animalEyes(c, r, 0.45f, -0.12f, a, pen, closed)
+    val beak = Path().apply {
+        moveTo(c.x - r * 0.24f, c.y + r * 0.12f)
+        lineTo(c.x + r * 0.24f, c.y + r * 0.12f)
+        lineTo(c.x, c.y + r * (0.55f + if (a.talk > 0f) 0.08f else 0f))
+        close()
+    }
+    inked(beak, Color(0xFFFFC83D), pen)
+    inkedOval(Rect(c.x - r * 0.12f, c.y + r * 0.5f, c.x + r * 0.12f, c.y + r * 0.9f), Color(0xFFE8413A), pen, shade = false)
+    drawOval(Ink.blush, Offset(c.x - r * 0.9f, c.y + r * 0.1f), Size(r * 0.34f, r * 0.2f))
+    drawOval(Ink.blush, Offset(c.x + r * 0.56f, c.y + r * 0.1f), Size(r * 0.34f, r * 0.2f))
 }
 
 /** Width of a figure's head in scene units, used to size hats and glasses to fit. */

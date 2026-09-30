@@ -147,9 +147,10 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         time += dt
         pools = pools(place)
         floating = zeroG(place)
-        val list = surfaces(place)
         val fixtures = world.fixturesIn(place)
         for (f in fixtures) stepFixture(place, f, dt)
+        // Read after the machines: an oven that just opened has shelves again.
+        val list = surfaces(place)
         for (b in world.bodiesIn(place)) {
             b.age += dt
             b.squashV += (-b.squash * 260f - b.squashV * 15f) * dt
@@ -241,7 +242,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         }
 
         if (b.vy > 0f) {
-            val s = list.filter { b.x >= it.x1 && b.x <= it.x2 && it.y >= oldY - 0.0005f && it.y <= newY }.minByOrNull { it.y }
+            val s = list.filter { b.x >= it.x1 && b.x <= it.x2 && it.y >= oldY - 0.003f && it.y <= newY }.minByOrNull { it.y }
             if (s != null) {
                 land(b, s)
                 return

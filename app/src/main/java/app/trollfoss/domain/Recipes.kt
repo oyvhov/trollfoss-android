@@ -97,13 +97,16 @@ object Recipes {
 
     /** Two things in the troll pot. Unknown pairs still make something, so every try is rewarded. */
     fun cauldron(a: ThingType, b: ThingType): Made {
-        cauldronTable[pair(a, b)]?.let { return it }
-        val mix = (a.ordinal * 31 + b.ordinal * 17) % 10
+        val key = pair(a, b)
+        cauldronTable[key]?.let { return it }
+        val first = key.first
+        val second = key.second
+        val mix = (first.ordinal * 31 + second.ordinal * 17) % 10
         return when (mix) {
             0, 1, 2 -> Made(ThingType.SLIME, mix)
             3, 4 -> Made(ThingType.BALLOON, mix)
             5 -> Made(ThingType.ROCKET)
-            6 -> Made(ThingType.GEM, a.ordinal % ThingType.GEM.variants)
+            6 -> Made(ThingType.GEM, first.ordinal % ThingType.GEM.variants)
             7 -> Made(ThingType.STAR_JAR)
             else -> Made(ThingType.SLIME, 3 + mix % 2)
         }

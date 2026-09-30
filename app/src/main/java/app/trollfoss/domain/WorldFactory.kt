@@ -29,7 +29,7 @@ object WorldFactory {
             for (def in spec.people) {
                 val voice = if (def.species.pet) 1.3f + random.nextFloat() * 0.3f else Look.voiceFor(def.look, random)
                 val y = if (def.y > 0f) def.y else place.floor
-                val person = world.addPerson(def.species, def.look, voice, place, def.x, y)
+                val person = world.addPerson(def.species, def.look, voice, place, def.x, y, def.name)
                 def.seat?.let { (index, spot) -> sim.seat(person, fixtures[index], spot) }
                 def.hat?.let { sim.give(person, world.addThing(it, def.hatVariant, place, def.x, y), Part.HAT) }
                 def.glasses?.let { sim.give(person, world.addThing(it, 0, place, def.x, y), Part.GLASSES) }

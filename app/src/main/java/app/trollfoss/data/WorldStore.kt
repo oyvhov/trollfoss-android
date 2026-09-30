@@ -117,6 +117,7 @@ class WorldStore(private val file: File) {
                 is Person -> {
                     put("kind", "person")
                     put("species", b.species.name)
+                    put("name", b.name)
                     put("voice", b.voice.toDouble())
                     put("scale", b.scale.toDouble())
                     put("look", JSONObject().apply {
@@ -221,7 +222,7 @@ class WorldStore(private val file: File) {
                         shoes = l.optInt("shoes", 9),
                         extra = l.optInt("extra", 0),
                     ).safe()
-                    Person(id, species, look, o.optDouble("voice", 1.0).toFloat().coerceIn(0.6f, 1.8f)).apply {
+                    Person(id, species, look, o.optDouble("voice", 1.0).toFloat().coerceIn(0.6f, 1.8f), o.optString("name", "").take(24)).apply {
                         scale = o.optDouble("scale", 1.0).toFloat().coerceIn(0.5f, 1.7f)
                     }
                 }

@@ -11,7 +11,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /** One loop per place, one for the map, a lullaby for the night and dance music for the radio. */
-enum class MusicTheme { MAP, HOME, CAFE, SALON, BEACH, FOREST, LAB, PARK, RADIO, NIGHT }
+enum class MusicTheme { MAP, HOME, CAFE, SALON, BEACH, FOREST, LAB, PARK, FARM, SPACE, RADIO, NIGHT }
 
 /**
  * Composes calm, looping background music in code: chords on a soft pad, a plucked arpeggio or bell
@@ -137,6 +137,29 @@ object MusicComposer {
             drums = true,
             padLevel = 0.08,
             seed = 41,
+        ),
+        // Bouncy and folksy: the farm.
+        MusicTheme.FARM to Recipe(
+            bpm = 104.0,
+            chords = listOf(intArrayOf(62, 66, 69), intArrayOf(67, 71, 74), intArrayOf(62, 66, 69), intArrayOf(69, 73, 76)),
+            bass = intArrayOf(38, 43, 38, 45),
+            arpeggio = intArrayOf(0, -1, 2, 1, 0, -1, 2, 1),
+            arpeggioShift = 12,
+            pluckDecay = 7.0,
+            arpeggioLevel = 0.2,
+            drums = true,
+            padLevel = 0.08,
+            seed = 59,
+        ),
+        // Floating and wide: the space station.
+        MusicTheme.SPACE to Recipe(
+            bpm = 58.0,
+            chords = listOf(intArrayOf(57, 64, 69, 71), intArrayOf(53, 60, 65, 67), intArrayOf(55, 62, 67, 69), intArrayOf(52, 59, 64, 66)),
+            bass = intArrayOf(33, 29, 31, 28),
+            bells = intArrayOf(76, 79, 81, 83, 86, 88, 91),
+            bellChance = 0.45,
+            padLevel = 0.22,
+            seed = 61,
         ),
         // Dance music for the radio.
         MusicTheme.RADIO to Recipe(

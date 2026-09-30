@@ -13,7 +13,7 @@ enum class Sfx {
     TAP, PICK, DROP, THUD, BOING, CHOMP, GULP, YUM, GIGGLE, OOH, BABBLE, HMM, OOF, SPARKLE, MAGIC, POOF,
     SPLASH, SIZZLE, DING, WHIRR, SNIP, SPRAY, FLUSH, SQUEAK, ZIP, SHUTTER, FANFARE, CLICK, NOTE, DRUM, RING,
     HORN, OWL, CUCKOO, REGISTER, POP, WHOOSH, CHIME, BUBBLE, BLOOP, TICK, FIREWORK, COIN, PAGE, SWISH, OPEN,
-    SHUT, VROOM, MEOW, WOOF, CHIRP, ROAR, SNORE,
+    SHUT, VROOM, MEOW, WOOF, CHIRP, ROAR, SNORE, MOO, BAA, CLUCK, NEIGH, BEEP, RUMBLE,
 }
 
 /**
@@ -253,6 +253,29 @@ object Synth {
         Sfx.SNORE -> listOf(
             Noise(0.0, 0.8, 0.3, 300.0, 700.0, swell = true, seed = 4),
             Tone(110.0, 0.0, 0.8, 0.12, buzzy, decay = 0.5, vibrato = 1.5, vibratoHz = 25.0, attack = 0.3),
+        )
+            Sfx.MOO -> listOf(
+            Tone(150.0, 0.0, 0.95, 0.5, vowelO, decay = 1.2, slideTo = 118.0, vibrato = 0.3, vibratoHz = 5.0, attack = 0.09),
+            Tone(300.0, 0.0, 0.95, 0.18, buzzy, decay = 1.4, slideTo = 236.0, attack = 0.12),
+        )
+        Sfx.BAA -> listOf(Tone(430.0, 0.0, 0.55, 0.42, vowelE, decay = 2.0, slideTo = 380.0, vibrato = 1.2, vibratoHz = 9.0, attack = 0.02))
+        Sfx.CLUCK -> (0 until 3).flatMap { i ->
+            listOf(
+                Tone(720.0 - i * 40.0, i * 0.13, 0.07, 0.38, vowelO, decay = 18.0, slideTo = 480.0),
+                Noise(i * 0.13, 0.02, 0.2, 2200.0, decay = 90.0, seed = 3 + i),
+            )
+        }
+        Sfx.NEIGH -> listOf(
+            Tone(700.0, 0.0, 0.26, 0.34, vowelE, decay = 2.0, slideTo = 1250.0, vibrato = 1.4, vibratoHz = 18.0, attack = 0.02),
+            Tone(1250.0, 0.22, 0.55, 0.34, vowelE, decay = 3.0, slideTo = 620.0, vibrato = 2.0, vibratoHz = 16.0),
+        )
+        Sfx.BEEP -> listOf(
+            Tone(1200.0, 0.0, 0.09, 0.35, soft, decay = 8.0),
+            Tone(1600.0, 0.1, 0.09, 0.3, soft, decay = 8.0),
+        )
+        Sfx.RUMBLE -> listOf(
+            Noise(0.0, 1.2, 0.6, 120.0, 320.0, swell = true, seed = 9),
+            Tone(55.0, 0.0, 1.2, 0.5, buzzy, decay = 0.6, slideTo = 72.0, vibrato = 2.0, vibratoHz = 12.0, attack = 0.2),
         )
     }
 

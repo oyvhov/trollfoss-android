@@ -1,0 +1,47 @@
+name: Bygg og test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# A second push to the same branch makes the first run irrelevant.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # No signing.properties here, and there must not be: the Trollfoss key lives on the developer's
+      # machine and nowhere else. CI verifies what does not need a key; the signed APK is built by hand.
+      - name: Einingstestar og lint
+        run: ./gradlew --no-daemon testDebugUnitTest lintDebug
+
+      - name: Byggkontroll
+        run: ./gradlew --no-daemon assembleDebug
+
+      - name: Lagre testrapportar
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapportar
+          path: |
+            app/build/reports/tests/
+            app/build/reports/lint-results-debug.html
+            app/build/test-results/
+          retention-days: 14

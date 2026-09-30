@@ -65,7 +65,7 @@ class Thing(id: Int, var type: ThingType, var variant: Int = 0) : Body(id) {
     override val h: Float get() = type.h
 }
 
-class Person(id: Int, val species: Species, var look: Look, var voice: Float) : Body(id) {
+class Person(id: Int, val species: Species, var look: Look, var voice: Float, var name: String = "") : Body(id) {
     /** Grow and shrink potions. */
     var scale = 1f
 
@@ -94,6 +94,9 @@ class PersonAnim {
     var hopV = 0f
     var taps = 0
     var lastTap = -10f
+
+    /** Seconds left to show the figure's name above its head. */
+    var nameTag = 0f
     var tilt = 0f
     var sparkle = 0f
     var talk = 0f
@@ -189,8 +192,8 @@ class World {
         return thing
     }
 
-    fun addPerson(species: Species, look: Look, voice: Float, place: PlaceId?, x: Float, y: Float): Person {
-        val person = Person(nextId++, species, look.safe(), voice)
+    fun addPerson(species: Species, look: Look, voice: Float, place: PlaceId?, x: Float, y: Float, name: String = ""): Person {
+        val person = Person(nextId++, species, look.safe(), voice, name)
         person.place = place
         person.x = x
         person.y = y
