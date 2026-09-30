@@ -4,16 +4,15 @@
 > leikekasse for barn frå 4 til 10 år: ingen reglar, ingen poeng, ingen tap – berre figurar, ting og
 > stader som svarar når du rører dei.
 
-Dette dokumentet er fasiten for korleis Trollfoss skal sjå ut, låte og kjennast. Levande versjon med
-figurar du kan dra rundt: `docs/design/trollfoss-designunderlag.html`. Teiknereglane for koden ligg i
-`docs/ART_GUIDE.md`, bygg og release i `docs/AI_INSTRUCTIONS.md`.
+Dette dokumentet er fasiten for korleis Trollfoss skal sjå ut, låte og kjennast. Teiknereglane for koden
+ligg i `docs/ART_GUIDE.md`, bygg og release i `docs/AI_INSTRUCTIONS.md`.
 
 ---
 
 ## 1. Visjon og haldning
 
-Trollfoss høyrer til sjangeren *digitalt dukkehus* (som Toca Boca World), men lånar ingenting derifrå:
-ikkje namn, figurar, stader eller grafikk. Verda er **nordisk på ein vanleg måte**: ei moderne bygd
+Trollfoss høyrer til sjangeren *digitalt dukkehus*, men er heilt original: namn, figurar, stader og
+grafikk er laga frå botnen for dette spelet. Verda er **nordisk på ein vanleg måte**: ei moderne bygd
 med fjord, foss, skog og fjell, der folk går i hettegenser og joggesko – ikkje eit postkort. Det
 norske ligg i detaljane (ein strikkagenser i klesstativet, nordlys om natta, kakao i skibakken), og
 trolla er det einaste eventyret.
