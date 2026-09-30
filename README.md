@@ -20,7 +20,7 @@ og legg seg til å sove når natta kjem.
 
 <p align="center"><img src="docs/images/trollfoss-skjermbilete.png" alt="Ni av stadene i Trollfoss" /></p>
 
-## 14 stader
+## 15 stader
 
 | Stad | Det du kan gjere |
 | --- | --- |
@@ -38,6 +38,7 @@ og legg seg til å sove når natta kjem.
 | **Legekontoret** | Røntgen som viser skjelettet, stetoskop som finn hjarteslaget, plaster og medisin. |
 | **Scena** | Trommer, xylofon og mikrofon – spel i band! Discokule og røykmaskin. |
 | **Havbotnen** | Alt sym. Ubåt, kjempemusling med perle, skipsvrak og ein blekksprut med humor. |
+| **Heileberget** | Det store, lange fjellet: ta taubana opp, rop mot ekko-steinen, møt geitene og plant flagget på toppen. |
 
 ## Det som gjer det spesielt
 
@@ -47,7 +48,7 @@ og legg seg til å sove når natta kjem.
 - **Oppdrag og klistremerke.** Tre biletoppdrag om gongen sender deg rundt i bygda. Klistremerka opnar spesialmøblar.
 - **Figurverkstad.** Lag eigne figurar med hud, høgd, frisyre, klede og namn.
 - **Skrå-3D.** Verda er teikna i skrå projeksjon med djupn, skuggar og lys som følgjer tida på døgnet.
-- **42 løynde glimt**, ei oppdagingsbok med oppskrifter, dagens pakke i postkassa – og nokre **løynde overraskingar** som ikkje er nemnde her.
+- **45 løynde glimt**, ei oppdagingsbok med oppskrifter, dagens pakke i postkassa – og nokre **løynde overraskingar** som ikkje er nemnde her.
 - **Dag og natt**, regn, snø, regnboge, nordlys. Kamera og fotoalbum.
 
 <p align="center"><img src="docs/images/trollfoss-sosial.png" width="720" alt="Trollfoss" /></p>

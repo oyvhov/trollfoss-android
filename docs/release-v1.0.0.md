@@ -7,15 +7,16 @@ under ein stor foss, med folk, dyr og troll å leike med. Ingen reglar, ingen po
 
 ### Kva er med
 
-- **14 stader** i skrå-3D: Heime, Bakeriet, Frisøren, Stranda, Fossen, Trollhola, Fjellet, Garden,
-  Romstasjonen, Tivoliet, Butikken, Legekontoret, Scena og Havbotnen.
+- **15 stader** i skrå-3D: Heime, Bakeriet, Frisøren, Stranda, Fossen, Trollhola, Fjellet, Garden,
+  Romstasjonen, Tivoliet, Butikken, Legekontoret, Scena, Havbotnen og **Heileberget** – eit stort, langt
+  fjell med taubane, ekko-stein, ørnerede, toppflagg og fjellgeiter.
 - **Levande figurar**: dei pustar, blunkar, ønskjer seg ting i ønskjebobler, pratar saman, går tur, set seg
   og legg seg til å sove om natta. Nitten figurar med eigne namn, og dyr som tuslar rundt på eiga hand.
 - **Humor overalt**: prompepute, bananskal, pepar som bles hatten av, kake i fjeset, hikke og rap, kiling.
 - **Heimedesignar** med møbelkatalog, 12 tapet, 9 golv og lager, pluss rydding med kost, søppelbøtte og robotstøvsugar.
 - **Oppdragstavle** med tre biletoppdrag om gongen, klistremerkealbum og spesialmøblar som låsast opp.
 - **Figurverkstad** med hud, høgd, frisyre, klede og namn.
-- **42 løynde glimt**, oppdagingsbok med oppskrifter, dagens pakke i postkassa og nokre løynde overraskingar.
+- **45 løynde glimt**, oppdagingsbok med oppskrifter, dagens pakke i postkassa og nokre løynde overraskingar.
 - **Dag og natt**, regn, snø, regnboge, nordlys og stjerneskot. Kamera og fotoalbum.
 - Lydar og musikk for kvar stad, alt syntetisert i kode.
 

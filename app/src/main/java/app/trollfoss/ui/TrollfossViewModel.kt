@@ -439,6 +439,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
             "book" -> open(Screen.Book)
             "tasks" -> open(Screen.Tasks)
             "quake" -> sim.quake(place)
+            "lightning" -> engine?.strike()
             "parent" -> open(Screen.Parent)
             "gate" -> open(Screen.ParentGate)
             "play" -> open(Screen.Play)

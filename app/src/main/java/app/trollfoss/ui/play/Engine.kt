@@ -2304,6 +2304,24 @@ class Engine(
     private var nextStrike = 8f
     private var greeted = false
 
+    /** One flash and its thunder right now (debug hook and the weather both use it). */
+    fun strike() {
+        lightning = 1f
+        boltX = cam + viewport * (0.15f + random.nextFloat() * 0.7f)
+        for (i in bolt.indices) bolt[i] = (random.nextFloat() - 0.5f) * 0.07f
+        pending += (time + 0.13f) to { lightning = 0.85f }
+        pending += (time + 0.35f + random.nextFloat() * 1.3f) to {
+            host.sfx(Sfx.RUMBLE, 0.95f, 0.6f)
+            host.sfx(Sfx.THUD, 0.6f, 0.45f)
+            shake = max(shake, 0.35f)
+            for (o in world.bodiesIn(place)) {
+                if (o !is Person || o.held || o.anim.face == Face.SLEEP) continue
+                faces(o, Face.OOH, 0.6f, Face.GRIN, 1.2f)
+                if (o.anim.pose == Pose.STAND && o.anim.hop == 0f && random.nextFloat() < 0.6f) o.anim.hopV = 1.7f
+            }
+        }
+    }
+
     /** Rain outdoors sometimes brings lightning, and thunder a moment after it. */
     private fun updateWeather(dt: Float) {
         lightning = max(0f, lightning - dt * 3.2f)

@@ -21,7 +21,7 @@ trolla er det einaste eventyret.
 | --- | --- |
 | **Alt er levande** | Figurar pustar, blunkar og ser etter fingeren. Ting skvisar seg når dei landar og snurrar når dei blir kasta. Fossen dundrar, skyer driv, nordlyset bølgjer. |
 | **Alt kan rørast** | Kvar ting kan plukkast opp, kastast, givast til nokon eller puttast i noko. Gir kombinasjonen meining for eit barn, skjer det noko. |
-| **Oppdaging utan press** | 42 løynde glimt, ønskjebobler, oppdragstavle med biletoppdrag, oppskrifter i omn, gryte og verkstad, og dagens pakke – små mål for dei som vil, aldri tidsfrist, poeng eller tap. |
+| **Oppdaging utan press** | 45 løynde glimt, ønskjebobler, oppdragstavle med biletoppdrag, oppskrifter i omn, gryte og verkstad, og dagens pakke – små mål for dei som vil, aldri tidsfrist, poeng eller tap. |
 | **Alt heng saman** | Oppdraga sender barnet rundt i heile bygda (egg frå garden til bakaren, fisk heim til katten), klistremerka frå oppdraga opnar spesialmøblar, og ballongen på kvart oppdragskort flyg rett dit. |
 | **Humor overalt** | Prompepute, bananskal, pepar som bles hatten av, kake i fjeset, hikke og rap, kiling, hunden som stel mat. Alle ler med, ingen blir lei seg. |
 | **Noko for alle** | Kjøkken og frisør, traktor og verktøy, fiskestang og akebrett, rakett og ekte planetar, tivoli, butikk, lege, konsertscene og havbotn. |
@@ -33,9 +33,9 @@ trolla er det einaste eventyret.
 
 ## 2. Verda: bygda Trollfoss
 
-Kartet viser bygda ovanfrå med **14 stader** i tre rader: fjella med trollhola og romstasjonen
+Kartet viser bygda ovanfrå med **15 stader** i tre rader: fjella med trollhola og romstasjonen
 øvst, dalen med tivoli, butikk, foss, lege, bakeri og gard i midten, og strandlinja med frisør,
-heime, konserthus, strand og dykkebøya ytst. Kvar stad er ei brei scene i skrå-3D (sjå §5) som ein
+heime, konserthus, strand og dykkebøya ytst – og bak alt saman det store, lange fjellet **Heileberget**. Kvar stad er ei brei scene i skrå-3D (sjå §5) som ein
 sveipar sidelengs i.
 
 | Stad | Id | Stemning | Hjartet i staden |
@@ -54,8 +54,9 @@ sveipar sidelengs i.
 | **Legekontoret** | `DOCTOR` | Pastell og snille plakatar. | Røntgen som viser skjelettet, stetoskop som finn hjarteslaget, plaster, medisin (sur grimase!), undersøkingsbenk, høgdemålar. |
 | **Scena** | `STAGE` | Raude teppe, lyskastarar. | Trommer, xylofon, mikrofon (figuren syng), høgtalar som får alt til å hoppe, discokule som får alle til å danse, røykmaskin. |
 | **Havbotnen** | `UNDERWATER` | Lysstrålar gjennom vatnet. | Alt sym. Ubåt å køyre, kjempemusling med perle, skipsvrak, tare, korallar, blekksprut som sprutar blekk. |
+| **Heileberget** | `HEILEBERGET` | Eit stort, langt fjell (ni scenebreidder, dobbelt så langt som dei andre), gyllent ettermiddagslys, to fossar. | Fjellhytte, taubane som glir opp til ein avsats og ned att, ekko-stein som svarar tre gonger (geitene breler tilbake), ørnerede og eit toppflagg som går til topps når nokon står på toppen. Tre fjellgeiter, BesteSonja og Tuva, kikkert og termos. |
 
-Kvar stad har **tre glimt** (42 i alt): under ting, inni ting, eller dei dukkar opp når du gjer noko
+Kvar stad har **tre glimt** (45 i alt): under ting, inni ting, eller dei dukkar opp når du gjer noko
 (fiskar opp ei kiste, køyrer traktoren, sender opp raketten, slår av tyngdekrafta, tek pariserhjulet
 over toppen, skannar fem varer, røntgar nokon, spelar i band med trommer, xylofon og song).
 
@@ -79,7 +80,7 @@ bjørneøyre.
 | Underdel | Bukse, shorts, skjørt |
 | Ekstra | Fregner, skjegg, bart |
 
-**Dyr og vesen:** katt, hund, kanin, **elgkalv**, **lundefugl**, ku, sau, høner, fjordhest og ein drake
+**Dyr og vesen:** katt, hund, kanin, **elgkalv**, **lundefugl**, ku, sau, **fjellgeit**, høner, fjordhest og ein drake
 som klekkjer frå drakeegget.
 
 **Namn:** alle figurane har namn som visest i ei snakkeboble når ein trykkjer på dei.
@@ -175,7 +176,7 @@ Alle tidsstyrte rørsler stoppar når Android har slått av animasjonar.
 Alle effektar er syntetiserte i kode: pop, dunk, boing, gomle, fnis, magi, plask, fres, pling, spyling,
 knirk, lukkar – og tulleljodane: rap, hikke, prompepute, «atsjo», glideløype-skli, bonk, kilelatter og
 splat. Figurane snakkar tulleord i si eiga tonehøgd og syng i mikrofonen. Eigen loop for kvar av dei
-14 stadene (tivolivals, butikkbossa, rolege legetonar, scenepop, drøymande havbotn), lullaby om
+15 stadene (tivolivals, butikkbossa, rolege legetonar, scenepop, drøymande havbotn), lullaby om
 natta, dansemusikk frå radioen og discokula, karusellmelodi og instrument i same pentatone skala, så
 alt barnet speler høyrest fint ut.
 
@@ -206,6 +207,6 @@ startar installasjonen.
 
 | Versjon | Innhald |
 | --- | --- |
-| 1.0 | 14 stader i skrå-3D, kart, figurverkstad med namn, fysikk med djupn, vektløyse og symjing, mat, klede, frisør, trollgryte, verkstad og traktor, rakett og planetar, tivoli, butikk, lege, scene og havbotn, ønskjebobler, humor, heimedesignar med katalog, tapet, golv og lager, rydding, oppdragstavle med klistremerke, 42 glimt, dagens pakke, dag/natt, vêr, sekk, foto, foreldreside, GitHub-oppdatering. |
+| 1.0 | 15 stader i skrå-3D, kart, figurverkstad med namn, fysikk med djupn, vektløyse og symjing, mat, klede, frisør, trollgryte, verkstad og traktor, rakett og planetar, tivoli, butikk, lege, scene og havbotn, ønskjebobler, humor, heimedesignar med katalog, tapet, golv og lager, rydding, oppdragstavle med klistremerke, 42 glimt, dagens pakke, dag/natt, vêr, sekk, foto, foreldreside, GitHub-oppdatering. |
 | 1.1 | Fotoalbum med deling, fleire dyr (sel, katt-ungar), fleire klede og frisyrar. |
 | 1.2 | Skule og togstasjon, sesongpynt (jul, 17. mai). |
