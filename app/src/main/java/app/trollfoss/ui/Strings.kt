@@ -34,6 +34,7 @@ object S {
         PlaceId.DOCTOR -> txt("Legekontoret")
         PlaceId.STAGE -> txt("Scena", "Scenen")
         PlaceId.UNDERWATER -> txt("Havbotnen", "Havbunnen")
+        PlaceId.HEILEBERGET -> txt("Heileberget")
     }
 
     val map = txt("Kart")

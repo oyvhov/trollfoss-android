@@ -1438,6 +1438,59 @@ class Engine(
                 particles.burst(PKind.HEART, elk.x, elk.y - elk.h, 8, 0.4f, 0.016f, up = 0.4f, life = 1.6f)
                 laughAround(elk.x, elk, 0.6f, 1f)
             }
+            Fx.CABLE -> {
+                s(Sfx.DING, 0.6f, 0.9f)
+                s(Sfx.CLICK, 0.7f, 0.6f)
+                pending += (time + 0.4f) to { s(Sfx.WHIRR, 0.5f, 0.55f) }
+            }
+            Fx.ARRIVE -> {
+                s(Sfx.DING, 0.85f, 1.15f)
+                s(Sfx.THUD, 0.4f, 0.8f)
+                for (o in world.bodiesIn(place)) if (o is Person && o.species == Species.FOLK && !o.held && abs(o.x - x) < 0.8f) {
+                    faces(o, Face.WOW, 0.5f, Face.GRIN, 1.4f)
+                    o.anim.hopV = 1.4f
+                }
+                particles.burst(PKind.SPARK, x, y, 10, 0.4f, 0.011f, T.SunTop)
+            }
+            Fx.ECHO -> {
+                // «HALLOOO!» The nearest figure shouts, and the mountain answers three times, softer and lower.
+                val shouter = person(param)
+                val base = (shouter?.voice ?: 1.1f) * 1.15f
+                if (shouter != null) {
+                    faces(shouter, Face.LAUGH, 1.6f, Face.GRIN, 1f)
+                    shouter.anim.talk = 1.6f
+                }
+                host.sfx(Sfx.OOH, 0.95f, base.coerceIn(0.5f, 2f))
+                host.sfx(Sfx.WHOOSH, 0.3f, 1.4f)
+                particles.burst(PKind.NOTE, x, y - 0.1f, 4, 0.35f, 0.013f, T.Grape, up = 0.1f, life = 1.2f)
+                for (k in 1..3) pending += (time + 0.62f * k) to {
+                    val r = (base * 0.93f.pow(k)).coerceIn(0.5f, 2f)
+                    host.sfx(Sfx.OOH, 0.6f / k, r)
+                    for (side in listOf(-1f, 1f)) particles.burst(PKind.SPARK, x + side * 0.35f * k, y - 0.12f - 0.03f * k, 4, 0.2f, 0.01f, T.SeaTop, up = 0.05f, life = 0.9f)
+                    // The second echo makes the goats answer.
+                    if (k == 2) for (g in world.bodiesIn(place)) if (g is Person && g.species == Species.GOAT && !g.held) {
+                        voice(g, Sfx.BAA, 0.6f)
+                        g.anim.hopV = 1.3f
+                    }
+                }
+            }
+            Fx.SCREECH -> {
+                s(Sfx.CHIRP, 0.9f, 0.5f)
+                s(Sfx.ROAR, 0.35f, 1.7f)
+                repeat(6) { particles.add(Particle(PKind.LEAF, x + (random.nextFloat() - 0.5f) * 0.12f, y, (random.nextFloat() - 0.5f) * 0.4f, -0.1f + random.nextFloat() * 0.2f, 2.4f, 0.011f, Color(0xFFE8DCC8), random.nextFloat() * 360f, (random.nextFloat() - 0.5f) * 300f)) }
+                for (o in world.bodiesIn(place)) if (o is Person && !o.held && o.anim.face != Face.SLEEP) faces(o, Face.OOH, 0.5f, Face.LAUGH, 1f)
+            }
+            Fx.SUMMIT -> {
+                s(Sfx.FANFARE, 1f)
+                pending += (time + 0.7f) to { s(Sfx.CHIME, 0.8f) }
+                particles.burst(PKind.CONFETTI, x, y, 36, 1f, 0.013f, up = 0.9f, life = 2f)
+                particles.burst(PKind.STAR, x, y + 0.05f, 12, 0.6f, 0.014f, T.Sun)
+                for (o in world.bodiesIn(place)) if (o is Person && !o.held && o.anim.face != Face.SLEEP) {
+                    o.anim.cheer = 2.4f
+                    faces(o, Face.LAUGH, 1.6f, Face.GRIN, 1.4f)
+                }
+                host.haptic()
+            }
             Fx.SETTLE -> {
                 // A little «ahh» as someone sits down, and a happy sigh when they lie down for the night.
                 s(if (param == 2) Sfx.HMM else Sfx.YUM, 0.4f, if (param == 2) 0.7f else 0.9f)
@@ -1703,9 +1756,11 @@ class Engine(
             Species.SHEEP -> Sfx.BAA
             Species.CHICKEN -> Sfx.CLUCK
             Species.HORSE -> Sfx.NEIGH
+            Species.GOAT -> Sfx.BAA
             Species.FOLK -> null
         }
         val rate = when (p.species) {
+            Species.GOAT -> 1.3f
             Species.ELK -> 1.25f
             Species.PUFFIN -> 0.75f
             Species.FOLK -> p.voice

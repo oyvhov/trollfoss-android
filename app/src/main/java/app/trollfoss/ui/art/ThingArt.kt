@@ -203,6 +203,9 @@ private fun DrawScope.thing(type: ThingType, v: Int, used: Int, w: Float, h: Flo
     ThingType.CANDY_FLOSS -> thCandyFloss(v, w, h, pen)
     ThingType.POPCORN -> thPopcorn(w, h, pen)
     ThingType.SODA -> thSoda(v, used, w, h, pen)
+    // Stand-ins until the mountain things are drawn.
+    ThingType.BINOCULARS -> thSunglasses(w, h, pen)
+    ThingType.THERMOS -> thSoda(0, used, w, h, pen)
     ThingType.SYRUP -> thSyrup(w, h, pen)
     ThingType.BANDAGE -> thBandage(w, h, pen)
     ThingType.THERMOMETER -> thThermometer(w, h, pen)

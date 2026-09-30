@@ -650,7 +650,7 @@ private fun DrawScope.drawPet(species: Species, look: Look, pose: Pose, a: Perso
     val t = pen.t + seed
     when (species) {
         Species.PUFFIN -> return drawPuffin(pose, a, h, pen, t)
-        Species.COW, Species.SHEEP, Species.HORSE -> return drawFarmAnimal(species, look, pose, a, h, pen, t)
+        Species.COW, Species.SHEEP, Species.HORSE, Species.GOAT -> return drawFarmAnimal(species, look, pose, a, h, pen, t)
         Species.CHICKEN -> return drawChicken(look, pose, a, h, pen, t)
         else -> Unit
     }
@@ -1038,6 +1038,17 @@ private fun DrawScope.drawFarmAnimal(species: Species, look: Look, pose: Pose, a
             }
             inked(horn, Color(0xFFF3E6C8), pen)
         }
+        if (species == Species.GOAT) {
+            // Horns sweeping back from the forehead.
+            val horn = Path().apply {
+                moveTo(c.x + side * r * 0.3f, c.y - r * 0.85f)
+                quadraticTo(c.x + side * r * 0.42f, c.y - r * 1.45f, c.x + side * r * 0.95f, c.y - r * 1.3f)
+                quadraticTo(c.x + side * r * 0.62f, c.y - r * 1.2f, c.x + side * r * 0.56f, c.y - r * 0.8f)
+                close()
+            }
+            inked(horn, Color(0xFFE9D9B5), pen)
+            for (k in 1..2) drawLine(Ink.line.copy(alpha = 0.5f), Offset(c.x + side * r * (0.4f + k * 0.12f), c.y - r * (1.0f + k * 0.12f)), Offset(c.x + side * r * (0.5f + k * 0.12f), c.y - r * (1.12f + k * 0.12f)), strokeWidth = pen.lw * 0.6f)
+        }
         if (species == Species.HORSE) {
             val ear = Path().apply {
                 moveTo(c.x + side * r * 0.25f, c.y - r * 0.85f)
@@ -1087,6 +1098,16 @@ private fun DrawScope.drawFarmAnimal(species: Species, look: Look, pose: Pose, a
         drawOval(MouthDark, Offset(m.x - r * 0.16f, m.y - r * 0.05f), Size(r * 0.32f, r * (0.1f + 0.08f * abs(sin(t * 14f)))))
     } else {
         drawArc(Ink.line, 20f, 140f, false, Offset(m.x - r * 0.16f, m.y - r * 0.12f), Size(r * 0.32f, r * 0.14f), style = Stroke(pen.lw, cap = StrokeCap.Round))
+    }
+    if (species == Species.GOAT) {
+        // A goatee: a little pointed beard under the chin.
+        val beard = Path().apply {
+            moveTo(c.x - r * 0.2f, c.y + r * 0.72f)
+            quadraticTo(c.x - r * 0.12f, c.y + r * 1.25f, c.x, c.y + r * 1.4f)
+            quadraticTo(c.x + r * 0.12f, c.y + r * 1.25f, c.x + r * 0.2f, c.y + r * 0.72f)
+            close()
+        }
+        inked(beard, coat.lighten(0.3f), pen)
     }
     if (species == Species.COW) {
         // A cowbell on a red collar.

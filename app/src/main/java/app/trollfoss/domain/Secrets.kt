@@ -68,9 +68,9 @@ object Secrets {
         Secret("sea_wreck", PlaceId.UNDERWATER, 0.57f, 0.85f, inside = 0, on = 0),
         Secret("sea_octopus", PlaceId.UNDERWATER, 2.98f, 0.52f, event = true, on = 5),
 
-        Secret("berg_cable", PlaceId.HEILEBERGET, 6.05f, 0.3f, event = true, on = 10),
+        Secret("berg_cable", PlaceId.HEILEBERGET, 6.05f, 0.34f, event = true, on = 10),
         Secret("berg_echo", PlaceId.HEILEBERGET, 4.4f, 0.4f, event = true, on = 6),
-        Secret("berg_top", PlaceId.HEILEBERGET, 8.4f, 0.06f, event = true, on = 12),
+        Secret("berg_top", PlaceId.HEILEBERGET, 8.4f, 0.13f, event = true, on = 12),
     )
 
     fun byId(id: String): Secret? = all.firstOrNull { it.id == id }

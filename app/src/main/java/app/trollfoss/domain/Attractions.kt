@@ -343,9 +343,9 @@ class Attractions(private val sim: Sim, private val random: Random) {
             FixtureType.CABLE_CAR -> callCabin(f)
             FixtureType.CABLE_STATION -> {
                 val cabin = world.fixturesIn(place).firstOrNull { it.type == FixtureType.CABLE_CAR }
-                // A tap on a station rings its bell and calls the cabin if it is at the other end.
+                // A tap on a station rings its bell and sends the cabin on its way to the other station.
                 listener.onFx(Fx.BEEP, f.x, top, f, param = 1)
-                if (cabin != null && !cabin.on && (f.x < place.width / 2f) == (cabin.mode == 1)) callCabin(cabin)
+                if (cabin != null && !cabin.on) callCabin(cabin)
             }
             FixtureType.ECHO_ROCK -> {
                 f.count++
@@ -489,7 +489,7 @@ class Attractions(private val sim: Sim, private val random: Random) {
         /** The cabin's trip: seconds, how far across and how far up (scene units). */
         const val CABLE_SECONDS = 7f
         const val CABLE_TRAVEL = 3.15f
-        const val CABLE_RISE = 0.39f
+        const val CABLE_RISE = 0.29f
 
         /** A little waltz on the pentatonic scale the piano uses (indices into it). */
         val CAROUSEL_TUNE = intArrayOf(5, 7, 8, 7, 5, 3, 5, 7, 5, 3, 2, 0, 2, 3, 5, 3)

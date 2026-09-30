@@ -34,6 +34,7 @@ import kotlin.math.sin
  */
 fun mapSpot(place: PlaceId): Offset = when (place) {
     PlaceId.MOUNTAIN -> Offset(0.19f, 0.24f)
+    PlaceId.HEILEBERGET -> Offset(0.36f, 0.12f)
     PlaceId.LAB -> Offset(0.62f, 0.25f)
     PlaceId.SPACE -> Offset(0.81f, 0.19f)
     PlaceId.TIVOLI -> Offset(0.12f, 0.54f)
@@ -431,6 +432,7 @@ private class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float) {
                 PlaceId.FOREST -> camp(this, base)
                 PlaceId.LAB -> cave(this, base)
                 PlaceId.MOUNTAIN -> cabin(this, base)
+                PlaceId.HEILEBERGET -> cabin(this, base)
                 PlaceId.FARM -> barn(this, base)
                 PlaceId.SPACE -> station(this, p(spot.x, spot.y), hl)
                 PlaceId.TIVOLI -> ferrisWheel(this, base)

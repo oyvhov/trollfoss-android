@@ -390,6 +390,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
                 PlaceId.DOCTOR -> MusicTheme.DOCTOR
                 PlaceId.STAGE -> MusicTheme.STAGE
                 PlaceId.UNDERWATER -> MusicTheme.SEA
+                PlaceId.HEILEBERGET -> MusicTheme.BERG
             }
         }
         music.play(theme)

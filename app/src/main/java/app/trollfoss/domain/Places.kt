@@ -593,10 +593,10 @@ object Places {
                     fl(FixtureType.PINE_TREE, 3.85f, depth = -0.11f),             // 7
                     fl(FixtureType.TENT, 5.0f, depth = 0.04f),                    // 8
                     fl(FixtureType.ROCK_LEDGE, 6.3f, depth = -0.03f),             // 9 reached by the cable car
-                    f(FixtureType.CABLE_STATION, 6.0f, 0.48f, on = 9),            // 10 top station
+                    f(FixtureType.CABLE_STATION, 6.0f, 0.58f, on = 9),            // 10 top station
                     fl(FixtureType.SUMMIT_ROCK, 8.15f, depth = -0.02f),           // 11 the summit
-                    f(FixtureType.SUMMIT_FLAG, 8.4f, 0.26f, on = 11),             // 12
-                    f(FixtureType.EAGLE_NEST, 7.8f, 0.26f, on = 11),              // 13
+                    f(FixtureType.SUMMIT_FLAG, 8.4f, 0.38f, on = 11),             // 12
+                    f(FixtureType.EAGLE_NEST, 7.8f, 0.38f, on = 11),              // 13
                     fl(FixtureType.LAMP_POST, 2.75f, depth = -0.06f),             // 14
                 ),
                 things = listOf(
@@ -605,22 +605,22 @@ object Places {
                     t(ThingType.BINOCULARS, 2.4f, 0.79f, on = 3),
                     t(ThingType.MARSHMALLOW, 2.3f, 0.79f, on = 3),
                     t(ThingType.COCOA, 0.6f, 0.4f, on = 0),
-                    t(ThingType.EGG, 7.8f, 0.11f, 1, on = 13),
-                    t(ThingType.FEATHER, 7.45f, 0.22f, on = 11),
+                    t(ThingType.EGG, 7.8f, 0.2f, 1, on = 13),
+                    t(ThingType.FEATHER, 7.45f, 0.3f, on = 11),
                     t(ThingType.CARROT, 4.0f, 0.95f),
                     t(ThingType.APPLE, 4.7f, 0.94f),
                     t(ThingType.MUSHROOM, 3.55f, 0.94f),
                     t(ThingType.FLOWER, 5.7f, 0.95f, 4),
                     t(ThingType.FLOWER, 5.8f, 0.96f, 2),
                     t(ThingType.ROCK, 2.95f, 0.95f),
-                    t(ThingType.GEM, 6.9f, 0.4f, 3, on = 9),
+                    t(ThingType.GEM, 6.9f, 0.5f, 3, on = 9),
                 ),
                 people = listOf(
                     PersonDef(Species.FOLK, Look(skin = 2, height = 1.03f, hair = 6, hairColor = 6, eyes = 2, top = 2, topColor = 7, bottom = 2, bottomColor = 11, shoes = 12), 1.5f, seat = 1 to 0, hat = ThingType.BEANIE, hatVariant = 2, glasses = ThingType.ROUND_GLASSES, name = "BesteSonja"),
                     PersonDef(Species.FOLK, Look(skin = 5, height = 1.03f, hair = 6, hairColor = 0, eyes = 3, top = 2, topColor = 7, bottom = 2, bottomColor = 7, shoes = 8), 2.05f, y = 0.94f, hand = ThingType.THERMOS, name = "Tuva"),
                     PersonDef(Species.GOAT, Look(skin = 0), 4.0f, y = 0.93f),
-                    PersonDef(Species.GOAT, Look(skin = 1), 6.65f, y = 0.3f),
-                    PersonDef(Species.GOAT, Look(skin = 2), 8.6f, y = 0.15f),
+                    PersonDef(Species.GOAT, Look(skin = 1), 6.65f, y = 0.4f),
+                    PersonDef(Species.GOAT, Look(skin = 2), 8.4f, y = 0.25f),
                 ),
             )
             PlaceId.UNDERWATER -> PlaceSpec(

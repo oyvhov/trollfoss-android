@@ -464,11 +464,11 @@ enum class FixtureType {
             // The cabin hangs from the cable; its floor is at the fixture's bottom edge. Two seats.
             CABLE_CAR -> FixtureSpec(0.34f, 0.3f, front = true, spots = listOf(seat(-0.07f, -0.06f), seat(0.08f, -0.06f)), light = RRect(-0.3f, -0.4f, 0.3f, 0.1f))
             // A tall rock with a flat top to stand on; the variant is the look (0 grey, 1 summit with snow).
-            ROCK_LEDGE -> FixtureSpec(1.3f, 0.4f, surfaces = listOf(SurfaceSpec(-0.6f, 0.6f, -0.4f)))
-            SUMMIT_ROCK -> FixtureSpec(1.2f, 0.62f, surfaces = listOf(SurfaceSpec(-0.5f, 0.5f, -0.62f)))
+            ROCK_LEDGE -> FixtureSpec(1.3f, 0.3f, surfaces = listOf(SurfaceSpec(-0.6f, 0.6f, -0.3f)))
+            SUMMIT_ROCK -> FixtureSpec(1.2f, 0.5f, surfaces = listOf(SurfaceSpec(-0.5f, 0.5f, -0.5f)))
             ECHO_ROCK -> FixtureSpec(0.5f, 0.42f, surfaces = listOf(SurfaceSpec(-0.2f, 0.2f, -0.42f)))
             EAGLE_NEST -> FixtureSpec(0.36f, 0.2f, surfaces = listOf(SurfaceSpec(-0.12f, 0.12f, -0.12f)))
-            SUMMIT_FLAG -> FixtureSpec(0.22f, 0.5f)
+            SUMMIT_FLAG -> FixtureSpec(0.22f, 0.22f)
 
             // Catalogue furniture. Variants are colours or motifs.
             RUG -> FixtureSpec(0.46f, 0.01f)

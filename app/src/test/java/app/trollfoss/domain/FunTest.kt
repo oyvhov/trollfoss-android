@@ -75,16 +75,16 @@ class FunTest {
     fun `a finished banana leaves a peel that makes you slip`() {
         val world = WorldFactory.create(Random(6))
         val sim = sim(world)
-        val tuva = folk(world, PlaceId.HOME, "Tuva")
-        val banana = world.addThing(ThingType.BANANA, 0, PlaceId.HOME, tuva.x, tuva.y - 0.2f)
+        val tuva = folk(world, PlaceId.CAFE, "Sondre")
+        val banana = world.addThing(ThingType.BANANA, 0, PlaceId.CAFE, tuva.x, tuva.y - 0.2f)
         repeat(ThingType.BANANA.bites) { sim.give(tuva, banana, Part.MOUTH) }
-        val peel = world.bodiesIn(PlaceId.HOME).firstOrNull { it is Thing && it.type == ThingType.BANANA_PEEL }
+        val peel = world.bodiesIn(PlaceId.CAFE).firstOrNull { it is Thing && it.type == ThingType.BANANA_PEEL }
         assertNotNull(peel)
-        step(sim, PlaceId.HOME, 2f)
+        step(sim, PlaceId.CAFE, 2f)
         // Drop Olve's grandma on the peel.
-        val walker = world.addPerson(Species.FOLK, Look(), 1f, PlaceId.HOME, peel!!.x, 0.3f)
+        val walker = world.addPerson(Species.FOLK, Look(), 1f, PlaceId.CAFE, peel!!.x, 0.3f)
         walker.ground = peel.y
-        step(sim, PlaceId.HOME, 1.5f)
+        step(sim, PlaceId.CAFE, 1.5f)
         assertTrue(events.any { it.first == Fx.SLIP && it.second == walker.id })
     }
 
@@ -105,7 +105,7 @@ class FunTest {
     fun `three quick sips give hiccups`() {
         val world = WorldFactory.create(Random(9))
         val sim = sim(world)
-        val tuva = folk(world, PlaceId.HOME, "Tuva")
+        val tuva = folk(world, PlaceId.HOME, "Øyvind")
         val milk = world.addThing(ThingType.MILK, 0, PlaceId.HOME, tuva.x, tuva.y - 0.2f)
         repeat(3) { sim.give(tuva, milk, Part.MOUTH) }
         step(sim, PlaceId.HOME, 2f)
@@ -181,13 +181,13 @@ class FunTest {
     fun `folk stroll about by themselves in daytime`() {
         val world = WorldFactory.create(Random(22))
         val sim = sim(world)
-        val tuva = folk(world, PlaceId.HOME, "Tuva")
+        val tuva = folk(world, PlaceId.HEILEBERGET, "Tuva")
         for (p in world.people()) p.anim.nextWish = 1e6f
         val start = tuva.x
         var moved = false
         var t = 0f
         while (t < 120f) {
-            sim.step(PlaceId.HOME, 1f / 60f)
+            sim.step(PlaceId.HEILEBERGET, 1f / 60f)
             if (kotlin.math.abs(tuva.x - start) > 0.1f || tuva.mode == Mode.SEATED) moved = true
             t += 1f / 60f
         }

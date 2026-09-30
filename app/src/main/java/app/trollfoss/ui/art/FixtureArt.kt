@@ -30,7 +30,7 @@ import kotlin.math.sin
  */
 fun DrawScope.drawFixtureBack(f: Fixture, u: Float, pen: Pen, contents: List<Thing> = emptyList()) {
     // The newer places draw their own furniture, shadows included.
-    if (drawRoomsBack(f, u, pen, contents) || drawRidesBack(f, u, pen, contents) || drawDecorBack(f, u, pen, contents)) return
+    if (drawRoomsBack(f, u, pen, contents) || drawRidesBack(f, u, pen, contents) || drawDecorBack(f, u, pen, contents) || drawBergBack(f, u, pen, contents)) return
     val spec = f.spec
     if (!spec.wall && f.type !in FX_NO_SHADOW) fxFootShadow(u, spec.w, fxDepthOf(f.type))
     fxBobbed(f, u) {
@@ -139,7 +139,7 @@ private val FX_PENDING = listOf(Color(0xFFFFC83D), Color(0xFF7CCBFF), Color(0xFF
 /** Draws the part of a fixture that sits in front of whoever uses it (a duvet, a bath side, glass). */
 fun DrawScope.drawFixtureFront(f: Fixture, u: Float, pen: Pen) {
     if (!f.spec.front && !f.spec.glass) return
-    if (drawRoomsFront(f, u, pen) || drawRidesFront(f, u, pen) || drawDecorFront(f, u, pen)) return
+    if (drawRoomsFront(f, u, pen) || drawRidesFront(f, u, pen) || drawDecorFront(f, u, pen) || drawBergFront(f, u, pen)) return
     fxBobbed(f, u) {
         when (f.type) {
             FixtureType.BED -> fxBedFront(f, u, pen)
