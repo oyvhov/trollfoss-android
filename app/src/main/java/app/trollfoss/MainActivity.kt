@@ -42,6 +42,7 @@ class MainActivity : ComponentActivity() {
             nightOn = extras.getString("night"),
             weatherName = extras.getString("weather"),
             secrets = extras.getInt("secrets", 0),
+            wishes = extras.getBoolean("wishes", false),
         )
     }
 

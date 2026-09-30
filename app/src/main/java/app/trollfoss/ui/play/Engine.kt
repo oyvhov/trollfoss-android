@@ -48,6 +48,9 @@ import app.trollfoss.domain.Species
 import app.trollfoss.domain.Thing
 import app.trollfoss.domain.ThingType
 import app.trollfoss.domain.Weather
+import app.trollfoss.domain.Wish
+import app.trollfoss.domain.WishEvent
+import app.trollfoss.domain.WishKind
 import app.trollfoss.domain.World
 import app.trollfoss.ui.art.Ink
 import app.trollfoss.ui.art.Pen
@@ -59,6 +62,7 @@ import app.trollfoss.ui.art.drawPlaceFront
 import app.trollfoss.ui.art.drawThing
 import app.trollfoss.ui.art.groundShadow
 import app.trollfoss.ui.art.headWidth
+import app.trollfoss.ui.art.lighten
 import app.trollfoss.ui.art.starPath
 import app.trollfoss.ui.art.twinkle
 import app.trollfoss.ui.components.Icons
@@ -137,6 +141,13 @@ class Engine(
         private set
 
     private val appeared = HashMap<String, Float>()
+
+    /** When each thought bubble popped up, for its pop-in. */
+    private val bubbleBorn = HashMap<Int, Float>()
+
+    /** The wish whose thing twinkles after a tap on the wisher. */
+    private var hint: Wish? = null
+    private var hintUntil = 0f
     private val flights = ArrayList<Flight>()
     private val grabs = HashMap<Long, Grab>()
     private var lastBabble = 0f
@@ -345,6 +356,14 @@ class Engine(
             a.talk = max(0f, a.talk - dt)
             a.wave = max(0f, a.wave - dt)
             a.nameTag = max(0f, a.nameTag - dt)
+            a.sayTime = max(0f, a.sayTime - dt)
+            if (a.sayTime == 0f) a.chatWith = -1
+            if (a.cheer > 0f) {
+                a.cheer -= dt
+                if (a.hop == 0f && a.pose == Pose.STAND) a.hopV = 1.7f
+            }
+            // Hens peck at the ground now and then.
+            if (p.species == Species.CHICKEN && p.resting && a.walkTo.isNaN() && random.nextFloat() < dt * 0.7f) a.tilt = 32f * a.facing
             a.hopV -= 9f * dt
             a.hop = max(0f, a.hop + a.hopV * dt)
             if (a.hop == 0f) a.hopV = 0f
@@ -356,7 +375,8 @@ class Engine(
 
             // Eyes follow what moves: a held thing, the finger, or they wander.
             val head = Anatomy.at(p, Part.HEAD)
-            val target = held.firstOrNull { it !== p }?.let { Offset(it.x, it.y - it.h / 2) } ?: finger
+            val partner = (world.bodies[a.chatWith] as? Person)?.let { Anatomy.at(it, Part.HEAD) }?.let { Offset(it[0], it[1]) }
+            val target = held.firstOrNull { it !== p }?.let { Offset(it.x, it.y - it.h / 2) } ?: finger ?: partner
             val (lx, ly) = if (target != null) {
                 val dx = target.x - head[0]
                 val dy = target.y - head[1]
@@ -369,7 +389,7 @@ class Engine(
             a.lookY += (ly - a.lookY) * min(1f, dt * 7f)
 
             // Dancing to the radio.
-            a.dance = if (radio != null && a.pose == Pose.STAND && p.resting && abs(p.x - radio.x) < 1.6f) {
+            a.dance = if (a.cheer > 0f || (radio != null && a.pose == Pose.STAND && p.resting && abs(p.x - radio.x) < 1.6f)) {
                 time * 2.07f * PI.toFloat() + 0.001f
             } else {
                 0f
@@ -384,11 +404,52 @@ class Engine(
             if (a.nextIdle <= 0f) {
                 a.nextIdle = 4f + random.nextFloat() * 8f
                 if (a.face != Face.SLEEP && !p.held && visible(p)) {
-                    if (random.nextBoolean()) a.wave = 1.2f else a.talk = 0.9f
-                    if (a.talk > 0f && time - lastBabble > 9f) {
-                        lastBabble = time
-                        voice(p, Sfx.BABBLE, 0.25f)
+                    val friend = if (p.species == Species.FOLK) chatPartner(p) else null
+                    if (friend != null) {
+                        chat(p, friend)
+                    } else {
+                        if (random.nextBoolean()) a.wave = 1.2f else a.talk = 0.9f
+                        if (a.talk > 0f && time - lastBabble > 9f) {
+                            lastBabble = time
+                            voice(p, Sfx.BABBLE, 0.25f)
+                        }
                     }
+                }
+            }
+        }
+    }
+
+    /** A figure close by to chat with: same side of the room, about the same depth. */
+    private fun chatPartner(p: Person): Person? = world.bodiesIn(place).filterIsInstance<Person>().firstOrNull { o ->
+        o !== p && o.species == Species.FOLK && !o.held && o.anim.face != Face.SLEEP && o.anim.sayTime == 0f &&
+            abs(o.x - p.x) < 0.38f && abs(bodyKey(o) - bodyKey(p)) < 0.12f
+    }
+
+    /** Two figures chat: a picture in a speech bubble, a babble, and an answer a moment later. */
+    private fun chat(p: Person, other: Person) {
+        val a = p.anim
+        a.say = random.nextInt(CHAT_ICONS)
+        a.sayTime = 1.7f
+        a.talk = 1.2f
+        a.chatWith = other.id
+        other.anim.chatWith = p.id
+        if (time - lastBabble > 4f) {
+            lastBabble = time
+            voice(p, Sfx.BABBLE, 0.3f)
+        }
+        pending += (time + 1.1f) to {
+            val o = other.anim
+            if (!other.held && o.face != Face.SLEEP) {
+                o.say = random.nextInt(CHAT_ICONS)
+                o.sayTime = 1.5f
+                o.talk = 1f
+                o.chatWith = p.id
+                if (random.nextFloat() < 0.4f) {
+                    o.face = Face.LAUGH
+                    o.faceTime = 0.9f
+                    voice(other, Sfx.GIGGLE, 0.35f)
+                } else {
+                    voice(other, Sfx.BABBLE, 0.28f)
                 }
             }
         }
@@ -834,6 +895,16 @@ class Engine(
                     if (!b.species.pet) a.wave = 1.1f
                 }
                 if (b.species == Species.DRAGON) particles.burst(PKind.SPARK, b.x + 0.02f, b.y - b.h * 0.45f, 8, 0.5f, 0.01f, Color(0xFFFFB02E))
+                // A tap on someone with a wish makes what they want twinkle, for the youngest players.
+                a.wish?.let { w ->
+                    hint = w
+                    hintUntil = time + 2.6f
+                    if (w.kind == WishKind.THING) {
+                        for (t in world.bodiesIn(place)) if (t is Thing && t.type == w.thing && !hidden(t)) {
+                            particles.burst(PKind.STAR, t.x, t.y - t.h / 2, 6, 0.3f, 0.01f, T.Sun)
+                        }
+                    }
+                }
                 particles.burst(PKind.SPARK, b.x, b.y - b.h, 5, 0.3f, 0.01f)
                 host.haptic()
             }
@@ -858,7 +929,7 @@ class Engine(
             }
         }
         // A fixture? Front-most first, wall fixtures last.
-        val fixtures = world.fixturesIn(place).sortedWith(compareBy<Fixture> { if (it.spec.wall) 0 else 1 }.thenBy { it.id }).reversed()
+        val fixtures = world.fixturesIn(place).sortedByDescending { fixtureKey(it) }
         for (f in fixtures) {
             val fx = f.x + f.shiftX
             val fy = f.y + f.shiftY
@@ -921,6 +992,38 @@ class Engine(
         host.sfx(Sfx.SPLASH, min(1f, 0.3f + speed * 0.2f))
         repeat(10) {
             particles.add(Particle(PKind.DROP, body.x, body.y - 0.01f, (random.nextFloat() - 0.5f) * 0.8f, -0.5f - random.nextFloat() * 0.6f, 0.8f, 0.012f, Color(0xFF9ADAFF)))
+        }
+    }
+
+    override fun onWish(person: Person, event: WishEvent) {
+        val a = person.anim
+        when (event) {
+            WishEvent.NEW -> if (visible(person)) {
+                bubbleBorn[person.id] = time
+                host.sfx(Sfx.BLOOP, 0.35f, 1.25f)
+                voice(person, Sfx.HMM, 0.35f)
+            }
+            WishEvent.GRANTED -> {
+                a.cheer = 2.2f
+                a.face = Face.LAUGH
+                a.faceTime = 2.2f
+                a.hopV = 2.4f
+                val head = Anatomy.at(person, Part.HEAD)
+                particles.burst(PKind.CONFETTI, head[0], head[1], 28, 0.9f, 0.012f, up = 0.7f, life = 1.4f)
+                particles.burst(PKind.HEART, head[0], head[1] - 0.05f, 5, 0.3f, 0.016f, up = 0.35f, life = 1.3f)
+                host.sfx(Sfx.FANFARE, 0.55f)
+                voiceLater(person, Sfx.GIGGLE)
+                host.haptic()
+                // Friends nearby are happy too.
+                for (o in world.bodiesIn(place)) {
+                    if (o !is Person || o === person || abs(o.x - person.x) > 0.45f || o.anim.face == Face.SLEEP) continue
+                    o.anim.face = Face.GRIN
+                    o.anim.faceTime = 1.2f
+                    if (o.anim.pose == Pose.STAND) o.anim.hopV = 1.5f
+                }
+                host.changed()
+            }
+            WishEvent.FADED -> Unit
         }
     }
 
@@ -1242,6 +1345,8 @@ class Engine(
             }
         }
         drawPlaceFront(place, cam, u, pen)
+        drawHints(lw)
+        for (b in list) if (b is Person && !b.held) drawBubbles(b, pen)
 
         drawPreviews(lw)
         for (b in list) if (b.held) {
@@ -1280,10 +1385,13 @@ class Engine(
         when (b) {
             is Person -> {
                 val a = b.anim
-                val bob = if (a.pose == Pose.FLOAT) sin(time * 1.6f + b.id) * 0.008f else 0f
+                val walking = !a.walkTo.isNaN()
+                val step = if (walking) abs(sin(a.walkPhase * PI.toFloat())) * b.h * 0.07f else 0f
+                val bob = (if (a.pose == Pose.FLOAT) sin(time * 1.6f + b.id) * 0.008f else 0f) - step
+                val sway = if (walking) sin(a.walkPhase * PI.toFloat()) * 4f else 0f
                 translate(sx(b.x), sy(b.y - a.hop + bob)) {
-                    rotate(a.tilt + (if (a.pose == Pose.FLOAT) sin(time + b.id) * 6f else 0f), pivot = Offset(0f, -b.h * u * 0.5f)) {
-                        scale((1f + sq * 0.22f) * pop, (1f - sq * 0.22f) * pop, pivot = Offset.Zero) {
+                    rotate(a.tilt + sway + (if (a.pose == Pose.FLOAT) sin(time + b.id) * 6f else 0f), pivot = Offset(0f, -b.h * u * 0.5f)) {
+                        scale((1f + sq * 0.22f) * pop * a.facing, (1f - sq * 0.22f) * pop, pivot = Offset.Zero) {
                             val carried = world.carried(b)
                             val holding = carried.any { it.slot == Slot.HAND.ordinal }
                             drawPerson(b.species, b.look, a.pose, a, b.h * u, pen, holding, seed = b.id * 0.37f)
@@ -1354,6 +1462,157 @@ class Engine(
                 drawRoundRect(Ink.line.copy(alpha = alpha), box.topLeft, box.size, CornerRadius(h / 2), style = Stroke(dp(2f)))
                 drawRect(Color.White.copy(alpha = alpha), Offset(cx - dp(6f), by - dp(3f)), Size(dp(12f), dp(3f)))
                 drawText(layout, topLeft = Offset(cx - layout.size.width / 2f, by - h + dp(5f)))
+            }
+        }
+    }
+
+    /** A soft pulsing ring round the things a tapped figure wishes for. */
+    private fun DrawScope.drawHints(lw: Float) {
+        val w = hint ?: return
+        if (time > hintUntil || w.kind != WishKind.THING) return
+        val fade = min(1f, (hintUntil - time) / 0.5f)
+        val pulse = 1f + sin(time * 9f) * 0.12f
+        for (t in world.bodiesIn(place)) {
+            if (t !is Thing || t.type != w.thing || hidden(t) || t.mode != Mode.FREE) continue
+            val c = Offset(sx(t.x), sy(t.y - t.h / 2))
+            val r = max(t.w, t.h) * 0.75f * u * pulse
+            drawCircle(Brush.radialGradient(listOf(T.SunTop.copy(alpha = 0.55f * fade), Color.Transparent), c, r * 1.5f), r * 1.5f, c)
+            drawCircle(Color.White.copy(alpha = 0.9f * fade), r, c, style = Stroke(lw * 2f))
+        }
+    }
+
+    /**
+     * A figure's thought bubble (its wish, as a picture) and speech bubble (a little chat). The thought
+     * bubble sits beside the head on the side with more room and pops in with a wobble.
+     */
+    private fun DrawScope.drawBubbles(p: Person, pen: Pen) {
+        val a = p.anim
+        val head = Anatomy.at(p, Part.HEAD)
+        val hat = Anatomy.at(p, Part.HAT)
+        val lw = pen.lw
+        val w = a.wish
+        if (w != null) {
+            val born = bubbleBorn[p.id] ?: (time - 1f)
+            val t = ((time - born) / 0.45f).coerceIn(0f, 1f)
+            val grow = 1f - (1f - t).pow(3) + sin(t * PI.toFloat()) * 0.18f
+            val fade = ((app.trollfoss.domain.Life.WISH_LIFE - w.age) / 1.2f).coerceIn(0f, 1f)
+            val side = if (p.x - cam > viewport - 0.32f) -1f else 1f
+            val r = 0.052f * grow * min(1.25f, max(0.8f, p.h / 0.3f))
+            val bob = sin(time * 2.4f + p.id) * 0.005f
+            val cx = head[0] + side * (headWidth(p.species, p.h) * 0.55f + r * 0.9f)
+            val cy = hat[1] - p.anim.hop - r * 0.9f + bob
+            val c = Offset(sx(cx), sy(cy))
+            val rp = r * u
+            val alpha = fade
+            // Two little puffs lead from the head to the bubble.
+            val p1 = Offset(sx(head[0] + side * headWidth(p.species, p.h) * 0.45f), sy(hat[1] - p.anim.hop + 0.01f))
+            val p2 = Offset((p1.x + c.x) / 2f, (p1.y + c.y) / 2f + rp * 0.35f)
+            for ((pt, pr) in listOf(p1 to rp * 0.13f, p2 to rp * 0.22f)) {
+                drawCircle(Color.White.copy(alpha = alpha), pr, pt)
+                drawCircle(Ink.line.copy(alpha = alpha), pr, pt, style = Stroke(lw * 0.8f))
+            }
+            drawCircle(Ink.shadow.copy(alpha = 0.25f * alpha), rp, c + Offset(rp * 0.08f, rp * 0.12f))
+            drawCircle(Color.White.copy(alpha = alpha), rp, c)
+            drawCircle(Ink.line.copy(alpha = alpha), rp, c, style = Stroke(lw * 1.1f))
+            if (alpha > 0.05f) drawWishPicture(w, c, rp * 0.72f, pen)
+        }
+        if (a.sayTime > 0f && a.say >= 0) {
+            val t = min(1f, (1.7f - a.sayTime) / 0.18f).coerceIn(0f, 1f)
+            val alpha = min(1f, a.sayTime / 0.3f)
+            val r = 0.034f * t
+            val c = Offset(sx(head[0] - 0.02f), sy(hat[1] - p.anim.hop - r * 1.4f))
+            val rp = r * u
+            val tail = androidx.compose.ui.graphics.Path().apply {
+                moveTo(c.x - rp * 0.35f, c.y + rp * 0.75f)
+                lineTo(c.x + rp * 0.1f, c.y + rp * 1.45f)
+                lineTo(c.x + rp * 0.35f, c.y + rp * 0.7f)
+                close()
+            }
+            drawPath(tail, Color.White.copy(alpha = alpha))
+            drawPath(tail, Ink.line.copy(alpha = alpha), style = Stroke(lw * 0.9f))
+            drawRoundRect(Color.White.copy(alpha = alpha), Offset(c.x - rp * 1.3f, c.y - rp), Size(rp * 2.6f, rp * 2f), CornerRadius(rp))
+            drawRoundRect(Ink.line.copy(alpha = alpha), Offset(c.x - rp * 1.3f, c.y - rp), Size(rp * 2.6f, rp * 2f), CornerRadius(rp), style = Stroke(lw * 0.9f))
+            drawRect(Color.White.copy(alpha = alpha), Offset(c.x - rp * 0.3f, c.y + rp * 0.62f), Size(rp * 0.62f, rp * 0.5f))
+            drawChatIcon(a.say, c, rp * 0.62f, lw, alpha)
+        }
+    }
+
+    private fun DrawScope.drawWishPicture(w: Wish, c: Offset, r: Float, pen: Pen) {
+        when (w.kind) {
+            WishKind.THING -> {
+                val type = w.thing ?: return
+                val s = r * 1.7f / max(type.w, type.h) / u
+                translate(c.x, c.y + type.h * s * u / 2f) {
+                    scale(s, s, pivot = Offset.Zero) {
+                        drawThing(type, w.variant, 0, type.w * u, type.h * u, Pen(pen.lw / s, pen.t, 0f, pen.weather, 0f))
+                    }
+                }
+            }
+            WishKind.SLEEP -> {
+                // A moon cut by the white of the bubble, and a little «z».
+                val m = Offset(c.x - r * 0.15f, c.y + r * 0.05f)
+                drawCircle(T.Sun, r * 0.62f, m)
+                drawCircle(Color.White, r * 0.52f, m + Offset(r * 0.3f, -r * 0.2f))
+                val z = androidx.compose.ui.graphics.Path().apply {
+                    moveTo(c.x + r * 0.35f, c.y - r * 0.7f)
+                    lineTo(c.x + r * 0.75f, c.y - r * 0.7f)
+                    lineTo(c.x + r * 0.35f, c.y - r * 0.3f)
+                    lineTo(c.x + r * 0.75f, c.y - r * 0.3f)
+                }
+                drawPath(z, T.Grape, style = Stroke(pen.lw * 1.4f, cap = StrokeCap.Round))
+            }
+            WishKind.MUSIC -> drawChatIcon(2, c, r, pen.lw, 1f)
+            WishKind.FRIEND -> drawChatIcon(0, c, r, pen.lw, 1f)
+        }
+    }
+
+    /** 0 heart, 1 star, 2 notes, 3 sun, 4 flower, 5 laugh. */
+    private fun DrawScope.drawChatIcon(icon: Int, c: Offset, r: Float, lw: Float, alpha: Float) {
+        when (icon) {
+            0 -> {
+                val heart = androidx.compose.ui.graphics.Path().apply {
+                    moveTo(c.x, c.y + r * 0.75f)
+                    cubicTo(c.x - r * 1.3f, c.y - r * 0.1f, c.x - r * 0.55f, c.y - r * 1.1f, c.x, c.y - r * 0.35f)
+                    cubicTo(c.x + r * 0.55f, c.y - r * 1.1f, c.x + r * 1.3f, c.y - r * 0.1f, c.x, c.y + r * 0.75f)
+                    close()
+                }
+                drawPath(heart, T.Berry.copy(alpha = alpha))
+                drawPath(heart, Ink.line.copy(alpha = alpha), style = Stroke(lw * 0.8f))
+            }
+            1 -> {
+                val star = starPath(c, r * 0.85f, r * 0.4f)
+                drawPath(star, T.Sun.copy(alpha = alpha))
+                drawPath(star, Ink.line.copy(alpha = alpha), style = Stroke(lw * 0.8f))
+            }
+            2 -> for (i in 0..1) {
+                val nx = c.x - r * 0.45f + i * r * 0.8f
+                val ny = c.y + r * 0.45f - i * r * 0.2f
+                drawOval(T.Grape.copy(alpha = alpha), Offset(nx - r * 0.3f, ny - r * 0.2f), Size(r * 0.55f, r * 0.42f))
+                drawLine(T.Grape.copy(alpha = alpha), Offset(nx + r * 0.2f, ny), Offset(nx + r * 0.2f, ny - r * 0.95f), strokeWidth = lw * 1.1f, cap = StrokeCap.Round)
+                if (i == 1) drawLine(T.Grape.copy(alpha = alpha), Offset(nx + r * 0.2f - r * 0.8f, c.y + r * 0.45f - r * 0.95f), Offset(nx + r * 0.2f, ny - r * 0.95f), strokeWidth = lw * 1.3f, cap = StrokeCap.Round)
+            }
+            3 -> {
+                for (k in 0 until 8) {
+                    val ang = k * PI.toFloat() / 4f
+                    drawLine(T.Sun.copy(alpha = alpha), Offset(c.x + kotlin.math.cos(ang) * r * 0.55f, c.y + sin(ang) * r * 0.55f), Offset(c.x + kotlin.math.cos(ang) * r * 0.9f, c.y + sin(ang) * r * 0.9f), strokeWidth = lw, cap = StrokeCap.Round)
+                }
+                drawCircle(T.Sun.copy(alpha = alpha), r * 0.42f, c)
+                drawCircle(Ink.line.copy(alpha = alpha), r * 0.42f, c, style = Stroke(lw * 0.7f))
+            }
+            4 -> {
+                for (k in 0 until 5) {
+                    val ang = k * 2f * PI.toFloat() / 5f
+                    drawCircle(T.Berry.lighten(0.3f).copy(alpha = alpha), r * 0.3f, Offset(c.x + kotlin.math.cos(ang) * r * 0.42f, c.y + sin(ang) * r * 0.42f))
+                }
+                drawCircle(T.Sun.copy(alpha = alpha), r * 0.26f, c)
+            }
+            else -> {
+                // A laughing face.
+                drawCircle(T.Sun.copy(alpha = alpha), r * 0.8f, c)
+                drawCircle(Ink.line.copy(alpha = alpha), r * 0.8f, c, style = Stroke(lw * 0.7f))
+                drawArc(Ink.line.copy(alpha = alpha), 0f, 180f, true, Offset(c.x - r * 0.4f, c.y - r * 0.05f), Size(r * 0.8f, r * 0.55f))
+                drawCircle(Ink.line.copy(alpha = alpha), r * 0.08f, Offset(c.x - r * 0.28f, c.y - r * 0.28f))
+                drawCircle(Ink.line.copy(alpha = alpha), r * 0.08f, Offset(c.x + r * 0.28f, c.y - r * 0.28f))
             }
         }
     }
@@ -1496,6 +1755,9 @@ class Engine(
     private companion object {
         /** Piano keys on a friendly pentatonic scale, in semitones from middle C an octave up. */
         val PENTATONIC = intArrayOf(-12, -10, -8, -5, -3, 0, 2, 4, 7, 9)
+
+        /** How many pictures [drawChatIcon] knows. */
+        const val CHAT_ICONS = 6
 
         /** Scene units that always fit across the screen; a 16:10 tablet zooms out to show them. */
         const val MIN_VIEW = 2.05f

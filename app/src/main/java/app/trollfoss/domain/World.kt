@@ -111,6 +111,28 @@ class PersonAnim {
     var talk = 0f
     var nextIdle = 3f
     var wave = 0f
+
+    /** The wish in the figure's thought bubble, and seconds until the next one (negative: not set yet). */
+    var wish: Wish? = null
+    var nextWish = -1f
+
+    /** Seconds left of a wish-granted cheer. */
+    var cheer = 0f
+
+    /** A little chat: the icon in the speech bubble and how long it shows. */
+    var say = -1
+    var sayTime = 0f
+    var chatWith = -1
+
+    // Animals strolling about on their own.
+    var still = 0f
+    var walkTo = Float.NaN
+    var walkGround = 0f
+    var nextWalk = 2f
+    var walkPhase = 0f
+
+    /** 1 facing right, -1 facing left (animals turn to where they walk). */
+    var facing = 1f
 }
 
 /**
@@ -168,6 +190,9 @@ class World {
     var giftDay = -1L
     var crownGiven = false
     var catches = 0
+
+    /** Wishes the child has granted, all places together. */
+    var wishesGranted = 0
 
     fun nextZ(): Long = ++zCounter
 

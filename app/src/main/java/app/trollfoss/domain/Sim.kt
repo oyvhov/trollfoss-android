@@ -35,6 +35,7 @@ interface SimListener {
     fun onRemove(body: Body) {}
     fun onSecret(id: String) {}
     fun onDiscovery(key: String) {}
+    fun onWish(person: Person, event: WishEvent) {}
 }
 
 /** What happened when a thing was given to a figure. */
@@ -52,6 +53,9 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
     var today: Long = 0L
 
     private val surfaceCache = HashMap<PlaceId, List<Surface>>()
+
+    /** Wishes and wandering animals. */
+    val life = Life(this, random)
     private var pools: List<Pool> = emptyList()
 
     fun invalidate(place: PlaceId) {
@@ -188,6 +192,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
             if (b is Person) stepPerson(b, dt)
             if (b is Thing && b.cook < 0f) stepRocket(b, dt)
         }
+        life.step(place, dt)
         if (place == PlaceId.FOREST && world.night) unlock("forest_night")
     }
 
@@ -494,6 +499,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         placeSeated(p)
         updatePose(p)
         if (f.type in RIDES) f.timer = 0f
+        life.seated(p)
         return true
     }
 
@@ -1256,6 +1262,13 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
 
     /** Hands [t] to [p] at [part]. The engine picks the part from where the thing was dropped. */
     fun give(p: Person, t: Thing, part: Part): Give {
+        val type = t.type
+        val result = giveTo(p, t, part)
+        if (result != Give.NONE) life.given(p, type)
+        return result
+    }
+
+    private fun giveTo(p: Person, t: Thing, part: Part): Give {
         when {
             part == Part.MOUTH && t.type.edible -> {
                 t.used++

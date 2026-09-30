@@ -367,7 +367,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     /** Debug builds only: jump straight to a place or screen for screenshots. */
-    fun debug(placeName: String?, screenName: String?, nightOn: String?, weatherName: String?, secrets: Int) {
+    fun debug(placeName: String?, screenName: String?, nightOn: String?, weatherName: String?, secrets: Int, wishes: Boolean = false) {
         placeName?.let { name -> PlaceId.entries.firstOrNull { it.name.equals(name, true) }?.let { travel(it) } }
         when (screenName?.lowercase()) {
             "map" -> open(Screen.Map)
@@ -383,6 +383,8 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
             Secrets.all.take(secrets).forEach { world.found += it.id }
             found = world.found.size
         }
+        // Everyone in the place wishes for something right away.
+        if (wishes) world.people().filter { it.place == place }.forEach { it.anim.nextWish = 0.2f + it.id % 5 * 0.4f }
         splash = false
     }
 
