@@ -12,12 +12,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -75,24 +78,27 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
     val version = engine.designVersion
     val glow by animateFloatAsState(if (engine.overStore) 1f else 0f, label = "store glow")
     val tabs = DesignTab.entries.filter { (it != DesignTab.WALL && it != DesignTab.FLOOR) || Decor.decoratable(place) }
+    val shape = RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp)
 
+    // A slim panel on the right, so the floor with the furniture stays in view.
     Column(
         modifier
-            .fillMaxWidth()
+            .fillMaxHeight()
+            .width(248.dp)
             .onGloballyPositioned { engine.storeZone = it.boundsInRoot() }
-            .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+            .clip(shape)
             .background(if (glow > 0.01f) androidx.compose.ui.graphics.lerp(T.Cream, T.SunTop, glow) else T.Cream.copy(alpha = 0.97f))
-            .border(3.dp, T.Ink, RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
-            .padding(horizontal = 14.dp, vertical = 10.dp),
+            .border(3.dp, T.Ink, shape)
+            .padding(horizontal = 10.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
             for (t in tabs) {
                 val on = t.ordinal == tab
                 RoundButton(
                     description = t.name,
                     onClick = { tab = t.ordinal },
-                    size = if (on) 54.dp else 46.dp,
+                    size = if (on) 46.dp else 40.dp,
                     tone = if (on) Tones.Sun else Tones.Cream,
                     icon = when (t) {
                         DesignTab.FURNITURE -> DesignIcons.Sofa
@@ -103,26 +109,15 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                     },
                 )
             }
-            Spacer(Modifier.weight(1f))
-            // How many stickers the child has: they open the special furniture.
-            Row(
-                Modifier.background(T.Grape, RoundedCornerShape(50)).border(2.dp, T.Ink, RoundedCornerShape(50)).padding(horizontal = 10.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                IconCanvas(DesignIcons.Sticker, Modifier.size(28.dp))
-                GameText("${world.stickers.size}", fontSize = 20.sp, style = MaterialTheme.typography.titleLarge, color = Color.White)
-            }
-            RoundButton("Ferdig", onClick = onClose, size = 54.dp, tone = Tones.Mint, icon = Icons.Check)
         }
 
-        Box(Modifier.fillMaxWidth().height(104.dp)) {
+        Box(Modifier.fillMaxWidth().weight(1f)) {
             // Read the version so the panel redraws after every change.
             if (version < 0) Unit
             when (DesignTab.entries[tab]) {
                 DesignTab.FURNITURE -> {
                     val items = remember(place) { Decor.catalogue(place) }
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(end = 12.dp)) {
+                    LazyVerticalGrid(GridCells.Fixed(2), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         itemsIndexed(items) { _, item ->
                             val locked = item.stickers > world.stickers.size
                             Tile(onClick = {
@@ -137,12 +132,12 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                 DesignTab.WALL, DesignTab.FLOOR -> {
                     val wall = DesignTab.entries[tab] == DesignTab.WALL
                     val current = Decor.style(world, place, engine.room)
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(end = 12.dp)) {
-                        val n = if (wall) Decor.WALLS else Decor.FLOORS
+                    val n = if (wall) Decor.WALLS else Decor.FLOORS
+                    LazyVerticalGrid(GridCells.Fixed(2), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         itemsIndexed(List(n) { it }) { _, i ->
                             val chosen = if (wall) current.wall == i else current.floor == i
                             Tile(chosen = chosen, onClick = { if (wall) engine.restyle(wall = i) else engine.restyle(floor = i) }) {
-                                Canvas(Modifier.size(78.dp)) {
+                                Canvas(Modifier.size(80.dp)) {
                                     val r = Rect(4.dp.toPx(), 4.dp.toPx(), size.width - 4.dp.toPx(), size.height - 4.dp.toPx())
                                     val pen = Pen(2.dp.toPx())
                                     if (wall) drawWallSwatch(i, r, pen) else drawFloorSwatch(i, r, pen)
@@ -153,13 +148,13 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                 }
                 DesignTab.STORE -> {
                     if (world.storage.isEmpty()) {
-                        Row(Modifier.align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                            IconCanvas(DesignIcons.Box, Modifier.size(80.dp))
-                            // An empty store shows how to fill it: furniture flying into the box.
-                            IconCanvas(DesignIcons.Sofa, Modifier.size(56.dp).graphicsLayer { rotationZ = -12f })
+                        // An empty store shows how to fill it: furniture flying into the box.
+                        Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            IconCanvas(DesignIcons.Sofa, Modifier.size(56.dp).graphicsLayer { rotationZ = -12f; translationX = 30f })
+                            IconCanvas(DesignIcons.Box, Modifier.size(96.dp))
                         }
                     } else {
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(end = 12.dp)) {
+                        LazyVerticalGrid(GridCells.Fixed(2), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             itemsIndexed(world.storage.toList()) { index, stored ->
                                 Tile(onClick = { engine.addFromStore(index) }) { FurnitureThumb(stored.type, stored.variant, place, false) }
                             }
@@ -167,22 +162,32 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                     }
                 }
                 DesignTab.TIDY -> {
-                    Row(Modifier.align(Alignment.Center), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(18.dp)) {
-                        RoundButton("Rydd", onClick = { engine.tidy() }, size = 96.dp, tone = Tones.Sun, icon = DesignIcons.Broom)
-                    }
+                    RoundButton("Rydd", onClick = { engine.tidy() }, modifier = Modifier.align(Alignment.Center), size = 120.dp, tone = Tones.Sun, icon = DesignIcons.Broom)
                 }
             }
         }
+
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            // How many stickers the child has: they open the special furniture.
+            Row(
+                Modifier.background(T.Grape, RoundedCornerShape(50)).border(2.dp, T.Ink, RoundedCornerShape(50)).padding(horizontal = 10.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                IconCanvas(DesignIcons.Sticker, Modifier.size(28.dp))
+                GameText("${world.stickers.size}", fontSize = 20.sp, style = MaterialTheme.typography.titleLarge, color = Color.White)
+            }
+            RoundButton("Ferdig", onClick = onClose, size = 56.dp, tone = Tones.Mint, icon = Icons.Check)
+        }
     }
 }
-
 /** A square card in the panel. */
 @Composable
 private fun Tile(chosen: Boolean = false, onClick: () -> Unit, content: @Composable () -> Unit) {
     val feedback = LocalFeedback.current
     Box(
         Modifier
-            .size(96.dp)
+            .size(104.dp)
             .clip(RoundedCornerShape(18.dp))
             .background(if (chosen) T.SunTop else Color.White)
             .border(if (chosen) 4.dp else 2.5.dp, if (chosen) T.Sun else T.Ink, RoundedCornerShape(18.dp))
@@ -196,7 +201,7 @@ private fun Tile(chosen: Boolean = false, onClick: () -> Unit, content: @Composa
 
 @Composable
 private fun LockBadge(item: CatalogueItem) {
-    Box(Modifier.size(96.dp)) {
+    Box(Modifier.size(104.dp)) {
         Row(
             Modifier.align(Alignment.BottomCenter).padding(bottom = 4.dp).background(T.Grape, RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 2.dp),
             verticalAlignment = Alignment.CenterVertically,

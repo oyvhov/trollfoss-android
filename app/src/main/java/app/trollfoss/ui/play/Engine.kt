@@ -264,9 +264,13 @@ class Engine(
         // A thing carried to the screen edge takes the camera with it.
         if (grabs.values.any { it.moved && (heldBody(it) != null || it.target is Target.Furniture) }) {
             val edge = grabs.values.filter { it.moved && (heldBody(it) != null || it.target is Target.Furniture) }.map { it.finger.x }
+            // With the designer panel open, the right edge is where the panel starts; over the panel
+            // itself the camera stays put, so furniture can be dropped into the store.
+            val panel = if (designMode) storeZone else null
+            val right = panel?.left?.minus(dp(36f)) ?: (widthPx * 0.92f)
             for (x in edge) {
                 if (x < widthPx * 0.08f) cam -= 1.3f * dt
-                if (x > widthPx * 0.92f) cam += 1.3f * dt
+                if (x > right && (panel == null || x < panel.left)) cam += 1.3f * dt
             }
             clampCam()
         } else if (grabs.values.none { it.target is Target.Pan && it.moved }) {

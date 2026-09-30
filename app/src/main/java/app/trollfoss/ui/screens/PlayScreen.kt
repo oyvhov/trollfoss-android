@@ -8,8 +8,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -121,8 +121,8 @@ fun PlayScreen(vm: TrollfossViewModel) {
         // Top left: the map.
         RoundButton(S.map.str(), onClick = { vm.open(Screen.Map) }, modifier = Modifier.align(Alignment.TopStart).padding(16.dp), tone = Tones.Sea, icon = Icons.Map)
 
-        // Top right: found glimt, day and night, weather and the camera.
-        Row(
+        // Top right: found glimt, day and night, weather and the camera (the designer panel takes their place).
+        if (!engine.designMode) Row(
             Modifier.align(Alignment.TopEnd).padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -155,9 +155,9 @@ fun PlayScreen(vm: TrollfossViewModel) {
         }
         AnimatedVisibility(
             visible = engine.designMode,
-            enter = slideInVertically { it } + fadeIn(),
-            exit = slideOutVertically { it } + fadeOut(),
-            modifier = Modifier.align(Alignment.BottomCenter),
+            enter = slideInHorizontally { it } + fadeIn(),
+            exit = slideOutHorizontally { it } + fadeOut(),
+            modifier = Modifier.align(Alignment.CenterEnd),
         ) {
             DesignerPanel(engine, vm.world, place, onClose = {
                 engine.designMode = false
