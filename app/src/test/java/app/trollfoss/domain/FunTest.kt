@@ -151,3 +151,4 @@ class FunTest {
         assertTrue(cat.ground in PlaceId.HOME.back..PlaceId.FRONT)
     }
 }
+

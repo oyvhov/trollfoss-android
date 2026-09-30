@@ -77,6 +77,8 @@ class WorldStore(private val file: File) {
             put("crownGiven", world.crownGiven)
             put("catches", world.catches)
             put("wishes", world.wishesGranted)
+            // Which places this save knows, so places added by an update get filled on loading.
+            put("places", JSONArray(PlaceId.entries.map { it.name }))
             put("found", JSONArray(world.found.toList()))
             put("unlocked", JSONArray(world.unlocked.toList()))
             put("discoveries", JSONArray(world.discoveries.toList()))
@@ -209,6 +211,9 @@ class WorldStore(private val file: File) {
                 if (b.mode != Mode.BAG && b.place == null) b.place = PlaceId.HOME
                 b.age = 10f
             }
+            val known = json.optJSONArray("places")?.let { a -> strings(a).mapNotNull { enumOrNull<PlaceId>(it) }.toSet() }
+                ?: world.bodies.values.mapNotNull { it.place }.toSet()
+            WorldFactory.addMissingPlaces(world, known)
             return Saved(world, settings)
         }
 

@@ -153,6 +153,23 @@ class AttractionsTest {
     }
 
     @Test
+    fun `a save from before the new places gets them filled, without doubling names`() {
+        val world = WorldFactory.create(Random(11))
+        // Pretend the save is old: nothing lives in the new places.
+        val newPlaces = setOf(PlaceId.TIVOLI, PlaceId.SHOP, PlaceId.DOCTOR, PlaceId.STAGE, PlaceId.UNDERWATER)
+        world.bodies.values.filter { it.place in newPlaces }.map { it.id }.forEach { world.bodies.remove(it) }
+        val known = PlaceId.entries.toSet() - newPlaces
+        assertTrue(WorldFactory.addMissingPlaces(world, known))
+        assertTrue(world.bodiesIn(PlaceId.UNDERWATER).any { it is Person })
+        val names = world.people().map { it.name }.filter { it.isNotBlank() }
+        assertEquals(names.size, names.toSet().size)
+        // Places the save already knew are left alone, even when empty.
+        world.bodies.values.filter { it.place == PlaceId.SHOP }.map { it.id }.forEach { world.bodies.remove(it) }
+        assertFalse(WorldFactory.addMissingPlaces(world, PlaceId.entries.toSet()))
+        assertTrue(world.bodiesIn(PlaceId.SHOP).isEmpty())
+    }
+
+    @Test
     fun `every new place has named folk and glimt`() {
         val world = WorldFactory.create(Random(10))
         for (place in listOf(PlaceId.TIVOLI, PlaceId.SHOP, PlaceId.DOCTOR, PlaceId.STAGE, PlaceId.UNDERWATER)) {
