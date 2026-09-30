@@ -107,8 +107,15 @@ class Engine(
     var heightPx = 1f
         private set
     private var density = 1f
-    val u: Float get() = heightPx
+    /**
+     * Pixels per scene unit. On wide phones the scene fills the height; on tablets it zooms out so at
+     * least [MIN_VIEW] units show across, and the scene sits on the bottom edge with sky (or wall) above.
+     */
+    val u: Float get() = min(heightPx, widthPx / MIN_VIEW)
     val viewport: Float get() = widthPx / u
+
+    /** Screen pixels above scene y = 0; the place art fills them with more sky or wall. */
+    private val top: Float get() = heightPx - u
 
     var cam = startCam
         private set
@@ -184,7 +191,7 @@ class Engine(
     private fun sy(y: Float) = y * u
     private fun dp(v: Float) = v * density
     private fun units(px: Float) = px / u
-    private fun toScene(p: Offset) = Offset(p.x / u + cam, p.y / u)
+    private fun toScene(p: Offset) = Offset(p.x / u + cam, (p.y - top) / u)
 
     private val bagRadius get() = dp(38f)
     private val bagCenter get() = Offset(widthPx - dp(20f) - bagRadius, heightPx - dp(20f) - bagRadius)
@@ -695,7 +702,7 @@ class Engine(
         body.z = world.nextZ()
         if (body is Person) world.carried(body).forEach { it.place = null }
         host.sfx(Sfx.ZIP, 0.7f)
-        particles.burst(PKind.SPARK, units(bagCenter.x) + cam, units(bagCenter.y), 8, 0.4f)
+        particles.burst(PKind.SPARK, units(bagCenter.x) + cam, units(bagCenter.y - top), 8, 0.4f)
         host.changed()
     }
 
@@ -868,7 +875,7 @@ class Engine(
     private fun collect(s: Secret) {
         if (!sim.collect(s.id)) return
         found = world.found.size
-        flights += Flight(Offset(sx(s.x), sy(s.y)))
+        flights += Flight(Offset(sx(s.x), sy(s.y) + top))
         particles.burst(PKind.STAR, s.x, s.y, 16, 0.7f, 0.014f, T.Sun)
         host.sfx(Sfx.CHIME, 0.9f)
         host.haptic()
@@ -1174,7 +1181,7 @@ class Engine(
 
         val sx0 = if (motion) sin(time * 61f) * shake * dp(6f) else 0f
         val sy0 = if (motion) sin(time * 47f + 1f) * shake * dp(5f) else 0f
-        withTransform({ translate(sx0, sy0) }) {
+        withTransform({ translate(sx0, sy0 + top) }) {
             drawWorld(pen, lw)
         }
         drawVignette()
@@ -1328,9 +1335,9 @@ class Engine(
             val alpha = min(1f, p.anim.nameTag / 0.4f)
             val grow = min(1f, (2.2f - p.anim.nameTag) / 0.2f)
             val layout = text.measure(p.name, TextStyle(color = T.Ink.copy(alpha = alpha), fontSize = 17.sp, fontWeight = FontWeight.Black))
-            val top = Anatomy.at(p, Part.HAT)
+            val hat = Anatomy.at(p, Part.HAT)
             val cx = sx(p.x)
-            val by = sy(top[1] - p.anim.hop) - dp(14f)
+            val by = sy(hat[1] - p.anim.hop) + top - dp(14f)
             val w = layout.size.width + dp(22f)
             val h = layout.size.height + dp(10f)
             scale(grow, grow, pivot = Offset(cx, by)) {
@@ -1370,8 +1377,9 @@ class Engine(
         if (night <= 0.01f || place == PlaceId.SPACE) return
         val dark = (if (place.outdoor) 0.3f else 0.5f) * night
         val lights = lightSources()
-        drawContext.canvas.saveLayer(Rect(0f, 0f, size.width, size.height), Paint())
-        drawRect(Color(0xFF0E0B33).copy(alpha = dark))
+        // Drawn inside the world transform, so the band above the scene starts at -top.
+        drawContext.canvas.saveLayer(Rect(0f, -top, size.width, size.height), Paint())
+        drawRect(Color(0xFF0E0B33).copy(alpha = dark), Offset(0f, -top), Size(size.width, size.height + top))
         for ((c, r, _) in lights) {
             drawCircle(Brush.radialGradient(listOf(Color.Black, Color.Black.copy(alpha = 0.6f), Color.Transparent), c, r), r, c, blendMode = BlendMode.DstOut)
         }
@@ -1488,5 +1496,8 @@ class Engine(
     private companion object {
         /** Piano keys on a friendly pentatonic scale, in semitones from middle C an octave up. */
         val PENTATONIC = intArrayOf(-12, -10, -8, -5, -3, 0, 2, 4, 7, 9)
+
+        /** Scene units that always fit across the screen; a 16:10 tablet zooms out to show them. */
+        const val MIN_VIEW = 2.05f
     }
 }
