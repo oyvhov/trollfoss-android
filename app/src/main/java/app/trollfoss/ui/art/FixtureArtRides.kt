@@ -369,7 +369,7 @@ private fun DrawScope.ridesFerrisBack(f: Fixture, u: Float, pen: Pen) {
     val glow = pen.night * (if (f.on) 1f else 0.45f)
     if (glow > 0.01f) {
         val gr = r * 1.6f
-        drawCircle(Brush.radialGradient(listOf(Color(0xFFFFD98A).copy(alpha = 0.45f * glow), Color(0x00FFD98A)), hub, gr), gr, hub)
+        drawCircle(safeRadialGradient(listOf(Color(0xFFFFD98A).copy(alpha = 0.45f * glow), Color(0x00FFD98A)), hub, gr), gr, hub)
     }
     groundShadow(0.04f * u, -0.012f * u, 0.84f * u, 0.9f)
 
@@ -610,7 +610,7 @@ private fun DrawScope.ridesCarouselBack(f: Fixture, u: Float, pen: Pen) {
     if (glow > 0.01f) {
         val c = Offset(0f, -0.3f * u)
         val gr = 0.5f * u
-        drawCircle(Brush.radialGradient(listOf(Color(0xFFFFD98A).copy(alpha = 0.42f * glow), Color(0x00FFD98A)), c, gr), gr, c)
+        drawCircle(safeRadialGradient(listOf(Color(0xFFFFD98A).copy(alpha = 0.42f * glow), Color(0x00FFD98A)), c, gr), gr, c)
     }
     groundShadow(0f, -0.004f * u, 0.8f * u, 0.9f)
     ridesPlatform(f, u, pen)
@@ -2034,7 +2034,7 @@ private fun DrawScope.ridesFridge(f: Fixture, u: Float, pen: Pen) {
     groundShadow(0.035f * u, -0.01f * u, 0.3f * u, 0.8f)
     if (pen.night > 0f) {
         val c = Offset(0f, -0.2f * u)
-        drawCircle(Brush.radialGradient(listOf(Color(0xFFBFF0FF).copy(alpha = 0.35f * pen.night), Color(0x00BFF0FF)), c, 0.3f * u), 0.3f * u, c)
+        drawCircle(safeRadialGradient(listOf(Color(0xFFBFF0FF).copy(alpha = 0.35f * pen.night), Color(0x00BFF0FF)), c, 0.3f * u), 0.3f * u, c)
     }
     for (s in intArrayOf(-1, 1)) inkedRound(Rect(s * 0.095f * u - 0.012f * u, -0.01f * u, s * 0.095f * u + 0.012f * u, 0f), 0.003f * u, ridesRubber, pen, shade = false)
     box3d(Rect(left, top, right, -0.008f * u), d * u, body, pen, top = body.lighten(0.25f), side = body.darken(0.3f))

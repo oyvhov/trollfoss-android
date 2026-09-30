@@ -627,7 +627,7 @@ private fun DrawScope.cliffAndFall(st: Stage, pen: Pen) {
         if (n > 0f) {
             drawPath(cl.fall, Color(0xFFD6EEFF), alpha = 0.25f * n)
             val base = Offset(3.02f * u, 0.76f * u)
-            drawCircle(Brush.radialGradient(listOf(Color(0xFFBFE6FF).copy(alpha = 0.35f * n), Color(0x00BFE6FF)), center = base, radius = 0.35f * u), 0.35f * u, base)
+            drawCircle(safeRadialGradient(listOf(Color(0xFFBFE6FF).copy(alpha = 0.35f * n), Color(0x00BFE6FF)), center = base, radius = 0.35f * u), 0.35f * u, base)
         }
 
         // The pool: its front face (0.83..0.95) sits under the front water; its surface recedes to the cliff.
@@ -857,7 +857,7 @@ internal fun DrawScope.mountainBack(st: Stage, pen: Pen) {
     if (vis > 0.01f) {
         val c = Offset(st.fx(0.66f, 0.04f), 0.5f * u)
         val glow = Color(0xFFFFCF70)
-        drawCircle(Brush.radialGradient(listOf(glow.copy(alpha = 0.6f * vis), glow.copy(alpha = 0f)), center = c, radius = 0.55f * u), 0.55f * u, c)
+        drawCircle(safeRadialGradient(listOf(glow.copy(alpha = 0.6f * vis), glow.copy(alpha = 0f)), center = c, radius = 0.55f * u), 0.55f * u, c)
         drawSun(c, 0.06f * u, pen, vis, rays = false, color = Color(0xFFFFC23D))
     }
     drawRainbow(Offset(st.fx(0.45f, 0.08f), hz * u), 0.5f * u, 0.016f * u, pen.rainbow)

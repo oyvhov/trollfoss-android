@@ -10,6 +10,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
+import app.trollfoss.ui.art.safeRadialGradient
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PathEffect
@@ -358,7 +359,7 @@ class Engine(
             val c = Offset(sx(p.at.x), sy(p.at.y))
             val pulse = 1f + sin(time * 8f) * 0.12f
             val r = p.radius * u * pulse
-            drawCircle(Brush.radialGradient(listOf(T.SunTop.copy(alpha = 0.5f), Color.Transparent), c, r * 1.6f), r * 1.6f, c)
+            glow(listOf(T.SunTop.copy(alpha = 0.5f), Color.Transparent), c, r * 1.6f)
             drawCircle(Color.White.copy(alpha = 0.9f), r, c, style = Stroke(lw * 2.2f))
             drawCircle(T.Sun, r, c, style = Stroke(lw * 1.2f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(r * 0.35f, r * 0.25f), time * r)))
         }
@@ -1865,7 +1866,7 @@ class Engine(
 
     private fun DrawScope.drawVignette() {
         val r = max(size.width, size.height) * 0.72f
-        drawRect(Brush.radialGradient(listOf(Color.Transparent, Color.Transparent, Ink.line.copy(alpha = 0.2f)), center, r))
+        drawRect(safeRadialGradient(listOf(Color.Transparent, Color.Transparent, Ink.line.copy(alpha = 0.2f)), center, r))
     }
 
     // Debug-only frame profiler: where the drawing time goes, logged every few seconds.
@@ -2168,6 +2169,12 @@ class Engine(
         }
     }
 
+    /** A soft round glow; silently nothing when the radius is too small to draw (a growing glimt, a shrunk light). */
+    private fun DrawScope.glow(stops: List<Color>, center: Offset, radius: Float, blendMode: BlendMode = BlendMode.SrcOver) {
+        if (radius < 0.5f) return
+        drawCircle(safeRadialGradient(stops, center, radius), radius, center, blendMode = blendMode)
+    }
+
     // ---------------------------------------------------------------------------------- sprites
 
     /** What a piece of furniture looks like right now, as far as its picture goes. */
@@ -2266,7 +2273,7 @@ class Engine(
         val tail = Offset(sx(s.x - s.vx * 1.1f), sy(s.y - s.vy * 1.1f))
         drawLine(Brush.linearGradient(listOf(Color.Transparent, Color.White.copy(alpha = 0.85f * fade)), tail, head), tail, head, strokeWidth = 0.012f * u, cap = StrokeCap.Round)
         val r = 0.022f * u * (1f + sin(time * 14f) * 0.12f)
-        drawCircle(Brush.radialGradient(listOf(T.SunTop.copy(alpha = 0.7f * fade), Color.Transparent), head, r * 3f), r * 3f, head)
+        glow(listOf(T.SunTop.copy(alpha = 0.7f * fade), Color.Transparent), head, r * 3f)
         val path = starPath(head, r, r * 0.45f, time * 90f)
         drawPath(path, Color.White.copy(alpha = fade))
         drawPath(path, Ink.line.copy(alpha = 0.6f * fade), style = Stroke(1.4f))
@@ -2314,7 +2321,7 @@ class Engine(
             val r = (0.05f + (k % 3) * 0.015f) * u
             val color = colors[k % colors.size]
             drawLine(color.copy(alpha = 0.10f), origin, c, strokeWidth = r * 0.9f, cap = StrokeCap.Round)
-            drawCircle(Brush.radialGradient(listOf(color.copy(alpha = 0.55f), Color.Transparent), c, r), r, c, blendMode = BlendMode.Plus)
+            glow(listOf(color.copy(alpha = 0.55f), Color.Transparent), c, r, blendMode = BlendMode.Plus)
         }
     }
 
@@ -2328,7 +2335,7 @@ class Engine(
             if (t !is Thing || t.type != w.thing || hidden(t) || t.mode != Mode.FREE) continue
             val c = Offset(sx(t.x), sy(t.y - t.h / 2))
             val r = max(t.w, t.h) * 0.75f * u * pulse
-            drawCircle(Brush.radialGradient(listOf(T.SunTop.copy(alpha = 0.55f * fade), Color.Transparent), c, r * 1.5f), r * 1.5f, c)
+            glow(listOf(T.SunTop.copy(alpha = 0.55f * fade), Color.Transparent), c, r * 1.5f)
             drawCircle(Color.White.copy(alpha = 0.9f * fade), r, c, style = Stroke(lw * 2f))
         }
     }
@@ -2488,7 +2495,7 @@ class Engine(
         val bob = sin(time * 2.2f + s.x * 3f) * 0.006f
         val c = Offset(sx(s.x), sy(s.y + bob))
         val r = 0.022f * u * grow * (1f + sin(time * 5f) * 0.06f)
-        drawCircle(Brush.radialGradient(listOf(T.SunTop.copy(alpha = 0.55f), Color.Transparent), c, r * 2.6f), r * 2.6f, c)
+        glow(listOf(T.SunTop.copy(alpha = 0.55f), Color.Transparent), c, r * 2.6f)
         val star = starPath(c, r, r * 0.46f, sin(time * 1.3f) * 10f)
         drawPath(star, T.Sun)
         drawPath(star, Ink.line, style = Stroke(lw))
@@ -2505,11 +2512,11 @@ class Engine(
         drawContext.canvas.saveLayer(Rect(0f, -top, size.width, size.height), Paint())
         drawRect(Color(0xFF0E0B33).copy(alpha = dark), Offset(0f, -top), Size(size.width, size.height + top))
         for ((c, r, _) in lights) {
-            drawCircle(Brush.radialGradient(listOf(Color.Black, Color.Black.copy(alpha = 0.6f), Color.Transparent), c, r), r, c, blendMode = BlendMode.DstOut)
+            glow(listOf(Color.Black, Color.Black.copy(alpha = 0.6f), Color.Transparent), c, r, blendMode = BlendMode.DstOut)
         }
         drawContext.canvas.restore()
         for ((c, r, color) in lights) {
-            drawCircle(Brush.radialGradient(listOf(color.copy(alpha = 0.22f * night), Color.Transparent), c, r * 0.8f), r * 0.8f, c, blendMode = BlendMode.Plus)
+            glow(listOf(color.copy(alpha = 0.22f * night), Color.Transparent), c, r * 0.8f, blendMode = BlendMode.Plus)
         }
         if (lw < 0f) Unit
     }

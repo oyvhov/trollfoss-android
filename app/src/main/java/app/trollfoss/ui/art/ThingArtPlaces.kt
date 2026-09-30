@@ -308,11 +308,11 @@ internal fun DrawScope.thPearl(w: Float, h: Float, pen: Pen) {
     inkedCircle(c, r, Color(0xFFF6F0FA), pen)
     clipPath(Path().apply { addOval(Rect(c.x - r, c.y - r, c.x + r, c.y + r)) }) {
         drawCircle(
-            Brush.radialGradient(listOf(Color(0x99FFC8E6), Color(0x00FFC8E6)), Offset(c.x + r * 0.35f, c.y + r * 0.35f), r * 0.9f),
+            safeRadialGradient(listOf(Color(0x99FFC8E6), Color(0x00FFC8E6)), Offset(c.x + r * 0.35f, c.y + r * 0.35f), r * 0.9f),
             r, c,
         )
         drawCircle(
-            Brush.radialGradient(listOf(Color(0x66B8E8FF), Color(0x00B8E8FF)), Offset(c.x - r * 0.45f, c.y + r * 0.2f), r * 0.7f),
+            safeRadialGradient(listOf(Color(0x66B8E8FF), Color(0x00B8E8FF)), Offset(c.x - r * 0.45f, c.y + r * 0.2f), r * 0.7f),
             r, c,
         )
         thSheen(c, r, 0.7f)

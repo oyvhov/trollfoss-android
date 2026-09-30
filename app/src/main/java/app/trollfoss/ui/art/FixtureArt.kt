@@ -542,7 +542,7 @@ internal fun DrawScope.fxPuffs(
 internal fun DrawScope.fxGlow(c: Offset, r: Float, color: Color, alpha: Float) {
     val a = alpha.coerceIn(0f, 1f)
     if (a <= 0.01f || r <= 0f) return
-    drawCircle(Brush.radialGradient(0f to color.copy(alpha = a), 1f to color.copy(alpha = 0f), center = c, radius = r), r, c)
+    drawCircle(safeRadialGradient(0f to color.copy(alpha = a), 1f to color.copy(alpha = 0f), center = c, radius = r), r, c)
 }
 
 /**

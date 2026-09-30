@@ -260,8 +260,8 @@ private fun DrawScope.planets(st: Stage, pen: Pen) {
     // The Sun, far left.
     val sun = Offset(px(0f, 0), py(0.22f, 0))
     val sr = 0.075f * u
-    drawCircle(Brush.radialGradient(listOf(Color(0x88FFE27A), Color(0x00FFB23D)), center = sun, radius = sr * 3f), sr * 3f, sun)
-    drawCircle(Brush.radialGradient(listOf(Color(0xFFFFFBE0), Color(0xFFFFD24A), Color(0xFFFFA62B)), center = sun, radius = sr), sr, sun)
+    drawCircle(safeRadialGradient(listOf(Color(0x88FFE27A), Color(0x00FFB23D)), center = sun, radius = sr * 3f), sr * 3f, sun)
+    drawCircle(safeRadialGradient(listOf(Color(0xFFFFFBE0), Color(0xFFFFD24A), Color(0xFFFFA62B)), center = sun, radius = sr), sr, sun)
     for (k in 0 until 8) {
         val a = k * 0.785f + t * 0.1f
         val l = sr * (1.25f + 0.1f * sin(t * 2f + k))

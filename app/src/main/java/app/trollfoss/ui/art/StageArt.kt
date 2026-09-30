@@ -243,7 +243,7 @@ private fun DrawScope.houseWall(st: Stage, pen: Pen) {
     for (x in floatArrayOf(2.28f, 3.1f)) {
         if (!st.sees(x - 0.1f, x + 0.1f)) continue
         val c = st.o(x, 0.42f)
-        drawCircle(Brush.radialGradient(listOf(Color(0x66FFD27A), Color(0x00FFD27A)), center = c, radius = 0.12f * u), 0.12f * u, c, alpha = 0.6f + 0.4f * n)
+        drawCircle(safeRadialGradient(listOf(Color(0x66FFD27A), Color(0x00FFD27A)), center = c, radius = 0.12f * u), 0.12f * u, c, alpha = 0.6f + 0.4f * n)
         val shade = Path().apply { poly(c.x - 0.03f * u, c.y, c.x + 0.03f * u, c.y, c.x + 0.018f * u, c.y + 0.035f * u, c.x - 0.018f * u, c.y + 0.035f * u) }
         inked(shade, Color(0xFFFFC24D), pen, shade = false)
     }

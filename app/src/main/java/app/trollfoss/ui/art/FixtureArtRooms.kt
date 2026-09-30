@@ -269,7 +269,7 @@ private fun DrawScope.rmGlow(c: Offset, r: Float, color: Color, alpha: Float) {
     val a = alpha.coerceIn(0f, 1f)
     if (a <= 0.01f || r <= 0f) return
     drawCircle(
-        Brush.radialGradient(0f to color.copy(alpha = a), 0.45f to color.copy(alpha = a * 0.4f), 1f to color.copy(alpha = 0f), center = c, radius = r),
+        safeRadialGradient(0f to color.copy(alpha = a), 0.45f to color.copy(alpha = a * 0.4f), 1f to color.copy(alpha = 0f), center = c, radius = r),
         r,
         c,
     )
@@ -1469,7 +1469,7 @@ private fun DrawScope.rmSpeaker(f: Fixture, u: Float, pen: Pen) {
     drawCircle(if (retro) Color(0xFF3A2A20) else Color(0xFF15141A), sr, wc)
     drawCircle(Ink.line, sr, wc, style = pen.thin)
     val cr = 0.05f * u * pump
-    drawCircle(Brush.radialGradient(0f to cone.lighten(0.25f), 0.7f to cone, 1f to cone.darken(0.3f), center = Offset(wc.x - cr * 0.2f, wc.y - cr * 0.25f), radius = cr * 1.2f), cr, wc)
+    drawCircle(safeRadialGradient(0f to cone.lighten(0.25f), 0.7f to cone, 1f to cone.darken(0.3f), center = Offset(wc.x - cr * 0.2f, wc.y - cr * 0.25f), radius = cr * 1.2f), cr, wc)
     for (k in 1..2) drawCircle(cone.darken(0.25f), cr * (0.4f + k * 0.2f), wc, style = Stroke(pen.lw * 0.5f))
     drawCircle(Ink.line, cr, wc, style = pen.thin)
     val cap = 0.02f * u * (1f + a * 0.25f + beat * 0.05f)
@@ -1544,7 +1544,7 @@ private fun DrawScope.rmDiscoBall(f: Fixture, u: Float, pen: Pen) {
             }
         }
         drawCircle(
-            Brush.radialGradient(0f to Color.Transparent, 0.75f to Color.Transparent, 1f to Ink.line.copy(alpha = 0.35f), center = Offset(c.x - r * 0.3f, c.y - r * 0.35f), radius = r * 1.5f),
+            safeRadialGradient(0f to Color.Transparent, 0.75f to Color.Transparent, 1f to Ink.line.copy(alpha = 0.35f), center = Offset(c.x - r * 0.3f, c.y - r * 0.35f), radius = r * 1.5f),
             r,
             c,
         )
@@ -2321,7 +2321,7 @@ private fun DrawScope.rmClam(f: Fixture, u: Float, pen: Pen) {
     // The mantle: soft, blue and spotted, with a pale bed for the pearl in front.
     val bedC = rp(u, 0f, -0.046f, 0.055f)
     val bed = rmDisc(bedC.x, bedC.y, 0.118f * u, 0.058f * u)
-    drawPath(bed, Brush.radialGradient(0f to Color(0xFF6FC4FF), 0.6f to mantle, 1f to Color(0xFF2B5FB8), center = bedC, radius = 0.13f * u))
+    drawPath(bed, safeRadialGradient(0f to Color(0xFF6FC4FF), 0.6f to mantle, 1f to Color(0xFF2B5FB8), center = bedC, radius = 0.13f * u))
     clipPath(bed) {
         for (k in 0 until 14) {
             val px = bedC.x + (rmHash(k, 21) - 0.5f) * 0.2f * u

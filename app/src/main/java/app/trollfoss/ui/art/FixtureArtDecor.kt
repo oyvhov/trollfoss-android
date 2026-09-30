@@ -345,7 +345,7 @@ private fun DrawScope.dcArt(v: Int, r: Rect, u: Float, pen: Pen) {
         }
         else -> {
             // Rumle the troll, sitting for his portrait.
-            drawRect(Brush.radialGradient(0f to Color(0xFF4F6B4A), 1f to Color(0xFF1F2E24), center = q(0.4f, 0.35f), radius = w), r.topLeft, r.size)
+            drawRect(safeRadialGradient(0f to Color(0xFF4F6B4A), 1f to Color(0xFF1F2E24), center = q(0.4f, 0.35f), radius = w), r.topLeft, r.size)
             val h0 = 0.13f * u
             val small = Pen(pen.lw * 0.45f, 0f, 0f)
             translate(r.center.x, r.top + h * 0.3f + 0.7f * h0) {

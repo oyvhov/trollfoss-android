@@ -43,6 +43,17 @@ class Pen(
     val thin: Stroke = Stroke(width = lw * 0.6f, cap = StrokeCap.Round, join = StrokeJoin.Round)
 }
 
+/**
+ * A radial gradient that can never crash: Android refuses a radius of zero or less (a growing star, a
+ * shrunk light, a figure scaled to nothing), so the radius is kept at a tiny positive value instead.
+ */
+fun safeRadialGradient(colors: List<Color>, center: Offset = Offset.Unspecified, radius: Float = Float.POSITIVE_INFINITY): Brush =
+    Brush.radialGradient(colors, center, if (radius.isFinite()) radius.coerceAtLeast(0.5f) else radius)
+
+/** The same with explicit stops: `safeRadialGradient(0f to a, 1f to b, center = c, radius = r)`. */
+fun safeRadialGradient(vararg colorStops: Pair<Float, Color>, center: Offset = Offset.Unspecified, radius: Float = Float.POSITIVE_INFINITY, tileMode: androidx.compose.ui.graphics.TileMode = androidx.compose.ui.graphics.TileMode.Clamp): Brush =
+    Brush.radialGradient(*colorStops, center = center, radius = if (radius.isFinite()) radius.coerceAtLeast(0.5f) else radius, tileMode = tileMode)
+
 fun Color.lighten(f: Float): Color = lerp(this, Color.White, f)
 
 /** Shades toward the warm ink rather than black, so shadows stay friendly. */

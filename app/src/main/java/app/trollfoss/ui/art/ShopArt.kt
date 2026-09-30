@@ -226,7 +226,7 @@ private fun DrawScope.lightTube(st: Stage, pen: Pen, x: Float) {
     val y = 0.09f
     for (dx in floatArrayOf(-0.12f, 0.12f)) drawLine(Ink.line, st.o(x + dx, SKY_TOP), st.o(x + dx, y), strokeWidth = pen.lw * 0.6f)
     val c = st.o(x, y + 0.012f)
-    drawOval(Brush.radialGradient(listOf(Color(0x44FFFBE6), Color(0x00FFFBE6)), center = c, radius = 0.25f * u), Offset(c.x - 0.3f * u, c.y - 0.05f * u), Size(0.6f * u, 0.3f * u))
+    drawOval(safeRadialGradient(listOf(Color(0x44FFFBE6), Color(0x00FFFBE6)), center = c, radius = 0.25f * u), Offset(c.x - 0.3f * u, c.y - 0.05f * u), Size(0.6f * u, 0.3f * u))
     inkedRound(st.rect(x - 0.18f, y, x + 0.18f, y + 0.022f), 0.01f * u, Color(0xFFE9EEF3), pen, shade = false)
     drawRoundRect(Color(0xFFFFFDF0), st.o(x - 0.165f, y + 0.012f), Size(0.33f * u, 0.008f * u), CornerRadius(0.004f * u))
 }

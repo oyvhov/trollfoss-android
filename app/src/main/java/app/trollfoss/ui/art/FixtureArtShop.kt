@@ -959,7 +959,7 @@ internal fun DrawScope.fxCrystalBall(f: Fixture, u: Float, pen: Pen) {
     fxGlow(c, 0.11f * u, tint, 0.3f + 0.45f * pen.night + 0.3f * f.anim)
     for (s in -1..1) capsule(Offset(base.x + s * 0.026f * u, base.y - 0.016f * u), Offset(c.x + s * 0.034f * u, c.y + 0.022f * u - (if (s == 0) 0.01f * u else 0f)), 0.006f * u, FxC.brass, pen)
     val ball = ovalPath(Rect(c, r))
-    drawCircle(androidx.compose.ui.graphics.Brush.radialGradient(0f to Color(0xFFF4ECFF), 1f to tint.darken(0.35f), center = Offset(c.x - r * 0.3f, c.y - r * 0.3f), radius = r * 1.4f), r, c)
+    drawCircle(safeRadialGradient(0f to Color(0xFFF4ECFF), 1f to tint.darken(0.35f), center = Offset(c.x - r * 0.3f, c.y - r * 0.3f), radius = r * 1.4f), r, c)
     clipPath(ball) {
         when (mode) {
             0 -> for (k in 0 until 3) {

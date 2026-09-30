@@ -917,7 +917,7 @@ private fun DrawScope.fxPlanetView(mode: Int, c: Offset, r: Float, u: Float, pen
             val s = Offset(c.x + r * 0.2f, c.y + r * 0.1f)
             val sr = r * 0.75f
             fxGlow(s, sr * 1.6f, FxC.flame2, 0.9f)
-            drawCircle(Brush.radialGradient(0f to Color(0xFFFFF2A8), 0.6f to Color(0xFFFFB02E), 1f to Color(0xFFFF7A1E), center = s, radius = sr), sr, s)
+            drawCircle(safeRadialGradient(0f to Color(0xFFFFF2A8), 0.6f to Color(0xFFFFB02E), 1f to Color(0xFFFF7A1E), center = s, radius = sr), sr, s)
             for (k in 0 until 6) drawCircle(Color(0xFFFF8A2E).copy(alpha = 0.6f), sr * 0.08f, Offset(s.x + cos(k * 1.9f) * sr * 0.55f, s.y + sin(k * 2.3f) * sr * 0.5f))
             for (k in 0 until 3) {
                 val a = k * 2.1f + t * 0.2f

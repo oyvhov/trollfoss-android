@@ -178,7 +178,7 @@ internal fun DrawScope.labBack(st: Stage, pen: Pen) {
     if (st.sees(1.85f, 2.05f)) {
         val c = st.o(1.94f, 0.94f)
         val pool = Path().apply { floorDisc(u, st.cam, 1.94f, 0.94f, 0.07f, 0.06f, 18) }
-        drawPath(pool, Brush.radialGradient(listOf(Color(0xFF9DF6FF).copy(alpha = 0.9f), Color(0xFF3A6FB0)), center = c, radius = 0.07f * u))
+        drawPath(pool, safeRadialGradient(listOf(Color(0xFF9DF6FF).copy(alpha = 0.9f), Color(0xFF3A6FB0)), center = c, radius = 0.07f * u))
         drawPath(pool, Ink.line, style = pen.thin)
         drawCircle(Color.White, 0.006f * u, Offset(c.x - 0.02f * u, c.y - 0.004f * u), alpha = glow)
     }
@@ -201,7 +201,7 @@ private fun DrawScope.crystals(st: Stage, pen: Pen, x: Float, y: Float, s: Float
     val glow = 0.65f + 0.35f * sin(pen.t * 1.6f + phase)
     val a0 = Math.toRadians(angle.toDouble()).toFloat()
     val gc = Offset(base.x + sin(a0) * size * 0.5f, base.y - cos(a0) * size * 0.5f)
-    drawCircle(Brush.radialGradient(listOf(color.copy(alpha = 0.5f * glow), color.copy(alpha = 0f)), center = gc, radius = size * 1.8f), size * 1.8f, gc)
+    drawCircle(safeRadialGradient(listOf(color.copy(alpha = 0.5f * glow), color.copy(alpha = 0f)), center = gc, radius = size * 1.8f), size * 1.8f, gc)
     val body = Path()
     val facet = Path()
     val specs = floatArrayOf(-0.32f, 0.55f, 0.16f, -20f, 0f, 1f, 0.2f, 0f, 0.3f, 0.72f, 0.17f, 17f, -0.12f, 0.38f, 0.13f, -40f, 0.16f, 0.42f, 0.12f, 36f)
@@ -249,7 +249,7 @@ private fun DrawScope.glowShrooms(st: Stage, pen: Pen, x: Float, y: Float, color
     val glow = 0.6f + 0.4f * sin(pen.t * 1.3f + phase)
     val c = st.o(x, y)
     val gc = Offset(c.x, c.y - 0.04f * u)
-    drawCircle(Brush.radialGradient(listOf(color.copy(alpha = 0.45f * glow), color.copy(alpha = 0f)), center = gc, radius = 0.1f * u), 0.1f * u, gc)
+    drawCircle(safeRadialGradient(listOf(color.copy(alpha = 0.45f * glow), color.copy(alpha = 0f)), center = gc, radius = 0.1f * u), 0.1f * u, gc)
     val stems = Path()
     val caps = Path()
     val spots = ArrayList<Offset>(6)

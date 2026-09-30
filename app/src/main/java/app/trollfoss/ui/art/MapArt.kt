@@ -351,7 +351,7 @@ private class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float) {
         }
         val spray = 0.55f * (1f - n) * (1f - oc)
         if (spray > 0.02f) drawRainbow(p(0.5f, 0.47f), h * 0.07f, h * 0.0055f, spray)
-        if (n > 0f) drawCircle(Brush.radialGradient(listOf(Color(0x55BFE6FF), Color(0x00BFE6FF)), center = p(0.5f, 0.35f), radius = h * 0.2f), h * 0.2f, p(0.5f, 0.35f), alpha = n)
+        if (n > 0f) drawCircle(safeRadialGradient(listOf(Color(0x55BFE6FF), Color(0x00BFE6FF)), center = p(0.5f, 0.35f), radius = h * 0.2f), h * 0.2f, p(0.5f, 0.35f), alpha = n)
     }
 
     fun roads(d: DrawScope) = with(d) {
@@ -695,7 +695,7 @@ private class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float) {
             close()
         }
         drawPath(mouth, Color(0xFF231A3E))
-        drawCircle(Brush.radialGradient(listOf(Color(0xFF6FF2FF).copy(alpha = 0.6f * glow), Color(0x006FF2FF)), center = Offset(b.x, b.y - s * 0.15f), radius = s * 0.4f), s * 0.4f, Offset(b.x, b.y - s * 0.15f))
+        drawCircle(safeRadialGradient(listOf(Color(0xFF6FF2FF).copy(alpha = 0.6f * glow), Color(0x006FF2FF)), center = Offset(b.x, b.y - s * 0.15f), radius = s * 0.4f), s * 0.4f, Offset(b.x, b.y - s * 0.15f))
         for ((k, col) in listOf(Color(0xFF6FF2FF), Color(0xFFFF7BD8), Color(0xFFB58CFF)).withIndex()) {
             val cx = b.x + (k - 1) * s * 0.12f
             val hgt = s * (0.2f + 0.08f * (k % 2))

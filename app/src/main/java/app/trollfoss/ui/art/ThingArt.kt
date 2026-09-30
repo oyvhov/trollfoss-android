@@ -471,7 +471,7 @@ internal fun thFluff(c: Offset, r: Float, bumps: Int): Path = Path().apply {
 internal fun DrawScope.thGlow(center: Offset, radius: Float, color: Color, alpha: Float) {
     if (alpha <= 0f || radius <= 0f) return
     drawCircle(
-        Brush.radialGradient(listOf(color.copy(alpha = alpha), color.copy(alpha = alpha * 0.45f), color.copy(alpha = 0f)), center, radius),
+        safeRadialGradient(listOf(color.copy(alpha = alpha), color.copy(alpha = alpha * 0.45f), color.copy(alpha = 0f)), center, radius),
         radius,
         center,
     )
@@ -480,7 +480,7 @@ internal fun DrawScope.thGlow(center: Offset, radius: Float, color: Color, alpha
 /** A soft volumetric highlight for round things: light from the upper left, fading out. */
 internal fun DrawScope.thSheen(c: Offset, r: Float, alpha: Float = 0.42f) {
     drawCircle(
-        Brush.radialGradient(
+        safeRadialGradient(
             listOf(Color.White.copy(alpha = alpha), Color.White.copy(alpha = alpha * 0.3f), Color.White.copy(alpha = 0f)),
             Offset(c.x - r * 0.38f, c.y - r * 0.42f),
             r * 0.95f,

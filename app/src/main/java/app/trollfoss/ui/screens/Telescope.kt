@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
+import app.trollfoss.ui.art.safeRadialGradient
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -63,7 +64,7 @@ fun TelescopeView(night: Boolean, onClose: () -> Unit) {
             clipPath(lens) {
                 val pan = Offset(sin(t * 0.15f) * r * 0.5f, cos(t * 0.11f) * r * 0.2f)
                 if (night) {
-                    drawRect(Brush.radialGradient(listOf(Color(0xFF231C5C), Color(0xFF07061A)), c, r * 1.2f))
+                    drawRect(safeRadialGradient(listOf(Color(0xFF231C5C), Color(0xFF07061A)), c, r * 1.2f))
                     for (i in 0 until 90) {
                         val sx = c.x - r * 1.5f + ((i * 137.5f) % 300f) / 100f * r + pan.x
                         val sy = c.y - r * 1.2f + ((i * 61.8f) % 240f) / 100f * r + pan.y

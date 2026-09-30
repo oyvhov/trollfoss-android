@@ -149,7 +149,7 @@ internal fun DrawScope.pendant(st: Stage, pen: Pen, x: Float, y: Float, color: C
     val w = 0.1f * u
     val h = 0.05f * u
     val glowAt = Offset(c.x, c.y + h)
-    drawCircle(Brush.radialGradient(listOf(Color(0x40FFE9A8), Color(0x00FFE9A8)), center = glowAt, radius = 0.2f * u), 0.2f * u, glowAt)
+    drawCircle(safeRadialGradient(listOf(Color(0x40FFE9A8), Color(0x00FFE9A8)), center = glowAt, radius = 0.2f * u), 0.2f * u, glowAt)
     val shade = Path().apply {
         moveTo(c.x - w * 0.16f, c.y)
         lineTo(c.x + w * 0.16f, c.y)

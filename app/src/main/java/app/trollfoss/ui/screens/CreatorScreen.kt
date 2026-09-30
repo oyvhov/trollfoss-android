@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import app.trollfoss.ui.art.safeRadialGradient
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
@@ -200,7 +201,7 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
     Box(
         Modifier
             .fillMaxSize()
-            .background(Brush.radialGradient(listOf(Color(0xFFFFF4E2), Color(0xFFFFD7B0)), radius = 1600f)),
+            .background(safeRadialGradient(listOf(Color(0xFFFFF4E2), Color(0xFFFFD7B0)), radius = 1600f)),
     ) {
         Row(Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             // The figure on its little stage, with its name below.
