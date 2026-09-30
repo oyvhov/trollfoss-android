@@ -1,6 +1,6 @@
-# Trollvik – teiknerettleiing for kode
+# Trollfoss – teiknerettleiing for kode
 
-All grafikk i Trollvik er teikna i kode på Compose `DrawScope`. Denne rettleiinga er kontrakten for
+All grafikk i Trollfoss er teikna i kode på Compose `DrawScope`. Denne rettleiinga er kontrakten for
 `ui/art/ThingArt.kt`, `ui/art/FixtureArt.kt`, `ui/art/PlaceArt.kt` og `ui/art/MapArt.kt`. Les òg
 `docs/DESIGN.md` (stil og verd) og `ui/art/Ink.kt` og `ui/art/PersonArt.kt` (ferdige døme).
 

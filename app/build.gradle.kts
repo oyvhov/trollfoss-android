@@ -24,13 +24,13 @@ val hasReleaseSigning = listOf(
 tasks.matching { it.name == "validateSigningRelease" || it.name == "packageRelease" }.configureEach {
     doFirst {
         check(hasReleaseSigning) {
-            "Release-bygg krev signing.properties og Trollvik-nøkkelen i .signing/. Ikkje lag ein ny nøkkel."
+            "Release-bygg krev signing.properties og Trollfoss-nøkkelen i .signing/. Ikkje lag ein ny nøkkel."
         }
     }
 }
 
 android {
-    namespace = "app.trollvik"
+    namespace = "app.trollfoss"
 
     compileSdk {
         version = release(36) {
@@ -39,13 +39,13 @@ android {
     }
 
     defaultConfig {
-        applicationId = "app.trollvik"
+        applicationId = "app.trollfoss"
         minSdk = 26
         targetSdk = 36
         // The published release sets these. Only the update test in docs/RELEASE_WORKFLOW.md overrides
         // them, to build an older local copy that the release must be able to replace.
-        versionCode = (findProperty("trollvikVersionCode") as String?)?.toInt() ?: 1
-        versionName = (findProperty("trollvikVersionName") as String?) ?: "1.0.0"
+        versionCode = (findProperty("trollfossVersionCode") as String?)?.toInt() ?: 1
+        versionName = (findProperty("trollfossVersionName") as String?) ?: "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -58,7 +58,7 @@ android {
         }
         release {
             if (hasReleaseSigning) {
-                signingConfig = signingConfigs.create("trollvikRelease") {
+                signingConfig = signingConfigs.create("trollfossRelease") {
                     storeFile = rootProject.file(signingProperties.getProperty("storeFile"))
                     storePassword = signingProperties.getProperty("storePassword")
                     keyAlias = signingProperties.getProperty("keyAlias")

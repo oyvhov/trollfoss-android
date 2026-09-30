@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Trollvik"
+rootProject.name = "Trollfoss"
 include(":app")

@@ -225,9 +225,9 @@ Alle tidsstyrte rørsler stoppar når Android har slått av animasjonar.
   Scena er éi eining høg (skjermhøgda); breidda varierer frå 2,4 til 3,6 einingar.
 * **Oppslukande:** systemlinjene er skjulte og kjem fram med sveip.
 * Min. Android 8.0 (API 26), mål API 36. Kotlin + Jetpack Compose, all grafikk teikna på `Canvas`.
-* Lagring: éi JSON-fil (`files/trollvik.json`), atomisk skriving, autolagring etter endringar.
+* Lagring: éi JSON-fil (`files/trollfoss.json`), atomisk skriving, autolagring etter endringar.
 * **Oppdatering gjennom GitHub:** same kontrakt som Komet. Éin signert universal-APK per release på
-  `oyvhov/trollvik-android`, SHA-256 frå GitHub, kontroll av pakke, versjon og signatur før Android får
+  `oyvhov/trollfoss-android`, SHA-256 frå GitHub, kontroll av pakke, versjon og signatur før Android får
   spørsmål. Ein vaksen startar nedlastinga på foreldresida.
 * Ytelse: éin spel-løkke (`withFrameNanos`) oppdaterer fysikken; éin `Canvas` teiknar scena.
   Mål: 60 fps med 80 ting på eit mellomklassenettbrett.

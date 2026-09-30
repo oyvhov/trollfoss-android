@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The world lives in files/trollvik.json. It follows the child to a new device; generated sounds in the cache do not. -->
+<!-- The world lives in files/trollfoss.json. It follows the child to a new device; generated sounds in the cache do not. -->
 <data-extraction-rules>
     <cloud-backup>
         <include domain="file" path="." />

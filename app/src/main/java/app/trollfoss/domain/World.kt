@@ -1,0 +1,207 @@
+package app.trollfoss.domain
+
+/** What holds a body in place. */
+enum class Mode {
+    /** Under physics: falling, rolling or resting on a surface. */
+    FREE,
+    /** A figure on a seat: [Body.holder] is the fixture, [Body.slot] the spot. */
+    SEATED,
+    /** A thing carried by a figure: [Body.holder] is the figure, [Body.slot] the [Slot] ordinal. */
+    WORN,
+    /** In the travel bag, in no place. */
+    BAG,
+    /** Taken by a machine (blender, cauldron): [Body.holder] is the fixture. */
+    INSIDE,
+}
+
+enum class Weather { SUN, RAIN, SNOW }
+
+/** A figure's face. The art draws each one; the engine picks them as things happen. */
+enum class Face { HAPPY, GRIN, OOH, CHOMP, YUM, SLEEP, DIZZY, LAUGH, WOW }
+
+/**
+ * Anything that can be picked up: a thing or a figure. Position is the bottom centre in scene units.
+ * The fields below the line are physics and animation state that is never saved.
+ */
+sealed class Body(val id: Int) {
+    var place: PlaceId? = null
+    var x = 0f
+    var y = 0f
+    var mode = Mode.FREE
+    var holder = -1
+    var slot = 0
+    var z = 0L
+    var rot = 0f
+
+    /** The cupboard this body rests inside, or -1. Hidden while that cupboard is shut. */
+    var inside = -1
+
+    // ---- not saved ----
+    var vx = 0f
+    var vy = 0f
+    var vrot = 0f
+    var resting = false
+    var held = false
+
+    /** Landing squash: 0 is none, positive is squashed flat. Springs back on its own. */
+    var squash = 0f
+    var squashV = 0f
+
+    /** Seconds since the body appeared; new things pop in. */
+    var age = 10f
+
+    abstract val w: Float
+    abstract val h: Float
+}
+
+class Thing(id: Int, var type: ThingType, var variant: Int = 0) : Body(id) {
+    /** Bites or sips taken. */
+    var used = 0
+
+    /** Seconds spent on something hot; not saved. */
+    var cook = 0f
+
+    override val w: Float get() = type.w
+    override val h: Float get() = type.h
+}
+
+class Person(id: Int, val species: Species, var look: Look, var voice: Float) : Body(id) {
+    /** Grow and shrink potions. */
+    var scale = 1f
+
+    /** Seconds left of the float potion. */
+    var floatTime = 0f
+
+    val anim = PersonAnim()
+
+    override val h: Float get() = species.height * (if (species == Species.FOLK) look.height else 1f) * scale
+    override val w: Float get() = h * species.widthRatio
+}
+
+/** Moment-to-moment life of a figure. Never saved. */
+class PersonAnim {
+    var pose = Pose.STAND
+    var face = Face.HAPPY
+    var faceTime = 0f
+    var blink = 0f
+    var nextBlink = 2f
+    var lookX = 0f
+    var lookY = 0f
+    var chew = 0f
+    var kick = 0f
+    var dance = 0f
+    var hop = 0f
+    var hopV = 0f
+    var taps = 0
+    var lastTap = -10f
+    var tilt = 0f
+    var sparkle = 0f
+    var talk = 0f
+    var nextIdle = 3f
+    var wave = 0f
+}
+
+/** A piece of furniture or a machine in a place. Its state is saved; the rest comes from the blueprint. */
+class Fixture(val id: Int, val place: PlaceId, val type: FixtureType, val x: Float, val y: Float, val variant: Int = 0) {
+    var open = false
+    var on = false
+    var mode = 0
+    var count = 0
+
+    // ---- not saved ----
+    var timer = 0f
+    var anim = 0f
+    var angle = 0f
+    var angleV = 0f
+    var taps = 0
+    var tapTime = -10f
+    var bob = 0f
+
+    val spec: FixtureSpec get() = type.spec
+
+    /** Top edge in scene units. */
+    val top: Float get() = y - spec.h
+}
+
+/**
+ * The whole village: every body, every fixture and what the child has found. One instance lives in the
+ * view model and is saved as JSON by [app.trollfoss.data.WorldStore].
+ */
+class World {
+    val bodies = LinkedHashMap<Int, Body>()
+    val fixtures = LinkedHashMap<Int, Fixture>()
+    var nextId = 1
+    var zCounter = 0L
+    var place = PlaceId.HOME
+    var night = false
+    var weather = Weather.SUN
+
+    /** Glimt the child has collected. */
+    val found = linkedSetOf<String>()
+
+    /** Glimt that an event has brought out. */
+    val unlocked = linkedSetOf<String>()
+
+    /** Recipes made at least once. */
+    val discoveries = linkedSetOf<String>()
+
+    /** Epoch day of the last daily gift taken from the mailbox. */
+    var giftDay = -1L
+    var crownGiven = false
+    var catches = 0
+
+    fun nextZ(): Long = ++zCounter
+
+    fun fixturesIn(place: PlaceId): List<Fixture> = fixtures.values.filter { it.place == place }
+
+    fun bodiesIn(place: PlaceId): List<Body> = bodies.values.filter { it.place == place && it.mode != Mode.BAG }
+
+    fun bag(): List<Body> = bodies.values.filter { it.mode == Mode.BAG }.sortedBy { it.z }
+
+    fun people(): List<Person> = bodies.values.filterIsInstance<Person>()
+
+    fun worn(person: Person, slot: Slot): Thing? = bodies.values.firstOrNull {
+        it is Thing && it.mode == Mode.WORN && it.holder == person.id && it.slot == slot.ordinal
+    } as Thing?
+
+    fun carried(person: Person): List<Thing> =
+        bodies.values.filter { it is Thing && it.mode == Mode.WORN && it.holder == person.id }.map { it as Thing }
+
+    fun inMachine(fixture: Fixture): List<Thing> =
+        bodies.values.filter { it is Thing && it.mode == Mode.INSIDE && it.holder == fixture.id }.map { it as Thing }
+
+    fun seatedAt(fixture: Fixture, spot: Int): Person? = bodies.values.firstOrNull {
+        it is Person && it.mode == Mode.SEATED && it.holder == fixture.id && it.slot == spot
+    } as Person?
+
+    fun addThing(type: ThingType, variant: Int, place: PlaceId?, x: Float, y: Float): Thing {
+        val thing = Thing(nextId++, type, variant.mod(type.variants.coerceAtLeast(1)).let { if (type == ThingType.GARMENT) variant else it })
+        thing.place = place
+        thing.x = x
+        thing.y = y
+        thing.z = nextZ()
+        thing.age = 0f
+        bodies[thing.id] = thing
+        return thing
+    }
+
+    fun addPerson(species: Species, look: Look, voice: Float, place: PlaceId?, x: Float, y: Float): Person {
+        val person = Person(nextId++, species, look.safe(), voice)
+        person.place = place
+        person.x = x
+        person.y = y
+        person.z = nextZ()
+        bodies[person.id] = person
+        return person
+    }
+
+    /** Removes a thing (eaten, flushed, blended). Anything it carried is dropped where it was. */
+    fun remove(body: Body) {
+        bodies.remove(body.id)
+        if (body is Person) {
+            carried(body).forEach { it.mode = Mode.FREE; it.holder = -1; it.place = body.place; it.resting = false }
+        }
+    }
+
+    fun allSecretsFound(): Boolean = Secrets.all.all { it.id in found }
+}
