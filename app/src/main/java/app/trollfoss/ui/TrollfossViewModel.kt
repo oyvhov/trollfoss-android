@@ -42,6 +42,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import app.trollfoss.domain.Task
 import java.io.File
 import java.time.LocalDate
 import java.util.EnumMap
@@ -52,6 +53,7 @@ sealed interface Screen {
     object Map : Screen
     class Creator(val editId: Int?) : Screen
     object Book : Screen
+    object Tasks : Screen
     object ParentGate : Screen
     object Parent : Screen
 }
@@ -93,6 +95,14 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     /** Bumps when something new lands in the discovery book, so the book button can wiggle. */
     var bookPulse by mutableIntStateOf(0)
         private set
+    /** The task just finished, for its celebration on the play screen; null when none. */
+    var taskDone by mutableStateOf<Task?>(null)
+    /** Tasks left on the board and stickers earned, for the buttons. */
+    var tasksLeft by mutableIntStateOf(3)
+        private set
+    var stickers by mutableIntStateOf(0)
+        private set
+
     /** Bumps when the world is replaced, so engines are rebuilt. */
     var generation by mutableIntStateOf(0)
         private set
@@ -112,6 +122,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         world = saved?.world ?: WorldFactory.create()
         settings = saved?.settings ?: Settings()
         sim = Sim(world)
+        wireTasks()
         syncFromWorld()
         applySettings()
     }
@@ -123,6 +134,31 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         weather = world.weather
         found = world.found.size
         discoveries = world.discoveries.size
+    }
+
+    /** The task board tells the screens when a task is done. */
+    private fun wireTasks() {
+        sim.tasks.onDone = { task ->
+            taskDone = task
+            sfx(Sfx.FANFARE, 0.9f)
+            bookPulse++
+            refreshTasks()
+            scheduleSave()
+        }
+        refreshTasks()
+    }
+
+    fun refreshTasks() {
+        tasksLeft = sim.tasks.board().count { !sim.tasks.done(it) }
+        stickers = world.stickers.size
+    }
+
+    /** Deals three new tasks once the board is done. */
+    fun newTasks() {
+        sim.tasks.deal()
+        sfx(Sfx.MAGIC, 0.8f)
+        refreshTasks()
+        scheduleSave()
     }
 
     private fun applySettings() {
@@ -233,6 +269,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     fun resetWorld() {
         world = WorldFactory.create()
         sim = Sim(world)
+        wireTasks()
         cams.clear()
         engine = null
         syncFromWorld()
@@ -254,6 +291,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun savePhoto(image: ImageBitmap) {
         sfx(Sfx.SHUTTER, 0.9f)
+        sim.tasks.record(app.trollfoss.domain.Deed.PHOTO, place)
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
                 val file = File(photoDir, "trollfoss-${System.currentTimeMillis()}.png")

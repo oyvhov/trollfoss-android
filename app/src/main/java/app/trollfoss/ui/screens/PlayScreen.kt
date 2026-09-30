@@ -9,7 +9,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -56,6 +58,7 @@ import app.trollfoss.ui.TrollfossViewModel
 import app.trollfoss.ui.Screen
 import app.trollfoss.ui.components.DesignIcons
 import app.trollfoss.ui.components.GameText
+import app.trollfoss.ui.components.IconCanvas
 import app.trollfoss.ui.components.Icons
 import app.trollfoss.ui.components.RoundButton
 import app.trollfoss.ui.components.Tones
@@ -118,8 +121,19 @@ fun PlayScreen(vm: TrollfossViewModel) {
             engine.draw(this, text)
         }
 
-        // Top left: the map.
-        RoundButton(S.map.str(), onClick = { vm.open(Screen.Map) }, modifier = Modifier.align(Alignment.TopStart).padding(16.dp), tone = Tones.Sea, icon = Icons.Map)
+        // Top left: the map and the task board, with a badge for tasks still to do.
+        Row(Modifier.align(Alignment.TopStart).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            RoundButton(S.map.str(), onClick = { vm.open(Screen.Map) }, tone = Tones.Sea, icon = Icons.Map)
+            Box {
+                RoundButton(S.tasks.str(), onClick = { vm.open(Screen.Tasks) }, tone = Tones.Sun, icon = DesignIcons.Tasks)
+                if (vm.tasksLeft > 0) {
+                    Box(
+                        Modifier.align(Alignment.TopEnd).size(26.dp).background(T.Berry, androidx.compose.foundation.shape.CircleShape).border(2.dp, T.Ink, androidx.compose.foundation.shape.CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) { GameText("${vm.tasksLeft}", fontSize = 14.sp, style = MaterialTheme.typography.titleMedium, color = Color.White) }
+                }
+            }
+        }
 
         // Top right: found glimt, day and night, weather and the camera (the designer panel takes their place).
         if (!engine.designMode) Row(
@@ -168,6 +182,8 @@ fun PlayScreen(vm: TrollfossViewModel) {
 
         PlaceBanner(place.let { S.place(it).str() }, key = place)
 
+        TaskBanner(vm)
+
         if (vm.telescopeOpen) TelescopeView(night = vm.night, onClose = { vm.telescopeOpen = false })
     }
 }
@@ -194,6 +210,38 @@ private fun GlimtCounter(found: Int, total: Int, modifier: Modifier = Modifier) 
         Canvas(Modifier.size(30.dp)) { Icons.Star(this) }
         GameText("$found", fontSize = 22.sp, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black), color = T.Sun)
         GameText("/ $total", fontSize = 15.sp, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black), color = Color.White)
+    }
+}
+
+/** A finished task drops in from the top with its picture, a stamp and a sticker, then flies away. */
+@Composable
+private fun androidx.compose.foundation.layout.BoxScope.TaskBanner(vm: TrollfossViewModel) {
+    val task = vm.taskDone
+    var shown by remember { mutableStateOf<app.trollfoss.domain.Task?>(null) }
+    LaunchedEffect(task) {
+        if (task != null) {
+            shown = task
+            delay(2600)
+            shown = null
+            vm.taskDone = null
+        }
+    }
+    AnimatedVisibility(
+        visible = shown != null,
+        enter = slideInVertically { -it } + fadeIn(),
+        exit = slideOutVertically { -it } + fadeOut(),
+        modifier = Modifier.align(Alignment.TopCenter).padding(top = 12.dp),
+    ) {
+        val t = shown ?: task
+        Row(
+            Modifier.background(T.Cream, RoundedCornerShape(28.dp)).border(3.dp, T.Ink, RoundedCornerShape(28.dp)).padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            if (t != null) Canvas(Modifier.size(84.dp)) { drawTaskPicture(t) }
+            IconCanvas(Icons.Check, Modifier.size(56.dp))
+            IconCanvas(DesignIcons.Sticker, Modifier.size(56.dp))
+        }
     }
 }
 

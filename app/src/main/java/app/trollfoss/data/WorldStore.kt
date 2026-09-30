@@ -90,6 +90,12 @@ class WorldStore(private val file: File) {
             put("styles", JSONObject().apply { world.styles.forEach { (k, s) -> put(k, JSONArray(listOf(s.wall, s.floor))) } })
             put("storage", JSONArray().apply { world.storage.forEach { put(JSONObject().put("type", it.type.name).put("variant", it.variant)) } })
             put("stickers", JSONArray(world.stickers))
+            put("tasks", JSONObject().apply {
+                put("set", JSONArray(world.taskSet))
+                put("progress", JSONObject().apply { world.taskProgress.forEach { (k, v) -> put(k, v) } })
+                put("seed", world.taskSeed)
+                put("cursor", world.taskCursor)
+            })
             // Furniture the child added from the catalogue, and blueprint furniture put away in the store.
             put("added", JSONArray().apply {
                 world.fixtures.values.filter { it.id % 100 >= Decor.FIRST_ADDED }.forEach { f ->
@@ -229,6 +235,12 @@ class WorldStore(private val file: File) {
                 }
             }
             json.optJSONArray("stickers")?.let { s -> for (i in 0 until s.length()) world.stickers += s.optInt(i) }
+            json.optJSONObject("tasks")?.let { t ->
+                world.taskSet += strings(t.optJSONArray("set"))
+                t.optJSONObject("progress")?.let { p -> for (k in p.keys()) world.taskProgress[k] = p.optInt(k, 0) }
+                world.taskSeed = t.optInt("seed", world.taskSeed)
+                world.taskCursor = t.optInt("cursor", 0)
+            }
 
             val fixtures = json.optJSONArray("fixtures") ?: JSONArray()
             for (i in 0 until fixtures.length()) {

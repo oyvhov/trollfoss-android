@@ -253,6 +253,12 @@ class World {
     /** Stickers earned from tasks, by sticker number. They open special furniture in the catalogue. */
     val stickers = ArrayList<Int>()
 
+    /** The tasks on the board, how far each has come, and where the shuffled deck is. */
+    val taskSet = ArrayList<String>()
+    val taskProgress = HashMap<String, Int>()
+    var taskSeed = 2026
+    var taskCursor = 0
+
     fun nextZ(): Long = ++zCounter
 
     fun fixturesIn(place: PlaceId): List<Fixture> = fixtures.values.filter { it.place == place }

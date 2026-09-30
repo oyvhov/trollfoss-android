@@ -138,7 +138,16 @@ class Attractions(private val sim: Sim, private val random: Random) {
                     }
                 }
             }
-            FixtureType.XRAY -> if (f.on && world.seatedAt(f, 0) != null) sim.unlock("doctor_xray")
+            FixtureType.XRAY -> if (f.on && world.seatedAt(f, 0) != null) {
+                sim.unlock("doctor_xray")
+                // Once per patient, for the task board.
+                if (f.timer == 0f) {
+                    f.timer = 1f
+                    sim.tasks.record(Deed.XRAY, place, fixture = f.type)
+                }
+            } else {
+                f.timer = 0f
+            }
             FixtureType.KELP -> {
                 f.angleV += (-f.angle * 20f - f.angleV * 2f) * dt
                 f.angle += f.angleV * dt + sin(sim.time * 0.9f + f.id) * 0.02f * dt
@@ -328,6 +337,7 @@ class Attractions(private val sim: Sim, private val random: Random) {
     fun bounced(place: PlaceId, b: Body, f: Fixture?) {
         if (f?.type != FixtureType.TRAMPOLINE || b !is Person) return
         f.count++
+        sim.tasks.record(Deed.BOUNCE, place, fixture = f.type)
         if (f.count >= 3) sim.unlock("tivoli_jump")
     }
 

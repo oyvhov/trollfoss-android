@@ -1,0 +1,132 @@
+package app.trollfoss.domain
+
+/** Something the child did, as the task board hears of it. */
+enum class Deed {
+    MADE, ATE, WORE, DRESSED, HAIRCUT, SEATED, FED, BROUGHT, PHOTO, SECRET, WISH, TIDY, PAINT, FURNISH,
+    PRRT, SNEEZE, SLIP, SPLAT, BURP, CATCH, BREW, WHEE, SCAN, XRAY, HEART, SING, DISCO, INK, LAUNCH,
+    GRAVITY, HARVEST, BUILD, VROOM, HATCH, KNOCK, BOUNCE, SNOWMAN, GIFT,
+}
+
+/**
+ * A task on the board: a picture (a thing, a piece of furniture or an animal, perhaps with a second
+ * picture), where it happens, and how many times. [match] says which deeds count.
+ */
+class Task(
+    val id: String,
+    val place: PlaceId?,
+    val need: Int,
+    val fixture: FixtureType? = null,
+    val thing: ThingType? = null,
+    val species: Species? = null,
+    val icon: String? = null,
+    val match: (Deed, PlaceId, ThingType?, FixtureType?, Species?) -> Boolean,
+)
+
+/**
+ * The task board («oppdragstavla»): three picture tasks at a time that send the child all over the
+ * village. Each finished task earns a sticker; stickers open special furniture in the catalogue.
+ * Nothing is ever lost or timed, and a new set comes when a set is done.
+ */
+class TaskBook(private val world: World) {
+    /** Called when a task is finished, for the celebration. */
+    var onDone: (Task) -> Unit = {}
+
+    /** The three tasks on the board now. */
+    fun board(): List<Task> {
+        if (world.taskSet.isEmpty()) deal()
+        return world.taskSet.mapNotNull { id -> ALL.firstOrNull { it.id == id } }
+    }
+
+    fun progress(task: Task): Int = world.taskProgress[task.id] ?: 0
+
+    fun done(task: Task): Boolean = progress(task) >= task.need
+
+    /** Deals the next three tasks from a shuffled deck, each in a different place where possible. */
+    fun deal() {
+        world.taskSet.clear()
+        world.taskProgress.clear()
+        val deck = ALL.shuffled(kotlin.random.Random(world.taskSeed))
+        val places = HashSet<PlaceId?>()
+        var i = world.taskCursor
+        var guard = 0
+        while (world.taskSet.size < 3 && guard < ALL.size * 2) {
+            val t = deck[i % deck.size]
+            i++
+            guard++
+            if (t.place != null && t.place in places && guard < ALL.size) continue
+            if (t.id in world.taskSet) continue
+            world.taskSet += t.id
+            places += t.place
+        }
+        world.taskCursor = i
+    }
+
+    /** True when all three tasks on the board are done, and a new set can be dealt. */
+    fun allDone(): Boolean = board().all { done(it) }
+
+    /** Hears a deed; moves on every task it counts for. */
+    fun record(deed: Deed, place: PlaceId, thing: ThingType? = null, fixture: FixtureType? = null, species: Species? = null) {
+        for (t in board()) {
+            if (done(t)) continue
+            if (t.place != null && t.place != place && deed != Deed.BROUGHT) continue
+            if (!t.match(deed, place, thing, fixture, species)) continue
+            val now = progress(t) + 1
+            world.taskProgress[t.id] = now
+            if (now >= t.need) {
+                world.stickers += world.stickers.size
+                onDone(t)
+            }
+        }
+    }
+
+    companion object {
+        private fun deed(d: Deed): (Deed, PlaceId, ThingType?, FixtureType?, Species?) -> Boolean = { x, _, _, _, _ -> x == d }
+
+        val ALL: List<Task> = listOf(
+            Task("bake_cake", PlaceId.CAFE, 1, FixtureType.OVEN, ThingType.CAKE) { d, _, t, _, _ -> d == Deed.MADE && t == ThingType.CAKE },
+            Task("smoothie", PlaceId.CAFE, 1, FixtureType.BLENDER, ThingType.SMOOTHIE) { d, _, t, _, _ -> d == Deed.MADE && t == ThingType.SMOOTHIE },
+            Task("egg_to_cafe", PlaceId.CAFE, 1, thing = ThingType.EGG, icon = "bring") { d, p, t, _, _ -> d == Deed.BROUGHT && p == PlaceId.CAFE && t == ThingType.EGG },
+            Task("fish_home", PlaceId.HOME, 1, thing = ThingType.FISH, species = Species.CAT, icon = "bring") { d, p, t, _, _ -> d == Deed.BROUGHT && p == PlaceId.HOME && (t == ThingType.FISH || t == ThingType.GRILLED_FISH) },
+            Task("brew", PlaceId.LAB, 1, FixtureType.CAULDRON, icon = "star", match = deed(Deed.BREW)),
+            Task("catch_fish", PlaceId.BEACH, 2, FixtureType.FISHING_SPOT, ThingType.FISH, match = deed(Deed.CATCH)),
+            Task("ferris_top", PlaceId.TIVOLI, 1, FixtureType.FERRIS_WHEEL) { d, _, _, f, _ -> d == Deed.WHEE && f == FixtureType.FERRIS_WHEEL },
+            Task("cans", PlaceId.TIVOLI, 1, FixtureType.CAN_TOSS, ThingType.BALL, match = deed(Deed.KNOCK)),
+            Task("bounce", PlaceId.TIVOLI, 3, FixtureType.TRAMPOLINE, match = deed(Deed.BOUNCE)),
+            Task("scan", PlaceId.SHOP, 3, FixtureType.CHECKOUT, match = deed(Deed.SCAN)),
+            Task("xray", PlaceId.DOCTOR, 1, FixtureType.XRAY, match = deed(Deed.XRAY)),
+            Task("heart", PlaceId.DOCTOR, 1, thing = ThingType.STETHOSCOPE, icon = "heart", match = deed(Deed.HEART)),
+            Task("sing", PlaceId.STAGE, 1, FixtureType.MIC_STAND, icon = "note", match = deed(Deed.SING)),
+            Task("disco", PlaceId.STAGE, 1, FixtureType.DISCO_BALL, match = deed(Deed.DISCO)),
+            Task("ink", PlaceId.UNDERWATER, 1, FixtureType.OCTOPUS, match = deed(Deed.INK)),
+            Task("submarine", PlaceId.UNDERWATER, 1, FixtureType.SUBMARINE) { d, _, _, f, _ -> d == Deed.VROOM && f == FixtureType.SUBMARINE },
+            Task("launch", PlaceId.SPACE, 1, FixtureType.ROCKET_SHIP, match = deed(Deed.LAUNCH)),
+            Task("gravity", PlaceId.SPACE, 1, FixtureType.GRAVITY_LEVER, match = deed(Deed.GRAVITY)),
+            Task("harvest", PlaceId.FARM, 1, FixtureType.VEGETABLE_PATCH, ThingType.CARROT, match = deed(Deed.HARVEST)),
+            Task("build", PlaceId.FARM, 1, FixtureType.WORKBENCH, ThingType.BIRDHOUSE, match = deed(Deed.BUILD)),
+            Task("tractor", PlaceId.FARM, 1, FixtureType.TRACTOR) { d, _, _, f, _ -> d == Deed.VROOM && f == FixtureType.TRACTOR },
+            Task("feed_horse", PlaceId.FARM, 1, thing = ThingType.CARROT, species = Species.HORSE) { d, _, _, _, s -> d == Deed.FED && s in setOf(Species.HORSE, Species.COW, Species.SHEEP) },
+            Task("hatch", PlaceId.FOREST, 1, thing = ThingType.DRAGON_EGG, match = deed(Deed.HATCH)),
+            Task("marshmallow", PlaceId.FOREST, 1, FixtureType.CAMPFIRE, ThingType.TOASTED_MARSHMALLOW) { d, _, t, _, _ -> d == Deed.MADE && t == ThingType.TOASTED_MARSHMALLOW },
+            Task("ski_jump", PlaceId.MOUNTAIN, 1, FixtureType.SKI_JUMP) { d, _, _, f, _ -> d == Deed.WHEE && f == FixtureType.SKI_JUMP },
+            Task("snowman", PlaceId.MOUNTAIN, 1, FixtureType.SNOWMAN, match = deed(Deed.SNOWMAN)),
+            Task("bedtime", PlaceId.HOME, 1, FixtureType.BED, icon = "zzz") { d, _, _, f, _ -> d == Deed.SEATED && f in setOf(FixtureType.BED, FixtureType.BUNK_BED) },
+            Task("bath", PlaceId.HOME, 1, FixtureType.BATH) { d, _, _, f, _ -> d == Deed.SEATED && f == FixtureType.BATH },
+            Task("haircut", PlaceId.SALON, 1, thing = ThingType.SCISSORS, match = deed(Deed.HAIRCUT)),
+            Task("dress_up", PlaceId.SALON, 2, thing = ThingType.GARMENT, match = deed(Deed.DRESSED)),
+            Task("crown", null, 1, thing = ThingType.CROWN) { d, _, t, _, _ -> d == Deed.WORE && t?.cat == Cat.HAT },
+            Task("feed_dog", null, 1, thing = ThingType.SAUSAGE, species = Species.DOG) { d, _, _, _, s -> d == Deed.FED && s == Species.DOG },
+            Task("sneeze", null, 1, thing = ThingType.PEPPER, icon = "sneeze", match = deed(Deed.SNEEZE)),
+            Task("prrt", null, 1, thing = ThingType.WHOOPEE, match = deed(Deed.PRRT)),
+            Task("slip", null, 1, thing = ThingType.BANANA_PEEL, match = deed(Deed.SLIP)),
+            Task("splat", null, 1, thing = ThingType.CUPCAKE, icon = "face", match = deed(Deed.SPLAT)),
+            Task("burp", null, 1, thing = ThingType.SODA, icon = "burp", match = deed(Deed.BURP)),
+            Task("wishes", null, 3, icon = "wish", match = deed(Deed.WISH)),
+            Task("glimt", null, 2, icon = "glimt", match = deed(Deed.SECRET)),
+            Task("tidy", null, 1, icon = "broom", match = deed(Deed.TIDY)),
+            Task("paint", null, 1, icon = "roller", match = deed(Deed.PAINT)),
+            Task("furnish", null, 2, icon = "sofa", match = deed(Deed.FURNISH)),
+            Task("photo", null, 1, icon = "camera", match = deed(Deed.PHOTO)),
+            Task("gift", null, 1, thing = ThingType.GIFT, match = deed(Deed.GIFT)),
+        )
+    }
+}

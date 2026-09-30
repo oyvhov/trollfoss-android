@@ -55,8 +55,70 @@ enum class Give { ATE, FINISHED, DRANK, POTION, WORE, HELD, HAIR, DRESSED, SNEEZ
  * things. Pure Kotlin, so every rule can be tested without a device. The engine calls [step] every
  * frame for the place on screen and turns [SimListener] events into sound and sparkle.
  */
-class Sim(val world: World, var listener: SimListener = object : SimListener {}, private val random: Random = Random.Default) {
+class Sim(val world: World, listener: SimListener = object : SimListener {}, private val random: Random = Random.Default) {
     var time = 0f
+
+    /** The task board; it hears everything that happens. */
+    val tasks = TaskBook(world)
+
+    /** The place being stepped, tapped or played in right now, for the task board. */
+    var here: PlaceId = world.place
+
+    /** Where events go: the engine, with the task board listening in. */
+    var listener: SimListener = Relay(listener)
+        set(value) {
+            field = if (value is Relay) value else Relay(value)
+        }
+
+    /** Passes every event on, and tells the task board what it means. */
+    private inner class Relay(private val inner: SimListener) : SimListener by inner {
+        override fun onFx(fx: Fx, x: Float, y: Float, fixture: Fixture?, thing: Thing?, param: Int) {
+            heard(fx, fixture, thing, param)
+            inner.onFx(fx, x, y, fixture, thing, param)
+        }
+
+        override fun onWish(person: Person, event: WishEvent) {
+            if (event == WishEvent.GRANTED) tasks.record(Deed.WISH, person.place ?: here)
+            inner.onWish(person, event)
+        }
+
+        override fun onSpawn(body: Body) {
+            if (body is Thing) tasks.record(Deed.MADE, here, body.type)
+            inner.onSpawn(body)
+        }
+    }
+
+    private fun heard(fx: Fx, fixture: Fixture?, thing: Thing?, param: Int) {
+        val deed = when (fx) {
+            Fx.PRRT -> if (param >= 0) Deed.PRRT else null
+            Fx.ATSJO -> Deed.SNEEZE
+            Fx.SLIP -> Deed.SLIP
+            Fx.SPLAT -> Deed.SPLAT
+            Fx.BURP -> Deed.BURP
+            Fx.CATCH -> Deed.CATCH
+            Fx.BREWED -> Deed.BREW
+            Fx.WHEE -> Deed.WHEE
+            Fx.SCAN -> Deed.SCAN
+            Fx.SING -> Deed.SING
+            Fx.DISCO -> if (param == 1) Deed.DISCO else null
+            Fx.INK -> Deed.INK
+            Fx.LAUNCH -> Deed.LAUNCH
+            Fx.GRAVITY -> Deed.GRAVITY
+            Fx.HARVEST -> Deed.HARVEST
+            Fx.HAMMER -> Deed.BUILD
+            Fx.VROOM -> if (param == 2) Deed.VROOM else null
+            Fx.HATCH -> Deed.HATCH
+            Fx.KNOCK -> Deed.KNOCK
+            Fx.BUILD -> if (fixture?.type == FixtureType.SNOWMAN) Deed.SNOWMAN else null
+            Fx.GIFT -> if (param == 1) Deed.GIFT else null
+            Fx.TIDY -> Deed.TIDY
+            Fx.PAINT -> Deed.PAINT
+            Fx.PLACE -> Deed.FURNISH
+            Fx.COOKED -> if (thing != null) Deed.MADE else null
+            else -> null
+        } ?: return
+        tasks.record(deed, here, thing?.type, fixture?.type)
+    }
 
     /** Today's date as an epoch day, set by the app so the daily gift follows the device clock. */
     var today: Long = 0L
@@ -200,6 +262,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
     // ------------------------------------------------------------------ step
 
     fun step(place: PlaceId, dt: Float) {
+        here = place
         time += dt
         pools = pools(place)
         floating = zeroG(place)
@@ -593,6 +656,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
         if (f.type in RIDES) f.timer = 0f
         life.seated(p)
         p.place?.let { jokes.seated(it, p) }
+        tasks.record(Deed.SEATED, p.place ?: here, fixture = f.type)
         return true
     }
 
@@ -895,6 +959,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
 
     /** A tap on a fixture at ([dx], [dy]) from its bottom centre. */
     fun tap(place: PlaceId, f: Fixture, dx: Float, dy: Float) {
+        here = place
         f.taps = if (time - f.tapTime < 3.5f) f.taps + 1 else 1
         f.tapTime = time
         f.anim = 1f
@@ -1379,7 +1444,15 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
     /** Hands [t] to [p] at [part]. The engine picks the part from where the thing was dropped. */
     fun give(p: Person, t: Thing, part: Part): Give {
         val type = t.type
+        p.place?.let { here = it }
         val result = giveTo(p, t, part)
+        when (result) {
+            Give.ATE, Give.DRANK, Give.FINISHED -> if (p.species.pet) tasks.record(Deed.FED, here, type, species = p.species)
+            Give.WORE -> tasks.record(Deed.WORE, here, type)
+            Give.DRESSED -> tasks.record(Deed.DRESSED, here, type)
+            Give.HAIR -> tasks.record(Deed.HAIRCUT, here, type)
+            else -> Unit
+        }
         if (result != Give.NONE && result != Give.SNEEZE) life.given(p, type)
         if (result == Give.ATE || result == Give.DRANK || result == Give.FINISHED) jokes.ate(p, type, result, time)
         return result
@@ -1573,6 +1646,7 @@ class Sim(val world: World, var listener: SimListener = object : SimListener {},
     fun collect(id: String): Boolean {
         if (id in world.found) return false
         world.found += id
+        Secrets.byId(id)?.let { tasks.record(Deed.SECRET, it.place) }
         return true
     }
 

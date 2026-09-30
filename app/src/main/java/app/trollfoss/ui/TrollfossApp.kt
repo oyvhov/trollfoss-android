@@ -41,6 +41,7 @@ import app.trollfoss.ui.art.drawPlaceBack
 import app.trollfoss.ui.components.GameText
 import app.trollfoss.ui.components.LocalFeedback
 import app.trollfoss.ui.screens.BookScreen
+import app.trollfoss.ui.screens.TasksScreen
 import app.trollfoss.ui.screens.CreatorScreen
 import app.trollfoss.ui.screens.MapScreen
 import app.trollfoss.ui.screens.ParentGateScreen
@@ -84,6 +85,7 @@ fun TrollfossApp(vm: TrollfossViewModel) {
                     Screen.Map -> MapScreen(vm)
                     is Screen.Creator -> CreatorScreen(vm, target.editId)
                     Screen.Book -> BookScreen(vm)
+                Screen.Tasks -> TasksScreen(vm)
                     Screen.ParentGate -> ParentGateScreen(vm)
                     Screen.Parent -> ParentScreen(vm)
                 }

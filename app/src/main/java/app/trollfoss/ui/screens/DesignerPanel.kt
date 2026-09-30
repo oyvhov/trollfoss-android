@@ -217,21 +217,7 @@ private fun LockBadge(item: CatalogueItem) {
 /** A small drawing of a piece of furniture, scaled to fit its card. */
 @Composable
 private fun FurnitureThumb(type: FixtureType, variant: Int, place: PlaceId, locked: Boolean) {
-    val fixture = remember(type, variant) { Fixture(-1, place, type, 0f, 0f, variant) }
-    Canvas(Modifier.size(84.dp).graphicsLayer { alpha = if (locked) 0.45f else 1f }) {
-        drawThumb(fixture)
-    }
-}
-
-private fun DrawScope.drawThumb(f: Fixture) {
-    val spec = f.spec
-    // Leave room for the oblique top and side, which reach up and to the right.
-    val w = spec.w + 0.12f
-    val h = max(spec.h, 0.05f) + 0.12f
-    val u = min(size.width / w, size.height / h) * 0.92f
-    val pen = Pen(max(1.2f, u * 0.0045f))
-    translate(size.width / 2f - 0.05f * u, size.height / 2f + (max(spec.h, 0.05f) / 2f) * u + 0.03f * u) {
-        drawFixtureBack(f, u, pen)
-        if (spec.front || spec.glass) drawFixtureFront(f, u, pen)
+    Canvas(Modifier.size(88.dp).graphicsLayer { alpha = if (locked) 0.45f else 1f }) {
+        drawFixtureThumb(type, variant, Rect(0f, 0f, size.width, size.height))
     }
 }

@@ -826,6 +826,8 @@ class Engine(
         if (body.mode == Mode.BAG) {
             body.mode = Mode.FREE
             body.place = place
+            // Brought along from somewhere else: the task board may be waiting for it.
+            if (body is Thing) sim.tasks.record(app.trollfoss.domain.Deed.BROUGHT, place, body.type)
             if (body is Person) world.carried(body).forEach { it.place = place }
             val p = toScene(g.finger)
             body.x = p.x
@@ -1666,6 +1668,7 @@ class Engine(
             patient.anim.face = Face.GRIN
             patient.anim.faceTime = 0.6f
             sim.unlock("doctor_heart")
+            sim.tasks.record(app.trollfoss.domain.Deed.HEART, place, fixture = null)
         }
         if (dt < 0f) Unit
     }

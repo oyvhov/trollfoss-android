@@ -1,0 +1,59 @@
+package app.trollfoss.ui.screens
+
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.translate
+import app.trollfoss.domain.Fixture
+import app.trollfoss.domain.FixtureType
+import app.trollfoss.domain.Look
+import app.trollfoss.domain.PersonAnim
+import app.trollfoss.domain.PlaceId
+import app.trollfoss.domain.Pose
+import app.trollfoss.domain.Species
+import app.trollfoss.domain.ThingType
+import app.trollfoss.ui.art.Pen
+import app.trollfoss.ui.art.drawFixtureBack
+import app.trollfoss.ui.art.drawFixtureFront
+import app.trollfoss.ui.art.drawPerson
+import app.trollfoss.ui.art.drawThing
+import kotlin.math.max
+import kotlin.math.min
+
+// Small pictures of furniture, things and animals, for panels, task cards and stickers.
+
+/** Draws a piece of furniture fitted into [box] (pixels). */
+fun DrawScope.drawFixtureThumb(type: FixtureType, variant: Int, box: Rect) {
+    val f = Fixture(-1, PlaceId.HOME, type, 0f, 0f, variant)
+    val spec = f.spec
+    // Leave room for the oblique top and side, which reach up and to the right.
+    val w = spec.w + 0.12f
+    val h = max(spec.h, 0.05f) + 0.12f
+    val u = min(box.width / w, box.height / h) * 0.92f
+    val pen = Pen(max(1.2f, u * 0.0045f))
+    translate(box.center.x - 0.05f * u, box.center.y + (max(spec.h, 0.05f) / 2f) * u + 0.03f * u) {
+        drawFixtureBack(f, u, pen)
+        if (spec.front || spec.glass) drawFixtureFront(f, u, pen)
+    }
+}
+
+/** Draws a thing fitted into [box]. */
+fun DrawScope.drawThingThumb(type: ThingType, variant: Int, box: Rect) {
+    val s = min(box.width / type.w, box.height / type.h) * 0.78f
+    val pen = Pen(max(1.2f, s * 0.0034f))
+    translate(box.center.x, box.center.y + type.h * s / 2f) {
+        drawThing(type, variant, 0, type.w * s, type.h * s, pen)
+    }
+}
+
+/** Draws an animal or a figure standing, fitted into [box]. */
+fun DrawScope.drawSpeciesThumb(species: Species, box: Rect, look: Look = Look()) {
+    val h = box.height * 0.86f
+    val pen = Pen(max(1.2f, h * 0.012f))
+    translate(box.center.x, box.bottom - box.height * 0.06f) {
+        drawPerson(species, look, Pose.STAND, PersonAnim(), h, pen, false, seed = 0.3f)
+    }
+}
+
+/** A square box of [side] pixels centred on [c]. */
+fun square(c: Offset, side: Float): Rect = Rect(c.x - side / 2f, c.y - side / 2f, c.x + side / 2f, c.y + side / 2f)
