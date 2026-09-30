@@ -13,15 +13,18 @@ figurar du kan dra rundt: `docs/design/trollfoss-designunderlag.html`. Teiknereg
 ## 1. Visjon og haldning
 
 Trollfoss høyrer til sjangeren *digitalt dukkehus* (som Toca Boca World), men lånar ingenting derifrå:
-ikkje namn, figurar, stader eller grafikk. Verda er nordisk: raude trehus med torvtak, fjord og foss,
-granskog, snøfjell, nordlys, lusekofte og bunad, brunost og vaflar – og troll.
+ikkje namn, figurar, stader eller grafikk. Verda er **nordisk på ein vanleg måte**: ei moderne bygd
+med fjord, foss, skog og fjell, der folk går i hettegenser og joggesko – ikkje eit postkort. Det
+norske ligg i detaljane (ein strikkagenser i klesstativet, nordlys om natta, kakao i skibakken), og
+trolla er det einaste eventyret.
 
 | Søyle | I praksis |
 | --- | --- |
 | **Alt er levande** | Figurar pustar, blunkar og ser etter fingeren. Ting skvisar seg når dei landar og snurrar når dei blir kasta. Fossen dundrar, skyer driv, nordlyset bølgjer. |
 | **Alt kan rørast** | Kvar ting kan plukkast opp, kastast, givast til nokon eller puttast i noko. Gir kombinasjonen meining for eit barn, skjer det noko. |
-| **Oppdaging utan press** | 21 løynde glimt, oppskrifter i trollgryta og dagens pakke – små mål for dei som vil, aldri tidsfrist, poeng eller tap. |
-| **Nordisk og litt magisk** | Kjent for norske barn, eksotisk for andre. Trolla er snille og litt tullete. |
+| **Oppdaging utan press** | 27 løynde glimt, oppskrifter i omn, gryte og verkstad, og dagens pakke – små mål for dei som vil, aldri tidsfrist, poeng eller tap. |
+| **Noko for alle** | Kjøkken og frisør, traktor og verktøy, fiskestang og akebrett, rakett og ekte planetar. |
+| **Nordisk og litt magisk** | Kjent for norske barn, vanleg nok for alle andre. Trolla er snille og litt tullete. |
 
 **Aldri:** reklame, kjøp i appen, konto, sporing, nedteljing, straff, poengtavle, tekst barnet må lese.
 
@@ -29,21 +32,25 @@ granskog, snøfjell, nordlys, lusekofte og bunad, brunost og vaflar – og troll
 
 ## 2. Verda: bygda Trollfoss
 
-Kartet viser bygda ovanfrå: fjorden, elva og den store fossen i midten, fjella bak. Kvar stad er ei
-brei scene ein sveipar sidelengs i.
+Kartet viser bygda ovanfrå: fjorden, elva og den store fossen i midten, fjella bak, garden på
+sletta og romstasjonen høgt oppe i lufta. Kvar stad er ei brei scene i skrå-3D (sjå §5) som ein
+sveipar sidelengs i.
 
 | Stad | Id | Stemning | Hjartet i staden |
 | --- | --- | --- | --- |
-| **Raudstova** | `HOME` | Raudt trehus inni: soverom, stove, kjøkken, bad. | Seng, rosemåla kiste (hittegods), vedomn, radio (dansemusikk), piano, gjøkur, kjøleskap, komfyr, badekar, do, postkasse med dagens pakke. |
-| **Bakeriet** | `CAFE` | Mynte og krem, rutete golv. | Omn (deig + eple = kake), blender (frukt = smoothie), fruktkasse, is-maskin, kakedisk, vaflar og skillingsbollar. |
-| **Frisøren** | `SALON` | Rosa og lilla, terrazzo. | Frisørstolar, saks, føn, kam, fargesprayar, klesstativ med lusekofte og bunad, hattehylle. |
-| **Fiskeværet** | `BEACH` | Sommar ved fjorden, raude rorbuer. | Brygge og fiskeplass (kvar femte fangst er skatt), færing, sandslott, fyrlykt, måkar, lundefugl. |
-| **Fossen** | `FOREST` | Granskog ved foten av fossen. | Fossebasseng med regnbogedis, telt, bål (pølser, marshmallow, drakeegg), stubbar, ugle i bjørka, elgkalv, nordlys om natta. |
-| **Trollhola** | `LAB` | Grotta bak fossen, krystallar som lyser. | Trollgryta (to ting blir til noko nytt), eliksirar, teleskop, krystallkule, trolldomsbok med hint, draken Glo. |
-| **Fjellet** | `MOUNTAIN` | Vinter heile året. Snø, stavkyrkje langt borte. | Akebakke, hoppbakke, snømann, badstu, islagd tjern med ønskehol, kakaobu. |
+| **Heime** | `HOME` | Eit lyst, vanleg hus: soverom, stove, kjøkken, bad. | Seng, kiste (hittegods), vedomn, radio (dansemusikk), piano, klokke, kjøleskap, komfyr, badekar, do, postkasse med dagens pakke. |
+| **Bakeriet** | `CAFE` | Mynte og krem, rutete golv. | Omn (deig + eple = kake), blender (frukt = smoothie), fruktkasse, is-maskin, kakedisk, mjølsekk. |
+| **Frisøren** | `SALON` | Rosa og lilla, terrazzo. | Frisørstolar, hårvask, tørkehjelm, saks, føn, fargesprayar, klesstativ, hattar. |
+| **Stranda** | `BEACH` | Sommar ved fjorden. | Brygge og fiskeplass (kvar femte fangst er skatt), båt, parasoll, solseng, sandslott, lundefugl. |
+| **Fossen** | `FOREST` | Granskog ved foten av fossen. | Telt, bål (pølser, marshmallow, drakeegg), stokkar og stubbar, ugle i treet, elgkalv, nordlys om natta. |
+| **Trollhola** | `LAB` | Grotta bak fossen, krystallar som lyser. | Trollgryta (to ting blir til noko nytt), eliksirar, teleskop, krystallkule, trolldomsbok, troll-Rumle. |
+| **Fjellet** | `MOUNTAIN` | Vinter heile året. | Akebakke, hoppbakke, snømann, badstu, islagd tjern med ønskehol, kakaobu, gatelykt. |
+| **Garden** | `FARM` | Raud låve, åker og traktor. | Traktor som køyrer, høyballar, hønsehus (gullegg), grønsakshage (så, vatn, hauste), vasstrau, arbeidsbenk (fuglekasse, båt, bil), verktøyvegg, vedstabel, dekk. Ku, sau, høner, fjordhest. |
+| **Romstasjonen** | `SPACE` | Vektlaust, stjerner i vindauget. | Rakett med nedteljing, kontrollpanel, koøyer med ekte planetar, tyngdespak, planetarium med dei åtte planetane og Pluto, romsenger, matautomat. |
 
-Kvar stad har **tre glimt**: under ting, inni ting, eller dei dukkar opp når du gjer noko (fiskar opp
-ei kiste, hoppar tre gonger i hoppbakken, kastar mynt i ønskeholet, er ved fossen når nordlyset kjem).
+Kvar stad har **tre glimt** (27 i alt): under ting, inni ting, eller dei dukkar opp når du gjer noko
+(fiskar opp ei kiste, hoppar i hoppbakken, kastar mynt i ønskeholet, køyrer traktoren, sender opp
+raketten, slår av tyngdekrafta).
 
 ---
 
@@ -65,7 +72,13 @@ bjørneøyre.
 | Underdel | Bukse, shorts, skjørt |
 | Ekstra | Fregner, skjegg, bart |
 
-**Dyr og vesen:** katt, hund, kanin, **elgkalv**, **lundefugl** og draken **Glo**.
+**Dyr og vesen:** katt, hund, kanin, **elgkalv**, **lundefugl**, ku, sau, høner, fjordhest og ein drake
+som klekkjer frå drakeegget.
+
+**Namn:** alle figurane har namn som visest i ei snakkeboble når ein trykkjer på dei.
+Barn: Hedda, Alva, Frida, Velte, Eilev, Olve, Eira, Iver, Olvar. Vaksne: Tuva, Øyvind, Sondre, Elise,
+Sander, Hilde, Berit, Sølve. Besteforeldre: BesteSonja og Besten. Trollet heiter Rumle. Nye figurar
+frå verkstaden får eit ledig namn, og barnet kan skrive sitt eige.
 
 **Liv:** pustar, blunkar, ser etter fingeren. Plukka opp: «oi!», sparkar med beina. Sleppt: skvis og
 dunk. Trykk: fnis og hopp. Et: gomlar med synlege bitemerke. Radio: dansar. Seng om natta: søv.
@@ -90,14 +103,19 @@ Møblar er **flater**, **plassar** (stol, seng, akebakke, hoppbakke, badstu), **
 
 ## 5. Visuell stil – «nordisk leikekasse», kvass og detaljert
 
+* **Skrå-3D:** verda er teikna i skrå projeksjon. Golvet er eit band med djupn: jo lenger bak, jo
+  høgare opp på skjermen. Møblar har synleg topp og side (`box3d`, `topFace3d`, djupn `DX 0,5`,
+  `DY −0,36`), og alt blir teikna bakfrå og fram i éi felles liste, så ein figur kan stå bak bordet
+  eller framfor det. Ting ein slepp nede på golvet blir ståande på den djupna; ting som fell ned frå
+  ein møbel landar framfor han. Skuggar landar der tingen kjem til å lande.
 * **Former:** runde og mjuke på alt menneskeskapt; naturen kan vere kvassare (granbar, fjell, is).
 * **Strek:** varm blekkfarge `#2B2140`, `0,0034 × scenehøgd` – tynnare enn før, så detaljane får plass.
-  Fine detaljar (treårer, strikkemønster, rosemåling, sømmar) med halv strek i ein mørkare tone.
+  Fine detaljar (treårer, strikkemønster, sømmar, skruar) med halv strek i ein mørkare tone.
 * **Skugge:** kvass to-tone cel-skugge: ein hard skuggesigd nede til høgre, lys frå oppe til venstre.
   Éin liten glans på blanke ting.
-* **Nordisk palett:** falunraud `#B8342B`, gran `#1F7048`, torvtak `#6FAE5A`, fjord `#2F6FB8`,
-  bjørk `#F2EEE6`, tre `#C98A55`, snø `#F4F8FF`, nordlys `#7CFFB2`/`#D77BFF`, rosemåling
-  (raud, gul, grøn, blå).
+* **Nordisk palett:** låveraud `#B8342B`, gran `#1F7048`, gras `#6FAE5A`, fjord `#2F6FB8`,
+  bjørk `#F2EEE6`, tre `#C98A55`, snø `#F4F8FF`, nordlys `#7CFFB2`/`#D77BFF`. Romstasjonen og
+  frisøren får sterkare, meir leikne fargar.
 * **Grensesnitt:** blanke 3D-knappar i hjørna (sol `#FFC83D`, bær `#FF4D6D`, sjø `#2F9BFF`,
   mynte `#2FD18B`, drue `#8B5CF6`), raud X lukkar alt, `GameText` for dei få orda.
 
@@ -148,6 +166,6 @@ startar installasjonen.
 
 | Versjon | Innhald |
 | --- | --- |
-| 1.0 | Sju stader, kart, figurverkstad, fysikk, mat, klede, frisør, trollgryte, glimt, dagens pakke, dag/natt, vêr, sekk, foreldreside, GitHub-oppdatering. |
+| 1.0 | Ni stader i skrå-3D, kart, figurverkstad med namn, fysikk med djupn og vektløyse, mat, klede, frisør, trollgryte, verkstad og traktor, rakett og planetar, 27 glimt, dagens pakke, dag/natt, vêr, sekk, foto, foreldreside, GitHub-oppdatering. |
 | 1.1 | Heimedesignar, fotoalbum med deling, fleire dyr og klede. |
 | 1.2 | Skule, legekontor og stavkyrkje, sesongpynt (jul, 17. mai). |
