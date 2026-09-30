@@ -34,7 +34,9 @@ puttast i noko.
 - **Figurverkstaden**: lag eigne figurar med hud, høgd, frisyre, klede og namn.
 - **Ønskjebobler**: figurane tenkjer på noko dei ønskjer seg – gi dei det og sjå kva som skjer.
 - **Humor**: prompepute, bananskal, pepar som bles hatten av, kake i fjeset, hikke og rap.
-- **Heimedesignar**: hald inne på ein møbel for å flytte han dit du vil.
+- **Heimedesignar**: flytt møblar, hent nye frå katalogen, byt tapet og golv, legg møblar på lager.
+- **Oppdrag**: tre biletoppdrag om gongen som sender deg rundt i bygda – og klistremerke som opnar spesialmøblar.
+- **Rydding**: kosten sender alt heim med glitter, søppelbøtta rapar og robotstøvsugaren slurpar.
 - **42 løynde glimt**, ei **oppdagingsbok** med oppskrifter og **dagens pakke** i postkassa.
 - **Dag og natt**, regn, snø og regnboge. Kamera og fotoalbum.
 

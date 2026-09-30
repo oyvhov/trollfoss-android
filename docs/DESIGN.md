@@ -22,7 +22,8 @@ trolla er det einaste eventyret.
 | --- | --- |
 | **Alt er levande** | Figurar pustar, blunkar og ser etter fingeren. Ting skvisar seg når dei landar og snurrar når dei blir kasta. Fossen dundrar, skyer driv, nordlyset bølgjer. |
 | **Alt kan rørast** | Kvar ting kan plukkast opp, kastast, givast til nokon eller puttast i noko. Gir kombinasjonen meining for eit barn, skjer det noko. |
-| **Oppdaging utan press** | 42 løynde glimt, ønskjebobler, oppskrifter i omn, gryte og verkstad, og dagens pakke – små mål for dei som vil, aldri tidsfrist, poeng eller tap. |
+| **Oppdaging utan press** | 42 løynde glimt, ønskjebobler, oppdragstavle med biletoppdrag, oppskrifter i omn, gryte og verkstad, og dagens pakke – små mål for dei som vil, aldri tidsfrist, poeng eller tap. |
+| **Alt heng saman** | Oppdraga sender barnet rundt i heile bygda (egg frå garden til bakaren, fisk heim til katten), klistremerka frå oppdraga opnar spesialmøblar, og ballongen på kvart oppdragskort flyg rett dit. |
 | **Humor overalt** | Prompepute, bananskal, pepar som bles hatten av, kake i fjeset, hikke og rap, kiling, hunden som stel mat. Alle ler med, ingen blir lei seg. |
 | **Noko for alle** | Kjøkken og frisør, traktor og verktøy, fiskestang og akebrett, rakett og ekte planetar, tivoli, butikk, lege, konsertscene og havbotn. |
 | **Nordisk og litt magisk** | Kjent for norske barn, vanleg nok for alle andre. Trolla er snille og litt tullete. |
@@ -114,7 +115,19 @@ blekk. Alle rundt ler.
 | Kast | Ting snurrar, ballar sprett, ballongar stig, is glir. |
 | Trykk | Lampa lyser, TV-en byter kanal, pakken opnar seg, snømannen veks. |
 | Dra på tomt område | Panorer scena. |
-| Hald inne på ein møbel | **Heimedesignar:** møbelen løftar seg og kan flyttast langs golvet og i djupna, med alt som står på han. |
+| Hald inne på ein møbel | Møbelen løftar seg og kan flyttast langs golvet og i djupna, med alt som står på han. |
+
+**Heimedesignaren** (malarrulla nede til venstre) opnar eit smalt panel på høgre side, så golvet
+er synleg: **møblar** frå ein biletkatalog (spesialmøblar opnar seg med klistremerke), **tapet** (12)
+og **golv** (9) for rommet midt på skjermen, **lager** (dra ein møbel over panelet for å leggje han
+vekk) og **kosten** som ryddar heile staden: kvar ting flyg heim i ein glitrande boge, ting laga i
+leiken havnar i hittegodskista, rusk forsvinn i ein puff. Søppelbøtta et rusk og rapar, og
+robotstøvsugaren tuslar langs rommet og slurpar opp det som ligg på golvet.
+
+**Oppdragstavla** (utklippstavla øvst til venstre, med tal for kor mange som står att) har tre
+biletoppdrag om gongen – bak ei kake, ta pariserhjulet over toppen, røntg nokon, nys hatten av
+nokon. Kvart oppdrag gir eit klistremerke til albumet i oppdagingsboka; når alle tre er gjort,
+deler terningen ut tre nye.
 
 Møblar er **flater**, **plassar** (stol, seng, akebakke, hoppbakke, badstu), **skap** og **maskinar**.
 **Sekken** nede til høgre er korleis ting og figurar reiser mellom stadene.
@@ -181,8 +194,10 @@ bak eit gongestykke (lyd, musikk, målform, oppdatering, nullstill).
 Liggjande på mobil og nettbrett, oppslukande. Kotlin + Jetpack Compose, alt teikna på `Canvas`. Min.
 Android 8.0. Nettbrett zoomar ut så minst 2,05 scenebreidder får plass, med meir himmel eller vegg over.
 **Spelmotor:** stille møblar og ting blir teikna éin gong per utsjånad til eit bilete og stempla inn
-(«sprite cache»); det som rører seg sjølv, blir oppdaga automatisk og teikna levande. Figurane er alltid
-levande vektorteikning. Lagring i `files/trollfoss.json`. Oppdatering som Komet: éin signert APK per release på
+(«sprite cache»). Det som rører seg sjølv, blir oppdaga automatisk og teikna på nytt 8 gonger i
+sekundet inn i same bilete; figurane 13 gonger i sekundet (24 når dei blir haldne), medan hopp,
+skvis, helling og spinn blir lagt utanpå i full fart. Miniatyrar i panel og kort blir teikna éin gong.
+Resultat: få millisekund per bilete på mobil, og eit tregt nettbrett utan skjermkort heng ikkje. Lagring i `files/trollfoss.json`. Oppdatering som Komet: éin signert APK per release på
 `oyvhov/trollfoss-android`; appen kontrollerer SHA-256, pakke, versjon og signatur, og ein vaksen
 startar installasjonen.
 
@@ -192,6 +207,6 @@ startar installasjonen.
 
 | Versjon | Innhald |
 | --- | --- |
-| 1.0 | 14 stader i skrå-3D, kart, figurverkstad med namn, fysikk med djupn, vektløyse og symjing, mat, klede, frisør, trollgryte, verkstad og traktor, rakett og planetar, tivoli, butikk, lege, scene og havbotn, ønskjebobler, humor, heimedesignar, 42 glimt, dagens pakke, dag/natt, vêr, sekk, foto, foreldreside, GitHub-oppdatering. |
+| 1.0 | 14 stader i skrå-3D, kart, figurverkstad med namn, fysikk med djupn, vektløyse og symjing, mat, klede, frisør, trollgryte, verkstad og traktor, rakett og planetar, tivoli, butikk, lege, scene og havbotn, ønskjebobler, humor, heimedesignar med katalog, tapet, golv og lager, rydding, oppdragstavle med klistremerke, 42 glimt, dagens pakke, dag/natt, vêr, sekk, foto, foreldreside, GitHub-oppdatering. |
 | 1.1 | Fotoalbum med deling, fleire dyr (sel, katt-ungar), fleire klede og frisyrar. |
 | 1.2 | Skule og togstasjon, sesongpynt (jul, 17. mai). |

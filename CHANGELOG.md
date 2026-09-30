@@ -6,7 +6,9 @@
   Romstasjonen, Tivoliet, Butikken, Legekontoret, Scena og Havbotnen – alle i skrå-3D.
 - Ønskjebobler, figurar som pratar saman og dyr som tuslar rundt.
 - Humor: prompepute, bananskal, pepar-nys, bonk, kake i fjeset, hikke, rap, kiling og matstelande hund.
-- Heimedesignar: hald inne på ein møbel for å flytte han.
+- Heimedesignar: flytt møblar, møbelkatalog, 12 tapet, 9 golv og møbellager.
+- Oppdragstavle med tre biletoppdrag om gongen og klistremerkealbum.
+- Rydding: ryddekost, søppelbøtte og robotstøvsugar.
 - Dra, kast og slepp alt. Figurar et, drikk, tek på seg hattar, briller og klede, og sit og søv.
 - Tjue figurar med eigne namn, pluss dyr: katt, hund, kanin, elgkalv, lundefugl, ku, sau, høner,
   hest og draken Glo.
