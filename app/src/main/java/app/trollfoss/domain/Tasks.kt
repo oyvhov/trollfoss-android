@@ -80,6 +80,9 @@ class TaskBook(private val world: World) {
     }
 
     companion object {
+        /** The Easter eggs, in the order the book shows them. */
+        val EGGS = listOf("quake", "king", "duck", "twinkle", "starshot", "elk", "mountain")
+
         private fun deed(d: Deed): (Deed, PlaceId, ThingType?, FixtureType?, Species?) -> Boolean = { x, _, _, _, _ -> x == d }
 
         val ALL: List<Task> = listOf(

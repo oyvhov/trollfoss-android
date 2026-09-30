@@ -121,6 +121,37 @@ object DesignIcons {
         }
     }
 
+    /** A golden egg with a sparkle: an Easter egg found. [hue] tints it, for telling the eggs apart in the book. */
+    val Egg: DrawScope.() -> Unit = { egg(Color(0xFFFFD23F), true) }
+
+    fun DrawScope.egg(color: Color, found: Boolean) {
+        u { s, pen ->
+            val shape = Path().apply {
+                moveTo(50f * s, 6f * s)
+                cubicTo(82f * s, 6f * s, 92f * s, 52f * s, 78f * s, 76f * s)
+                cubicTo(68f * s, 94f * s, 32f * s, 94f * s, 22f * s, 76f * s)
+                cubicTo(8f * s, 52f * s, 18f * s, 6f * s, 50f * s, 6f * s)
+                close()
+            }
+            if (found) {
+                inked(shape, color, pen)
+                drawLine(Color.White.copy(alpha = 0.6f), Offset(24f * s, 62f * s), Offset(76f * s, 62f * s), 5f * s, StrokeCap.Round)
+                drawLine(T.Berry.copy(alpha = 0.85f), Offset(20f * s, 74f * s), Offset(80f * s, 74f * s), 5f * s, StrokeCap.Round)
+                drawPath(starPath(Offset(50f * s, 38f * s), 14f * s, 6f * s), Color.White)
+                drawPath(starPath(Offset(50f * s, 38f * s), 14f * s, 6f * s), Ink.line, style = pen.thin)
+            } else {
+                inked(shape, Color(0xFFD9D4E6), pen, shade = false)
+                val q = Path().apply {
+                    moveTo(38f * s, 38f * s)
+                    cubicTo(38f * s, 22f * s, 62f * s, 22f * s, 62f * s, 38f * s)
+                    cubicTo(62f * s, 48f * s, 50f * s, 48f * s, 50f * s, 60f * s)
+                }
+                drawPath(q, Color(0xFF8F87A6), style = androidx.compose.ui.graphics.drawscope.Stroke(7f * s, cap = StrokeCap.Round))
+                drawCircle(Color(0xFF8F87A6), 4.5f * s, Offset(50f * s, 74f * s))
+            }
+        }
+    }
+
     /** A round sticker with a star. */
     val Sticker: DrawScope.() -> Unit = {
         u { s, pen ->

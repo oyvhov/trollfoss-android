@@ -69,6 +69,8 @@ fun MapScreen(vm: TrollfossViewModel) {
     val motion = LocalMotion.current
     var t by remember { mutableFloatStateOf(0f) }
     var target by remember { mutableStateOf<PlaceId?>(null) }
+    // The troll face in the mountain yawns when tapped (an Easter egg).
+    var yawnAt by remember { mutableFloatStateOf(-10f) }
     val flight = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
@@ -83,6 +85,28 @@ fun MapScreen(vm: TrollfossViewModel) {
         Canvas(Modifier.fillMaxSize()) {
             val pen = Pen(max(1.4f, size.height * 0.0034f), t, if (vm.night) 1f else 0f, vm.weather)
             drawIslandMap(pen, target ?: from, t)
+            val yawn = (t - yawnAt) / 2.4f
+            if (yawn in 0f..1f) {
+                val open = sin(yawn * Math.PI.toFloat())
+                val c = Offset(size.width * 0.41f, size.height * 0.25f)
+                val sz = size.height * 0.07f
+                // Eyes squeezed shut, a huge yawn, and a few z rising from the mountain.
+                for (side in intArrayOf(-1, 1)) drawLine(Color(0xFF3B3346), Offset(c.x + side * sz * 0.56f, c.y - sz * 0.2f), Offset(c.x + side * sz * 0.12f, c.y - sz * 0.2f), strokeWidth = pen.lw * 1.6f, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+                drawOval(Color(0xFF2B2140), Offset(c.x - sz * 0.22f * open, c.y + sz * 0.12f), androidx.compose.ui.geometry.Size(sz * 0.44f * open, sz * 0.5f * open))
+                drawOval(Color(0xFFFF7A9A), Offset(c.x - sz * 0.14f * open, c.y + sz * 0.42f), androidx.compose.ui.geometry.Size(sz * 0.28f * open, sz * 0.14f * open))
+                for (k in 0 until 3) {
+                    val zt = (yawn * 1.6f - k * 0.22f).coerceIn(0f, 1f)
+                    if (zt > 0f && zt < 1f) drawPath(
+                        Path().apply {
+                            val zx = c.x + sz * (0.7f + k * 0.35f)
+                            val zy = c.y - sz * (0.3f + zt * 1.4f + k * 0.2f)
+                            val zs = sz * (0.16f + k * 0.05f)
+                            moveTo(zx - zs, zy - zs); lineTo(zx + zs, zy - zs); lineTo(zx - zs, zy + zs); lineTo(zx + zs, zy + zs)
+                        },
+                        Color.White.copy(alpha = 1f - zt), style = Stroke(pen.lw * 1.5f, cap = androidx.compose.ui.graphics.StrokeCap.Round),
+                    )
+                }
+            }
             // The travel balloon: at home over the current place, or flying to the next.
             val a = mapSpot(from)
             val b = mapSpot(target ?: from)
@@ -93,6 +117,18 @@ fun MapScreen(vm: TrollfossViewModel) {
             drawBalloon(Offset(x, y), size.height * 0.075f, pen)
         }
 
+        Box(
+            Modifier
+                .offset(x = w * 0.41f - 48.dp, y = h * 0.25f - 40.dp)
+                .size(96.dp, 80.dp)
+                .clickable(remember { MutableInteractionSource() }, indication = null) {
+                    if (t - yawnAt < 2.4f) return@clickable
+                    yawnAt = t
+                    vm.sfx(Sfx.SNORE, 0.9f, 0.55f)
+                    vm.sfx(Sfx.ROAR, 0.35f, 0.5f)
+                    vm.sim.egg("mountain")
+                },
+        )
         for (place in PlaceId.entries) {
             val spot = mapSpot(place)
             val label = S.place(place).str()

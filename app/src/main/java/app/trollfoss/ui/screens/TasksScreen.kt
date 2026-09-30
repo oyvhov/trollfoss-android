@@ -181,6 +181,7 @@ fun DrawScope.drawTaskPicture(task: Task) {
         "roller" -> sign(c, s * 0.8f) { DesignIcons.Roller(this) }
         "sofa" -> sign(c, s * 0.8f) { DesignIcons.Sofa(this) }
         "camera" -> sign(c, s * 0.7f) { Icons.Camera(this) }
+        "egg" -> sign(c, s * 0.8f) { DesignIcons.Egg(this) }
     }
 }
 

@@ -89,6 +89,9 @@ interface EngineHost {
     fun discovered(key: String)
     fun telescope()
     fun radio(on: Boolean)
+
+    /** An Easter egg was found for the first time. */
+    fun egg(id: String)
 }
 
 /**
@@ -256,6 +259,7 @@ class Engine(
         }
 
         moveFurniture(dt)
+        updateSky(dt)
         // Things flying home when tidied leave a trail of sparkles.
         if (motion) for (b in world.bodiesIn(place)) if (b.flyT >= 0f && random.nextFloat() < dt * 30f) {
             particles.add(Particle(PKind.SPARK, b.x, b.y - b.h / 2, 0f, 0f, 0.5f, 0.01f, T.SunTop))
@@ -1108,6 +1112,7 @@ class Engine(
 
     private fun tapScene(at: Offset) {
         val p = toScene(at)
+        if (catchStar(p)) return
         // A glimt?
         for (s in sim.visibleSecrets(place)) {
             if (hypot(p.x - s.x, p.y - s.y) < max(0.05f, minTouch)) {
@@ -1174,6 +1179,10 @@ class Engine(
         repeat(10) {
             particles.add(Particle(PKind.DROP, body.x, body.y - 0.01f, (random.nextFloat() - 0.5f) * 0.8f, -0.5f - random.nextFloat() * 0.6f, 0.8f, 0.012f, Color(0xFF9ADAFF)))
         }
+    }
+
+    override fun onEgg(id: String) {
+        host.egg(id)
     }
 
     override fun onWish(person: Person, event: WishEvent) {
@@ -1370,6 +1379,63 @@ class Engine(
                 }
             }
             Fx.HOP -> s(Sfx.TAP, 0.4f)
+            Fx.QUAKE -> {
+                shake = 1f
+                s(Sfx.RUMBLE, 0.9f, 1.3f)
+                s(Sfx.THUD, 0.7f, 0.6f)
+                repeat(24) { particles.add(Particle(PKind.DUST, cam + random.nextFloat() * viewport, 0.5f + random.nextFloat() * 0.45f, (random.nextFloat() - 0.5f) * 0.3f, -0.1f, 0.9f, 0.02f + random.nextFloat() * 0.02f, Color.White)) }
+                var yelped = false
+                for (o in world.bodiesIn(place)) {
+                    if (o !is Person || o.held || o.anim.face == Face.SLEEP) continue
+                    faces(o, Face.OOH, 0.7f, Face.LAUGH, 1.4f)
+                    if (!yelped && visible(o)) { yelped = true; voice(o, Sfx.OOF, 0.8f) }
+                }
+                laughAround(cam + viewport / 2f, null, 1.0f, 1.5f)
+                host.haptic()
+            }
+            Fx.KING -> person(param)?.let { king ->
+                s(Sfx.FANFARE, 1f)
+                pending += (time + 0.6f) to { s(Sfx.CHIME, 0.8f) }
+                particles.burst(PKind.CONFETTI, king.x, king.y - king.h, 40, 1.1f, 0.013f, up = 0.9f, life = 2.2f)
+                particles.burst(PKind.STAR, king.x, king.y - king.h, 14, 0.7f, 0.014f, T.Sun)
+                king.anim.cheer = 3f
+                faces(king, Face.WOW, 0.6f, Face.LAUGH, 2.4f)
+                // Everyone bows, and the new king hands out a gem.
+                for (o in world.bodiesIn(place)) if (o is Person && o !== king && !o.held && o.anim.face != Face.SLEEP) {
+                    o.anim.hopV = 1.5f
+                    faces(o, Face.WOW, 0.7f, Face.GRIN, 1.6f)
+                }
+                val gem = world.addThing(ThingType.GEM, random.nextInt(ThingType.GEM.variants), place, king.x + 0.1f, king.y - king.h * 0.6f)
+                gem.ground = sim.groundOf(place, king) + 0.02f
+                gem.vy = -1.8f
+                gem.vx = 0.4f
+                onSpawn(gem)
+                host.haptic()
+            }
+            Fx.DUCK -> {
+                // «Plask-plask-kvakk»: the duck sings and the bath fills with bubbles and hearts.
+                for ((i, r) in listOf(1f, 1.26f, 1.5f, 1.26f, 1f, 1.5f, 2f).withIndex()) pending += (time + i * 0.17f) to { s(Sfx.SQUEAK, 0.8f, r) }
+                pending += (time + 1.3f) to { s(Sfx.FANFARE, 0.5f, 1.4f) }
+                particles.burst(PKind.BUBBLE, x, y, 24, 0.35f, 0.014f, Color.White, up = 0.4f, life = 2.4f)
+                particles.burst(PKind.HEART, x, y - 0.06f, 8, 0.3f, 0.018f, up = 0.45f, life = 2f)
+                for (o in world.bodiesIn(place)) if (o is Person && !o.held && o.anim.face != Face.SLEEP && abs(o.x - x) < 1.2f) faces(o, Face.LAUGH, 1.6f, Face.GRIN, 1f)
+            }
+            Fx.STARRAIN -> {
+                starRainUntil = time + 4.5f
+                for ((i, n) in listOf(5, 5, 8, 8, 9, 9, 8, 7, 7, 4, 4, 2, 2, 0).withIndex()) {
+                    pending += (time + 0.35f + i * 0.2f) to { s(Sfx.NOTE, 0.6f, 2f.pow(PENTATONIC[n] / 12f) * 2f) }
+                }
+                for (o in world.bodiesIn(place)) if (o is Person && !o.held && o.anim.face != Face.SLEEP) faces(o, Face.WOW, 1.5f, Face.GRIN, 2f)
+            }
+            Fx.JIG -> person(param)?.let { elk ->
+                s(Sfx.MOO, 0.9f, 1.4f)
+                for (k in 1..4) pending += (time + k * 0.3f) to { elk.anim.hopV = 2f; s(Sfx.BOING, 0.4f, 1.1f + k * 0.12f) }
+                elk.anim.cheer = 2.4f
+                elk.anim.face = Face.YUM
+                elk.anim.faceTime = 2.4f
+                particles.burst(PKind.HEART, elk.x, elk.y - elk.h, 8, 0.4f, 0.016f, up = 0.4f, life = 1.6f)
+                laughAround(elk.x, elk, 0.6f, 1f)
+            }
             Fx.SETTLE -> {
                 // A little «ahh» as someone sits down, and a happy sigh when they lie down for the night.
                 s(if (param == 2) Sfx.HMM else Sfx.YUM, 0.4f, if (param == 2) 0.7f else 0.9f)
@@ -1835,6 +1901,7 @@ class Engine(
         val t0 = System.nanoTime()
         sprites.frame()
         if (skip and 1 == 0) timed(0) { drawPlaceBack(place, cam, u, pen, Decor.styles(world, place)) }
+        drawShootingStar()
 
         // One list for furniture, glimt and bodies, sorted back to front.
         layers.clear()
@@ -2163,6 +2230,65 @@ class Engine(
             else -> 13f
         }
         return with(sprites) { stampSlow(SlowKey(b.id, 3), bounds, pen.t, hz, draw) }
+    }
+
+    // ---------------------------------------------------------------------------------- the night sky
+
+    private class ShootingStar(var x: Float, var y: Float, val vx: Float, val vy: Float, var life: Float)
+
+    private var star: ShootingStar? = null
+    private var starRainUntil = 0f
+
+    /** Shooting stars cross the night sky now and then; a quick tap catches one and it drops a gem. */
+    private fun updateSky(dt: Float) {
+        if (time < starRainUntil && random.nextFloat() < dt * 30f) {
+            particles.add(Particle(PKind.STAR, cam + random.nextFloat() * viewport, -0.06f, (random.nextFloat() - 0.5f) * 0.1f, 0.45f + random.nextFloat() * 0.3f, 2.6f, 0.012f + random.nextFloat() * 0.012f, listOf(T.Sun, T.SunTop, Color.White, T.Berry, T.SeaTop)[random.nextInt(5)], random.nextFloat() * 360f, (random.nextFloat() - 0.5f) * 300f))
+        }
+        val s = star
+        if (s != null) {
+            s.life -= dt
+            s.x += s.vx * dt
+            s.y += s.vy * dt
+            if (s.life <= 0f) star = null
+            return
+        }
+        val sky = place.outdoor && place != PlaceId.UNDERWATER && place != PlaceId.MOUNTAIN
+        if (motion && sky && night > 0.8f && world.weather != Weather.RAIN && random.nextFloat() < dt / 40f) {
+            val fromLeft = random.nextBoolean()
+            star = ShootingStar(cam + viewport * (if (fromLeft) 0.05f + random.nextFloat() * 0.3f else 0.65f + random.nextFloat() * 0.3f), 0.04f + random.nextFloat() * 0.16f, (if (fromLeft) 1f else -1f) * 0.2f, 0.09f, 4.2f)
+        }
+    }
+
+    private fun DrawScope.drawShootingStar() {
+        val s = star ?: return
+        val fade = min(1f, min(s.life / 0.6f, (4.2f - s.life) / 0.4f))
+        val head = Offset(sx(s.x), sy(s.y))
+        val tail = Offset(sx(s.x - s.vx * 1.1f), sy(s.y - s.vy * 1.1f))
+        drawLine(Brush.linearGradient(listOf(Color.Transparent, Color.White.copy(alpha = 0.85f * fade)), tail, head), tail, head, strokeWidth = 0.012f * u, cap = StrokeCap.Round)
+        val r = 0.022f * u * (1f + sin(time * 14f) * 0.12f)
+        drawCircle(Brush.radialGradient(listOf(T.SunTop.copy(alpha = 0.7f * fade), Color.Transparent), head, r * 3f), r * 3f, head)
+        val path = starPath(head, r, r * 0.45f, time * 90f)
+        drawPath(path, Color.White.copy(alpha = fade))
+        drawPath(path, Ink.line.copy(alpha = 0.6f * fade), style = Stroke(1.4f))
+    }
+
+    /** True when a tap at [p] (scene units) caught the shooting star. */
+    private fun catchStar(p: Offset): Boolean {
+        val s = star ?: return false
+        if (hypot(p.x - s.x, p.y - s.y) > 0.12f) return false
+        star = null
+        particles.burst(PKind.STAR, s.x, s.y, 22, 0.9f, 0.014f, T.Sun, up = 0.2f, life = 1.4f)
+        particles.burst(PKind.SPARK, s.x, s.y, 14, 0.5f, 0.012f, Color.White)
+        host.sfx(Sfx.CHIME, 0.9f, 1.3f)
+        host.sfx(Sfx.SPARKLE, 0.8f)
+        val gem = world.addThing(ThingType.GEM, random.nextInt(ThingType.GEM.variants), place, s.x.coerceIn(0.1f, place.width - 0.1f), s.y)
+        gem.ground = (place.back + PlaceId.FRONT) / 2f
+        gem.vy = 0.2f
+        onSpawn(gem)
+        sim.egg("starshot")
+        host.haptic()
+        host.changed()
+        return true
     }
 
     /** A glowing ring on the floor under furniture being moved, so the new spot is clear. */

@@ -36,6 +36,9 @@ enum class Fx {
 
     // Figures acting on their own: settling in a seat or bed, getting up again.
     SETTLE, WAKE,
+
+    // Easter eggs.
+    QUAKE, KING, DUCK, STARRAIN, JIG,
 }
 
 interface SimListener {
@@ -48,6 +51,9 @@ interface SimListener {
     fun onSecret(id: String) {}
     fun onDiscovery(key: String) {}
     fun onWish(person: Person, event: WishEvent) {}
+
+    /** An Easter egg was found for the first time. */
+    fun onEgg(id: String) {}
 }
 
 /** What happened when a thing was given to a figure. */
@@ -130,6 +136,57 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
 
     /** Wishes and wandering animals. */
     val life = Life(this, random)
+
+    // ------------------------------------------------------------------ Easter eggs
+
+    /** Notes the child has played on the piano lately, to spot a hidden tune. */
+    private val pianoTrail = ArrayList<Int>()
+    private var pianoLast = -99f
+
+    /** Finds an Easter egg: a sticker the first time, and the listener hears of it. Returns true when new. */
+    fun egg(id: String): Boolean {
+        if (!world.eggs.add(id)) return false
+        world.stickers += world.stickers.size
+        listener.onEgg(id)
+        return true
+    }
+
+    /** Shake the device and the world shakes: everything loose jumps, figures yelp, trees rattle. */
+    fun quake(place: PlaceId) {
+        for (b in world.bodiesIn(place).toList()) {
+            if (b.held || b.mode != Mode.FREE || b.inside >= 0) continue
+            b.resting = false
+            b.restOwner = -2
+            b.vy = -(0.7f + random.nextFloat() * 1.3f)
+            b.vx += (random.nextFloat() - 0.5f) * 1.2f
+            if (b is Thing) b.vrot = (random.nextFloat() - 0.5f) * 500f
+            if (b is Person) b.squashV -= 4f
+        }
+        for (f in world.fixturesIn(place)) {
+            f.anim = 1f
+            if (f.type == FixtureType.PINE_TREE || f.type == FixtureType.UMBRELLA) f.angleV += 2f
+        }
+        listener.onFx(Fx.QUAKE, 0f, 0f)
+        egg("quake")
+    }
+
+    /** A duck in a running bath gets its bubble party after a moment. */
+    private fun duckParty(place: PlaceId, f: Fixture, dt: Float) {
+        val duck = if (f.on) world.bodiesIn(place).firstOrNull { b ->
+            b is Thing && b.type == ThingType.DUCK && b.mode == Mode.FREE && !b.held && poolAt(b.x, b.y)?.owner == f.id
+        } else null
+        if (duck == null) {
+            f.timer = 0f
+            return
+        }
+        if (f.timer < 0f) return
+        f.timer += dt
+        if (f.timer >= 4f) {
+            f.timer = -1f
+            listener.onFx(Fx.DUCK, duck.x, duck.y, f, duck as? Thing)
+            egg("duck")
+        }
+    }
 
     /** Whoopee cushions, banana peels, sneezes and bonks. */
     val jokes = Jokes(this, random)
@@ -820,6 +877,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
                 }
             }
             FixtureType.ROBOT_VACUUM -> designer.stepVacuum(place, f, dt)
+            FixtureType.BATH -> duckParty(place, f, dt)
             else -> attractions.step(place, f, dt)
         }
     }
@@ -1024,6 +1082,16 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
                 val key = if (keys.contains(dx, dy)) ((dx - keys.left) / keys.width * PIANO_KEYS).toInt().coerceIn(0, PIANO_KEYS - 1) else random.nextInt(PIANO_KEYS)
                 f.mode = key
                 listener.onFx(Fx.KEY, f.x + dx, f.y + dy, f, param = key)
+                // «Twinkle twinkle little star» (or «Bæ bæ lille lam»): C C G G A A G, an octave up.
+                if (time - pianoLast > 2.5f) pianoTrail.clear()
+                pianoLast = time
+                pianoTrail += key
+                if (pianoTrail.size > TWINKLE.size) pianoTrail.removeAt(0)
+                if (pianoTrail == TWINKLE) {
+                    pianoTrail.clear()
+                    listener.onFx(Fx.STARRAIN, f.x, f.top, f)
+                    egg("twinkle")
+                }
             }
             FixtureType.WINDOW -> {
                 f.mode = 1 - f.mode
@@ -1458,6 +1526,11 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         }
         if (result != Give.NONE && result != Give.SNEEZE) life.given(p, type)
         if (result == Give.ATE || result == Give.DRANK || result == Give.FINISHED) jokes.ate(p, type, result, time)
+        // Brunost for the moose calf: a little dance.
+        if (p.species == Species.ELK && type == ThingType.BROWN_CHEESE && result != Give.NONE) {
+            listener.onFx(Fx.JIG, p.x, p.y - p.h, param = p.id)
+            egg("elk")
+        }
         return result
     }
 
@@ -1483,6 +1556,11 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
             }
             part == Part.HAT && t.type.slot == Slot.HEAD -> {
                 wear(p, t, Slot.HEAD)
+                // A crown on the troll makes him king.
+                if (t.type == ThingType.CROWN && p.name == "Rumle") {
+                    listener.onFx(Fx.KING, p.x, p.y - p.h, thing = t, param = p.id)
+                    egg("king")
+                }
                 return Give.WORE
             }
             part == Part.GLASSES && t.type.slot == Slot.FACE -> {
@@ -1678,6 +1756,8 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         const val GRAVITY = 5.2f
         const val MAX_THINGS = 70
         const val TV_CHANNELS = 6
+        /** Piano keys (index into the pentatonic scale) of the hidden tune. */
+        val TWINKLE = listOf(5, 5, 8, 8, 9, 9, 8)
         const val PIANO_KEYS = 10
         const val SPELL_PAGES = 6
     }

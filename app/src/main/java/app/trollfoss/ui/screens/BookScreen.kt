@@ -65,6 +65,7 @@ import app.trollfoss.ui.art.drawPerson
 import app.trollfoss.ui.art.drawThing
 import app.trollfoss.ui.art.starPath
 import app.trollfoss.ui.components.CloseButton
+import app.trollfoss.ui.components.DesignIcons
 import app.trollfoss.ui.components.GameText
 import app.trollfoss.ui.str
 import app.trollfoss.ui.theme.T
@@ -181,11 +182,19 @@ private val STICKER_ART = listOf(
 @Composable
 private fun StickersPage(vm: TrollfossViewModel) {
     val count = vm.stickers
+    val eggColors = listOf(Color(0xFFFFD23F), Color(0xFFFF8FB1), Color(0xFF7CCBFF), Color(0xFFB6F2A0), Color(0xFFC9A4FF), Color(0xFFFFB347), Color(0xFF9BE8D8))
     FlowRow(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(end = 60.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        // The Easter eggs: a grey egg with a question mark until the child has found it.
+        for ((i, id) in app.trollfoss.domain.TaskBook.EGGS.withIndex()) {
+            val found = id in vm.world.eggs
+            CachedThumb("egg:$i:$found", 86.dp) {
+                with(DesignIcons) { egg(eggColors[i % eggColors.size], found) }
+            }
+        }
         for (i in 0 until maxOf(12, count + 6)) {
             CachedThumb(if (i < count) "sticker:$i" else "sticker:empty", 86.dp) {
                 val r = size.minDimension / 2f - 4f

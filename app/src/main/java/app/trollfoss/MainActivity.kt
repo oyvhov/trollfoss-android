@@ -1,6 +1,11 @@
 package app.trollfoss
 
+import android.content.Context
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,9 +15,11 @@ import app.trollfoss.ui.TrollfossApp
 import app.trollfoss.ui.TrollfossViewModel
 import app.trollfoss.ui.theme.TrollfossTheme
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), SensorEventListener {
 
     private val viewModel: TrollfossViewModel by viewModels()
+    private var lastShake = 0L
+    private var firstJolt = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +59,36 @@ class MainActivity : ComponentActivity() {
         super.onStart()
         viewModel.onForeground()
     }
+
+    // ---- shaking the device shakes the world (an Easter egg, and a good way to get a giggle)
+
+    override fun onResume() {
+        super.onResume()
+        val sensors = getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+        sensors?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let { sensors.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        (getSystemService(Context.SENSOR_SERVICE) as? SensorManager)?.unregisterListener(this)
+    }
+
+    override fun onSensorChanged(event: SensorEvent) {
+        val g = kotlin.math.sqrt(event.values[0] * event.values[0] + event.values[1] * event.values[1] + event.values[2] * event.values[2]) / SensorManager.GRAVITY_EARTH
+        if (g < 2.6f) return
+        val now = event.timestamp / 1_000_000
+        // Two hard jolts within a moment count as a shake; then a few seconds of peace.
+        if (now - lastShake < 3_500) return
+        if (now - firstJolt in 80..700) {
+            lastShake = now
+            firstJolt = 0
+            viewModel.shake()
+        } else {
+            firstJolt = now
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
 
     override fun onStop() {
         super.onStop()

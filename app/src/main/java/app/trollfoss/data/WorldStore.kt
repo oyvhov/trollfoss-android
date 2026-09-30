@@ -90,6 +90,7 @@ class WorldStore(private val file: File) {
             put("styles", JSONObject().apply { world.styles.forEach { (k, s) -> put(k, JSONArray(listOf(s.wall, s.floor))) } })
             put("storage", JSONArray().apply { world.storage.forEach { put(JSONObject().put("type", it.type.name).put("variant", it.variant)) } })
             put("stickers", JSONArray(world.stickers))
+            put("eggs", JSONArray(world.eggs.toList()))
             put("tasks", JSONObject().apply {
                 put("set", JSONArray(world.taskSet))
                 put("progress", JSONObject().apply { world.taskProgress.forEach { (k, v) -> put(k, v) } })
@@ -235,6 +236,7 @@ class WorldStore(private val file: File) {
                 }
             }
             json.optJSONArray("stickers")?.let { s -> for (i in 0 until s.length()) world.stickers += s.optInt(i) }
+            world.eggs += strings(json.optJSONArray("eggs"))
             json.optJSONObject("tasks")?.let { t ->
                 world.taskSet += strings(t.optJSONArray("set"))
                 t.optJSONObject("progress")?.let { p -> for (k in p.keys()) world.taskProgress[k] = p.optInt(k, 0) }

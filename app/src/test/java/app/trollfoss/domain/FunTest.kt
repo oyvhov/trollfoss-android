@@ -193,4 +193,86 @@ class FunTest {
         }
         assertTrue(moved)
     }
+
+    // ------------------------------------------------------------------ Easter eggs
+
+    private val eggs = ArrayList<String>()
+
+    private fun eggSim(world: World) = Sim(world, object : SimListener {
+        override fun onFx(fx: Fx, x: Float, y: Float, fixture: Fixture?, thing: Thing?, param: Int) {
+            events += fx to param
+        }
+        override fun onEgg(id: String) {
+            eggs += id
+        }
+    }, Random(31))
+
+    @Test
+    fun `shaking the world makes everything jump and finds an egg`() {
+        val world = WorldFactory.create(Random(40))
+        val sim = eggSim(world)
+        val apple = world.bodiesIn(PlaceId.CAFE).first { it is Thing && it.restOwner == -1 }
+        sim.quake(PlaceId.CAFE)
+        assertTrue(apple.vy < 0f)
+        assertTrue(Fx.QUAKE in events.map { it.first })
+        assertEquals(listOf("quake"), eggs)
+        val stickers = world.stickers.size
+        sim.quake(PlaceId.CAFE)
+        assertEquals(stickers, world.stickers.size)
+    }
+
+    @Test
+    fun `a crown on Rumle makes him king`() {
+        val world = WorldFactory.create(Random(41))
+        val sim = eggSim(world)
+        val rumle = world.people().first { it.name == "Rumle" }
+        val crown = world.addThing(ThingType.CROWN, 0, rumle.place, rumle.x, rumle.y)
+        sim.give(rumle, crown, Part.HAT)
+        assertTrue(Fx.KING in events.map { it.first })
+        assertTrue("king" in world.eggs)
+        val hedda = world.people().first { it.name == "Hedda" }
+        val crown2 = world.addThing(ThingType.CROWN, 0, hedda.place, hedda.x, hedda.y)
+        sim.give(hedda, crown2, Part.HAT)
+        assertEquals(1, events.count { it.first == Fx.KING })
+    }
+
+    @Test
+    fun `a duck in a running bath gets a party`() {
+        val world = WorldFactory.create(Random(42))
+        val sim = eggSim(world)
+        val bath = world.fixturesIn(PlaceId.HOME).first { it.type == FixtureType.BATH }
+        sim.tap(PlaceId.HOME, bath, 0f, -0.05f)
+        assertTrue(bath.on)
+        val duck = world.addThing(ThingType.DUCK, 0, PlaceId.HOME, bath.x, bath.y - 0.3f)
+        step(sim, PlaceId.HOME, 10f)
+        assertTrue(Fx.DUCK in events.map { it.first })
+        assertTrue("duck" in world.eggs)
+        assertNotNull(duck)
+    }
+
+    @Test
+    fun `the hidden tune on the piano rains stars`() {
+        val world = WorldFactory.create(Random(43))
+        val sim = eggSim(world)
+        val piano = world.fixturesIn(PlaceId.HOME).first { it.type == FixtureType.PIANO }
+        val keys = piano.spec.dropZone!!
+        for (key in Sim.TWINKLE) {
+            val dx = keys.left + (key + 0.5f) / Sim.PIANO_KEYS * keys.width
+            sim.tap(PlaceId.HOME, piano, dx, (keys.top + keys.bottom) / 2f)
+            step(sim, PlaceId.HOME, 0.3f)
+        }
+        assertTrue(Fx.STARRAIN in events.map { it.first })
+        assertTrue("twinkle" in world.eggs)
+    }
+
+    @Test
+    fun `brunost makes the moose calf dance`() {
+        val world = WorldFactory.create(Random(44))
+        val sim = eggSim(world)
+        val elk = world.bodiesIn(PlaceId.FOREST).first { it is Person && it.species == Species.ELK } as Person
+        val cheese = world.addThing(ThingType.BROWN_CHEESE, 0, PlaceId.FOREST, elk.x, elk.y - 0.1f)
+        sim.give(elk, cheese, Part.MOUTH)
+        assertTrue(Fx.JIG in events.map { it.first })
+        assertTrue("elk" in world.eggs)
+    }
 }

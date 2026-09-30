@@ -161,6 +161,23 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         scheduleSave()
     }
 
+    /** The device was shaken: the world shakes, but only while the play screen is showing. */
+    fun shake() {
+        if (screen != Screen.Play || splash) return
+        sim.quake(place)
+    }
+
+    /** A small sticker-shaped «task» that only exists to celebrate an Easter egg in the banner. */
+    private val eggTask = Task("egg", null, 1, icon = "egg") { _, _, _, _, _ -> false }
+
+    override fun egg(id: String) {
+        taskDone = eggTask
+        sfx(Sfx.FANFARE, 0.9f)
+        bookPulse++
+        refreshTasks()
+        scheduleSave()
+    }
+
     private fun applySettings() {
         sfx.enabled = settings.sound
         music.enabled = settings.music
@@ -420,6 +437,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
             "creator" -> open(Screen.Creator(null))
             "book" -> open(Screen.Book)
             "tasks" -> open(Screen.Tasks)
+            "quake" -> sim.quake(place)
             "parent" -> open(Screen.Parent)
             "gate" -> open(Screen.ParentGate)
             "play" -> open(Screen.Play)

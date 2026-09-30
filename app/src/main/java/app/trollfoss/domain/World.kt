@@ -261,6 +261,9 @@ class World {
     /** Stickers earned from tasks, by sticker number. They open special furniture in the catalogue. */
     val stickers = ArrayList<Int>()
 
+    /** Easter eggs found, by id. Each one earns a sticker the first time. */
+    val eggs = LinkedHashSet<String>()
+
     /** The tasks on the board, how far each has come, and where the shuffled deck is. */
     val taskSet = ArrayList<String>()
     val taskProgress = HashMap<String, Int>()
