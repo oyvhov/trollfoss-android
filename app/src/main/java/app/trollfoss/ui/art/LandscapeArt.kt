@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.lerp
 import app.trollfoss.domain.PlaceId
 import app.trollfoss.domain.Places
+import app.trollfoss.domain.Weather
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.max
@@ -846,11 +847,13 @@ internal fun DrawScope.mountainBack(st: Stage, pen: Pen) {
     val t = pen.t
     val n = pen.night
     val hz = 0.7f
-    drawSky(st, pen, Mood.WINTER, hz)
-    drawStars(st, pen, 0.55f)
-    drawMoon(Offset(st.fx(0.3f, 0.04f), 0.12f * u), 0.04f * u, pen, ramp((n - 0.3f) / 0.5f))
-    drawAurora(st, pen, 0.85f, 0.02f, 0.32f)
-    val vis = (1f - n) * (1f - 0.8f * overcast(pen))
+    // The engine turns sunny weather into snowfall up here; keep the clear winter sky behind the flakes.
+    val sky = if (pen.weather == Weather.SNOW) Pen(pen.lw, pen.t, pen.night, Weather.SUN, pen.rainbow) else pen
+    drawSky(st, sky, Mood.WINTER, hz)
+    drawStars(st, sky, 0.55f)
+    drawMoon(Offset(st.fx(0.3f, 0.04f), 0.12f * u), 0.04f * u, sky, ramp((n - 0.3f) / 0.5f))
+    drawAurora(st, sky, 0.85f, 0.02f, 0.32f)
+    val vis = (1f - n) * (1f - 0.8f * overcast(sky))
     if (vis > 0.01f) {
         val c = Offset(st.fx(0.66f, 0.04f), 0.5f * u)
         val glow = Color(0xFFFFCF70)
@@ -858,7 +861,7 @@ internal fun DrawScope.mountainBack(st: Stage, pen: Pen) {
         drawSun(c, 0.06f * u, pen, vis, rays = false, color = Color(0xFFFFC23D))
     }
     drawRainbow(Offset(st.fx(0.45f, 0.08f), hz * u), 0.5f * u, 0.016f * u, pen.rainbow)
-    drawClouds(st, pen, 0.05f, 0.24f, 2, 0.06f, salt = 9)
+    drawClouds(st, sky, 0.05f, 0.24f, if (sky !== pen) 3 else 2, 0.06f, salt = 9)
     drawPeaks(
         st, 0.08f, 0.7f, 0.7f, 0.28f, 0.48f,
         Color(0xFFBCCAE6).atNight(n, 0.75f), Color(0xFF9FB1D6).atNight(n, 0.75f),
