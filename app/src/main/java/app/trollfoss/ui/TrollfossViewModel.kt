@@ -432,6 +432,8 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
                 PlaceId.MANOR_ATTIC -> MusicTheme.ATTIC
                 PlaceId.MANOR_CELLAR -> MusicTheme.CELLAR
                 PlaceId.MANOR_GARDEN -> MusicTheme.GARDEN
+                PlaceId.MINE_YARD -> MusicTheme.PARK
+                PlaceId.MINE_GROUND, PlaceId.MINE_UPPER -> MusicTheme.HOME
             }
         }
         music.play(theme)

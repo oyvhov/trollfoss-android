@@ -119,6 +119,19 @@ class HouseGroundTest {
     }
 
     @Test
+    fun `the food on the island, the candle on the mantel and the pepper on the table rest where the blueprint puts them`() {
+        val world = newWorld()
+        val things = world.bodiesIn(place).filterIsInstance<Thing>()
+        val island = fx(world, GroundIx.ISLAND)
+        val onIsland = things.filter { it.restOwner == island.id }
+        assertTrue("apples, dough and cheese lie on the island, not on the floor", onIsland.map { it.type }.containsAll(listOf(ThingType.APPLE, ThingType.DOUGH, ThingType.BROWN_CHEESE)))
+        assertTrue(things.first { it.type == ThingType.CANDLE }.restOwner == fx(world, GroundIx.FIREPLACE).id)
+        assertTrue(things.first { it.type == ThingType.PEPPER }.restOwner == fx(world, GroundIx.DINING_TABLE).id)
+        assertTrue(things.first { it.type == ThingType.COCOA }.restOwner == fx(world, GroundIx.COFFEE_TABLE).id)
+        assertTrue(things.first { it.type == ThingType.BOOK }.restOwner == fx(world, GroundIx.DESK).id)
+    }
+
+    @Test
     fun `there is a butler, a cat and a bunny, and things to play with`() {
         val world = newWorld()
         val people = world.bodiesIn(place).filterIsInstance<Person>()

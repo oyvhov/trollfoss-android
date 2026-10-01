@@ -9,6 +9,7 @@ import app.trollfoss.domain.RoomStyle
 import app.trollfoss.domain.Stored
 import app.trollfoss.domain.Look
 import app.trollfoss.domain.Maalform
+import app.trollfoss.domain.Mine
 import app.trollfoss.domain.SeasonChoice
 import app.trollfoss.domain.Mode
 import app.trollfoss.domain.Person
@@ -94,6 +95,21 @@ class WorldStore(private val file: File) {
             put("found", JSONArray(world.found.toList()))
             put("unlocked", JSONArray(world.unlocked.toList()))
             put("flags", JSONArray(world.flags.toList()))
+            put("mine", JSONObject().apply {
+                val h = world.mine
+                put("started", h.started)
+                put("shape", h.shape)
+                put("wall", h.wall)
+                put("roof", h.roof)
+                put("roofColor", h.roofColor)
+                put("door", h.door)
+                put("windows", h.windows)
+                put("chimney", h.chimney)
+                put("flag", h.flag)
+                put("upperBuilt", h.upperBuilt)
+                put("ground", JSONArray(h.ground.toList()))
+                put("upper", JSONArray(h.upper.toList()))
+            })
             put("discoveries", JSONArray(world.discoveries.toList()))
             put("styles", JSONObject().apply { world.styles.forEach { (k, s) -> put(k, JSONArray(listOf(s.wall, s.floor))) } })
             put("storage", JSONArray().apply { world.storage.forEach { put(JSONObject().put("type", it.type.name).put("variant", it.variant)) } })
@@ -220,6 +236,22 @@ class WorldStore(private val file: File) {
             world.found += strings(json.optJSONArray("found"))
             world.unlocked += strings(json.optJSONArray("unlocked"))
             world.flags += strings(json.optJSONArray("flags"))
+            json.optJSONObject("mine")?.let { o ->
+                val h = world.mine
+                h.started = o.optBoolean("started", false)
+                h.shape = o.optInt("shape", 0)
+                h.wall = o.optInt("wall", 0)
+                h.roof = o.optInt("roof", 0)
+                h.roofColor = o.optInt("roofColor", 0)
+                h.door = o.optInt("door", 0)
+                h.windows = o.optInt("windows", 0)
+                h.chimney = o.optBoolean("chimney", true)
+                h.flag = o.optBoolean("flag", false)
+                h.upperBuilt = o.optBoolean("upperBuilt", false)
+                o.optJSONArray("ground")?.let { a -> for (i in 0 until minOf(a.length(), Mine.SLOTS)) h.ground[i] = a.optInt(i, 0) }
+                o.optJSONArray("upper")?.let { a -> for (i in 0 until minOf(a.length(), Mine.SLOTS)) h.upper[i] = a.optInt(i, 0) }
+            }
+            Mine.sync(world)
             world.discoveries += strings(json.optJSONArray("discoveries"))
 
             json.optJSONArray("removed")?.let { removed -> for (i in 0 until removed.length()) world.fixtures.remove(removed.optInt(i, -1)) }

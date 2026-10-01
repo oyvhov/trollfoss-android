@@ -99,6 +99,9 @@ object HouseFx {
     const val CELLAR = 400
     const val GARDEN = 500
     const val STORY = 600
+
+    /** Mitt hus, the child's own house: building sounds and sparkle (see docs/BYGG.md). */
+    const val MINE = 700
 }
 
 /** The golden keys of the house: one hides on each floor, in a funny place that takes a small action. */
@@ -109,15 +112,15 @@ object HouseKeys {
 }
 
 object House {
-    val floors: List<Floor> by lazy { listOf(GroundFloor, UpperFloor, AtticFloor, CellarFloor, GardenFloor) }
+    val floors: List<Floor> by lazy { listOf(GroundFloor, UpperFloor, AtticFloor, CellarFloor, GardenFloor, MineYardFloor, MineGroundFloor, MineUpperFloor) }
 
-    fun floor(place: PlaceId): Floor? = if (place.manor) floors.firstOrNull { it.place == place } else null
+    fun floor(place: PlaceId): Floor? = if (place.big) floors.firstOrNull { it.place == place } else null
 
     val passages: List<Passage> by lazy { floors.flatMap { it.passages } }
 
     /** The passage that [f] is the way in of, or null for any other fixture. */
     fun passageAt(f: Fixture): Passage? {
-        if (!f.place.manor) return null
+        if (!f.place.big) return null
         return passages.firstOrNull { it.place == f.place && f.place.idBase + it.fixture == f.id }
     }
 
