@@ -591,6 +591,17 @@ private fun Bx.manorBay() {
     val fvy = 0.36f * FWD
     d.withTransform({ translate(BAY_X, BAY_DY) }) {
         gable(BAY_HW, WALL_H, 0.9f, 0.3f, WALL, ROOF)
+        // Courses of tiles on the gable's right roof slope, and a bright ridge.
+        if (!snow) {
+            val gt = Path()
+            for (k in 1..6) {
+                val f = k / 7f
+                gt.moveTo(mix(0f, BAY_HW, f), mix(-WALL_H - 0.9f, -WALL_H, f))
+                gt.lineTo(mix(0.15f, BAY_HW + 0.15f, f), mix(-WALL_H - 0.9f - 0.108f, -WALL_H - 0.108f, f))
+            }
+            d.drawPath(gt, c(ROOF.darken(0.4f)), alpha = 0.45f, style = Stroke(lw * 0.6f, cap = StrokeCap.Round))
+        }
+        line(0f, -WALL_H - 0.9f, 0.15f, -WALL_H - 0.9f - 0.108f, ROOF.lighten(0.4f), 1.4f)
         // The attic window: dark glass, where the ghost lives.
         d.drawCircle(c(DARK_GLASS), 0.105f, Offset(0f, ATTIC_Y))
         d.drawCircle(c(Color(0xFF6E6BA6)), 0.105f, Offset(0f, ATTIC_Y), alpha = 0.5f, style = Stroke(0.03f))
@@ -911,25 +922,15 @@ internal fun Bx.manorLive() {
                 d.drawLine(c(TRIM), Offset((x0 + x1) / 2f, y0), Offset((x0 + x1) / 2f, y1), strokeWidth = lw * 1.3f)
                 d.drawLine(c(TRIM), Offset(x0, (y0 + y1) / 2f), Offset(x1, (y0 + y1) / 2f), strokeWidth = lw * 1.3f)
             }
-            // Flickering lanterns: the porch, the gate, and string lights along the winter garden.
-            val fvx = -0.5f * FWD
-            val fvy = 0.36f * FWD
-            for ((k, p) in listOf(
-                Offset(BAY_X - 0.3f + fvx, BAY_DY - 0.32f + fvy), Offset(BAY_X + 0.3f + fvx, BAY_DY - 0.32f + fvy),
-                Offset(GATE_LX - 0.17f, GATE_LY - 0.27f), Offset(GATE_LX + 0.17f, GATE_LY - 0.27f),
-            ).withIndex()) {
+            // Flickering lanterns: the porch and the gate, and string lights along the winter garden.
+            for (k in 0 until 4) {
                 val fl2 = 0.8f + 0.2f * sin(t * 7.3f + k * 2.1f) + 0.1f * sin(t * 13f + k)
+                val p = lanterns[k]
                 d.drawCircle(Color(0xFFFFD76B), 0.15f * fl2, p, alpha = 0.3f * lit)
                 d.drawCircle(Color(0xFFFFF3B0), 0.05f, p, alpha = 0.7f * lit)
             }
-            val a1 = ArrayList<Offset>(4)
-            val a2 = ArrayList<Offset>(4)
-            for (k in 0 until 8) {
-                val bx = GX0 + 0.1f + (GX1 - GX0 - 0.2f) * k / 7f
-                (if (k % 2 == 0) a1 else a2).add(Offset(bx, GARDEN_EAVE + 0.06f + 0.03f * sin(k * 1.7f)))
-            }
-            d.drawPoints(a1, PointMode.Points, Color(0xFFFFE27A), strokeWidth = 0.034f, cap = StrokeCap.Round, alpha = lit * (0.5f + 0.5f * sin(t * 2.6f)))
-            d.drawPoints(a2, PointMode.Points, Color(0xFFFF9EC4), strokeWidth = 0.034f, cap = StrokeCap.Round, alpha = lit * (0.5f + 0.5f * sin(t * 2.6f + 3.1f)))
+            d.drawPoints(fairyA, PointMode.Points, Color(0xFFFFE27A), strokeWidth = 0.034f, cap = StrokeCap.Round, alpha = lit * (0.5f + 0.5f * sin(t * 2.6f)))
+            d.drawPoints(fairyB, PointMode.Points, Color(0xFFFF9EC4), strokeWidth = 0.034f, cap = StrokeCap.Round, alpha = lit * (0.5f + 0.5f * sin(t * 2.6f + 3.1f)))
         }
         // Ripples in the pond.
         val ph = wrap(t * 0.32f, 1f)
@@ -991,4 +992,22 @@ private fun Bx.ghost() {
         }
     }
     d.drawCircle(c(TRIM), 0.105f, Offset(0f, ATTIC_Y), style = Stroke(lw * 2.4f))
+}
+
+/** The four lanterns that flicker at night (the porch pair and the gate pair), in house space. */
+private val lanterns: List<Offset> by lazy {
+    val fvx = -0.5f * FWD
+    val fvy = 0.36f * FWD
+    listOf(
+        Offset(BAY_X - 0.3f + fvx, BAY_DY - 0.32f + fvy), Offset(BAY_X + 0.3f + fvx, BAY_DY - 0.32f + fvy),
+        Offset(GATE_LX - 0.17f, GATE_LY - 0.27f), Offset(GATE_LX + 0.17f, GATE_LY - 0.27f),
+    )
+}
+
+/** The string lights under the winter garden's eaves, in two groups that twinkle in turn. */
+private val fairyA: List<Offset> by lazy { fairy(0) }
+private val fairyB: List<Offset> by lazy { fairy(1) }
+
+private fun fairy(parity: Int): List<Offset> = (0 until 8).filter { it % 2 == parity }.map { k ->
+    Offset(GX0 + 0.1f + (GX1 - GX0 - 0.2f) * k / 7f, GARDEN_EAVE + 0.06f + 0.03f * sin(k * 1.7f))
 }
