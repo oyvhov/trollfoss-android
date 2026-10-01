@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
@@ -480,11 +481,13 @@ internal fun DrawScope.gaPatio(f: Fixture, u: Float, pen: Pen) {
     val cloth = fxDisc2(top.x, top.y, 0.155f * u, 0.086f * u)
     drawPath(cloth, Color(0xFFEAF2FA))
     // Check pattern: crossing blue bands.
-    for (k in -3..3) {
-        val a = fxMix(Offset(top.x - 0.14f * u, top.y), Offset(top.x + 0.14f * u, top.y), (k + 3.5f) / 7f)
-        drawLine(Color(0xFF7FA3D4).copy(alpha = 0.35f), Offset(a.x, top.y - 0.07f * u), Offset(a.x, top.y + 0.07f * u), strokeWidth = 0.011f * u)
+    clipPath(cloth) {
+        for (k in -3..3) {
+            val a = fxMix(Offset(top.x - 0.14f * u, top.y), Offset(top.x + 0.14f * u, top.y), (k + 3.5f) / 7f)
+            drawLine(Color(0xFF7FA3D4).copy(alpha = 0.35f), Offset(a.x, top.y - 0.07f * u), Offset(a.x, top.y + 0.07f * u), strokeWidth = 0.011f * u)
+        }
+        for (k in -2..2) drawLine(Color(0xFF7FA3D4).copy(alpha = 0.35f), Offset(top.x - 0.15f * u, top.y + k * 0.022f * u), Offset(top.x + 0.15f * u, top.y + k * 0.022f * u), strokeWidth = 0.009f * u)
     }
-    for (k in -2..2) drawLine(Color(0xFF7FA3D4).copy(alpha = 0.35f), Offset(top.x - 0.15f * u, top.y + k * 0.022f * u), Offset(top.x + 0.15f * u, top.y + k * 0.022f * u), strokeWidth = 0.009f * u)
     drawPath(cloth, Ink.line, style = pen.stroke)
     // The parasol: a pole through the middle and a scalloped striped canopy (or a furled one).
     val pole = Offset(top.x, top.y)

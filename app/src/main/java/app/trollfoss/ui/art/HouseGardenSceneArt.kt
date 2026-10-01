@@ -187,7 +187,7 @@ private fun gsBuild(u: Float): GsGeo {
 }
 
 /** Colours of the lawn: bright and warm in sun, grey-green in rain, white in snow. */
-private fun gsGrass(pen: Pen, base: Color): Color = base.gaSnow(pen, 0.62f).ga(pen, 0.5f, 0.35f)
+private fun gsGrass(pen: Pen, base: Color): Color = base.gaSnow(pen, 0.82f).ga(pen, 0.5f, 0.35f)
 
 internal fun DrawScope.gardenBack(st: Stage, pen: Pen) {
     // The gnomes move where nobody looks: they ask where the camera is.
