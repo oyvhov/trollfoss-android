@@ -1,0 +1,11 @@
+// Gradle init script for scripts/Render-Logos.ps1: gir debug-APK-en av logo-teikningane eit eige pakkenamn
+// (app.trollfoss.logo), så han ikkje overskriv app.trollfoss.debug som andre jobbar med på same emulator.
+allprojects {
+    plugins.withId('com.android.application') {
+        androidComponents {
+            onVariants(selector().withBuildType('debug')) { variant ->
+                variant.applicationId.set('app.trollfoss.logo')
+            }
+        }
+    }
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Debug only: draws the brand art (docs/images) full-screen so scripts/Render-Logos.ps1 can capture it.
+        Nothing here is part of the release APK.
+    -->
+    <application>
+        <activity
+            android:name="app.trollfoss.LogoActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|density|keyboardHidden|uiMode"
+            android:resizeableActivity="true" />
+    </application>
+</manifest>
