@@ -229,4 +229,15 @@ object S {
         "feeder" -> txt("Fuglemating")
         else -> txt(name)
     }
+    // Storhuset Hagen (the garden). The child barely reads here: these are the names the gnomes and frogs go by,
+    // for a name tag or the discovery book. The family can change them whenever they like.
+    val gardenGnomes = listOf(txt("Gunnar"), txt("Gudrun"), txt("Knut"), txt("Snurre"), txt("Pjokken"))
+    val gardenFrogs = listOf(txt("Brumle"), txt("Kvekke"), txt("Plopp"), txt("Hoppla", "Hopla"), txt("Pip"))
+    val gardenPond = txt("Dammen")
+    val gardenGreenhouse = txt("Drivhuset")
+    val gardenTreehouse = txt("Tretopphytta", "Trehytta")
+    val gardenShed = txt("Skuret")
+    val gardenZip = txt("Taubana", "Tauet")
+    val gardenCompost = txt("Komposthaugen", "Kompostkassen")
+    val gardenMower = txt("Gressklipparen", "Plenklipperen")
 }

@@ -20,6 +20,7 @@ enum class Deed {
     // ---- cellar ----
 
     // ---- garden ----
+    GA_CHOIR, GA_GIANT, GA_ZIP, GA_GRILL,
 
     // ---- stories and seasons ----
 }
@@ -175,6 +176,10 @@ class TaskBook(private val world: World) {
             // ---- cellar ----
 
             // ---- garden ----
+            Task("garden_choir", PlaceId.MANOR_GARDEN, 1, thing = ThingType.MICROPHONE, icon = "note", match = deed(Deed.GA_CHOIR)),
+            Task("garden_giant", PlaceId.MANOR_GARDEN, 1, thing = ThingType.GA_VEGGIE, icon = "star", match = deed(Deed.GA_GIANT)),
+            Task("garden_zip", PlaceId.MANOR_GARDEN, 1, fixture = FixtureType.CABLE_CAR, icon = "star", match = deed(Deed.GA_ZIP)),
+            Task("garden_grill", PlaceId.MANOR_GARDEN, 1, fixture = FixtureType.CAMPFIRE, thing = ThingType.GRILLED_SAUSAGE, match = deed(Deed.GA_GRILL)),
 
             // ---- stories and seasons ----
         )

@@ -144,7 +144,7 @@ class DesignerTest {
         assertEquals(FixtureType.FLOWER_POT, w2.fixtures[lamp.id]?.type)
         assertTrue(w2.fixturesIn(PlaceId.HOME).none { it.type == FixtureType.BED })
         assertEquals(listOf(Stored(FixtureType.BED, 0)), w2.storage)
-        assertEquals(3, w2.stickers.size)
+        assertEquals(world.stickers.size, w2.stickers.size)
         val milk = w2.bodiesIn(PlaceId.HOME).first { it is Thing && it.type == ThingType.MILK } as Thing
         assertEquals(PlaceId.HOME, milk.homePlace)
     }

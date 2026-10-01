@@ -144,6 +144,9 @@ enum class FixtureType {
     // ---- Storhuset cellar (HouseCellar.kt) ----
 
     // ---- Storhuset garden (HouseGarden.kt) ----
+    GA_GREENHOUSE, GA_PLANTER, GA_FROG, GA_BRIDGE, GA_SHED, GA_GRILL, GA_PATIO, GA_FLOWER_BED, GA_BIRDHOUSE,
+    GA_BARREL, GA_COMPOST, GA_HAMMOCK, GA_GNOME, GA_MOWER, GA_SPRINKLER, GA_GATE, GA_SNOWMAN, GA_PINWHEEL,
+    GA_SANDBOX, GA_TRAMPOLINE, GA_TREEHOUSE, GA_LADDER, GA_SWING, GA_ZIP, GA_ZIP_POLE,
     ;
 
     val spec: FixtureSpec get() = specs.getValue(this)

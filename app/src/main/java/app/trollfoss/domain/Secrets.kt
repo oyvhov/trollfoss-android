@@ -114,6 +114,15 @@ object Secrets {
         Secret("mine_start", PlaceId.MINE_YARD, 1.6f, 0.45f, event = true),
         Secret("mine_second_floor", PlaceId.MINE_YARD, 7.6f, 0.3f, event = true),
         Secret("mine_housewarming", PlaceId.MINE_YARD, 3.0f, 0.62f, event = true),
+        // The frog choir (a star over the middle frog), the zip ride, the first giant vegetable, three winking
+        // gnomes (the star follows the first gnome wherever it sneaks off to), the first sandbox treasure, and the
+        // shed (inside, so it shows when the door is open).
+        Secret("garden_pond", PlaceId.MANOR_GARDEN, 5.45f, 0.64f, event = true, on = GardenIx.FROG0 + 2),
+        Secret("garden_tree", PlaceId.MANOR_GARDEN, 8.1f, 0.43f, event = true, on = GardenIx.TREEHOUSE),
+        Secret("garden_greenhouse", PlaceId.MANOR_GARDEN, 0.46f, 0.38f, event = true, on = GardenIx.GREENHOUSE),
+        Secret("garden_gnome", PlaceId.MANOR_GARDEN, 1.52f, 0.72f, event = true, on = GardenIx.GNOME0),
+        Secret("garden_sand", PlaceId.MANOR_GARDEN, 6.82f, 0.7f, event = true, on = GardenIx.SANDBOX),
+        Secret("garden_shed", PlaceId.MANOR_GARDEN, 2.93f, 0.58f, inside = GardenIx.SHED, on = GardenIx.SHED),
     )
 
     fun byId(id: String): Secret? = all.firstOrNull { it.id == id }
