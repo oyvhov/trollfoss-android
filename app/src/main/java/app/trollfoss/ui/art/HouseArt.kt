@@ -82,6 +82,7 @@ internal fun DrawScope.drawManorFixtureFront(f: Fixture, u: Float, pen: Pen): Bo
 
 /** Things made for the house: the floors are asked one after the other until one draws the type. */
 internal fun DrawScope.drawManorThing(type: ThingType, variant: Int, used: Int, w: Float, h: Float, pen: Pen, cook: Float) {
+    if (type == ThingType.GOLDEN_KEY) return thGoldenKey(w, h, pen)
     if (drawGroundThing(type, variant, used, w, h, pen, cook)) return
     if (drawUpperThing(type, variant, used, w, h, pen, cook)) return
     if (drawAtticThing(type, variant, used, w, h, pen, cook)) return

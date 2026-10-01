@@ -86,6 +86,7 @@ class WorldStore(private val file: File) {
             put("places", JSONArray(PlaceId.entries.map { it.name }))
             put("found", JSONArray(world.found.toList()))
             put("unlocked", JSONArray(world.unlocked.toList()))
+            put("flags", JSONArray(world.flags.toList()))
             put("discoveries", JSONArray(world.discoveries.toList()))
             put("styles", JSONObject().apply { world.styles.forEach { (k, s) -> put(k, JSONArray(listOf(s.wall, s.floor))) } })
             put("storage", JSONArray().apply { world.storage.forEach { put(JSONObject().put("type", it.type.name).put("variant", it.variant)) } })
@@ -209,6 +210,7 @@ class WorldStore(private val file: File) {
             world.wishesGranted = json.optInt("wishes", 0)
             world.found += strings(json.optJSONArray("found"))
             world.unlocked += strings(json.optJSONArray("unlocked"))
+            world.flags += strings(json.optJSONArray("flags"))
             world.discoveries += strings(json.optJSONArray("discoveries"))
 
             json.optJSONArray("removed")?.let { removed -> for (i in 0 until removed.length()) world.fixtures.remove(removed.optInt(i, -1)) }

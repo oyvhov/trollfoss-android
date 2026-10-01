@@ -5,6 +5,20 @@ enum class Deed {
     MADE, ATE, WORE, DRESSED, HAIRCUT, SEATED, FED, BROUGHT, PHOTO, SECRET, WISH, TIDY, PAINT, FURNISH,
     PRRT, SNEEZE, SLIP, SPLAT, BURP, CATCH, BREW, WHEE, SCAN, XRAY, HEART, SING, DISCO, INK, LAUNCH,
     GRAVITY, HARVEST, BUILD, VROOM, HATCH, KNOCK, BOUNCE, SNOWMAN, GIFT, CABLE, ECHO, SUMMIT,
+
+    // Storhuset: taking any way between floors, then each floor's own deeds in its block.
+    PASSAGE,
+    // ---- ground floor ----
+
+    // ---- upper floor ----
+
+    // ---- attic ----
+
+    // ---- cellar ----
+
+    // ---- garden ----
+
+    // ---- stories and seasons ----
 }
 
 /**
@@ -133,6 +147,19 @@ class TaskBook(private val world: World) {
             Task("furnish", null, 2, icon = "sofa", match = deed(Deed.FURNISH)),
             Task("photo", null, 1, icon = "camera", match = deed(Deed.PHOTO)),
             Task("gift", null, 1, thing = ThingType.GIFT, match = deed(Deed.GIFT)),
+
+            // Storhuset. Each floor adds its tasks in its own block (a place of its own, a picture, a deed).
+            // ---- ground floor ----
+
+            // ---- upper floor ----
+
+            // ---- attic ----
+
+            // ---- cellar ----
+
+            // ---- garden ----
+
+            // ---- stories and seasons ----
         )
     }
 }

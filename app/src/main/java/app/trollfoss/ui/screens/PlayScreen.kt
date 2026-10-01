@@ -121,6 +121,11 @@ fun PlayScreen(vm: TrollfossViewModel) {
             engine.draw(this, text)
         }
 
+        // In the big house: the five golden keys, top and centre.
+        if (place.manor && !engine.designMode) {
+            HouseKeysHud(vm.houseKeys, modifier = Modifier.align(Alignment.TopCenter).padding(top = 18.dp))
+        }
+
         // Taking stairs, a lift or a slide in the big house: the new floor opens from the dark, like an eye.
         val curtain = remember { androidx.compose.animation.core.Animatable(1f) }
         LaunchedEffect(vm.passageStamp) {

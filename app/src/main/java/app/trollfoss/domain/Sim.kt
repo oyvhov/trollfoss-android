@@ -1742,6 +1742,22 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         listener.onSecret(id)
     }
 
+    /**
+     * Marks progress in the big house: a key found, a lever pulled, a door opened. Returns true the first time.
+     * The five golden keys (see [HouseKeys]) open the tunnel door when all are found.
+     */
+    fun flag(name: String): Boolean {
+        if (!world.flags.add(name)) return false
+        if (name in HouseKeys.ids) {
+            val n = HouseKeys.found(world)
+            listener.onFx(Fx.HOUSE, 0f, 0f, null, null, HouseFx.pack(HouseFx.KEY_FOUND, n))
+            if (n == HouseKeys.ids.size && world.flags.add(HouseKeys.TUNNEL)) {
+                listener.onFx(Fx.HOUSE, 0f, 0f, null, null, HouseFx.pack(HouseFx.KEYS_DONE, n))
+            }
+        }
+        return true
+    }
+
     fun collect(id: String): Boolean {
         if (id in world.found) return false
         world.found += id

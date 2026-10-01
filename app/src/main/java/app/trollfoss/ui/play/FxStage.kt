@@ -17,6 +17,12 @@ interface FxStage {
     val world: World
     val place: PlaceId
 
+    /** The scene x at the middle of the screen, for effects that belong to the whole view. */
+    val centerX: Float
+
+    /** Something changed that must be saved. */
+    fun changed()
+
     /** Seconds since this view opened; use it with [after] for sequences. */
     val time: Float
     val random: Random

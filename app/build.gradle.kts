@@ -53,7 +53,9 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix = ".debug"
+            // Helpers building in parallel worktrees give each debug build its own package (-PtrollfossIdSuffix=.stova),
+            // so they never overwrite each other on a shared emulator.
+            applicationIdSuffix = (findProperty("trollfossIdSuffix") as String?) ?: ".debug"
             versionNameSuffix = "-debug"
         }
         release {

@@ -37,6 +37,7 @@ import app.trollfoss.domain.Fixture
 import app.trollfoss.domain.FixtureType
 import app.trollfoss.domain.Fx
 import app.trollfoss.domain.Give
+import app.trollfoss.domain.House
 import app.trollfoss.domain.Jokes
 import app.trollfoss.domain.Mode
 import app.trollfoss.domain.Part
@@ -1265,6 +1266,8 @@ class Engine(
         override val place: PlaceId get() = this@Engine.place
         override val time: Float get() = this@Engine.time
         override val random: Random get() = this@Engine.random
+        override val centerX: Float get() = cam + viewport / 2f
+        override fun changed() = host.changed()
         override fun sfx(effect: Sfx, volume: Float, rate: Float) = host.sfx(effect, volume, rate)
         override fun after(seconds: Float, block: () -> Unit) { pending += (this@Engine.time + seconds) to block }
         override fun burst(kind: PKind, x: Float, y: Float, n: Int, speed: Float, size: Float, color: Color?, up: Float, life: Float) = particles.burst(kind, x, y, n, speed, size, color, up, life)
@@ -2699,9 +2702,12 @@ class Engine(
     }
 
     private fun DrawScope.drawNight(lw: Float) {
+        // A floor of the big house without windows is dim even at noon; a finger on the screen lights it up.
+        val floorDark = House.floor(place)?.darkness ?: 0f
+        val night = max(night, floorDark)
         if (night <= 0.01f || place == PlaceId.SPACE) return
         val dark = (if (place.outdoor) 0.3f else 0.5f) * night
-        val lights = lightSources()
+        val lights = lightSources(floorDark > 0f)
         // Drawn inside the world transform, so the band above the scene starts at -top.
         drawContext.canvas.saveLayer(Rect(0f, -top, size.width, size.height), Paint())
         drawRect(Color(0xFF0E0B33).copy(alpha = dark), Offset(0f, -top), Size(size.width, size.height + top))
@@ -2715,8 +2721,9 @@ class Engine(
         if (lw < 0f) Unit
     }
 
-    private fun lightSources(): List<Triple<Offset, Float, Color>> {
+    private fun lightSources(flashlight: Boolean = false): List<Triple<Offset, Float, Color>> {
         val out = ArrayList<Triple<Offset, Float, Color>>()
+        if (flashlight) for (g in grabs.values) out += Triple(Offset(g.finger.x, g.finger.y - top), 0.2f * u, Color(0xFFFFF1C2))
         for (f in world.fixturesIn(place)) {
             val l = f.spec.light ?: continue
             val lit = when (f.type) {

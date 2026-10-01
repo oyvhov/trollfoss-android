@@ -12,6 +12,8 @@ object AtticFloor : Floor {
 
     override val rooms = listOf(0f..3f, 3f..5.5f, 5.5f..7.5f, 7.5f..9f)
 
+    override val darkness = 0.6f
+
     override val passages = listOf(
         Passage("attic-stairs-down", place, 0, PassageKind.STAIRS, PlaceId.MANOR_UPPER, "attic-stairs"),
         Passage("attic-secret-down", place, 1, PassageKind.SECRET, PlaceId.MANOR_GROUND, "library-secret", locked = "manor_bookshelf"),

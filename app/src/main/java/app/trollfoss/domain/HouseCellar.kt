@@ -12,6 +12,8 @@ object CellarFloor : Floor {
 
     override val rooms = listOf(0f..2.5f, 2.5f..4.5f, 4.5f..6f, 6f..8.5f, 8.5f..10f)
 
+    override val darkness = 0.45f
+
     override val passages = listOf(
         Passage("cellar-stairs-up", place, 0, PassageKind.STAIRS, PlaceId.MANOR_GROUND, "cellar-door"),
         // The way back from Trollhola is added with the tunnel; until then it only goes one way.

@@ -47,6 +47,12 @@ interface Floor {
     /** Where figures arrive on this floor, by name; passages on other floors refer to these names. */
     val arrivals: List<Arrival>
 
+    /**
+     * How dark the floor is in the middle of the day, 0 to 1 (the attic and the cellar have no windows to speak of).
+     * It works like night: lamps and glowing things light their surroundings, and a finger on the screen is a flashlight.
+     */
+    val darkness: Float get() = 0f
+
     /** Where figures like to be here: by day, and at night. Used when the house shuffles who is where. */
     fun hangouts(night: Boolean): List<Arrival> = emptyList()
 
@@ -81,12 +87,25 @@ object HouseFx {
     const val LOCKED = 2
     const val ARRIVED = 3
 
+    /** A golden key was found; arg is how many of the five the child has now. */
+    const val KEY_FOUND = 4
+
+    /** All five keys are found: the tunnel door opens. */
+    const val KEYS_DONE = 5
+
     const val GROUND = 100
     const val UPPER = 200
     const val ATTIC = 300
     const val CELLAR = 400
     const val GARDEN = 500
     const val STORY = 600
+}
+
+/** The golden keys of the house: one hides on each floor, in a funny place that takes a small action. */
+object HouseKeys {
+    val ids = listOf("manor_key_ground", "manor_key_upper", "manor_key_attic", "manor_key_cellar", "manor_key_garden")
+    const val TUNNEL = "manor_tunnel"
+    fun found(world: World): Int = ids.count { it in world.flags }
 }
 
 object House {
@@ -105,7 +124,8 @@ object House {
     fun arrival(to: PlaceId, name: String): Arrival? =
         (floor(to)?.arrivals ?: outside[to])?.firstOrNull { it.name == name }
 
-    fun usable(world: World, p: Passage): Boolean = p.locked == null || p.locked in world.unlocked || p.locked in world.found
+    /** A locked passage works once its key is in the world's flags (or an event glimt of that id is out or found). */
+    fun usable(world: World, p: Passage): Boolean = p.locked == null || p.locked in world.flags || p.locked in world.unlocked || p.locked in world.found
 
     /** The spec of a house fixture type: the shared ways between floors, then whatever a floor knows. */
     fun specOf(type: FixtureType): FixtureSpec? = shared(type) ?: floors.firstNotNullOfOrNull { it.specOf(type) }

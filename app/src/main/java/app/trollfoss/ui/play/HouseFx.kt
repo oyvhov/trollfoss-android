@@ -19,6 +19,8 @@ object HouseFxPlayer {
         when (code) {
             HouseFx.PASSAGE -> passage(s, PassageKind.entries[arg.coerceIn(0, PassageKind.entries.size - 1)], x, y)
             HouseFx.LOCKED -> locked(s, x, y)
+            HouseFx.KEY_FOUND -> keyFound(s, arg)
+            HouseFx.KEYS_DONE -> keysDone(s)
 
             in HouseFx.GROUND until HouseFx.UPPER -> GroundFx.play(s, code, arg, x, y, fixture, thing)
 
@@ -71,6 +73,26 @@ object HouseFxPlayer {
             }
         }
         s.burst(PKind.DUST, x, y + 0.08f, 5, 0.25f, 0.012f, up = 0.1f)
+    }
+
+    /** A golden key: a bright chime that climbs with each one found. */
+    private fun keyFound(s: FxStage, count: Int) {
+        val x = s.centerX
+        s.sfx(Sfx.CHIME, 0.9f, 0.8f + 0.1f * count)
+        s.after(0.18f) { s.sfx(Sfx.SPARKLE, 0.8f, 1f) }
+        s.burst(PKind.STAR, x, 0.35f, 18, 0.6f, 0.014f, Color(0xFFFFD447))
+        s.haptic()
+        s.changed()
+    }
+
+    /** All five keys: fanfare, confetti, and a deep rumble from far below as the tunnel door opens. */
+    private fun keysDone(s: FxStage) {
+        val x = s.centerX
+        s.sfx(Sfx.FANFARE, 1f)
+        s.after(0.6f) { s.sfx(Sfx.RUMBLE, 0.7f, 0.7f) }
+        s.burst(PKind.CONFETTI, x, 0.3f, 40, 1f, 0.013f, up = 0.9f, life = 2.2f)
+        s.haptic()
+        s.changed()
     }
 
     /** A locked way: a rattle, and whoever is near shrugs. */

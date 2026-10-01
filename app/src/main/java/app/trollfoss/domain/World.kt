@@ -241,6 +241,9 @@ class World {
     /** Glimt that an event has brought out. */
     val unlocked = linkedSetOf<String>()
 
+    /** Progress in the big house: golden keys found, levers pulled, doors opened (see [House]). Saved. */
+    val flags = linkedSetOf<String>()
+
     /** Recipes made at least once. */
     val discoveries = linkedSetOf<String>()
 

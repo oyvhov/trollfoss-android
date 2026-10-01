@@ -22,6 +22,7 @@ import app.trollfoss.audio.SoundFx
 import app.trollfoss.data.Settings
 import app.trollfoss.data.WorldStore
 import app.trollfoss.domain.FixtureType
+import app.trollfoss.domain.HouseKeys
 import app.trollfoss.domain.Look
 import app.trollfoss.domain.Maalform
 import app.trollfoss.domain.Mode
@@ -87,6 +88,9 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         private set
     var found by mutableIntStateOf(0)
         private set
+    /** Golden keys of the big house found so far (of five). */
+    var houseKeys by mutableIntStateOf(0)
+        private set
     var discoveries by mutableIntStateOf(0)
         private set
     var telescopeOpen by mutableStateOf(false)
@@ -134,6 +138,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         night = world.night
         weather = world.weather
         found = world.found.size
+        houseKeys = HouseKeys.found(world)
         discoveries = world.discoveries.size
     }
 
@@ -362,7 +367,10 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    override fun changed() = scheduleSave()
+    override fun changed() {
+        houseKeys = HouseKeys.found(world)
+        scheduleSave()
+    }
 
     override fun secretFound(id: String) {
         found = world.found.size

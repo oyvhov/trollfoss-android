@@ -179,7 +179,11 @@ enum class ThingType(
     THERMOS(0.035f, 0.085f, Cat.DRINK, bites = 3),
     DIVING_MASK(0.14f, 0.07f, Cat.GLASSES),
 
-    // Storhuset. Each floor adds its things in its own block; their art goes in the floor's art file.
+    // Storhuset. The golden key hides on every floor; each floor adds its own things in its own block below.
+    /** One of the five golden keys of the big house. Carried like any thing; found on each floor with a small deed. */
+    GOLDEN_KEY(0.06f, 0.03f, Cat.MAGIC, glows = true),
+
+    // Each floor adds its things in its own block; their art goes in the floor's art file.
     // ---- ground floor ----
 
     // ---- upper floor ----
