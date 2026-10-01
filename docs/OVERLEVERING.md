@@ -1,5 +1,20 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **UTGÅVE 1.2.0 PUBLISERT (2026-10-01, Codex):**
+> https://github.com/oyvhov/trollfoss-android/releases/tag/v1.2.0 er offentleg, stabil og nyaste utgåve.
+> Tag `v1.2.0` peikar på `93b46e4994659592922dba85fee8d372e398d5ec`; pakken er `app.trollfoss`,
+> versjon 1.2.0 / kode 3. Éin universal APK, 2 943 354 byte, med den opphavlege Trollfoss-signaturen.
+> APK SHA-256: `609e82d3fc35d040fa9b355a7a47a915a7768337447252ea3ff060c4a71bed12`.
+> Arkiv: `dist/release-v1.2.0/`; GitHub har APK, SHA256SUMS, R8-mapping og SOURCE_COMMIT.
+> `testDebugUnitTest` (346 grøne), `lintRelease` og `assembleRelease` via byggjelåsen er grøne.
+> Pakke, versjon, ikkje-debuggable og sertifikat er kontrollerte med aapt2/apksigner. Kladden hadde éin APK
+> med rett digest og storleik. Etter publisering er API-et kontrollert utan token, og den offentlege APK-en
+> lasta ned til eiga fil; hash og signatur er stadfesta like. Ingen signeringsfiler er endra eller publiserte.
+> **Ikkje prøvd i denne publiseringsøkta:** oppdatering gjennom appen og installasjon på nettbrett.
+> `emulator-5554` var ikkje i gang, og prosjektreglane tillèt berre den eksisterande køyrande emulatoren.
+> Den førre publiserte 1.1.0-APK-en vart henta og hashkontrollert i `dist/update-test-v1.2.0/` for seinare test.
+> Dei dokumenterte ytingsavgrensingane og oppstartsfrysinga i grafikkemulatoren nedanfor gjeld framleis.
+
 > **NYAST – NETTBRETT OG SAMANHENGANDE LEIK (2026-10-01, Codex):** Arbeidet er framleis lokalt på `main`.
 > `PlayViewport` held storleiken på tinga fast når sidepanelet opnar seg, og sentrerer arbeid, sekk og kontrollar
 > i den synlege delen. Romoversikt med store møbelsymbol gir direkte romval i Familiehuset, Storhuset og Mitt hus.
