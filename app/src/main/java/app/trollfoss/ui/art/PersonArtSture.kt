@@ -142,8 +142,8 @@ internal fun DrawScope.sture(look: Look, pose: Pose, a: PersonAnim, h: Float, pe
     val armColor = tint.darken(0.05f)
     val shoulderL = o(-0.285f, -0.52f)
     val shoulderR = o(0.285f, -0.52f)
-    var handL = o(-0.385f, -0.38f + sin(t * 2f) * 0.01f)
-    var handR = o(0.385f, -0.38f + sin(t * 2f + 1f) * 0.01f)
+    var handL = o(-0.372f, -0.41f + sin(t * 2f) * 0.01f)
+    var handR = o(0.372f, -0.41f + sin(t * 2f + 1f) * 0.01f)
     when {
         peek > 0.01f -> {
             val k = smooth(peek * 1.4f)

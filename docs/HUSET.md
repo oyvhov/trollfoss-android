@@ -317,6 +317,30 @@ etasjefilene er alt ferdig). Må du endre noko i dei: gjer det minst mogleg, og 
 Nye namn her er nye og kan byttast ut av familien. Dei 20 namna frå `docs/AI_INSTRUCTIONS.md` bur
 andre stader og blir ikkje flytta. Dyr (katt, hund …) kan vere med i huset som vanleg.
 
+### Rolf og Sture i koden
+
+Begge er ferdig teikna og har eigne små reglar (`domain/Figurar.kt`, `ui/art/PersonArtHouse.kt`,
+`PersonArtRolf.kt`, `PersonArtSture.kt`, `PersonArtXray.kt`, `ui/play/FigurarFx.kt`). Etasjefilene treng ikkje
+teikne dei, berre bruke dei:
+
+- Dei står, sit og ligg som folk (`Anatomy`: hatt, briller, hand og munn passar). **Rolf** held alltid eit
+  lite serveringsbrett på høgre hand, så ting blir lagde der. **Sture** held ting på høgre arm, ved sida av
+  magen, så andletet ikkje blir dekt.
+- `sim.figurar.bow(rolf)` er ein høfleg bukk (hovud og hatt dukkar saman, med «ding»); han helsar òg av seg
+  sjølv på folk som kjem bort til han, og dei vinkar tilbake. `sim.figurar.sneeze(sture)` er «ah … ah …
+  tsjuu» med gammalt støv; det er berre støv (ingen `Deed.SNEEZE`, ingen hatt som flyg), og Sture nyser av og til
+  sjølv.
+- Sture kan krympe og «poppe»: set `Person.scale` (teikninga toler ned mot null). Han gøymer augo bak armane av
+  seg sjølv ein augneblink, blir raud på kinna når han ler, og svevar med ei lita gyngerørsle (motoren legg
+  ho på). Rolf har antenne, glødande auge og ei brystlampe som slår som eit hjarte.
+- Mat: Rolf slukar alt som «drivstoff» (`Give.FINISHED`, dampar frå antenna og bukkar), Sture snusar og gir
+  maten tilbake med eit lite kast (`Give.SNIFF`). Eliksirar og pepar verkar som vanleg.
+- Alle ansikt (`Face`) er teikna for begge; `PersonAnim.achoo` er den støvete nysinga. Lydar: `Sfx.FG_ROLF_*`
+  og `Sfx.FG_STURE_*` (stemmene deira i `FigurarFx`). Røntgen viser tannhjul og ei badeand i Rolf, og ein
+  liten spøkelsesvenn i Sture.
+- Sjå dei begge, med alle ansikt, stillingar, hattar og ting: debug-aktiviteten `FigurarSheetActivity`
+  (`--es page faces|poses|worn|small|big|peek|xray|thumb`).
+
 ## 10. Ferdig-kriterium for ein etasje
 
 - Alle (m)-punkta er med og fungerer, med lyd, rørsle og humor. Minst fire oppdrag, minst tre glimt, ein

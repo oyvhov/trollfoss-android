@@ -2,7 +2,6 @@ package app.trollfoss
 
 import android.graphics.Color as AndroidColor
 import android.graphics.drawable.ColorDrawable
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
@@ -51,9 +50,6 @@ class FigurarSheetActivity : ComponentActivity() {
         val t = intent.getFloatExtra("t", 1.0f)
         val dark = intent.getStringExtra("dark") == "1"
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        if (Build.VERSION.SDK_INT >= 28) {
-            window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
-        }
         window.setBackgroundDrawable(ColorDrawable(AndroidColor.BLACK))
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         WindowCompat.getInsetsController(window, window.decorView).apply {
