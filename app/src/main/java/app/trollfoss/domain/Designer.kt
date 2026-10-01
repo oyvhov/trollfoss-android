@@ -23,7 +23,7 @@ class Designer(private val sim: Sim, private val random: Random) {
         val slot = (place.addedFrom..place.addedMax).firstOrNull { it !in used } ?: return null
         val f = Fixture(place.idBase + slot, place, type, x, y, variant, y)
         world.fixtures[f.id] = f
-        val spot = sim.clampFixture(place, f, x, y)
+        val spot = settle(place, f, x, y)
         f.x = spot[0]
         f.y = spot[1]
         f.depth = if (f.spec.wall) f.y else spot[1]
@@ -88,6 +88,87 @@ class Designer(private val sim: Sim, private val random: Random) {
         val f = add(place, item.type, item.variant, x, y) ?: return null
         world.storage.removeAt(index)
         return f
+    }
+
+    // ------------------------------------------------------------------ settling
+
+    /**
+     * Where [f] comes to rest when it is let go at ([x], [y]): close to where the child left it, but tidied the way
+     * a careful hand would. Furniture on the floor goes flush against the back wall when it is nearly there, lines
+     * up in depth with the piece beside it, stands edge to edge with a neighbour instead of half inside it, and
+     * stays on its own side of the wall between two rooms. What hangs on the wall centres over the furniture
+     * below it, lines up with the picture beside it and does not cover it. Rugs and other flat things lie where
+     * they are put. Nothing moves further than [SNAP_FAR]: a snap finishes the child's move, it never undoes it.
+     */
+    fun settle(place: PlaceId, f: Fixture, x: Float = f.x, y: Float = f.y): FloatArray {
+        val start = sim.clampFixture(place, f, x, y)
+        if (!f.spec.wall && f.spec.h < FLAT) return start
+        var sx = start[0]
+        var sy = start[1]
+        val half = f.spec.w / 2f
+        val others = world.fixturesIn(place).filter { it.id != f.id && it.host < 0 }
+        val solid = others.filter { !it.spec.wall && it.spec.h >= FLAT }
+        if (!f.spec.wall) {
+            val wallY = place.back + 0.004f
+            if (sy - wallY < SNAP_DEPTH) {
+                sy = wallY
+            } else {
+                // In line with the nearest piece standing beside it.
+                solid.filter { abs(it.y - sy) < SNAP_DEPTH && abs(it.x - sx) < half + it.spec.w / 2f + 0.15f }
+                    .minByOrNull { abs(it.y - sy) }?.let { sy = it.y }
+            }
+            sx = beside(sx, half, solid.filter { abs(it.y - sy) < SAME_DEPTH })
+            sx = insideRoom(place, sx, sy, half)
+        } else {
+            // Centred over the furniture it hangs above.
+            solid.filter { it.y - place.back < 0.08f && sy <= it.top + 0.05f && abs(it.x - sx) < SNAP_SIDE + 0.025f }
+                .minByOrNull { abs(it.x - sx) }?.let { sx = it.x }
+            val hung = others.filter { it.spec.wall }
+            // At the same height as the picture beside it (the middles line up).
+            val middle = sy - f.spec.h / 2f
+            hung.filter { abs(it.y - it.spec.h / 2f - middle) < SNAP_DEPTH && abs(it.x - sx) < 0.9f }
+                .minByOrNull { abs(it.x - sx) }?.let { sy = it.y - it.spec.h / 2f + f.spec.h / 2f }
+            // Beside another picture or a window, not on top of it.
+            sx = beside(sx, half, hung.filter { it.top < sy + GAP && it.y > sy - f.spec.h - GAP })
+            sx = insideRoom(place, sx, place.back, half)
+        }
+        return sim.clampFixture(place, f, sx, sy)
+    }
+
+    /** [x] moved so that a piece [half] wide stands edge to edge with the nearest of [row] it touches or nearly touches. */
+    private fun beside(x: Float, half: Float, row: List<Fixture>): Float {
+        var best = x
+        var bestMove = Float.MAX_VALUE
+        for (o in row) {
+            val reach = half + o.spec.w / 2f
+            if (abs(x - o.x) >= reach + SNAP_SIDE) continue
+            val target = if (x < o.x) o.x - reach - GAP else o.x + reach + GAP
+            val move = abs(target - x)
+            if (move <= SNAP_FAR && move < bestMove) {
+                best = target
+                bestMove = move
+            }
+        }
+        return best
+    }
+
+    /**
+     * [x] kept on its own side of the walls between the rooms of the family house. The walls run back at a slant,
+     * so where a wall is depends on how far back ([y]) the piece stands.
+     */
+    private fun insideRoom(place: PlaceId, x: Float, y: Float, half: Float): Float {
+        if (place != PlaceId.HOME) return x
+        val rooms = Decor.rooms(place)
+        val slant = (place.floor - y) * RECEDE
+        val i = rooms.indexOfFirst { x - slant in it }.coerceAtLeast(0)
+        val lo = if (i == 0) Float.NEGATIVE_INFINITY else rooms[i].start + slant + DIVIDER + half
+        val hi = if (i == rooms.lastIndex) Float.POSITIVE_INFINITY else rooms[i].endInclusive + slant - half
+        if (lo > hi) return x
+        return when {
+            x < lo + SNAP_SIDE && lo - x <= SNAP_FAR -> lo
+            x > hi - SNAP_SIDE && x - hi <= SNAP_FAR -> hi
+            else -> x
+        }
     }
 
     /** New wallpaper ([wall]) or floor ([floor]) for a room; null keeps what is there. */
@@ -267,6 +348,22 @@ class Designer(private val sim: Sim, private val random: Random) {
     }
 
     private companion object {
+        /** How near furniture must come before it clicks into place: in depth, sideways, and the furthest a snap may move it. */
+        const val SNAP_DEPTH = 0.03f
+        const val SNAP_SIDE = 0.045f
+        const val SNAP_FAR = 0.12f
+
+        /** Pieces closer than this in depth stand in the same row; a hair's breadth is left between neighbours. */
+        private const val SAME_DEPTH = 0.04f
+        private const val GAP = 0.006f
+
+        /** Lower than this is a rug or a mat: it lies flat and is in nobody's way. */
+        private const val FLAT = 0.05f
+
+        /** The walls between rooms: how thick they are and how far they run to the right per unit of depth. */
+        private const val DIVIDER = 0.035f
+        private const val RECEDE = 0.5f / 0.36f
+
         const val PI_F = 3.1415927f
         const val FLY_SECONDS = 0.8f
         const val ARC = 0.22f

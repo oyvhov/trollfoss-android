@@ -150,4 +150,70 @@ class DesignerTest {
         val milk = w2.bodiesIn(PlaceId.HOME).first { it is Thing && it.type == ThingType.MILK } as Thing
         assertEquals(PlaceId.HOME, milk.homePlace)
     }
+    /** An empty hairdresser's: one room, so only the rules for the back wall and for neighbours are at work. */
+    private fun emptyRoom(): Pair<World, Sim> {
+        val world = WorldFactory.create(Random(1))
+        world.fixtures.values.removeAll { it.place == PlaceId.SALON }
+        val sim = sim(world)
+        sim.invalidate(PlaceId.SALON)
+        return world to sim
+    }
+
+    @Test
+    fun `furniture let go near the back wall stands flush against it`() {
+        val (_, sim) = emptyRoom()
+        val sofa = sim.designer.add(PlaceId.SALON, FixtureType.SOFA, 0, 1.4f, PlaceId.SALON.back + 0.02f)!!
+        assertEquals(PlaceId.SALON.back + 0.004f, sofa.y, 0.0005f)
+        // Further out on the floor it stays where it was put.
+        val spot = sim.designer.settle(PlaceId.SALON, sofa, 1.4f, 0.9f)
+        assertEquals(0.9f, spot[1], 0.0005f)
+    }
+
+    @Test
+    fun `furniture half inside a neighbour settles edge to edge with it`() {
+        val (_, sim) = emptyRoom()
+        val a = sim.designer.add(PlaceId.SALON, FixtureType.STOOL, 0, 1.0f, 0.9f)!!
+        val w = a.spec.w
+        val spot = sim.designer.settle(PlaceId.SALON, a, 1.0f, 0.9f)
+        assertEquals("alone, it stays", 1.0f, spot[0], 0.0005f)
+        val b = sim.designer.add(PlaceId.SALON, FixtureType.STOOL, 0, 1.0f + w * 0.6f, 0.905f)!!
+        assertTrue("beside, not inside: ${b.x - a.x} against $w", b.x - a.x >= w)
+        assertTrue("and close", b.x - a.x < w + 0.02f)
+        assertEquals("in line in depth", a.y, b.y, 0.0005f)
+        // A big piece right on top of another is the child's own idea: it is not flung half a room away.
+        val sofa = sim.designer.add(PlaceId.SALON, FixtureType.SOFA, 0, 2.0f, 0.95f)!!
+        val other = sim.designer.add(PlaceId.SALON, FixtureType.SOFA, 0, 2.0f, 0.95f)!!
+        assertEquals(sofa.x, other.x, 0.0005f)
+    }
+
+    @Test
+    fun `a picture settles centred over the furniture below, and a rug lies where it is put`() {
+        val (_, sim) = emptyRoom()
+        val sofa = sim.designer.add(PlaceId.SALON, FixtureType.SOFA, 0, 1.4f, PlaceId.SALON.back + 0.004f)!!
+        val picture = sim.designer.add(PlaceId.SALON, FixtureType.PICTURE, 0, sofa.x + 0.04f, sofa.top - 0.1f)!!
+        assertEquals(sofa.x, picture.x, 0.0005f)
+        val second = sim.designer.add(PlaceId.SALON, FixtureType.PICTURE, 1, sofa.x + 0.5f, picture.y + 0.02f)!!
+        assertEquals("the two pictures hang at the same height", picture.y - picture.spec.h / 2f, second.y - second.spec.h / 2f, 0.0005f)
+        val rug = sim.designer.add(PlaceId.SALON, FixtureType.RUG, 0, sofa.x + 0.03f, PlaceId.SALON.back + 0.02f)!!
+        assertEquals(sofa.x + 0.03f, rug.x, 0.0005f)
+        assertEquals(PlaceId.SALON.back + 0.02f, rug.y, 0.0005f)
+    }
+    @Test
+    fun `a thing let go just beside a table is nudged onto it`() {
+        val (world, sim) = emptyRoom()
+        val table = sim.designer.add(PlaceId.SALON, FixtureType.TABLE, 0, 1.4f, 0.9f)!!
+        val edge = table.x + 0.15f
+        val apple = world.addThing(ThingType.APPLE, 0, PlaceId.SALON, edge + 0.02f, table.top - 0.1f)
+        val x = sim.nudgeOnto(PlaceId.SALON, apple)
+        assertNotNull(x)
+        assertTrue("on the table: $x", x!! < edge && x > table.x)
+        // Over the table already, far beside it, or put down on the floor: left alone.
+        apple.x = table.x
+        assertNull(sim.nudgeOnto(PlaceId.SALON, apple))
+        apple.x = edge + 0.3f
+        assertNull(sim.nudgeOnto(PlaceId.SALON, apple))
+        apple.x = edge + 0.02f
+        apple.y = 0.9f
+        assertNull(sim.nudgeOnto(PlaceId.SALON, apple))
+    }
 }

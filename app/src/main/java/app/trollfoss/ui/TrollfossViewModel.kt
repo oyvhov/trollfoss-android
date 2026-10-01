@@ -514,7 +514,8 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     /** Debug builds only: jump straight to a place or screen for screenshots. */
-    fun debug(placeName: String?, screenName: String?, nightOn: String?, weatherName: String?, secrets: Int, wishes: Boolean = false, skip: Int = 0, task: String? = null, seasonName: String? = null, festivalName: String? = null, mine: String? = null, shape: Int = 0, build: String? = null, cam: Float = Float.NaN) {
+    fun debug(placeName: String?, screenName: String?, nightOn: String?, weatherName: String?, secrets: Int, wishes: Boolean = false, skip: Int = 0, task: String? = null, seasonName: String? = null, festivalName: String? = null, mine: String? = null, shape: Int = 0, build: String? = null, cam: Float = Float.NaN, layers: String? = null) {
+        layers?.let { app.trollfoss.ui.play.SpriteCache.useLayers = it != "off" }
         if (seasonName != null || festivalName != null) {
             if (seasonName != null) debugSeason = Season.entries.firstOrNull { it.name.equals(seasonName, true) }
             if (festivalName != null) debugFestival = Festival.entries.firstOrNull { it.name.equals(festivalName, true) }

@@ -4,13 +4,20 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.GraphicsContext
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.layer.CompositingStrategy
+import androidx.compose.ui.graphics.layer.GraphicsLayer
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -35,62 +42,151 @@ class SpriteCache(private val maxBytes: Long = 40L * 1024 * 1024) {
     private var madeThisFrame = 0
 
     /**
-     * Pictures of art that moves by itself, redrawn a few times a second into the same bitmap. A
-     * wobbling price tag or a blinking figure looks just as alive at 8 to 15 pictures a second, and
-     * costs a fraction of drawing it every frame.
+     * Pictures of art that moves by itself, redrawn a few times a second. A wobbling price tag or a
+     * blinking figure looks just as alive at 8 to 15 pictures a second, and costs a fraction of drawing it
+     * every frame.
+     *
+     * The picture is a bitmap painted on this thread. With [useLayers] on (an experiment, see there) it is
+     * a [GraphicsLayer] kept on the graphics card instead, when the canvas is a hardware one: redrawing it
+     * then only records the drawing commands, and the card paints them.
      */
-    private class Slow(var image: ImageBitmap, var left: Float, var top: Float, var drawnAt: Float)
+    private class Slow(var left: Float, var top: Float, var drawnAt: Float) {
+        var layer: GraphicsLayer? = null
+        var image: ImageBitmap? = null
+        var usedAt = 0L
+    }
+
+    /** One picture that is due for a redraw this frame; the most overdue are served first. */
+    private class Request(
+        val key: Any, val left: Float, val top: Float, val w: Int, val h: Int, val t: Float, val overdue: Float,
+        val draw: DrawScope.(t: Float) -> Unit,
+    )
 
     private val slow = HashMap<Any, Slow>()
-    private var refreshedThisFrame = 0
+    private val requests = ArrayList<Request>()
+    private val byOverdue = compareByDescending<Request> { it.overdue }
+    private var frames = 0L
     private val scope = CanvasDrawScope()
+
+    /** Where layers come from (only used with [useLayers]); set while the scene is on screen. */
+    var graphics: GraphicsContext? = null
+        set(value) {
+            if (field === value) return
+            releaseSlow()
+            field = value
+        }
 
     /** Call once per frame before drawing. */
     fun frame() {
         madeThisFrame = 0
-        refreshedThisFrame = 0
+        frames++
     }
 
     /**
-     * Stamps a picture of [key] that is redrawn at most [hz] times a second, and at most a couple of
-     * pictures per frame across all keys, so the work spreads out. Returns false only before the first
-     * picture exists and none could be drawn this frame; then the caller draws live.
+     * Stamps the picture of [key], and asks for a new one when it is older than 1/[hz] seconds. The new
+     * pictures are made in [finish], the most overdue first and only as many as the frame can afford, so
+     * a crowded room slows the blinking down rather than the whole scene. Returns false only before the
+     * first picture exists; then the caller draws live.
      */
     fun DrawScope.stampSlow(key: Any, bounds: Rect, t: Float, hz: Float, draw: DrawScope.(t: Float) -> Unit): Boolean {
-        val left = floor(bounds.left)
-        val top = floor(bounds.top)
-        val w = ceil(bounds.right - left).toInt().coerceIn(1, MAX_SIDE)
-        val h = ceil(bounds.bottom - top).toInt().coerceIn(1, MAX_SIDE)
-        var s = slow[key]
-        val due = s == null || t - s.drawnAt >= 1f / hz || t < s.drawnAt
-        if (due && refreshedThisFrame < MAX_REFRESH_PER_FRAME) {
-            refreshedThisFrame++
-            if (s == null || s.image.width != w || s.image.height != h) {
-                s = Slow(ImageBitmap(w, h), left, top, t)
-                slow[key] = s
-            } else {
-                clear(s.image)
-                s.left = left
-                s.top = top
-                s.drawnAt = t
+        val s = slow[key]
+        val usable = s != null && usable(s)
+        val age = if (s == null || !usable || t < s.drawnAt) Float.MAX_VALUE else (t - s.drawnAt) * hz
+        if (age >= 1f) {
+            val left = floor(bounds.left)
+            val top = floor(bounds.top)
+            val w = ceil(bounds.right - left).toInt().coerceIn(1, MAX_SIDE)
+            val h = ceil(bounds.bottom - top).toInt().coerceIn(1, MAX_SIDE)
+            requests += Request(key, left, top, w, h, t, age, draw)
+        }
+        if (s == null || !usable) return false
+        s.usedAt = frames
+        val layer = s.layer
+        if (layer != null) drawLayer(layer) else s.image?.let { drawImage(it, Offset(s.left, s.top)) }
+        return true
+    }
+
+    /** True when the picture of [s] can be drawn onto this canvas. */
+    private fun DrawScope.usable(s: Slow): Boolean {
+        val layer = s.layer
+        return if (layer != null) !layer.isReleased && hardware() else s.image != null
+    }
+
+    private fun DrawScope.hardware(): Boolean = useLayers && graphics != null && drawContext.canvas.nativeCanvas.isHardwareAccelerated
+
+    /**
+     * Call once per frame after drawing: makes the pictures asked for by [stampSlow]. A layer that was
+     * stamped this frame already shows its new content; a bitmap shows it from the next frame.
+     */
+    fun DrawScope.finish() {
+        if (requests.isNotEmpty()) {
+            if (requests.size > 1) requests.sortWith(byOverdue)
+            val start = System.nanoTime()
+            var made = 0
+            for (r in requests) {
+                if (made > 0 && (made >= MAX_REFRESH_PER_FRAME || System.nanoTime() - start > REFRESH_BUDGET_NANOS)) break
+                refresh(r)
+                made++
             }
-            val image = s.image
-            scope.draw(Density(density, fontScale), LayoutDirection.Ltr, Canvas(image), Size(w.toFloat(), h.toFloat())) {
-                translate(-left, -top) { draw(t) }
+            requests.clear()
+        }
+        // Now and then: forget the pictures of figures and furniture that are no longer drawn.
+        if (frames % FORGET_FRAMES == 0L) {
+            val each = slow.values.iterator()
+            while (each.hasNext()) {
+                val s = each.next()
+                if (frames - s.usedAt > FORGET_FRAMES) {
+                    release(s)
+                    each.remove()
+                }
             }
         }
-        if (s == null) return false
-        drawImage(s.image, Offset(s.left, s.top))
-        return true
+    }
+
+    private fun DrawScope.refresh(r: Request) {
+        val s = slow.getOrPut(r.key) { Slow(r.left, r.top, r.t).also { it.usedAt = frames } }
+        s.left = r.left
+        s.top = r.top
+        s.drawnAt = r.t
+        val context = graphics
+        if (context != null && hardware()) {
+            s.image = null
+            val layer = s.layer?.takeUnless { it.isReleased } ?: context.createGraphicsLayer().also {
+                it.compositingStrategy = CompositingStrategy.Offscreen
+                s.layer = it
+            }
+            layer.record(IntSize(r.w, r.h)) { translate(-r.left, -r.top) { r.draw(this, r.t) } }
+            layer.topLeft = IntOffset(r.left.toInt(), r.top.toInt())
+            return
+        }
+        s.layer?.let { context?.releaseGraphicsLayer(it) }
+        s.layer = null
+        var image = s.image
+        if (image == null || image.width != r.w || image.height != r.h) {
+            image = ImageBitmap(r.w, r.h)
+            s.image = image
+        } else {
+            clear(image)
+        }
+        scope.draw(Density(density, fontScale), LayoutDirection.Ltr, Canvas(image), Size(r.w.toFloat(), r.h.toFloat())) {
+            translate(-r.left, -r.top) { r.draw(this, r.t) }
+        }
+    }
+
+    private fun release(s: Slow) {
+        s.layer?.let { layer -> graphics?.releaseGraphicsLayer(layer) }
+        s.layer = null
+        s.image = null
+    }
+
+    private fun releaseSlow() {
+        slow.values.forEach(::release)
+        slow.clear()
+        requests.clear()
     }
 
     /** True once [key] is known to move by itself. */
     fun animated(key: Any): Boolean = key in live
-
-    /** Forgets slow pictures whose keys are gone (figures that left, furniture put away). */
-    fun keepSlow(keys: Set<Any>) {
-        slow.keys.retainAll(keys)
-    }
 
     private fun clear(image: ImageBitmap) {
         image.asAndroidBitmap().eraseColor(android.graphics.Color.TRANSPARENT)
@@ -102,7 +198,6 @@ class SpriteCache(private val maxBytes: Long = 40L * 1024 * 1024) {
      * the art must be drawn live instead (it animates, or the picture is not made yet).
      */
     fun DrawScope.stamp(key: Any, bounds: Rect, t: Float, draw: DrawScope.(t: Float) -> Unit): Boolean {
-        if (key in live) return false
         if (key in live) return false
         val sprite = sprites[key] ?: make(key, bounds, t, draw) ?: return false
         drawImage(sprite.image, Offset(sprite.left, sprite.top))
@@ -180,16 +275,31 @@ class SpriteCache(private val maxBytes: Long = 40L * 1024 * 1024) {
         return Sprite(cropped.asImageBitmap().also { it.prepareToDraw() }, left + x0, top + y0)
     }
 
+    /** Lets go of every picture; call when the scene leaves the screen. */
     fun clear() {
         sprites.clear()
         live.clear()
-        slow.clear()
+        releaseSlow()
         bytes = 0L
     }
 
-    private companion object {
-        const val MAX_NEW_PER_FRAME = 3
-        const val MAX_REFRESH_PER_FRAME = 3
-        const val MAX_SIDE = 2400
+    companion object {
+        /**
+         * Keep the slow pictures as layers on the graphics card instead of bitmaps. Off: on the emulator
+         * (1 October 2026, RTX 3060 behind the GL translator) layers were no faster and the big-house garden
+         * dropped from 60 to 43 frames a second. Try `--es layers on` on a real tablet before turning it on.
+         */
+        @Volatile
+        var useLayers = false
+
+        private const val MAX_NEW_PER_FRAME = 3
+        private const val MAX_REFRESH_PER_FRAME = 8
+
+        /** Time a frame may spend on new slow pictures before the rest wait for the next frame. */
+        private const val REFRESH_BUDGET_NANOS = 3_000_000L
+
+        /** Frames a slow picture may go unused before it is forgotten. */
+        private const val FORGET_FRAMES = 240L
+        private const val MAX_SIDE = 2400
     }
 }

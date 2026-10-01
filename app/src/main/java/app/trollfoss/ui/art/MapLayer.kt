@@ -8,7 +8,9 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import app.trollfoss.domain.PlaceId
+import app.trollfoss.domain.Festival
 import app.trollfoss.domain.MineHouse
+import app.trollfoss.domain.Season
 import app.trollfoss.domain.Weather
 import kotlin.math.ceil
 import kotlin.math.max
@@ -39,27 +41,29 @@ class MapLayer internal constructor(
     internal val g: MapGeo,
     internal val kit: LiveKit,
     internal val mine: MineHouse,
+    internal val season: Season = Season.SUMMER,
+    internal val festival: Festival = Festival.NONE,
 )
 
 /** The pen width for a map [heightPx] tall: the same on every screen. */
 internal fun mapPenWidth(heightPx: Float): Float = max(1.4f, heightPx * 0.0034f)
 
 /** Draws the still layers into new bitmaps. Slow (a second or two on a phone): call it off the main thread. */
-internal fun buildMapLayer(w: Int, h: Int, night: Float, weather: Weather, rainbow: Float, tunnel: Boolean = false, mine: MineHouse = MineHouse()): MapLayer {
+internal fun buildMapLayer(w: Int, h: Int, night: Float, weather: Weather, rainbow: Float, tunnel: Boolean = false, mine: MineHouse = MineHouse(), season: Season = Season.SUMMER, festival: Festival = Festival.NONE): MapLayer {
     val g = mapGeo(w.toFloat(), h.toFloat())
     val lw = mapPenWidth(h.toFloat())
-    val kit = LiveKit(g, lw, night, weather, rainbow)
+    val kit = LiveKit(g, lw, night, weather, rainbow, season)
     var sky: ImageBitmap? = null
     var image: ImageBitmap? = null
     try {
         val size = Size(w.toFloat(), h.toFloat())
         val skyBitmap = ImageBitmap(w, ceil(h * 0.5f).toInt() + 1)
         CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, Canvas(skyBitmap), size) {
-            drawMapSky(this, g.w, g.h, lw, night, weather, rainbow)
+            drawMapSky(this, g.w, g.h, lw, night, weather, rainbow, season)
         }
         val bitmap = ImageBitmap(w, h)
         CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, Canvas(bitmap), size) {
-            drawMapFront(this, g, lw, night, weather, rainbow, tunnel, mine)
+            drawMapFront(this, g, lw, night, weather, rainbow, tunnel, mine, season, festival)
         }
         kit.findHiddenRiver(bitmap)
         sky = skyBitmap
@@ -68,12 +72,12 @@ internal fun buildMapLayer(w: Int, h: Int, night: Float, weather: Weather, rainb
         sky = null
         image = null
     }
-    return MapLayer(w, h, night, weather, rainbow, tunnel, lw, sky, image, g, kit, mine)
+    return MapLayer(w, h, night, weather, rainbow, tunnel, lw, sky, image, g, kit, mine, season, festival)
 }
 
 /**
  * Draws the map from its cached [layer]: the bitmaps of the still scenery and everything that moves in
- * between and on top, and the glow of the [highlight]ed place. Time of day and weather come from the layer.
+ * between and on top, and the glow of the [highlight]ed place. Time of day, weather and season come from the layer.
  * Until the layer is ready a plain sky and ground are drawn; if the bitmaps could not be made, the whole map
  * is drawn live.
  */
@@ -85,10 +89,10 @@ fun DrawScope.drawIslandMapLive(pen: Pen, highlight: PlaceId?, t: Float, layer: 
     val sky = layer.sky
     val image = layer.image
     if (sky == null || image == null) {
-        drawIslandMap(pen, highlight, t, layer.tunnel, layer.mine)
+        drawIslandMap(Pen(pen.lw, pen.t, layer.night, layer.weather, layer.rainbow, layer.season, layer.festival), highlight, t, layer.tunnel, layer.mine)
         return
     }
-    val live = MapPen(layer.w.toFloat(), layer.h.toFloat(), Pen(layer.lw, t, layer.night, layer.weather, layer.rainbow), t, layer.tunnel, layer.mine)
+    val live = MapPen(layer.w.toFloat(), layer.h.toFloat(), Pen(layer.lw, t, layer.night, layer.weather, layer.rainbow, layer.season, layer.festival), t, layer.tunnel, layer.mine)
     drawImage(sky)
     live.drawLiveSky(this, layer.kit)
     drawImage(image)

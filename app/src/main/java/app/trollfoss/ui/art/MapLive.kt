@@ -40,10 +40,10 @@ internal class AuroraBand(val color: Color, val brush: Brush) {
  * What the live layer needs besides the map geometry, for one size, night and weather: colours,
  * prebuilt shapes, clip regions and scratch paths.
  */
-internal class LiveKit(val g: MapGeo, val lw: Float, val night: Float, val weather: Weather, val rainbow: Float) {
+internal class LiveKit(val g: MapGeo, val lw: Float, val night: Float, val weather: Weather, val rainbow: Float, val season: app.trollfoss.domain.Season = app.trollfoss.domain.Season.SUMMER) {
     val w = g.w
     val h = g.h
-    private val pen = Pen(lw, 0f, night, weather, rainbow)
+    private val pen = Pen(lw, 0f, night, weather, rainbow, season)
     val oc = overcast(pen)
     val stars = ramp((night - 0.2f) / 0.55f) * (1f - oc * 0.8f)
     val aurora = ramp((night - 0.3f) / 0.55f) * (1f - 0.6f * oc)
@@ -182,10 +182,10 @@ internal class LiveKit(val g: MapGeo, val lw: Float, val night: Float, val weath
 private var kitCache: LiveKit? = null
 
 /** A live kit for [g] and these settings, remembered until they change (for [drawIslandMap]). */
-internal fun liveKitFor(g: MapGeo, lw: Float, night: Float, weather: Weather, rainbow: Float): LiveKit {
+internal fun liveKitFor(g: MapGeo, lw: Float, night: Float, weather: Weather, rainbow: Float, season: app.trollfoss.domain.Season = app.trollfoss.domain.Season.SUMMER): LiveKit {
     val c = kitCache
-    if (c != null && c.g === g && c.lw == lw && c.night == night && c.weather == weather && c.rainbow == rainbow) return c
-    return LiveKit(g, lw, night, weather, rainbow).also { kitCache = it }
+    if (c != null && c.g === g && c.lw == lw && c.night == night && c.weather == weather && c.rainbow == rainbow && c.season == season) return c
+    return LiveKit(g, lw, night, weather, rainbow, season).also { kitCache = it }
 }
 
 // ------------------------------------------------------------------------------------- the live pass

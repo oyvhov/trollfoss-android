@@ -766,16 +766,16 @@ internal fun DrawScope.grChandelier(f: Fixture, u: Float, pen: Pen) {
     val swing = f.angle * 57.2958f
     // A glow that pools below it.
     if (on) grGlow(p(0f, -0.1f * sc), 0.32f * u * sc, pen, 0.3f)
-    rotate(swing, p(0f, ceiling - 0.33f)) {
-        // The chain up to the ceiling rose.
-        var y = ceiling - 0.33f
+    rotate(swing, p(0f, ceiling)) {
+        // The chain up to the ceiling rose (the ceiling is at scene height 0, where the floor above begins).
+        var y = ceiling
         val chainBottom = -0.255f * sc
         while (y < chainBottom) {
             val link = p(0f, y)
             drawOval(GrC.brassDark, Offset(link.x - 0.004f * u, link.y), Size(0.008f * u, 0.013f * u), style = Stroke(pen.lw * 1.4f))
             y += 0.011f
         }
-        val rose = Rect(-0.03f * u, (ceiling - 0.342f) * u, 0.03f * u, (ceiling - 0.318f) * u)
+        val rose = Rect(-0.03f * u, (ceiling - 0.004f) * u, 0.03f * u, (ceiling + 0.02f) * u)
         inkedOval(rose, GrC.ivory, pen, shade = false)
         // The brass body: a vase-shaped column.
         val body = Path().apply {

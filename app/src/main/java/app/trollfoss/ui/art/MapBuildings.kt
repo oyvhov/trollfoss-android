@@ -317,7 +317,7 @@ internal class Bx(val d: DrawScope, val m: MapPen, val sc: Float, val yf: Float)
             quadraticTo(x + s * 0.45f, y - s * 0.45f, x + s * 0.45f, y)
             close()
         }
-        d.drawPath(p, c(if (snow) Color(0xFFDDE8F5) else col))
+        d.drawPath(p, c(if (snow) Color(0xFFDDE8F5) else m.pen.blade(col)))
         d.drawPath(p, Ink.line, alpha = 0.7f, style = Stroke(lw * 0.7f, join = StrokeJoin.Round))
     }
 
@@ -333,11 +333,13 @@ internal class Bx(val d: DrawScope, val m: MapPen, val sc: Float, val yf: Float)
         val cy = y - s * 0.78f
         val shade = crownPath(x, cy, r, r * 0.92f, 3)
         val litP = crownPath(x - r * 0.14f, cy - r * 0.16f, r * 0.88f, r * 0.8f, 4)
-        fill(shade, col.darken(0.28f))
-        fill(litP, if (snow) col.lighten(0.5f) else col)
+        // Each tree has its own autumn colour, picked from where it stands.
+        val leaf = if (m.frost) Color(0xFFD3DEE8) else m.leaf(col, ((x * 7f + y * 13f + s * 5f) * 10f).toInt())
+        fill(shade, leaf.darken(if (m.frost) 0.14f else 0.28f))
+        fill(litP, if (m.frost) leaf.lighten(0.5f) else if (snow) col.lighten(0.5f) else leaf)
         d.drawOval(Color.White, Offset(x - r * 0.65f, cy - r * 0.72f), Size(r * 0.5f, r * 0.34f), alpha = 0.22f)
         ink(shade, 1.1f, 0.85f)
-        if (fruit) for (k in 0 until 6) disc(x + r * (-0.6f + 0.25f * k) * 0.9f, cy + r * (0.1f * ((k * 5) % 4) - 0.2f), 0.017f, Color(0xFFE0463A), 0.7f)
+        if (fruit && !snow) for (k in 0 until 6) disc(x + r * (-0.6f + 0.25f * k) * 0.9f, cy + r * (0.1f * ((k * 5) % 4) - 0.2f), 0.017f, m.fruit, 0.7f)
     }
 
     fun pineTree(x: Float, y: Float, s: Float, col: Color = Color(0xFF2E8552)) {
@@ -345,8 +347,9 @@ internal class Bx(val d: DrawScope, val m: MapPen, val sc: Float, val yf: Float)
         val p = Path().apply { addPine(x, y - s * 0.06f, s * 0.52f, s * 0.94f) }
         val ps = Path().apply { addPineShade(x, y - s * 0.06f, s * 0.52f, s * 0.94f) }
         d.drawRect(c(Color(0xFF6E4A33)), Offset(x - s * 0.035f, y - s * 0.12f), Size(s * 0.07f, s * 0.12f))
-        fill(p, if (snow) Color(0xFF3F7F63) else col)
-        fill(ps, (if (snow) Color(0xFF3F7F63) else col).darken(0.26f))
+        val pine = if (snow) Color(0xFF3F7F63) else m.pen.conifer(col)
+        fill(p, pine)
+        fill(ps, pine.darken(0.26f))
         ink(p, 1.1f, 0.9f)
         if (snow) {
             val sp = path(x, y - s, x + s * 0.12f, y - s * 0.78f, x - s * 0.12f, y - s * 0.78f)
@@ -504,10 +507,10 @@ internal fun MapPen.drawPlot(d: DrawScope, g: MapGeo, place: PlaceId) = with(d) 
     val fillC = when (kind) {
         1 -> if (snow) Color(0xFFF1F4FB) else Color(0xFFDCD2BE)
         2 -> if (snow) Color(0xFFE6EBF5) else Color(0xFF9E9CAA)
-        3 -> if (snow) Color(0xFFE8EFF7) else Color(0xFF6DA155)
+        3 -> grass(Color(0xFF6DA155), Color(0xFFE8EFF7))
         4 -> Color(0xFFF7FAFF)
         5 -> Color(0xFFF3DFA8)
-        else -> if (snow) Color(0xFFF1F6FC) else Color(0xFFA3D46C)
+        else -> grass(Color(0xFFA3D46C), Color(0xFFF1F6FC))
     }
     drawPath(pg.top, nt(fillC, 0.5f))
     drawPath(pg.shade, nt(fillC, 0.5f).darken(0.1f), alpha = 0.6f)

@@ -408,6 +408,31 @@ class Engine(
     }
 
     private fun DrawScope.drawPreviews(lw: Float) {
+        // Where a piece of furniture in the hand will settle: a glowing mark on the floor or the wall.
+        for (g in grabs.values) {
+            val f = (g.target as? Target.Furniture)?.fixture ?: continue
+            if (storeZone?.contains(g.finger) == true) continue
+            val spot = sim.designer.settle(place, f)
+            if (abs(spot[0] - f.x) < 0.004f && abs(spot[1] - f.y) < 0.004f) continue
+            val half = f.spec.w / 2f
+            val dash = PathEffect.dashPathEffect(floatArrayOf(dp(8f), dp(6f)), time * dp(20f))
+            val mark = androidx.compose.ui.graphics.Path()
+            if (f.spec.wall) {
+                mark.addRoundRect(androidx.compose.ui.geometry.RoundRect(Rect(sx(spot[0] - half), sy(spot[1] - f.spec.h), sx(spot[0] + half), sy(spot[1])), CornerRadius(dp(8f))))
+            } else {
+                // A slanted patch of floor as wide as the piece and a little deep.
+                val back = 0.035f
+                val slant = back * 0.5f / 0.36f
+                mark.moveTo(sx(spot[0] - half), sy(spot[1] + 0.008f))
+                mark.lineTo(sx(spot[0] + half), sy(spot[1] + 0.008f))
+                mark.lineTo(sx(spot[0] + half + slant), sy(spot[1] - back))
+                mark.lineTo(sx(spot[0] - half + slant), sy(spot[1] - back))
+                mark.close()
+            }
+            drawPath(mark, T.SunTop.copy(alpha = 0.4f))
+            drawPath(mark, Color.White.copy(alpha = 0.9f), style = Stroke(lw * 2.2f))
+            drawPath(mark, T.Sun, style = Stroke(lw * 1.2f, pathEffect = dash))
+        }
         for (p in previews) {
             val c = Offset(sx(p.at.x), sy(p.at.y))
             val pulse = 1f + sin(time * 8f) * 0.12f
@@ -681,6 +706,8 @@ class Engine(
     // ---------------------------------------------------------------------------------- input
 
     fun down(id: Long, at: Offset, uptime: Long) {
+        // A finger on the side panel belongs to the panel, not to the furniture hidden behind it.
+        if (panelPx > 0f && at.x > widthPx - panelPx) return
         val grab = Grab(pick(at), at, uptime, time)
         grab.tracker.addPosition(uptime, at)
         val body = heldBody(grab)
@@ -752,7 +779,7 @@ class Engine(
                     designVersion++
                     host.changed()
                 } else {
-                    putDown(f)
+                    letGo(f)
                 }
             }
         }
@@ -837,7 +864,38 @@ class Engine(
             sim.moveFixture(place, f, f.x + (want[0] - f.x) * follow, f.y + (want[1] - f.y) * follow)
             f.lift = min(1f, f.lift + dt * 6f)
         }
+        // Furniture that was let go glides the last little way to where it belongs, and lands with a click.
+        val each = settling.entries.iterator()
+        while (each.hasNext()) {
+            val (id, spot) = each.next()
+            val f = world.fixtures[id]
+            if (f == null || id in grabbed) {
+                each.remove()
+                continue
+            }
+            grabbed += id
+            val glide = 1f - exp(-22f * dt)
+            sim.moveFixture(place, f, f.x + (spot[0] - f.x) * glide, f.y + (spot[1] - f.y) * glide)
+            if (abs(spot[0] - f.x) < 0.003f && abs(spot[1] - f.y) < 0.003f) {
+                sim.moveFixture(place, f, spot[0], spot[1])
+                each.remove()
+                grabbed -= id
+                host.sfx(Sfx.CLICK, 0.7f, 1.25f)
+                host.haptic()
+                particles.burst(PKind.SPARK, f.x, f.y - f.spec.h / 2, 5, 0.3f, 0.009f)
+                putDown(f)
+            }
+        }
         for (f in world.fixturesIn(place)) if (f.id !in grabbed && f.lift > 0f) f.lift = max(0f, f.lift - dt * 5f)
+    }
+
+    /** Furniture on its way to where it settles (see [app.trollfoss.domain.Designer.settle]), by fixture id. */
+    private val settling = HashMap<Int, FloatArray>()
+
+    /** The child let go of [f]: it settles where a careful hand would have put it, or lands right where it is. */
+    private fun letGo(f: Fixture) {
+        val spot = sim.designer.settle(place, f)
+        if (abs(spot[0] - f.x) > 0.003f || abs(spot[1] - f.y) > 0.003f) settling[f.id] = spot else putDown(f)
     }
 
     private fun putDown(f: Fixture) {
@@ -1030,6 +1088,8 @@ class Engine(
         }
         if (body.y > PlaceId.FRONT) body.y = PlaceId.FRONT
         if (body.y >= place.back) body.ground = body.y
+        // Let go gently just beside a table or a shelf: it was meant for it, so it lands on it and not on the floor.
+        if (body is Thing && hypot(vx, vy) < 1.2f) sim.nudgeOnto(place, body)?.let { body.x = it }
         body.vx = vx
         body.vy = vy
         if (body is Thing) body.vrot = vx * 220f
@@ -2061,6 +2121,18 @@ class Engine(
         drawBag(text, pen)
         if (flash > 0f) drawRect(Color.White.copy(alpha = flash * 0.85f))
         drawNameTagsLate(text)
+        with(sprites) { finish() }
+    }
+
+    /** While the scene is on screen, the moving pictures live on the graphics card (see [SpriteCache]). */
+    fun attach(graphics: androidx.compose.ui.graphics.GraphicsContext) {
+        sprites.graphics = graphics
+    }
+
+    /** The scene left the screen: let go of every picture. */
+    fun detach() {
+        sprites.clear()
+        sprites.graphics = null
     }
 
     private var lateText: List<Body> = emptyList()
@@ -2076,6 +2148,8 @@ class Engine(
     private val prof = LongArray(8)
     private val profTypes = HashMap<String, Long>()
     private var profFrames = 0
+    private var profWorst = 0L
+    private var profOver = 0
     private inline fun <T> timed(slot: Int, key: String? = null, block: () -> T): T {
         if (!app.trollfoss.BuildConfig.DEBUG) return block()
         val t0 = System.nanoTime()
@@ -2092,10 +2166,14 @@ class Engine(
         val names = listOf("back", "fixtures", "bodies", "front", "overlay", "particles", "night", "total")
         val line = names.indices.joinToString(" ") { "${names[it]}=${"%.1f".format(prof[it] / 1e6 / profFrames)}" }
         val top = profTypes.entries.sortedByDescending { it.value }.take(8).joinToString(" ") { "${it.key}=${"%.2f".format(it.value / 1e6 / profFrames)}" }
-        android.util.Log.d("TrollfossPerf", "$place ms/frame: $line | top: $top")
+        // The worst frame and the share of slow frames say more about stutter than the average does.
+        val slow = "worst=${"%.1f".format(profWorst / 1e6)} over16=${profOver * 100 / profFrames}%"
+        android.util.Log.d("TrollfossPerf", "$place ms/frame: $line $slow | top: $top")
         prof.fill(0L)
         profTypes.clear()
         profFrames = 0
+        profWorst = 0L
+        profOver = 0
     }
 
     /** Debug-only: layers to leave out when measuring (1 back, 2 fixtures, 4 bodies, 8 front/particles/night). */
@@ -2172,7 +2250,10 @@ class Engine(
         drawSeasonGrade()
         lateText = list
         if (app.trollfoss.BuildConfig.DEBUG) {
-            prof[7] += System.nanoTime() - t0
+            val spent = System.nanoTime() - t0
+            prof[7] += spent
+            if (spent > profWorst) profWorst = spent
+            if (spent > 16_000_000L) profOver++
             profLog()
         }
     }

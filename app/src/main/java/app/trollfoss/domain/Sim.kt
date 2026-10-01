@@ -567,6 +567,21 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         return restY(place, s, b)
     }
 
+    /**
+     * A thing let go just beside a table or a shelf was meant for it. Returns the x that puts [b] on the nearest
+     * furniture top it almost reached (a little in from the edge), or null when it is already over one, none is
+     * near, or it was put down on the floor.
+     */
+    fun nudgeOnto(place: PlaceId, b: Body): Float? {
+        if (zeroG(place) || b.y >= place.back) return null
+        val tops = surfaces(place).filter { !it.band && !it.interior && it.y >= b.y - 0.003f && it.y - b.y < NUDGE_DROP }
+        if (tops.any { b.x >= it.x1 && b.x <= it.x2 }) return null
+        val reach = NUDGE_REACH + b.w * 0.5f
+        val s = tops.filter { it.x1 - b.x in 0f..reach || b.x - it.x2 in 0f..reach }.minByOrNull { it.y - b.y } ?: return null
+        val inset = min(b.w * 0.35f, (s.x2 - s.x1) / 2f)
+        return if (b.x < s.x1) s.x1 + inset else s.x2 - inset
+    }
+
     /** The piece of furniture straight below [b] with a top it could land on. */
     fun fixtureBelow(place: PlaceId, b: Body): Fixture? {
         val s = surfaces(place).filter { !it.band && b.x >= it.x1 && b.x <= it.x2 && it.y >= b.y - 0.001f }.minByOrNull { it.y } ?: return null
@@ -1807,6 +1822,10 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         const val GROW_SECONDS = 6f
         const val PORTHOLE_VIEWS = 6
         val RIDES = setOf(FixtureType.SLED_HILL, FixtureType.SKI_JUMP)
+        /** How far beside a furniture top a thing may be let go and still land on it, and how far above. */
+        const val NUDGE_REACH = 0.015f
+        const val NUDGE_DROP = 0.25f
+
         val MOVING = setOf(FixtureType.CABLE_CAR, FixtureType.ROCKET_SHIP, FixtureType.SUBMARINE, FixtureType.FERRIS_WHEEL, FixtureType.CAROUSEL, FixtureType.BUMPER_CAR, FixtureType.TRACTOR)
         const val GRAVITY = 5.2f
         const val MAX_THINGS = 70

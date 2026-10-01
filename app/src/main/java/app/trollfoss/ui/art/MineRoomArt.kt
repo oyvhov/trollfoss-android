@@ -293,6 +293,13 @@ internal fun DrawScope.mineInteriorBack(place: PlaceId, st: Stage, pen: Pen, sty
             outsideWall(h, st, pen, b)
         }
     }
+    // Above each room that stands: the room upstairs, or the attic under the child's own roof (see CutawayArt.kt).
+    for (i in 0 until Mine.SLOTS) {
+        if (!standing[i]) continue
+        val over = !upper && h.standing(PlaceId.MINE_UPPER, i)
+        val look = styleOf(if (i == 0) null else h.kind(PlaceId.MINE_UPPER, i), true)
+        cutawayRoom(st, pen, i * 2f + SHIFT, i * 2f + 2f + SHIFT, over, look.wall, look.trim, MineC.roof(h.roofColor), 80 + i)
+    }
     // Per slot: the build frame for empty slots, scaffold and tools for the job at work.
     for (i in 0 until Mine.SLOTS) {
         if (!st.sees(i * 2f, i * 2f + 2f + SHIFT)) continue

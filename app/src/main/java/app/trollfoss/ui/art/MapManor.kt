@@ -352,8 +352,9 @@ private fun Bx.manorTree() {
         val rx = blobs[i * 4 + 2]
         val ry = blobs[i * 4 + 3]
         val sh = crownPath(cx, cy, rx, ry, 20 + i)
-        fill(sh, LEAF.darken(0.28f))
-        fill(crownPath(cx - rx * 0.14f, cy - ry * 0.16f, rx * 0.88f, ry * 0.8f, 30 + i), if (snow) LEAF.lighten(0.5f) else LEAF)
+        val leaf = if (m.season == app.trollfoss.domain.Season.WINTER) Color(0xFFD3DEE8) else m.leaf(LEAF, 2)
+        fill(sh, leaf.darken(if (snow) 0.16f else 0.28f))
+        fill(crownPath(cx - rx * 0.14f, cy - ry * 0.16f, rx * 0.88f, ry * 0.8f, 30 + i), if (snow) leaf.lighten(0.5f) else leaf)
         ink(sh, 1.1f, 0.85f)
     }
     d.drawOval(Color.White, Offset(tx - 0.42f, -2.5f), Size(0.3f, 0.12f), alpha = 0.22f)
@@ -799,7 +800,7 @@ private fun Bx.manorFront() {
         val e = (x - 0.15f) / 2.0f
         return 0.03f + 0.5f * sqrt(max(0f, 1f - e * e))
     }
-    val hedge = Color(0xFF3F9A4E)
+    val hedge = if (snow) Color(0xFFCBD8E4) else m.pen.plant(Color(0xFF3F9A4E))
     val blooms = listOf(Color(0xFFFF8FB8), Color(0xFFFFFFFF), Color(0xFFFFC83D))
     var hx = -1.85f
     var hk = 0

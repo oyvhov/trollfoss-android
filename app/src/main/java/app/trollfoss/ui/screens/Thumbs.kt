@@ -47,6 +47,18 @@ fun DrawScope.drawFixtureThumb(type: FixtureType, variant: Int, box: Rect) {
     }
 }
 
+/**
+ * How far below the middle of its thumb a piece of furniture has its feet, as a fraction of the thumb's side
+ * (see [drawFixtureThumb]): next to nothing for a rug, almost half for a wardrobe.
+ */
+fun fixtureThumbFeet(type: FixtureType): Float {
+    val place = app.trollfoss.domain.House.floors.firstOrNull { it.specOf(type) != null }?.place ?: PlaceId.HOME
+    val spec = Fixture(-1, place, type, 0f, 0f, 0).spec
+    val tall = max(spec.h, 0.05f)
+    val u = min(1f / (spec.w + 0.12f), 1f / (tall + 0.12f)) * 0.92f
+    return (tall / 2f + 0.03f) * u
+}
+
 /** Draws a thing fitted into [box]. */
 fun DrawScope.drawThingThumb(type: ThingType, variant: Int, box: Rect) {
     val s = min(box.width / type.w, box.height / type.h) * 0.78f

@@ -82,6 +82,12 @@ fun PlayScreen(vm: TrollfossViewModel) {
     val scope = rememberCoroutineScope()
     val compact = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp < 520
 
+    val graphics = androidx.compose.ui.platform.LocalGraphicsContext.current
+    androidx.compose.runtime.DisposableEffect(engine, graphics) {
+        engine.attach(graphics)
+        onDispose { engine.detach() }
+    }
+
     LaunchedEffect(engine) {
         var last = withFrameNanos { it }
         while (true) {

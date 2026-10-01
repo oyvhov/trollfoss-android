@@ -1,11 +1,13 @@
 package app.trollfoss.ui.screens
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
@@ -25,6 +27,7 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -32,13 +35,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.trollfoss.audio.Sfx
@@ -53,6 +61,7 @@ import app.trollfoss.ui.art.drawFixtureBack
 import app.trollfoss.ui.art.drawFixtureFront
 import app.trollfoss.ui.art.drawFloorSwatch
 import app.trollfoss.ui.art.drawWallSwatch
+import app.trollfoss.ui.art.lighten
 import app.trollfoss.ui.components.DesignIcons
 import app.trollfoss.ui.components.GameText
 import app.trollfoss.ui.components.IconCanvas
@@ -84,6 +93,16 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
     val currentRoom = engine.visibleRoom
     val glow by animateFloatAsState(if (engine.overStore) 1f else 0f, label = "store glow")
     val tabs = DesignTab.entries.filter { (it != DesignTab.WALL && it != DesignTab.FLOOR) || Decor.decoratable(place) }
+    // The store as a list of its own for every change: the grid below only redraws when it is handed a new list.
+    val stored = remember(version, world.storage.size) { world.storage.toList() }
+    val stickers = world.stickers.size
+    val thumbSide = if (compact) 88.dp else 112.dp
+    // Furniture dropped on the panel flies into the box: open the box, so the child sees where it went.
+    var storedBefore by remember(place) { mutableIntStateOf(stored.size) }
+    LaunchedEffect(stored.size) {
+        if (stored.size > storedBefore) tab = DesignTab.STORE.ordinal
+        storedBefore = stored.size
+    }
     val shape = RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp)
 
     // A slim panel on the right, so the floor with the furniture stays in view.
@@ -99,12 +118,14 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            GameText(SM.furnish.str(), fontSize = 20.sp, color = T.Ink)
+            // The heading names the open tab, so the pictures below get the room a second heading would take.
+            GameText(when (DesignTab.entries[tab]) { DesignTab.FURNITURE -> SM.furnish; DesignTab.WALL -> SM.wallpaper; DesignTab.FLOOR -> SM.flooring; DesignTab.STORE -> SM.storage; DesignTab.TIDY -> SM.tidy }.str(), fontSize = 20.sp, color = T.Ink)
             CloseButton(onClose, size = if (compact) 40.dp else 48.dp)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
             for (t in tabs) {
                 val on = t.ordinal == tab
+                Box {
                 RoundButton(
                     description = when (t) { DesignTab.FURNITURE -> SM.furnish; DesignTab.WALL -> SM.wallpaper; DesignTab.FLOOR -> SM.flooring; DesignTab.STORE -> SM.storage; DesignTab.TIDY -> SM.tidy }.str(),
                     onClick = { tab = t.ordinal },
@@ -118,9 +139,16 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                         DesignTab.TIDY -> DesignIcons.Broom
                     },
                 )
+                // How many pieces wait in the box, ready to come along to another house.
+                if (t == DesignTab.STORE && stored.isNotEmpty()) {
+                    Box(
+                        Modifier.align(Alignment.TopEnd).size(20.dp).background(T.Berry, androidx.compose.foundation.shape.CircleShape).border(2.dp, T.Ink, androidx.compose.foundation.shape.CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) { GameText("${stored.size}", fontSize = 11.sp, style = MaterialTheme.typography.titleMedium, color = Color.White) }
+                }
+                }
             }
         }
-        GameText(when (DesignTab.entries[tab]) { DesignTab.FURNITURE -> SM.furnish; DesignTab.WALL -> SM.wallpaper; DesignTab.FLOOR -> SM.flooring; DesignTab.STORE -> SM.storage; DesignTab.TIDY -> SM.tidy }.str(), fontSize = 18.sp, color = T.Ink)
         if (Decor.rooms(place).size > 1) GameText(roomLabel(world, place, currentRoom).str(), fontSize = 13.sp, color = T.Ink)
 
         Box(Modifier.fillMaxWidth().weight(1f)) {
@@ -130,12 +158,14 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                 DesignTab.FURNITURE -> {
                     val items = remember(place) { Decor.catalogue(place) }
                     LazyVerticalGrid(GridCells.Fixed(2), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        itemsIndexed(items) { _, item ->
-                            val locked = item.stickers > world.stickers.size
-                            Tile(onClick = {
+                        itemsIndexed(items) { index, item ->
+                            val locked = item.stickers > stickers
+                            val hangs = item.type.spec.wall
+                            Tile(look = TileLook.ROOM, tint = index / 2 + index % 2, feet = if (hangs) null else thumbSide * fixtureThumbFeet(item.type), onClick = {
                                 if (locked) feedback.sfx(Sfx.HMM, 0.6f, 0.8f) else engine.addFurniture(item.type, item.variant)
                             }) {
-                                FurnitureThumb(item.type, item.variant, place, locked)
+                                // What hangs on the wall hangs a little higher, clear of the floor.
+                                Box(Modifier.padding(bottom = if (hangs) 22.dp else 0.dp)) { FurnitureThumb(item.type, item.variant, place, locked) }
                                 if (locked) LockBadge(item)
                             }
                         }
@@ -159,7 +189,7 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                     }
                 }
                 DesignTab.STORE -> {
-                    if (world.storage.isEmpty()) {
+                    if (stored.isEmpty()) {
                         // An empty store shows how to fill it: furniture flying into the box.
                         Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             IconCanvas(DesignIcons.Sofa, Modifier.size(56.dp).graphicsLayer { rotationZ = -12f; translationX = 30f })
@@ -167,8 +197,11 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                         }
                     } else {
                         LazyVerticalGrid(GridCells.Fixed(2), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            itemsIndexed(world.storage.toList()) { index, stored ->
-                                Tile(onClick = { engine.addFromStore(index) }) { FurnitureThumb(stored.type, stored.variant, place, false) }
+                            itemsIndexed(stored) { index, item ->
+                                // In the store the furniture just stands there, on a pale pad with no frame round it.
+                                Tile(look = TileLook.SOFT, feet = if (item.type.spec.wall) null else thumbSide * fixtureThumbFeet(item.type), onClick = { engine.addFromStore(index) }) {
+                                    FurnitureThumb(item.type, item.variant, place, false)
+                                }
                             }
                         }
                     }
@@ -193,22 +226,67 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
         }
     }
 }
-/** A square card in the panel. */
+/** How a card is dressed: a little showroom with a wall and a floor, a soft pad with no frame, or a plain swatch. */
+private enum class TileLook { ROOM, SOFT, PLAIN }
+
+/** Wall colours of the showroom cards, one after the other down the panel. */
+private val ROOM_WALLS = listOf(Color(0xFFDDF3E6), Color(0xFFFFE4D2), Color(0xFFDCEEFC), Color(0xFFEAE2FB), Color(0xFFFFF1C4))
+private val ROOM_FLOOR = Color(0xFFE9C99A)
+private val ROOM_FLOOR_LINE = Color(0xFFCDA670)
+
+/**
+ * A square card in the panel. It gives a little under the finger and springs back. A [TileLook.ROOM] card is a
+ * corner of a showroom (the furniture stands on its floor, [tint] picks the wall), a [TileLook.SOFT] card is just
+ * the furniture on a pale pad with its shadow, no frame round it. [feet] is how far below the middle of the card the
+ * furniture stands (null when it hangs on the wall): the floor of the showroom begins just above its feet, so a
+ * rug lies on a wide floor and a wardrobe stands at the back of a narrow one.
+ */
 @Composable
-private fun Tile(chosen: Boolean = false, onClick: () -> Unit, content: @Composable () -> Unit) {
+private fun Tile(chosen: Boolean = false, look: TileLook = TileLook.PLAIN, tint: Int = 0, feet: Dp? = null, onClick: () -> Unit, content: @Composable () -> Unit) {
     val feedback = LocalFeedback.current
+    val source = remember { MutableInteractionSource() }
+    val pressed by source.collectIsPressedAsState()
+    val press by animateFloatAsState(if (pressed) 0.92f else 1f, spring(dampingRatio = 0.45f, stiffness = 600f), label = "tile press")
+    val shape = RoundedCornerShape(18.dp)
     Box(
         Modifier
             .fillMaxWidth().aspectRatio(1f)
-            .clip(RoundedCornerShape(18.dp))
-            .background(if (chosen) T.SunTop else Color.White)
-            .border(if (chosen) 4.dp else 2.5.dp, if (chosen) T.Sun else T.Ink, RoundedCornerShape(18.dp))
-            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+            .graphicsLayer { scaleX = press; scaleY = press }
+            .clip(shape)
+            .background(if (look == TileLook.SOFT) Color.White.copy(alpha = 0.6f) else if (chosen) T.SunTop else Color.White)
+            .drawWithContent {
+                when (look) {
+                    TileLook.ROOM -> drawRoomCard(ROOM_WALLS[tint.mod(ROOM_WALLS.size)], feet?.toPx())
+                    TileLook.SOFT -> feet?.toPx()?.let { drawOval(T.Ink.copy(alpha = 0.12f), Offset(size.width * 0.2f, size.height / 2f + it - size.height * 0.04f), Size(size.width * 0.6f, size.height * 0.08f)) }
+                    TileLook.PLAIN -> Unit
+                }
+                drawContent()
+            }
+            .then(if (look == TileLook.SOFT) Modifier else Modifier.border(if (chosen) 4.dp else 2.5.dp, if (chosen) T.Sun else T.Ink, shape))
+            .clickable(interactionSource = source, indication = null) {
                 feedback.sfx(Sfx.TAP, 0.5f, 1f)
                 onClick()
             },
         contentAlignment = Alignment.Center,
     ) { content() }
+}
+
+/** A corner of a showroom: a painted wall, a skirting board, a wooden floor and the shadow of what stands on it. */
+private fun DrawScope.drawRoomCard(wall: Color, feet: Float?) {
+    val w = size.width
+    val h = size.height
+    val standY = if (feet == null) h * 0.9f else h / 2f + feet
+    val floorY = (standY - h * 0.1f).coerceIn(h * 0.4f, h * 0.8f)
+    drawRect(Brush.verticalGradient(listOf(wall.lighten(0.35f), wall), endY = floorY), size = Size(w, floorY))
+    drawRect(ROOM_FLOOR, Offset(0f, floorY), Size(w, h - floorY))
+    // Floorboards running towards the viewer, and a white skirting board.
+    for (i in 1 until 4) {
+        val x = w * i / 4f
+        drawLine(ROOM_FLOOR_LINE, Offset(x + (x - w / 2f) * 0.1f, floorY), Offset(x + (x - w / 2f) * 0.55f, h), strokeWidth = 1.5.dp.toPx())
+    }
+    drawRect(Color.White, Offset(0f, floorY - 3.dp.toPx()), Size(w, 3.dp.toPx()))
+    drawLine(T.Ink.copy(alpha = 0.25f), Offset(0f, floorY), Offset(w, floorY), strokeWidth = 1.dp.toPx())
+    if (feet != null) drawOval(T.Ink.copy(alpha = 0.13f), Offset(w * 0.2f, standY - h * 0.045f), Size(w * 0.6f, h * 0.09f))
 }
 
 @Composable

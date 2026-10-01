@@ -1,5 +1,85 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **RELEASE 1.2.1 KLARGJORT (2026-10-01, Codex):** Brukaren bad om commit, oppdatert README på GitHub og ny release.
+> Versjon 1.2.1 / kode 4. README har no gjeldande stadnamn, 18 reisemål, 24 stader og 76 glimt,
+> oppdaterte funksjonar og retta lisensformatering. Utgivingsnotat: `docs/release-v1.2.1.md`.
+> Release-arkiv: `dist/release-v1.2.1/`.
+> **Ny emulatorprøve blokkert:** Tunet_Ascii vart starta med `-gpu host`, men WHPX feila med
+> `Failed to setup partition, hr=80070005`; ingen eining kom opp. Ingen emulatordata vart endra.
+> Mobil-/nettbrettkontrollane av same spelendringar frå førre økt er dokumenterte nedanfor.
+> Oppdatering gjennom appen og kontroll på ekte maskinvare er framleis ikkje utførte.
+
+> **NYAST – 1.2.1 UNDER ARBEID (2026-10-01 kveld, Claude Fable 5.1):** lokalt på `main`, **ikkje committa**,
+> ikkje pusha, inga utgåve. Brukaren vil at fokuset alltid er betre UI og oppleving for barna. Planen står i
+> `ROADMAP.md`; endringane i `CHANGELOG.md` under «Ikkje utgjeve».
+>
+> **Gjort og sett på emulator (mobil 2400 × 1080 og nettbrett 1920 × 1200):**
+> - *Årstider på kartet* (brukaren melde at dei mangla): `season` går frå `MapScreen` gjennom `rememberMapLayer`,
+>   `buildMapLayer`, `MapLayer`, `LiveKit` og `MapPen`. `MapPen.snow` er sann ved snøvêr **eller** vinter,
+>   `snowing` berre ved snøvêr, `frost` berre om vinteren. Fargane kjem frå `SeasonKit` (`MapPen.grass`, `leaf`,
+>   `fruit`). Høgtidene (jul, påske, gresskar) er ikkje på kartet enno.
+> - *Møbellageret* (`DesignerPanel.kt`): rutenettet fekk aldri ei ny liste (lambdaen vart hugsa), så lageret stod
+>   stille til fanebyte. No er lista ein verdi per `designVersion`. Lageret opnar seg når noko blir lagt i det, og
+>   lagerknappen har eit tal. `Engine.down` ser bort frå fingrar som startar på sidepanelet (før gjekk trykk på tomme
+>   felt gjennom til møblane bak og la dei i lageret).
+> - *Liggjande skjerm på Android 16-nettbrett*: `android:appCategory="game"` og
+>   `PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY` i manifestet. Utan dei ignorerer Android 16 `screenOrientation`
+>   på skjermar frå 600 dp (appen har `targetSdk` 36) og viser appen ståande med mest himmel. Emulatoren med
+>   `ignoreOrientationRequest=true` viser no appen liggjande i ei ramme; ikkje prøvd på ekte nettbrett.
+> - *Yting* (`SpriteCache.kt`, `Engine.draw`): bileta av det som rører seg (figurar 13–24 Hz, møblar 8 Hz) blir bedne
+>   om under teikninga og laga i `finish()`, dei mest forseinka først, innanfor 3 ms per ramme (alltid minst eitt).
+>   Før: opptil tre per ramme i teiknerekkjefølgje, utan tidsgrense, og dei fremste figurane kunne svelte i fulle rom.
+>   Målt med `-gpu host` (RTX 3060), mobilformat, 20 s per stad, teiknetid på hovudtråden per ramme, før → etter:
+>   Garden 10,6 → 6,0 ms; hagen til Storhuset 7,1 → 2,3; Tivoliet 11,8 → 10,3; Heileberget 11,0 → 3,2;
+>   Havbotnen 7,9 → 4,9. Rammer på 20 s: 1215/1203/1190/1167/1148 → 1214/1212/1176/1210/1202 (60 per sekund = 1200).
+>   Loggen `TrollfossPerf` viser no også `worst` og `over16`.
+> - *Forsøk som er slått av*: bileta som `GraphicsLayer` på grafikkortet (`SpriteCache.useLayers`, debug
+>   `--es layers on`). På emulatoren var det ikkje raskare, og hagen til Storhuset fall frå 60 til 43 bilete i
+>   sekundet. Prøv på ekte nettbrett før det eventuelt blir slått på; elles kan koden fjernast.
+>
+> - *Kartbygningar* (brukaren: «nokon av bygningane på kartet er litt dårlege/stygge»): Mitt hus vart teikna med
+>   heile fasaden pressa inn i landemerkebreidda og utan vindauge (`detail = 0`), altså ei låg brakke. No:
+>   `MineHouse.forMap()` i `MapMine.kt` (høgst to modular, `detail = 1`, `MAP_MINE_SCALE` 1,7), og `mapSpot` for
+>   Mitt hus er flytta til (0,29, 0,36) så taubana ikkje kryssar huset. Butikken (`Bx.shop`) har blått tak, raudt
+>   skiltband og sidevindauge. Brukaren har ikkje sagt kva for bygningar han meinte; spør før fleire blir teikna om.
+> - *Høgtider på kartet*: `MapPen.drawFeast` i `MapArt.kt` (graskar, juletre med pakker, påskeegg ved kvar stad),
+>   `festival` går gjennom `rememberMapLayer`/`buildMapLayer`/`MapLayer` som årstida.
+> - *Møbelmenyen* (brukaren: «kan bli finare enn nokre boksar rundt tingen»): `Tile` i `DesignerPanel.kt` har
+>   `TileLook.ROOM` (vegg i fem pastellfargar, tregolv som byrjar rett over føtene på møbelet, sjå
+>   `fixtureThumbFeet` i `Thumbs.kt`) og `TileLook.BOX` (flyttekasse framfor møbelet), og gir etter ved trykk.
+>
+>   Brukaren ville ikkje ha flyttekasser i lageret («Enklare»), så `TileLook.BOX` er bytt ut med `SOFT`.
+> - *Rom og hus* (brukaren: «alle romma / hus kan bli betre og kulare»): ny fil `ui/art/CutawayArt.kt`, kalla frå
+>   `drawPlaceBack` (`cutaway`) og frå `mineInteriorBack` (`cutawayRoom` per rom som står). Alt over scenehøgd 0 blir
+>   teikna som eit snitt: bjelkelag, så `attic` (loft, tak, himmel), `floorAbove` (hòlrom med mus og hybelkaninar,
+>   og rommet over med møbelbein) eller `flatRoof` (Butikken). Synleg mest på nettbrett (0,47 einingar over taket
+>   på 16:10, 0,76 på 4:3); mobil viser om lag bjelken. Bakgrunnen kostar om lag 1 ms meir per ramme.
+>   Ikkje gjort: Scena, Trollhola, Romstasjonen, loftet i Storhuset. Lysekruna i hallen hang frå høgd −0,33; ho heng
+>   no frå 0.
+> - *Snapp* (brukaren: «bør objekta ha ein liten snap?»): `Designer.settle` (rein regel, fire nye testar i
+>   `DesignerTest`), `Engine.letGo` og gliding i `moveFurniture`, markør i `drawPreviews`. `Sim.nudgeOnto` flyttar
+>   ein ting som blir sleppt roleg like ved sida av ein møbeltopp, inn på han. Ingen snapp flyttar meir enn 0,12.
+>
+> **Kontroll:** 350 einingstestar, `lintDebug` og `assembleDebug` grøne (siste køyring). Alle 24 stadene besøkte på dag i mobilformat
+> og om natta i nettbrettformat, utan krasj (bilete i `screenshots/audit-1.2.1/`, m.a. `kart-fire-arstider.jpg`,
+> `sheet-day-*.jpg`, `sheet-night-*.jpg`; kart og meny i `screenshots/map-buildings/`). Stor skrift er ikkje
+> gjennomgått. Tivoliet er ikkje optimalisert (om lag 10 ms teiknetid, 59 bilete i sekundet på emulatoren).
+>
+> **Viktig om måling:** startar ein emulatoren utan vindauge med `-gpu auto`, vel han SwiftShader
+> (programvare-grafikk); då blir rammetidene 150 ms og oppover uansett kode. Start med `-gpu host` og sjekk
+> `C:\Android\emulator-out.log` (`gles_mode_selected:host`). Dei eldre tala i dette dokumentet (31–34 ms i Storhuset,
+> FocusEvent-ANR ved kald start) kan kome av dette og er ikkje stadfesta på ekte maskinvare.
+> `MusicPlayer.VERSION`/`SoundFx.VERSION` treng **ikkje** aukast: cachen er per lyd- og temanamn, og sidan 1.0.0 er
+> det berre lagt til nye lydar og tema (ingen eksisterande oppskrifter er endra).
+>
+> **Emulatoren:** lagringa er sett tilbake frå `files/kids-audit-original.json`, skjermmål og rotasjon er
+> nullstilte, emulatoren er stoppa. Merk: i den andre økta vart denne kopien teken på nytt etter at appen hadde
+> køyrt litt (SHA-256 `a0d97549…`, ikkje lenger `1aaf94f5…`), og siste gjenoppretting kom frå den same tilstanden
+> (`files/rooms-original.json`). Den nøyaktige tilstanden `1aaf94f5…` er ikkje teken vare på; skilnaden er noko
+> sjølvlagring medan kartet og romma vart viste. `files/tablet-polish-original.json` har SHA `9d97732e…`. For å få plass til installasjon vart dei ti gamle hjelpebygga
+> (`app.trollfoss.kjeller`, `figurar`, `sesong`, `kart`, `oppe`, `hage`, `loft`, `stova`, `bygg`, `kartbase`)
+> avinstallerte med `pm uninstall -k` (dataa deira ligg att). Emulatoren har berre om lag 500 MB ledig.
+
 > **UTGÅVE 1.2.0 PUBLISERT (2026-10-01, Codex):**
 > https://github.com/oyvhov/trollfoss-android/releases/tag/v1.2.0 er offentleg, stabil og nyaste utgåve.
 > Tag `v1.2.0` peikar på `93b46e4994659592922dba85fee8d372e398d5ec`; pakken er `app.trollfoss`,

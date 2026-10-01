@@ -100,12 +100,12 @@ fun MapScreen(vm: TrollfossViewModel) {
         // The still scenery is drawn once into a bitmap (off the main thread); each frame draws only what moves.
         // The secret path from the cellar of Storhuset to Trollhola shows once all five golden keys are found.
         val tunnel = remember(vm.generation, vm.houseKeys) { HouseKeys.TUNNEL in vm.world.flags }
-        val mapLayer = rememberMapLayer(mapWidth, constraints.maxHeight, if (vm.night) 1f else 0f, vm.weather, tunnel = tunnel, house = vm.world.mine)
+        val mapLayer = rememberMapLayer(mapWidth, constraints.maxHeight, if (vm.night) 1f else 0f, vm.weather, tunnel = tunnel, house = vm.world.mine, season = vm.season, festival = vm.festival)
         Box(Modifier.fillMaxSize().horizontalScroll(scroll)) {
         Box(Modifier.width(w).fillMaxHeight()) {
         // The map is its own layer: every frame only it is redrawn, not the labels and buttons over it.
         Canvas(Modifier.fillMaxSize().graphicsLayer()) {
-            val pen = Pen(max(1.4f, size.height * 0.0034f), t, if (vm.night) 1f else 0f, vm.weather)
+            val pen = Pen(max(1.4f, size.height * 0.0034f), t, if (vm.night) 1f else 0f, vm.weather, season = vm.season, festival = vm.festival)
             drawIslandMapLive(pen, target ?: from, t, mapLayer.value)
             val yawn = (t - yawnAt) / 2.4f
             if (yawn in 0f..1f) {

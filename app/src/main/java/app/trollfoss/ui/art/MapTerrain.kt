@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.lerp
 import app.trollfoss.domain.PlaceId
+import app.trollfoss.domain.Season
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.hypot
@@ -977,7 +978,11 @@ internal fun Poly.fAtY(yy: Float): Float {
 
 // ===================================================================================== drawing
 
-private fun MapPen.gc(day: Color, snowC: Color): Color = if (snow) snowC else day
+/** Grass, hills and meadow: they follow the season. */
+private fun MapPen.gc(day: Color, snowC: Color): Color = grass(day, snowC)
+
+/** Sand and river banks: white under snow, a little damp and grey in autumn. */
+private fun MapPen.sc(day: Color, snowC: Color): Color = if (snow) snowC else pen.sandy(day)
 
 /** Sky-ward things: the ranges with layered haze, Heileberget with its snowfields, the waterfall and the nearer mountains. */
 internal fun MapPen.drawFarWorld(d: DrawScope, g: MapGeo) = with(d) {
@@ -1063,7 +1068,7 @@ private fun MapPen.drawSlopePines(d: DrawScope, g: MapGeo, i: Int) {
     val band = g.scatter.slopes.getOrNull(i) ?: return
     with(d) {
         drawPath(band.shade, nt(Color(0xFF1F5C44), 0.5f))
-        drawPath(band.lit, nt(if (snow) Color(0xFF3F7F63) else Color(0xFF2C7A52), 0.5f))
+        drawPath(band.lit, nt(if (snow) Color(0xFF3F7F63) else pen.conifer(Color(0xFF2C7A52)), 0.5f))
         if (snow) drawPath(band.cap, nt(Color.White, 0.4f))
         drawPath(band.lit, Ink.line, alpha = 0.4f, style = Stroke(lw * 0.6f))
     }
@@ -1132,8 +1137,12 @@ internal fun MapPen.drawGround(d: DrawScope, g: MapGeo) = with(d) {
     drawPath(g.meadowDark, nt(gc(Color(0xFF5DA84E), Color(0xFFCBD8EC)), 0.5f), alpha = 0.45f)
     drawPath(g.ticks, nt(gc(Color(0xFF4C9A48), Color(0xFFB4C4DE)), 0.5f), alpha = 0.6f, style = Stroke(lw * 0.8f, cap = StrokeCap.Round))
     if (!snow) {
-        drawPoints(g.daisiesA, PointMode.Points, nt(Color(0xFFFFFFF0), 0.4f), strokeWidth = h * 0.005f, cap = StrokeCap.Round)
-        drawPoints(g.daisiesB, PointMode.Points, nt(Color(0xFFFFD85A), 0.4f), strokeWidth = h * 0.004f, cap = StrokeCap.Round)
+        // Daisies in the meadow; in autumn the same spots are fallen leaves, in spring there are more colours.
+        val a = when (season) { Season.AUTUMN -> SeasonPal.litter[0]; Season.SPRING -> SeasonPal.flowers[2]; else -> Color(0xFFFFFFF0) }
+        val b = when (season) { Season.AUTUMN -> SeasonPal.litter[2]; else -> Color(0xFFFFD85A) }
+        val grow = if (season == Season.SPRING) 1.25f else 1f
+        drawPoints(g.daisiesA, PointMode.Points, nt(a, 0.4f), strokeWidth = h * 0.005f * grow, cap = StrokeCap.Round)
+        drawPoints(g.daisiesB, PointMode.Points, nt(b, 0.4f), strokeWidth = h * 0.004f * grow, cap = StrokeCap.Round)
     }
     for (hill in g.hills) drawHill(this, hill)
     drawFarmHill(this, g)
@@ -1159,13 +1168,13 @@ private fun MapPen.drawFarmHill(d: DrawScope, g: MapGeo) = with(d) {
     val (lit, sh) = hillColors(0)
     drawPath(hill.body, nt(lit, 0.5f))
     drawPath(hill.shade, nt(sh, 0.5f))
-    for (t in g.terraces) {
-        val field = if (snow) Color(0xFFF1F5FC) else t.color
+    for ((ti, t) in g.terraces.withIndex()) {
+        val field = if (snow) Color(0xFFF1F5FC) else pen.field(ti, t.color)
         drawPath(t.top, nt(field, 0.5f))
         if (!snow) drawPath(t.rows, nt(Color(0xFF6E5A36), 0.5f), alpha = 0.38f, style = Stroke(lw * 0.8f, cap = StrokeCap.Round))
         drawPath(t.wall, nt(if (snow) Color(0xFFB8C4DA) else Color(0xFF9B8B75), 0.5f))
         drawPath(t.wall, Ink.line, alpha = 0.6f, style = Stroke(lw * 0.8f, join = StrokeJoin.Round))
-        drawPath(t.lip, nt(if (snow) Color.White else Color(0xFFB9DD6F), 0.5f), alpha = 0.9f, style = Stroke(lw * 1.6f, cap = StrokeCap.Round))
+        drawPath(t.lip, nt(grass(Color(0xFFB9DD6F), Color.White), 0.5f), alpha = 0.9f, style = Stroke(lw * 1.6f, cap = StrokeCap.Round))
         drawPath(t.lip, Ink.line, alpha = 0.45f, style = Stroke(lw * 0.7f))
     }
     drawPath(hill.rim, Ink.line, alpha = 0.75f, style = Stroke(lw * 1.2f, cap = StrokeCap.Round))
@@ -1174,7 +1183,7 @@ private fun MapPen.drawFarmHill(d: DrawScope, g: MapGeo) = with(d) {
 /** Rivers, the pool, the fjord with its cliffs, the beach band and the mouth of the river. */
 internal fun MapPen.drawWaters(d: DrawScope, g: MapGeo) = with(d) {
     // ---- the river
-    val rim = nt(gc(Color(0xFFBFA173), Color(0xFFD7DFEC)), 0.5f)
+    val rim = nt(sc(Color(0xFFBFA173), Color(0xFFD7DFEC)), 0.5f)
     drawPath(g.riverRim, rim)
     drawPath(g.riverRim, Ink.line, alpha = 0.7f, style = Stroke(lw * 1.2f, join = StrokeJoin.Round))
     val deep = nt(if (snow) Color(0xFF8FBCE4) else Color(0xFF2C86C8), 0.5f)
@@ -1185,7 +1194,7 @@ internal fun MapPen.drawWaters(d: DrawScope, g: MapGeo) = with(d) {
     drawPath(g.bankStones, nt(Color(0xFF8C8FA3), 0.5f))
     drawPath(g.bankStonesLit, nt(Color(0xFFB5B8C8), 0.5f))
     drawPath(g.bankStones, Ink.line, alpha = 0.5f, style = Stroke(lw * 0.6f))
-    drawPath(g.reeds, nt(Color(0xFF4F9A48), 0.5f), style = Stroke(lw * 1.1f, cap = StrokeCap.Round))
+    drawPath(g.reeds, nt(pen.blade(Color(0xFF4F9A48)), 0.5f), style = Stroke(lw * 1.1f, cap = StrokeCap.Round))
     drawPoints(g.cattails, PointMode.Points, nt(Color(0xFF8A5A3A), 0.4f), strokeWidth = lw * 2.6f, cap = StrokeCap.Round)
     // ---- the plunge pool
     val p = g.pool
@@ -1211,7 +1220,7 @@ internal fun MapPen.drawWaters(d: DrawScope, g: MapGeo) = with(d) {
     if (n > 0f) drawCircle(Color(0xFFBFE6FF), h * 0.05f, Offset(g.fall.cx, p.top + p.height * 0.1f), alpha = 0.16f * n)
 
     // ---- the fjord
-    val sandC = nt(gc(Color(0xFFF0D9A0), Color(0xFFF7F9FF)), 0.5f)
+    val sandC = nt(sc(Color(0xFFF0D9A0), Color(0xFFF7F9FF)), 0.5f)
     drawPath(g.sandBand, sandC, style = Stroke(h * 0.06f, cap = StrokeCap.Round, join = StrokeJoin.Round))
     drawPath(g.sandBand, nt(Color(0xFFD9BC82), 0.5f), alpha = 0.6f, style = Stroke(h * 0.012f, cap = StrokeCap.Round, join = StrokeJoin.Round))
     val deepSea = nt(Color(0xFF2A62B2), 0.6f)

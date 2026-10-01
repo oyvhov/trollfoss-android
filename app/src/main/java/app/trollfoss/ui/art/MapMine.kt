@@ -24,14 +24,38 @@ internal fun MineHouse.mapSnapshot(): MineHouse = MineHouse().also {
     ground.copyInto(it.ground); upper.copyInto(it.upper)
 }
 
+/** The landmark's width, in the landmark scale of its plot. */
+internal const val MAP_MINE_SCALE = 1.7f
+
+/** How many modules wide the house is on the map at most. */
+private const val MAP_COLUMNS = 2
+
+/**
+ * The house as the map shows it: the child's own walls, roof, door and windows, but never more than [MAP_COLUMNS]
+ * modules wide. A long house squeezed into the landmark's width became a low dark shed; this keeps it a house, with
+ * the rooms it has moved up beside the hall.
+ */
+private fun MineHouse.forMap(): MineHouse = MineHouse().also { m ->
+    m.started = started; m.shape = shape; m.wall = wall; m.roof = roof; m.roofColor = roofColor
+    m.door = door; m.windows = windows; m.chimney = chimney; m.flag = flag; m.upperBuilt = upperBuilt
+    var column = 1
+    for (i in 1 until ground.size) {
+        if (ground[i] <= 0 || column >= MAP_COLUMNS) continue
+        m.ground[column] = ground[i]
+        m.upper[column] = upper[i]
+        column++
+    }
+    m.upper[0] = upper[0]
+}
+
 /**
  * Draws the child's house standing with the middle of its front at ([cx], [base]), about [size] pixels wide, with the
  * map's line width [lw]. The still parts only (no smoke, no flag waving).
  */
-internal fun DrawScope.drawMapMine(h: MineHouse, cx: Float, base: Float, size: Float, lw: Float, night: Float, winter: Boolean) {
+internal fun DrawScope.drawMapMine(h: MineHouse, cx: Float, base: Float, size: Float, lw: Float, night: Float, winter: Boolean, lawn: Color = Color(0xFF6FAE5A)) {
     val pen = Pen(lw)
     // A lawn patch with a stone path.
-    drawOval(Color(0xFF6FAE5A).atNight(night, 0.4f), Offset(cx - size * 0.62f, base - size * 0.07f), Size(size * 1.24f, size * 0.2f))
+    drawOval(lawn.atNight(night, 0.4f), Offset(cx - size * 0.62f, base - size * 0.07f), Size(size * 1.24f, size * 0.2f))
     drawOval(Ink.line.copy(alpha = 0.5f), Offset(cx - size * 0.62f, base - size * 0.07f), Size(size * 1.24f, size * 0.2f), style = pen.thin)
     if (!h.started) {
         // The empty plot: four posts with string, a little shed and a sign.
@@ -49,20 +73,23 @@ internal fun DrawScope.drawMapMine(h: MineHouse, cx: Float, base: Float, size: F
         drawCircle(Color(0xFFFFC83D), size * 0.025f, Offset(cx - size * 0.45f, base - size * 0.13f))
         return
     }
-    val width = max(mineHouseWidth(h), 1.6f)
+    val m = h.forMap()
+    val width = max(mineHouseWidth(m), 1.6f)
     val k = size / width
-    val left = cx - (mineColumns(h) * 1.2f * k) / 2f + (if (h.shape == 2) 0.25f * k else 0f)
-    drawMineHouse(h, left, base, k, pen, night = night, t = 0f, winter = winter, detail = 0)
+    val left = cx - (mineColumns(m) * 1.2f * k) / 2f + (if (m.shape == 2) 0.25f * k else 0f)
+    // Detail 1: with its door and windows, like the other houses on the map.
+    drawMineHouse(m, left, base, k, pen, night = night, t = 0f, winter = winter, detail = 1)
 }
 
 /** The chimney's smoke, drawn live over the still map: [phase] runs from 0 to 1 and wraps. */
 internal fun DrawScope.drawMapMineSmoke(h: MineHouse, cx: Float, base: Float, size: Float, phase: Float) {
     if (!h.started || !h.chimney || h.shape == 2) return
-    val width = max(mineHouseWidth(h), 1.6f)
+    val m = h.forMap()
+    val width = max(mineHouseWidth(m), 1.6f)
     val k = size / width
-    val left = cx - (mineColumns(h) * 1.2f * k) / 2f
+    val left = cx - (mineColumns(m) * 1.2f * k) / 2f
     val x = left + 1.2f * k * 0.78f + 0.2f * k
-    val top = base - mineHouseHeight(h) * k * 0.82f
+    val top = base - mineHouseHeight(m) * k * 0.82f
     for (n in 0 until 3) {
         val p = (phase + n / 3f) % 1f
         drawCircle(Color.White.copy(alpha = 0.7f * (1f - p)), k * (0.03f + 0.05f * p), Offset(x + p * k * 0.14f, top - p * k * 0.3f))

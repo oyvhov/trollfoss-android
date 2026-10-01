@@ -7,26 +7,28 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import app.trollfoss.domain.Weather
 import app.trollfoss.domain.MineHouse
+import app.trollfoss.domain.Festival
+import app.trollfoss.domain.Season
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 /**
  * The cached still layer of the map for a map of [widthPx] × [heightPx] pixels. It is made on a
- * background thread, only when the size, the [night], the [weather], the [house] appearance or the secret [tunnel] path of Storhuset
+ * background thread, only when the size, the [night], the [weather], the [season], the [house] appearance or the secret [tunnel] path of Storhuset
  * (shown once all five golden keys are found) really change, and until it is
  * ready the state is null (or the previous layer, which [drawIslandMapLive] stops using if it no longer fits).
  */
 @Composable
-fun rememberMapLayer(widthPx: Int, heightPx: Int, night: Float, weather: Weather, rainbow: Float = 0f, tunnel: Boolean = false, house: MineHouse): State<MapLayer?> {
+fun rememberMapLayer(widthPx: Int, heightPx: Int, night: Float, weather: Weather, rainbow: Float = 0f, tunnel: Boolean = false, house: MineHouse, season: Season = Season.SUMMER, festival: Festival = Festival.NONE): State<MapLayer?> {
     val state = remember { mutableStateOf<MapLayer?>(null) }
     val nightStep = (night * 20f).roundToInt()
     val rainbowStep = (rainbow * 10f).roundToInt()
     val houseKey = house.hash()
     val snapshot = remember(houseKey) { house.mapSnapshot() }
-    LaunchedEffect(widthPx, heightPx, nightStep, weather, rainbowStep, tunnel, houseKey) {
+    LaunchedEffect(widthPx, heightPx, nightStep, weather, rainbowStep, tunnel, houseKey, season, festival) {
         if (widthPx > 0 && heightPx > 0) {
-            state.value = withContext(Dispatchers.Default) { buildMapLayer(widthPx, heightPx, nightStep / 20f, weather, rainbowStep / 10f, tunnel, snapshot) }
+            state.value = withContext(Dispatchers.Default) { buildMapLayer(widthPx, heightPx, nightStep / 20f, weather, rainbowStep / 10f, tunnel, snapshot, season, festival) }
         }
     }
     return state

@@ -20,11 +20,14 @@ og legg seg til å sove når natta kjem.
 
 <p align="center"><img src="docs/images/trollfoss-skjermbilete.png" alt="Ni av stadene i Trollfoss" /></p>
 
-## 17 stader
+## 18 reisemål og 24 stader å leike
+
+Kartet kan dragast sidelengs og følgjer årstidene, med snø, blomstring, haustfargar og pynt til jul,
+påske og graskartid. Storhuset og Mitt hus har fleire etasjar bak kvart sitt reisemål.
 
 | Stad | Det du kan gjere |
 | --- | --- |
-| **Heime** | Leggje nokon i senga, slå på radioen og danse, lage mat, bade, spyle ting ned i do. |
+| **Familiehuset** | Leggje nokon i senga, slå på radioen og danse, lage mat, bade, spyle ting ned i do. |
 | **Bakeriet** | Bake kake av deig og eple, lage smoothie, hente is og frukt. |
 | **Frisøren** | Klippe, krølle og farge håret, prøve nye klede og hattar. |
 | **Stranda** | Fiske frå brygga, bade, byggje sandslott, ro båt. |
@@ -39,16 +42,20 @@ og legg seg til å sove når natta kjem.
 | **Scena** | Trommer, xylofon og mikrofon – spel i band! Discokule og røykmaskin. |
 | **Havbotnen** | Alt sym. Ubåt, kjempemusling med perle, skipsvrak og ein blekksprut med humor. |
 | **Heileberget** | Det store, lange fjellet: ta taubana opp, rop mot ekko-steinen, møt geitene og plant flagget på toppen. |
+| **Storhuset** | Utforske fire etasjar og ein hage, ta heisen og rutsjebanane, møte roboten Rolf og spøkelset Sture og finne fem gylne nøklar. |
+| **Mitt hus** | Byggje eit eige hus rom for rom, velje tak og fargar, møblere og lage ein etasje til. Dyrke bær, bake og snikre ein gitar. |
+| **Vagstaddalen** | Opne dørene i laftehytta, fiske i elva, sitje ved bålet og møte katten. |
 
 ## Det som gjer det spesielt
 
 - **Humor overalt.** Prompepute, bananskal, pepar som bles hatten av, kake i fjeset, hikke og rap, kiling – og alle ler med.
 - **Ønskjebobler.** Figurane tenkjer på noko dei vil ha. Gi dei det og sjå kva som skjer.
-- **Heimedesignar.** Flytt møblar, hent nye frå katalogen, byt tapet og golv, legg møblar på lager. Kosten ryddar heile staden.
+- **Heimedesignar.** Flytt møblar, hent nye frå katalogen, byt tapet og golv, legg møblar på lager og ta dei med til andre hus. Møblar glir på plass ved veggar og ved sida av kvarandre. Kosten ryddar heile staden.
+- **Meir hus på nettbrett.** Romoversikt gir direkte romval, og over romma kan ein sjå takbjelkar, loft og små dyr. Sidepanelet held leikeområdet og sekken synlege.
 - **Oppdrag og klistremerke.** Tre biletoppdrag om gongen sender deg rundt i bygda. Klistremerka opnar spesialmøblar.
 - **Figurverkstad.** Lag eigne figurar med hud, høgd, frisyre, klede og namn.
 - **Skrå-3D.** Verda er teikna i skrå projeksjon med djupn, skuggar og lys som følgjer tida på døgnet.
-- **73 løynde glimt**, ei oppdagingsbok med oppskrifter, dagens pakke i postkassa – og nokre **løynde overraskingar** som ikkje er nemnde her.
+- **76 løynde glimt**, ei oppdagingsbok med oppskrifter, dagens pakke i postkassa – og nokre **løynde overraskingar** som ikkje er nemnde her.
 - **Dag og natt**, regn, snø, regnboge, nordlys. Kamera og fotoalbum.
 
 <p align="center"><img src="docs/images/trollfoss-sosial.png" width="720" alt="Trollfoss" /></p>
@@ -76,7 +83,13 @@ Ingen reklame, sporing, kjøp eller konto. Alt blir lagra på eininga. Einaste n
 oppdateringssjekken mot GitHub, som kan slåast av. **All grafikk, musikk og lyd er laga i kode** – ingen
 opptak, ingen bilete, ingenting å lisensiere.
 
-## Lisens\n\nTrollfoss er **ikkje open kjeldekode**. Du kan lese koden, installere appen og bruke han privat med barna dine,\nmen ikkje kopiere, endre, dele vidare eller bruke kode, bilete, musikk, namn eller figurar i noko anna utan\nskriftleg løyve. Sjå [LICENSE](LICENSE).\n\n[Meld ein feil](https://github.com/oyvhov/trollfoss-android/issues) · [Endringslogg](CHANGELOG.md) · [Designunderlag](docs/DESIGN.md)
+## Lisens
+
+Trollfoss er **ikkje open kjeldekode**. Du kan lese koden, installere appen og bruke han privat med barna dine,
+men ikkje kopiere, endre, dele vidare eller bruke kode, bilete, musikk, namn eller figurar i noko anna utan
+skriftleg løyve. Sjå [LICENSE](LICENSE).
+
+[Meld ein feil](https://github.com/oyvhov/trollfoss-android/issues) · [Endringslogg](CHANGELOG.md) · [Designunderlag](docs/DESIGN.md)
 
 <details>
 <summary>For utviklarar</summary>

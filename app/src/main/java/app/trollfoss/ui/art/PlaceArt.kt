@@ -35,6 +35,8 @@ fun DrawScope.drawPlaceBack(place: PlaceId, cam: Float, u: Float, pen: Pen, styl
         PlaceId.MANOR_GROUND, PlaceId.MANOR_UPPER, PlaceId.MANOR_ATTIC, PlaceId.MANOR_CELLAR, PlaceId.MANOR_GARDEN -> manorBack(place, st, pen, styles)
         PlaceId.MINE_YARD, PlaceId.MINE_GROUND, PlaceId.MINE_UPPER -> mineBack(place, st, pen, styles)
     }
+    // A doll's house cut through: what is above the ceiling (see CutawayArt.kt).
+    cutaway(place, st, pen)
     seasonBack(place, st, pen)
 }
 

@@ -39,7 +39,7 @@ internal fun MapPen.drawLandmark(d: DrawScope, g: MapGeo, place: PlaceId) {
     if (place == PlaceId.SPACE) return
     val sc = S * depthScale(yf) * landmarkScale(place)
     if (place == PlaceId.MINE_YARD) {
-        mine?.let { d.drawMapMine(it, b.x, b.y, sc * 1.5f, lw, n, snow) }
+        mine?.let { d.drawMapMine(it, b.x, b.y, sc * MAP_MINE_SCALE, lw, n, snow, grass(Color(0xFF6FAE5A), Color(0xFFEAF0FA))) }
         return
     }
     if (place == PlaceId.VAGSTADDALEN) {
@@ -84,7 +84,7 @@ internal fun MapPen.drawLandmarkLive(d: DrawScope, g: MapGeo, place: PlaceId, hl
     val yf = b.y / h
     val sc = S * depthScale(yf) * landmarkScale(place)
     if (place == PlaceId.MINE_YARD) {
-        mine?.let { d.drawMapMineSmoke(it, b.x, b.y, sc * 1.5f, (t * 0.4f) % 1f) }
+        mine?.let { d.drawMapMineSmoke(it, b.x, b.y, sc * MAP_MINE_SCALE, (t * 0.4f) % 1f) }
         return
     }
     d.withTransform({
@@ -439,11 +439,20 @@ private fun Bx.shop() {
     val vy = -0.36f * dep
     shadowHouse(-hw, hw, dep, wallH, 0.02f, false)
     contact(0f, 0.64f)
-    // A flat roof with a parapet, a shaded end wall and the lit front.
+    // A flat blue roof behind a red sign band, a shaded end wall with two windows and the lit front.
+    val roofC = roofRaw(Color(0xFF6FA8DC))
+    val bandC = Color(0xFFE8574A)
     face(Color(0xFFF5E6C8).darken(0.24f), hw, -wallH, hw + vx, -wallH + vy, hw + vx, vy, hw, 0f)
-    face(Color(0xFFE9D7B2), -hw, -wallH, hw, -wallH, hw + vx, -wallH + vy, -hw + vx, -wallH + vy)
-    face(Color(0xFFF5E6C8).darken(0.12f), -hw, -wallH - 0.05f, hw, -wallH - 0.05f, hw, -wallH, -hw, -wallH, w = 1f)
-    box(-hw, -wallH, hw, 0f, Color(0xFFF5E6C8))
+    sideWin(hw, dep, 0.2f, 0.44f, -wallH * 0.74f, -wallH * 0.36f)
+    sideWin(hw, dep, 0.56f, 0.8f, -wallH * 0.74f, -wallH * 0.36f)
+    face(roofC, -hw, -wallH - 0.07f, hw, -wallH - 0.07f, hw + vx, -wallH - 0.07f + vy, -hw + vx, -wallH - 0.07f + vy)
+    // A skylight and a vent on the roof.
+    face(roofC.lighten(0.45f), -0.2f + vx * 0.5f, -wallH - 0.07f + vy * 0.3f, 0.02f + vx * 0.5f, -wallH - 0.07f + vy * 0.3f, 0.02f + vx * 0.82f, -wallH - 0.07f + vy * 0.72f, -0.2f + vx * 0.82f, -wallH - 0.07f + vy * 0.72f, w = 0.9f)
+    box(0.3f + vx * 0.5f, -wallH - 0.15f + vy * 0.5f, 0.42f + vx * 0.5f, -wallH - 0.07f + vy * 0.5f, Color(0xFFD9DEE8), 1f)
+    face(bandC.darken(0.2f), hw, -wallH - 0.07f, hw + vx, -wallH - 0.07f + vy, hw + vx, -wallH + vy, hw, -wallH, w = 1f)
+    face(bandC, -hw, -wallH - 0.07f, hw, -wallH - 0.07f, hw, -wallH, -hw, -wallH, w = 1f)
+    line(-hw + 0.03f, -wallH - 0.035f, hw - 0.03f, -wallH - 0.035f, Color(0xFFFFF3D6), 1.6f)
+    box(-hw, -wallH, hw, 0f, Color(0xFFFFF3DC))
     d.drawRect(c(Color(0xFF6E6A78)), Offset(-hw, -0.035f), Size(2f * hw, 0.035f))
     d.drawRect(Ink.line, Offset(-hw, -0.035f), Size(2f * hw, 0.035f), style = Stroke(lw))
     // The rooftop basket sign on posts.

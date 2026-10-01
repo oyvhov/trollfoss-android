@@ -1,6 +1,21 @@
 # Endringslogg
 
-## Ikkje utgjeve
+## 1.2.1 – Finare hus, levande kart og lettare møblering
+
+- Kartet følgjer årstidene: gyllen bakke og oransje tre om hausten, snø og kvite tre om vinteren, frisk grøn bakke og rosa blomstring om våren.
+- Møbellageret i sidemenyen oppdaterer seg med ein gong. Når eit møbel blir sleppt på sidemenyen, opnar lageret seg, og eit tal på lagerknappen viser kor mange ting som ventar på å bli med til eit anna hus.
+- Trykk på tomme felt i sidemenyen flyttar ikkje lenger møblane som står bak menyen.
+- Møbelmenyen har éi overskrift i staden for to, så det blir plass til fleire bilete.
+- Finare kort i møbelmenyen: kvart møbel står i eit lite utstillingsrom med farga vegg og tregolv (teppe ligg på golvet, bilete heng på veggen). I lageret står tinga på ei lys flate med ein liten skugge, utan ramme. Korta gir etter under fingeren og sprett tilbake.
+- Husa er skorne gjennom som eit dokkehus på nettbrett: over taket i Familiehuset, Bakeriet, Frisøren, Legekontoret og Storhuset er det loft med takbjelkar, kister, ski og eit rundt vindauge, og nokon bur der (ei mus med ost, ei flaggermus, ein edderkopp, og Sture som kikar fram i Storhuset). Der det er ein etasje over, ser ein møbelbeina, ein sovande katt og ei mus som spring mellom golva forbi hybelkaninar. Butikken har flatt tak med vifte, skilt og duer, og over det heile er det tak, pipe, katt på taket og himmel. Mitt hus har det same, med barnet sitt eige tak.
+- Møblar set seg på rett plass: sleppt nær veggen står dei inntil veggen, sleppt halvt inni eit anna møbel står dei kant i kant, og dei held seg på si side av veggen mellom to rom. Bilete heng midt over møbelet under og i same høgd som biletet ved sida av. Ein lysande markør viser kvar møbelet hamnar, og det glir på plass med eit lite klikk.
+- Ein ting som blir sleppt like ved sida av eit bord eller ei hylle, hamnar på bordet i staden for på golvet.
+- Lysekruna i Storhuset heng no frå taket.
+- Mitt hus er eit skikkeleg hus på kartet, med dør, vindauge og etasjar slik barnet har bygd det, i staden for ei låg, mørk brakke. Det står no klar av taubana.
+- Butikken på kartet har fått blått tak, raudt skiltband, sidevindauge og takvindauge.
+- Kartet blir pynta til høgtidene: graskar ved kvar stad i graskartida (dei lyser om natta), juletre med pakker i jula og måla egg i påska.
+- Nettbrett med Android 16 held appen liggjande, også når nettbrettet blir halde ståande.
+- Jamnare bilete i stader med mange figurar og dyr: nye bilete av det som rører seg, blir laga innanfor ei fast tidsramme, dei eldste først.
 
 ## 1.2.0 – Nettbrett, Vagstaddalen og samanhengande leik
 

@@ -300,21 +300,22 @@ internal fun MapPen.drawTreeBand(d: DrawScope, b: TreeBand) = with(d) {
     val trunk = nt(Color(0xFF7A5134), 0.4f)
     drawPath(b.trunks, trunk)
     drawPath(b.pale, nt(Color(0xFFF2EEE6), 0.4f))
-    val pineC = nt(if (snow) Color(0xFF3F7F63) else Color(0xFF2E8552), 0.5f)
+    val pineC = nt(if (snow) Color(0xFF3F7F63) else pen.conifer(Color(0xFF2E8552)), 0.5f)
     drawPath(b.pineLit, pineC)
     drawPath(b.pineShade, pineC.darken(0.25f))
     drawPath(b.pineLit, Ink.line, alpha = 0.55f, style = Stroke(lw * 0.75f, join = StrokeJoin.Round))
     if (snow) drawPath(b.cap, nt(Color.White, 0.3f))
-    val a = nt(if (snow) Color(0xFF6E8F7C) else Color(0xFF5DB04F), 0.5f)
-    val bb = nt(if (snow) Color(0xFF8BA58A) else Color(0xFF9CCB54), 0.5f)
-    drawPath(b.shadeA, a.darken(0.28f))
+    // Leafy crowns follow the year: two greens in summer, orange and gold in autumn, fresh in spring.
+    val a = nt(if (frost) Color(0xFFC6D4DE) else if (snow) Color(0xFF6E8F7C) else leaf(Color(0xFF5DB04F), 0), 0.5f)
+    val bb = nt(if (frost) Color(0xFFDCE6EE) else if (snow) Color(0xFF8BA58A) else leaf(Color(0xFF9CCB54), 3), 0.5f)
+    drawPath(b.shadeA, a.darken(if (frost) 0.14f else 0.28f))
     drawPath(b.litA, a)
-    drawPath(b.shadeB, bb.darken(0.26f))
+    drawPath(b.shadeB, bb.darken(if (frost) 0.12f else 0.26f))
     drawPath(b.litB, bb)
     drawPath(b.hi, Color.White, alpha = if (snow) 0.5f else 0.22f)
     drawPath(b.shadeA, Ink.line, alpha = 0.55f, style = Stroke(lw * 0.75f, join = StrokeJoin.Round))
     drawPath(b.shadeB, Ink.line, alpha = 0.55f, style = Stroke(lw * 0.75f, join = StrokeJoin.Round))
-    if (b.fruit.isNotEmpty()) drawPoints(b.fruit, PointMode.Points, nt(Color(0xFFE0463A), 0.4f), strokeWidth = h * 0.006f, cap = StrokeCap.Round)
+    if (b.fruit.isNotEmpty() && !snow) drawPoints(b.fruit, PointMode.Points, nt(fruit, 0.4f), strokeWidth = h * 0.006f, cap = StrokeCap.Round)
 }
 
 /** The ground work of the infrastructure: plots, label shading, roads, the railway, bridges and lamps. */
@@ -716,8 +717,14 @@ internal fun MapPen.drawLife(d: DrawScope, g: MapGeo, kit: LiveKit) = with(d) {
             val y = 0.45f + 0.5f * hash01(i, 913) + 0.02f * sin(t * 0.8f + i * 1.3f)
             (if (i % 3 == 0) leaves else petals).add(Offset(x * w, y * h))
         }
-        drawPoints(petals, PointMode.Points, nt(Color(0xFFFFC2D8), 0.4f), strokeWidth = h * 0.006f, cap = StrokeCap.Round, alpha = 0.9f * (1f - 0.6f * n))
-        drawPoints(leaves, PointMode.Points, nt(Color(0xFFE8A23A), 0.4f), strokeWidth = h * 0.0055f, cap = StrokeCap.Round, alpha = 0.85f * (1f - 0.6f * n))
+        // Summer has both; autumn is all leaves, spring all petals.
+        val autumn = season == app.trollfoss.domain.Season.AUTUMN
+        val spring = season == app.trollfoss.domain.Season.SPRING
+        val petalC = if (autumn) SeasonPal.litter[1] else Color(0xFFFFC2D8)
+        val leafC = if (spring) Color.White else Color(0xFFE8A23A)
+        val big = if (autumn || spring) 1.3f else 1f
+        drawPoints(petals, PointMode.Points, nt(petalC, 0.4f), strokeWidth = h * 0.006f * big, cap = StrokeCap.Round, alpha = 0.9f * (1f - 0.6f * n))
+        drawPoints(leaves, PointMode.Points, nt(leafC, 0.4f), strokeWidth = h * 0.0055f * big, cap = StrokeCap.Round, alpha = 0.85f * (1f - 0.6f * n))
     }
     // Water sparkle.
     val sp = ArrayList<Offset>(24)
@@ -760,7 +767,7 @@ internal fun MapPen.drawWeatherLife(d: DrawScope, g: MapGeo) = with(d) {
             drawOval(Ink.line, Offset(x - w * 0.07f, y - h * 0.045f), Size(w * 0.14f, h * 0.09f), alpha = 0.05f * (1f - 0.6f * n))
         }
     }
-    if (snow) {
+    if (snowing) {
         val fl = ArrayList<Offset>(60)
         for (i in 0 until 70) {
             val x = wrap(hash01(i, 951) * 1.1f + sin(t * 0.4f + i) * 0.01f, 1.1f) - 0.05f

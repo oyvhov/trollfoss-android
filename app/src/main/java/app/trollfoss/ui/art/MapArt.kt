@@ -14,7 +14,9 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.drawscope.clipPath
 import app.trollfoss.domain.PlaceId
+import app.trollfoss.domain.Festival
 import app.trollfoss.domain.MineHouse
+import app.trollfoss.domain.Season
 import app.trollfoss.domain.Txt
 import app.trollfoss.ui.S
 import app.trollfoss.domain.Weather
@@ -29,7 +31,8 @@ import kotlin.math.sin
  */
 fun mapSpot(place: PlaceId): Offset = when (place) {
     PlaceId.MOUNTAIN -> Offset(0.17f, 0.25f)
-    PlaceId.MINE_YARD, PlaceId.MINE_GROUND, PlaceId.MINE_UPPER -> Offset(0.35f, 0.36f)
+    // Left of the cable car, so the cable and its pylon do not cross the child's house.
+    PlaceId.MINE_YARD, PlaceId.MINE_GROUND, PlaceId.MINE_UPPER -> Offset(0.29f, 0.36f)
     PlaceId.LAB -> Offset(0.62f, 0.25f)
     PlaceId.SPACE -> Offset(0.85f, 0.19f)
     PlaceId.TIVOLI -> Offset(0.12f, 0.54f)
@@ -65,26 +68,26 @@ internal const val MAP_WIDTH_FACTOR = 1.6f
  */
 fun DrawScope.drawIslandMap(pen: Pen, highlight: PlaceId?, t: Float, tunnel: Boolean = false, mine: MineHouse = MineHouse()) {
     val g = mapGeo(size.width, size.height)
-    val kit = liveKitFor(g, pen.lw, pen.night, pen.weather, pen.rainbow)
+    val kit = liveKitFor(g, pen.lw, pen.night, pen.weather, pen.rainbow, pen.season)
     val live = MapPen(size.width, size.height, pen, t, tunnel, mine)
-    drawMapSky(this, g.w, g.h, pen.lw, pen.night, pen.weather, pen.rainbow)
+    drawMapSky(this, g.w, g.h, pen.lw, pen.night, pen.weather, pen.rainbow, pen.season)
     live.drawLiveSky(this, kit)
-    drawMapFront(this, g, pen.lw, pen.night, pen.weather, pen.rainbow, tunnel, mine)
+    drawMapFront(this, g, pen.lw, pen.night, pen.weather, pen.rainbow, tunnel, mine, pen.season, pen.festival)
     live.drawLive(this, g, kit, highlight)
 }
 
 /** The sky that never moves: the gradient with the sun and moon. Only the top half of the map. */
-internal fun drawMapSky(d: DrawScope, w: Float, h: Float, lw: Float, night: Float, weather: Weather, rainbow: Float) {
+internal fun drawMapSky(d: DrawScope, w: Float, h: Float, lw: Float, night: Float, weather: Weather, rainbow: Float, season: Season = Season.SUMMER) {
     // The still layers are drawn at time zero. Nothing in them may depend on time.
-    MapPen(w, h, Pen(lw, 0f, night, weather, rainbow), 0f).drawSkyStill(d)
+    MapPen(w, h, Pen(lw, 0f, night, weather, rainbow, season), 0f).drawSkyStill(d)
 }
 
 /**
  * The scenery that never moves, from the mountains to the vignette. The sky is left empty (transparent)
  * where nothing covers it, so the clouds and the northern lights can pass behind the mountains.
  */
-internal fun drawMapFront(d: DrawScope, g: MapGeo, lw: Float, night: Float, weather: Weather, rainbow: Float, tunnel: Boolean = false, mine: MineHouse = MineHouse()) {
-    val m = MapPen(g.w, g.h, Pen(lw, 0f, night, weather, rainbow), 0f, tunnel, mine)
+internal fun drawMapFront(d: DrawScope, g: MapGeo, lw: Float, night: Float, weather: Weather, rainbow: Float, tunnel: Boolean = false, mine: MineHouse = MineHouse(), season: Season = Season.SUMMER, festival: Festival = Festival.NONE) {
+    val m = MapPen(g.w, g.h, Pen(lw, 0f, night, weather, rainbow, season, festival), 0f, tunnel, mine)
     m.drawFarWorld(d, g)
     m.drawGround(d, g)
     m.drawWaters(d, g)
@@ -93,13 +96,20 @@ internal fun drawMapFront(d: DrawScope, g: MapGeo, lw: Float, night: Float, weat
     m.drawCableStatic(d, g)
     // The secret path is a magic hint laid over the whole scene: it must not hide behind the tower or the trees.
     if (tunnel) m.drawTunnelPath(d, g)
+    m.drawFeast(d, g)
     m.drawFinish(d)
 }
 
 /** Everything the map needs for one frame. */
 internal class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float, val tunnel: Boolean = false, val mine: MineHouse? = null) {
     val n = pen.night
-    val snow = pen.weather == Weather.SNOW
+    val season = pen.season
+
+    /** The land lies white: it is snowing, or it is winter. */
+    val snow = pen.weather == Weather.SNOW || season == Season.WINTER
+
+    /** Flakes in the air: only when the weather says so. */
+    val snowing = pen.weather == Weather.SNOW
     val rain = pen.weather == Weather.RAIN
     val oc = overcast(pen)
     val lw = pen.lw
@@ -110,6 +120,23 @@ internal class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float, va
     private val hazeColor = lerp(Color(0xFFCFE4F6), Color(0xFF2E2A66), n)
 
     fun nt(c: Color, k: Float = 0.55f): Color = c.atNight(n, k)
+
+    /** Grass and meadow through the year (white when [snow] lies): fresh in spring, dry and golden in autumn. */
+    fun grass(day: Color, snowC: Color): Color = if (snow) snowC else pen.ground(day)
+
+    /** A leafy crown through the year: fresh in spring, one of the autumn colours in autumn ([k] picks which). */
+    fun leaf(c: Color, k: Int = 0): Color = when (season) {
+        Season.AUTUMN -> recolor(c, SeasonPal.autumn[k.mod(SeasonPal.autumn.size)], 0.9f)
+        // Every third kind of tree is in blossom, so spring shows at a glance.
+        Season.SPRING -> if (k.mod(3) == 0 && k != 0) recolor(c, SeasonPal.blossom[2], 0.85f) else pen.foliage(c)
+        else -> c
+    }
+
+    /** True in winter itself (not just snowy weather): the leafy trees stand white with frost. */
+    val frost: Boolean get() = season == Season.WINTER
+
+    /** What dots a fruit tree: blossom in spring, apples the rest of the year. */
+    val fruit: Color get() = if (season == Season.SPRING) SeasonPal.blossom[0] else Color(0xFFE0463A)
 
     private var scratchPath: Path? = null
 
@@ -164,6 +191,39 @@ internal fun MapPen.drawDepthPassStill(d: DrawScope, g: MapGeo) {
         while (li < order.size && g.bases[order[li]]!!.y < yMax) {
             drawLandmark(d, g, order[li])
             li++
+        }
+    }
+}
+
+/**
+ * The village dressed for the feast of the day: pumpkins by every door at pumpkin time (the carved ones glow at
+ * night), a little Christmas tree with presents at Christmas, painted eggs in the grass at Easter. They stand in
+ * front of each place on the ground, so the sea, the sky and the two mountains go without.
+ */
+internal fun MapPen.drawFeast(d: DrawScope, g: MapGeo) = with(d) {
+    val feast = pen.festival
+    if (feast == Festival.NONE) return@with
+    val skip = setOf("SPACE", "UNDERWATER", "HEILEBERGET", "MOUNTAIN")
+    for ((i, place) in PlaceId.entries.filter { it.onMap && it.name !in skip }.withIndex()) {
+        val b = g.bases[place] ?: continue
+        val sc = S * depthScale(b.y / h)
+        // To the left of the door on every other place, to the right on the rest.
+        val side = if (i % 2 == 0) -1f else 1f
+        val x = b.x + side * sc * 0.78f
+        val y = b.y + sc * 0.2f
+        when (feast) {
+            Festival.PUMPKIN -> {
+                pumpkin(Offset(x, y), sc * 0.24f, pen, face = true, glow = n, night = n)
+                pumpkin(Offset(x + side * sc * 0.26f, y + sc * 0.03f), sc * 0.17f, pen, face = false, glow = 0f, night = n)
+            }
+            Festival.CHRISTMAS -> {
+                xmasTree(Offset(x, y), sc * 0.62f, pen)
+                presents(Offset(x + side * sc * 0.2f, y + sc * 0.04f), sc * 0.3f, pen)
+            }
+            Festival.EASTER -> for (k in 0 until 3) {
+                egg(Offset(x + side * k * sc * 0.17f, y + sc * 0.03f * (k % 2)), sc * (0.19f - 0.02f * k), pen, i + k)
+            }
+            Festival.NONE -> Unit
         }
     }
 }

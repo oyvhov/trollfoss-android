@@ -19,6 +19,7 @@
         android:label="@string/app_name"
         android:supportsRtl="false"
         android:theme="@style/Theme.Trollfoss"
+        android:appCategory="game"
         android:enableOnBackInvokedCallback="true">
 
         <provider
@@ -31,13 +32,20 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- A dollhouse is wide: the scenes are built for landscape on phones and tablets alike. -->
+        <!--
+            A dollhouse is wide: the scenes are built for landscape on phones and tablets alike. From
+            Android 16 a tablet ignores screenOrientation unless the app is a game (appCategory above) or
+            asks to keep it (the property below); without them a tablet held upright shows mostly sky.
+        -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="sensorLandscape"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|uiMode"
             android:resizeableActivity="true">
+            <property
+                android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY"
+                android:value="true" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
