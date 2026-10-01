@@ -1,5 +1,13 @@
 # Endringslogg
 
+## 1.1.0 – Storhuset, Mitt hus og fire årstider
+
+- Storhuset: eit stort hus med fire etasjar og ein hage (Storstova, Andre høgda, Loftet, Kjellaren, Hagen), trapp, heis, rutsjebanar, brannstolpe, luker og hemmelege dører, fem gylne nøklar som opnar tunnelen til Trollhola, mørke etasjar med lommelykt, roboten Rolf og spøkelset Sture. Huset ligg på kartet.
+- Mitt hus: bygg ditt eige hus med mal, rom for rom, ein etasje til og utsjånad. Eit nytt spel startar på tomta.
+- Sesongar etter dato (eller val på foreldresida) og pynt til jul, påske og gresskartid.
+- Mindre knappar på mobil, med ein Meir-meny.
+- 73 løynde glimt, nye lydar, musikk og oppdrag.
+- Lisens: alle rettar reserverte. Betre notatvising i oppdateringspanelet.
 ## 1.0.1 – under arbeid
 
 - Foreldresida viser utgivingsnotatet som rein tekst: utan bilete, HTML og Markdown-teikn, kutta mellom ord
