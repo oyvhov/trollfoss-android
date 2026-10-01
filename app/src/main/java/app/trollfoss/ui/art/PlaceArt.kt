@@ -30,6 +30,7 @@ fun DrawScope.drawPlaceBack(place: PlaceId, cam: Float, u: Float, pen: Pen, styl
         PlaceId.DOCTOR -> doctorBack(st, pen, styles)
         PlaceId.STAGE -> stageBack(st, pen, styles)
         PlaceId.UNDERWATER -> underwaterBack(st, pen)
+        else -> mountainBack(st, pen)
     }
 }
 
