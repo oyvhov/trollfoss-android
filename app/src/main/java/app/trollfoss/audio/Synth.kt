@@ -24,6 +24,7 @@ enum class Sfx {
     // ---- upper floor ----
 
     // ---- attic ----
+    AT_CREAK, AT_WIND, AT_SCRATCH, AT_OOO, AT_SPRING, AT_KNIT, AT_DONG, AT_COINS,
 
     // ---- cellar ----
 
@@ -338,6 +339,49 @@ object Synth {
         // ---- Storhuset upper floor ----
 
         // ---- Storhuset attic ----
+        // Old wood that creaks up and down: the rocking horse and the trunk lid.
+        Sfx.AT_CREAK -> listOf(
+            Tone(150.0, 0.0, 0.3, 0.3, buzzy, decay = 4.0, slideTo = 215.0, vibrato = 1.8, vibratoHz = 26.0, attack = 0.03),
+            Tone(215.0, 0.27, 0.32, 0.26, buzzy, decay = 4.0, slideTo = 138.0, vibrato = 1.8, vibratoHz = 24.0, attack = 0.03),
+            Noise(0.0, 0.55, 0.07, 800.0, 380.0, decay = 4.0, seed = 31),
+        )
+        // A gust through the old roof, soft and a little silly.
+        Sfx.AT_WIND -> listOf(
+            Noise(0.0, 1.4, 0.4, 380.0, 950.0, swell = true, seed = 32),
+            Noise(0.1, 1.2, 0.22, 950.0, 520.0, swell = true, seed = 33),
+            Tone(300.0, 0.0, 1.4, 0.05, hum, decay = 0.5, slideTo = 390.0, vibrato = 0.6, vibratoHz = 4.0, attack = 0.4),
+        )
+        // The needle skips across the record.
+        Sfx.AT_SCRATCH -> listOf(
+            Noise(0.0, 0.14, 0.5, 3200.0, 600.0, decay = 18.0, seed = 34),
+            Tone(900.0, 0.0, 0.16, 0.3, buzzy, decay = 14.0, slideTo = 200.0),
+            Crackle(0.0, 0.3, 0.45, 0.3, seed = 35),
+        )
+        // A friendly ghost: «ooOOoo», never scary.
+        Sfx.AT_OOO -> listOf(
+            Tone(330.0, 0.0, 0.7, 0.4, vowelO, decay = 1.6, slideTo = 500.0, vibrato = 0.9, vibratoHz = 6.0, attack = 0.12),
+            Tone(500.0, 0.45, 0.6, 0.35, vowelO, decay = 2.5, slideTo = 300.0, vibrato = 0.9, vibratoHz = 6.0, attack = 0.05),
+        )
+        // The toy in the box springs out: «doi-oi-oing».
+        Sfx.AT_SPRING -> listOf(
+            Tone(220.0, 0.0, 0.1, 0.4, pluck, decay = 12.0, slideTo = 700.0),
+            Tone(700.0, 0.09, 0.4, 0.4, soft, decay = 5.0, slideTo = 300.0, vibrato = 1.2, vibratoHz = 22.0),
+            Tone(420.0, 0.3, 0.3, 0.25, soft, decay = 7.0, slideTo = 560.0, vibrato = 1.0, vibratoHz = 24.0),
+        )
+        // Knitting needles: tick, tack, tick, tack.
+        Sfx.AT_KNIT -> listOf(0.0, 0.09, 0.19, 0.27, 0.39, 0.47).mapIndexed { i, start ->
+            Tone(if (i % 2 == 0) 1500.0 else 1150.0, start, 0.04, 0.3, pluck, decay = 60.0)
+        }
+        // The deep stroke of the grandfather clock.
+        Sfx.AT_DONG -> listOf(
+            Tone(196.0, 0.0, 1.5, 0.55, bell, decay = 2.2),
+            Tone(293.7, 0.0, 1.1, 0.2, bell, decay = 3.0),
+            Tone(98.0, 0.0, 1.2, 0.25, soft, decay = 2.8),
+        )
+        // A shower of coins on coins.
+        Sfx.AT_COINS -> (0 until 9).map { i ->
+            Tone(2200.0 + (i * 137 % 1300), i * 0.045, 0.2, 0.2, bell, decay = 12.0)
+        }
 
         // ---- Storhuset cellar ----
 
