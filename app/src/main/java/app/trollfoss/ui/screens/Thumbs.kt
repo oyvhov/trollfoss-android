@@ -24,6 +24,7 @@ import app.trollfoss.ui.art.drawFixtureBack
 import app.trollfoss.ui.art.drawFixtureFront
 import app.trollfoss.ui.art.drawPerson
 import app.trollfoss.ui.art.drawThing
+import app.trollfoss.ui.art.groundShadow
 import kotlin.math.max
 import kotlin.math.min
 
@@ -58,7 +59,11 @@ fun DrawScope.drawSpeciesThumb(species: Species, box: Rect, look: Look = Look())
     val h = box.height * 0.86f
     val pen = Pen(max(1.2f, h * 0.012f))
     translate(box.center.x, box.bottom - box.height * 0.06f) {
-        drawPerson(species, look, Pose.STAND, PersonAnim(), h, pen, false, seed = 0.3f)
+        // Sture floats: his shadow stays on the ground.
+        if (species == Species.GHOST) groundShadow(0f, 0f, h * 0.55f)
+        // The plain default look would be the third colour for them; their first is the friendly one.
+        val shown = if ((species == Species.ROBOT || species == Species.GHOST) && look == Look()) Look(skin = 0) else look
+        drawPerson(species, shown, Pose.STAND, PersonAnim(), h, pen, false, seed = 0.3f)
     }
 }
 

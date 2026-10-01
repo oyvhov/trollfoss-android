@@ -30,6 +30,7 @@ class Life(private val sim: Sim, private val random: Random) {
         val swimming = sim.underwater(place)
         for (p in people) {
             if (!zeroG && !swimming) walk(place, p, dt)
+            sim.figurar.step(place, p, people, dt)
             val a = p.anim
             val wish = a.wish
             if (wish != null) {
@@ -123,7 +124,8 @@ class Life(private val sim: Sim, private val random: Random) {
             }
         }
         if (folk && world.night && p.anim.pose != Pose.LIE && hasBed(place)) options += 4f to { Wish(WishKind.SLEEP) }
-        if (folk && world.fixturesIn(place).any { it.type == FixtureType.RADIO && !it.on }) options += 1f to { Wish(WishKind.MUSIC) }
+        // The robot butler would love a little music too: he dances, one arm on the tray.
+        if ((folk || p.species == Species.ROBOT) && world.fixturesIn(place).any { it.type == FixtureType.RADIO && !it.on }) options += 1f to { Wish(WishKind.MUSIC) }
         if (people.count { it.species == Species.FOLK } > 1 && people.none { it !== p && near(place, p, it) }) {
             options += (if (folk) 1.5f else 0.5f) to { Wish(WishKind.FRIEND) }
         }
@@ -137,10 +139,12 @@ class Life(private val sim: Sim, private val random: Random) {
     }
 
     /** What a figure could sensibly wish for: food for everyone, hats and toys for folk, balls for pets. */
-    private fun wants(p: Person, type: ThingType): Boolean {
+    internal fun wants(p: Person, type: ThingType): Boolean {
         if (type.potion || type == ThingType.DOUGH || type == ThingType.EGG || type == ThingType.GIFT) return false
         return when (p.species) {
-            Species.FOLK, Species.GHOST -> type.edible || type.cat == Cat.HAT || type.cat == Cat.GLASSES || type.cat == Cat.TOY
+            Species.FOLK -> type.edible || type.cat == Cat.HAT || type.cat == Cat.GLASSES || type.cat == Cat.TOY
+            // The ghost has no tummy: he sniffs food and is puzzled. He loves hats, glasses and toys (and the sheet-covered).
+            Species.GHOST -> type.cat == Cat.HAT || type.cat == Cat.GLASSES || type.cat == Cat.TOY
             // The robot butler likes tools and things to tidy; it has no stomach.
             Species.ROBOT -> type.cat == Cat.TOOL || type.cat == Cat.HAT || type.cat == Cat.TOY
             Species.DOG, Species.CAT -> type == ThingType.BALL || type == ThingType.FISH || type == ThingType.SAUSAGE || type == ThingType.GRILLED_SAUSAGE
@@ -357,6 +361,9 @@ class Life(private val sim: Sim, private val random: Random) {
         Species.CHICKEN, Species.PUFFIN -> 0.07f
         Species.COW, Species.SHEEP -> 0.05f
         Species.HORSE, Species.DOG, Species.GOAT -> 0.11f
+        // Rolf takes small, careful steps; Sture drifts.
+        Species.ROBOT -> 0.09f
+        Species.GHOST -> 0.065f
         else -> 0.08f
     }
 

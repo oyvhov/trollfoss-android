@@ -185,6 +185,9 @@ class PersonAnim {
     var ink = 0f
     /** Seconds left of a helpless giggle fit from tickling. */
     var tickle = 0f
+
+    /** Seconds left of a dusty «ah … ah …» (Sture's own sneezes, see [Figurar]); the dust flies when it ends. */
+    var achoo = 0f
 }
 
 /**

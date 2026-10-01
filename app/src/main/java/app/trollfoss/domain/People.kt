@@ -83,6 +83,12 @@ object Palette {
     /** Scales for the dragon. */
     val scales = intArrayOf(0xFF5BD68A.toInt(), 0xFFFF8A5B.toInt(), 0xFF7FB0FF.toInt(), 0xFFC97BFF.toInt())
 
+    /** Shells for Rolf the robot butler: mint, butter, coral, sky and lilac (five, so look 10 is the mint one). */
+    val robots = intArrayOf(0xFF5FCDBE.toInt(), 0xFFF3C75B.toInt(), 0xFFF08A86.toInt(), 0xFF6DB4F0.toInt(), 0xFFB79BF0.toInt())
+
+    /** Sheets for Sture the ghost: blue-white, mint-white and lilac-white (three, so look 9 is the blue-white one). */
+    val ghosts = intArrayOf(0xFFEAF5FF.toInt(), 0xFFE4F8EC.toInt(), 0xFFF0E8FF.toInt())
+
     /** Smoothie, slime and gem colours; the first six are the fruit colours in [ThingType.FRUITS] order. */
     val juice = intArrayOf(
         0xFF8BD450.toInt(), 0xFFFFE066.toInt(), 0xFFFF5C8A.toInt(), 0xFFFF9A3D.toInt(),
@@ -98,6 +104,8 @@ object Palette {
         Species.GOAT -> intArrayOf(0xFFF5F1EA.toInt(), 0xFFB98B6A.toInt(), 0xFF5A5564.toInt())[index.mod(3)]
         Species.CHICKEN -> intArrayOf(0xFFF5F1EA.toInt(), 0xFFC96A2B.toInt(), 0xFF3A3340.toInt())[index.mod(3)]
         Species.HORSE -> intArrayOf(0xFFE3C08A.toInt(), 0xFFD6A96A.toInt())[index.mod(2)]
+        Species.ROBOT -> robots[index.mod(robots.size)]
+        Species.GHOST -> ghosts[index.mod(ghosts.size)]
         else -> furs[index.mod(furs.size)]
     }
 }

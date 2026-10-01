@@ -1015,6 +1015,11 @@ class Engine(
     }
 
     private fun reactToGift(p: Person, t: Thing, result: Give) {
+        // Rolf runs on «fuel» and Sture only sniffs: their reactions are theirs alone.
+        if (FigurarFx.gift(stage, p, t, result)) {
+            host.haptic()
+            return
+        }
         val a = p.anim
         val mouth = Anatomy.at(p, Part.MOUTH)
         when (result) {
@@ -1060,7 +1065,7 @@ class Engine(
                 a.tilt = -8f
                 voice(p, Sfx.SNEEZE, 0.9f, own = true)
             }
-            Give.NONE -> Unit
+            Give.NONE, Give.SNIFF -> Unit
         }
         host.haptic()
     }
@@ -1104,7 +1109,8 @@ class Engine(
                     a.face = if (random.nextBoolean()) Face.LAUGH else Face.GRIN
                     a.faceTime = 1.1f
                     voice(b, Sfx.GIGGLE, 0.8f)
-                    if (!b.species.pet) a.wave = 1.1f
+                    if (!b.species.pet || b.species == Species.GHOST) a.wave = 1.1f
+                    if (b.species == Species.ROBOT) a.wave = app.trollfoss.domain.FigurarPose.BOW_SECONDS
                 }
                 if (b.species == Species.DRAGON) particles.burst(PKind.SPARK, b.x + 0.02f, b.y - b.h * 0.45f, 8, 0.5f, 0.01f, Color(0xFFFFB02E))
                 // A tap on someone with a wish makes what they want twinkle, for the youngest players.
@@ -1532,6 +1538,7 @@ class Engine(
                 host.haptic()
             }
             Fx.HOUSE -> HouseFxPlayer.play(stage, param, x, y, fixture, thing)
+            Fx.FIGURAR -> FigurarFx.play(stage, param, x, y)
             Fx.SETTLE -> {
                 // A little «ahh» as someone sits down, and a happy sigh when they lie down for the night.
                 s(if (param == 2) Sfx.HMM else Sfx.YUM, 0.4f, if (param == 2) 0.7f else 0.9f)
@@ -1680,10 +1687,12 @@ class Engine(
             }
             Fx.ATSJO -> {
                 shake = max(shake, 0.45f)
+                // Sture's sneezes are old, dusty attic dust.
+                val dust = if (person(param)?.species == Species.GHOST) FigurarFx.DUST_COLOR else Color.White
                 repeat(22) {
                     val a = -PI.toFloat() * (0.15f + random.nextFloat() * 0.7f)
                     val sp = 0.6f + random.nextFloat() * 0.9f
-                    particles.add(Particle(PKind.DUST, x, y + 0.02f, kotlin.math.cos(a) * sp * (if (it % 2 == 0) 1f else -1f), sin(a) * sp * 0.4f, 0.7f, 0.01f, Color.White))
+                    particles.add(Particle(PKind.DUST, x, y + 0.02f, kotlin.math.cos(a) * sp * (if (it % 2 == 0) 1f else -1f), sin(a) * sp * 0.4f, 0.7f, 0.01f, dust))
                 }
                 person(param)?.let { p ->
                     faces(p, Face.OOH, 0.5f, Face.GRIN, 1.4f)
@@ -1799,9 +1808,9 @@ class Engine(
             Species.HORSE -> Sfx.NEIGH
             Species.GOAT -> Sfx.BAA
             Species.FOLK -> null
-            // The ghost says «oooh» in its own voice; the robot beeps.
-            Species.GHOST -> Sfx.OOH
-            Species.ROBOT -> Sfx.BEEP
+            // The ghost says «oooh» in its own shy voice; the robot beeps and bops (see FigurarFx).
+            Species.GHOST -> FigurarFx.ghostVoice(sfx)
+            Species.ROBOT -> FigurarFx.robotVoice(sfx)
         }
         val rate = when (p.species) {
             Species.GOAT -> 1.3f
@@ -2105,9 +2114,12 @@ class Engine(
             is Person -> {
                 val a = b.anim
                 val walking = !a.walkTo.isNaN()
-                val step = if (walking) abs(sin(a.walkPhase * PI.toFloat())) * b.h * 0.07f else 0f
-                val bob = (if (a.pose == Pose.FLOAT) sin(time * 1.6f + b.id) * 0.008f else 0f) - step
-                val sway = if (walking) sin(a.walkPhase * PI.toFloat()) * 4f else 0f
+                // Sture glides instead of stepping: no hop, a slow drift and a gentle bob in the air.
+                val ghost = b.species == Species.GHOST
+                val step = if (walking && !ghost) abs(sin(a.walkPhase * PI.toFloat())) * b.h * 0.07f else 0f
+                val bob = (if (a.pose == Pose.FLOAT) sin(time * 1.6f + b.id) * 0.008f else 0f) - step +
+                    (if (ghost && motion && a.pose == Pose.STAND) FigurarFx.hover(time, b.id, b.h) else 0f)
+                val sway = if (ghost) (if (walking) sin(time * 2.2f + b.id) * 3.5f else 0f) else if (walking) sin(a.walkPhase * PI.toFloat()) * 4f else 0f
                 translate(sx(b.x), sy(b.y - a.hop + bob)) {
                     val spin = if (a.spin > 0f) (1f - a.spin) * 360f * (if (b.id % 2 == 0) 1f else -1f) else 0f
                     val giggle = if (a.tickle > 0f) sin(time * 38f) * 7f * min(1f, a.tickle) else 0f
