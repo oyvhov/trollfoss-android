@@ -11,5 +11,13 @@
             android:exported="true"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|density|keyboardHidden|uiMode"
             android:resizeableActivity="true" />
+
+        <!-- Debug only: a contact sheet of Rolf and Sture (see FigurarSheetActivity). -->
+        <activity
+            android:name="app.trollfoss.FigurarSheetActivity"
+            android:exported="true"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|density|keyboardHidden|uiMode"
+            android:resizeableActivity="true" />
     </application>
 </manifest>

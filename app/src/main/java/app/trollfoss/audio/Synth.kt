@@ -18,6 +18,11 @@ enum class Sfx {
     // Silly ones: humour is half the game.
     BURP, HICCUP, PRRT, SNEEZE, SLIP, BONK, TICKLE, SPLAT,
 
+    // Rolf the robot butler and Sture the ghost (see ui/play/FigurarFx.kt). Kept here, ahead of the floors'
+    // blocks, so that merging the floors never touches them.
+    FG_ROLF_TALK, FG_ROLF_LAUGH, FG_ROLF_OOH, FG_ROLF_OOF, FG_ROLF_HAPPY, FG_ROLF_FUEL, FG_ROLF_BOW,
+    FG_STURE_GIGGLE, FG_STURE_HUM, FG_STURE_OOH, FG_STURE_SNIFF, FG_STURE_SNEEZE,
+
     // Storhuset. Each floor adds its sounds in its own block, and their recipes in [Synth.voices] below.
     // ---- ground floor ----
 
@@ -331,6 +336,87 @@ object Synth {
         Sfx.RUMBLE -> listOf(
             Noise(0.0, 1.2, 0.6, 120.0, 320.0, swell = true, seed = 9),
             Tone(55.0, 0.0, 1.2, 0.5, buzzy, decay = 0.6, slideTo = 72.0, vibrato = 2.0, vibratoHz = 12.0, attack = 0.2),
+        )
+
+        // ---- Rolf the robot butler: beeps, bops and polite dings ----
+        // «Bee-bop-boo-bap»: robot chatter.
+        Sfx.FG_ROLF_TALK -> listOf(
+            Tone(880.0, 0.0, 0.07, 0.38, hum, decay = 10.0, slideTo = 1100.0),
+            Tone(1320.0, 0.09, 0.06, 0.34, hum, decay = 10.0, slideTo = 990.0),
+            Tone(660.0, 0.18, 0.09, 0.36, buzzy, decay = 9.0, slideTo = 880.0),
+            Tone(1100.0, 0.3, 0.08, 0.34, hum, decay = 10.0, slideTo = 1500.0),
+            Tone(760.0, 0.42, 0.1, 0.3, soft, decay = 9.0, slideTo = 620.0),
+        )
+        // «Ba-ba-ba-ba!»: a staccato robot laugh that climbs.
+        Sfx.FG_ROLF_LAUGH -> (0 until 4).flatMap { i ->
+            listOf(
+                Tone(620.0 + i * 70.0, i * 0.11, 0.07, 0.4, buzzy, decay = 14.0, slideTo = 520.0 + i * 70.0),
+                Tone(1240.0 + i * 140.0, i * 0.11, 0.05, 0.12, soft, decay = 18.0),
+            )
+        }
+        // «Bwooop!»: a surprised glide up and a little bip.
+        Sfx.FG_ROLF_OOH -> listOf(
+            Tone(420.0, 0.0, 0.32, 0.42, hum, decay = 3.0, slideTo = 1500.0, attack = 0.02),
+            Tone(840.0, 0.0, 0.3, 0.14, soft, decay = 3.0, slideTo = 3000.0),
+            Tone(1500.0, 0.34, 0.06, 0.3, soft, decay = 10.0, slideTo = 1100.0),
+        )
+        // «Bwomp»: a low, sagging bonk of a robot.
+        Sfx.FG_ROLF_OOF -> listOf(
+            Tone(520.0, 0.0, 0.25, 0.5, buzzy, decay = 6.0, slideTo = 190.0),
+            Tone(260.0, 0.0, 0.25, 0.2, hum, decay = 6.0, slideTo = 95.0),
+            Noise(0.0, 0.03, 0.25, 1500.0, decay = 90.0, seed = 33),
+        )
+        // «Tri-lee-leeee»: content chirps.
+        Sfx.FG_ROLF_HAPPY -> listOf(
+            Tone(1000.0, 0.0, 0.07, 0.36, soft, decay = 9.0, slideTo = 1300.0),
+            Tone(1300.0, 0.08, 0.07, 0.36, soft, decay = 9.0, slideTo = 1700.0),
+            Tone(1700.0, 0.16, 0.16, 0.36, soft, decay = 6.0, slideTo = 2100.0, vibrato = 0.4, vibratoHz = 14.0),
+        )
+        // «Glug-glug … whirrr … pshhh … bzzt … DING!»: the fuel joke.
+        Sfx.FG_ROLF_FUEL -> listOf(
+            Tone(180.0, 0.0, 0.12, 0.5, vowelO, decay = 12.0, slideTo = 300.0),
+            Tone(220.0, 0.16, 0.12, 0.5, vowelO, decay = 12.0, slideTo = 340.0),
+            Noise(0.45, 0.7, 0.3, 300.0, 1800.0, swell = true, seed = 34),
+            Tone(200.0, 0.45, 0.8, 0.3, buzzy, decay = 1.5, slideTo = 700.0, vibrato = 0.5, vibratoHz = 9.0),
+            Noise(1.0, 0.45, 0.4, 5000.0, 2500.0, decay = 4.0, seed = 35),
+            Tone(900.0, 1.0, 0.35, 0.22, buzzy, decay = 3.0, slideTo = 400.0, vibrato = 3.0, vibratoHz = 30.0),
+            Tone(1760.0, 1.5, 0.55, 0.5, bell, decay = 6.0),
+            Tone(2200.0, 1.55, 0.45, 0.22, bell, decay = 7.0),
+        )
+        // A servo whirr as he folds forward, and a polite ding.
+        Sfx.FG_ROLF_BOW -> listOf(
+            Noise(0.0, 0.2, 0.22, 700.0, 1500.0, swell = true, seed = 36),
+            Tone(300.0, 0.0, 0.2, 0.18, buzzy, decay = 3.0, slideTo = 500.0),
+            Tone(1568.0, 0.18, 0.35, 0.45, bell, decay = 7.0),
+            Tone(2093.0, 0.22, 0.3, 0.2, bell, decay = 8.0),
+        )
+
+        // ---- Sture the ghost: shy, breathy and wobbly ----
+        // «Hi-hi-hi-hi»: a shy little giggle.
+        Sfx.FG_STURE_GIGGLE -> syllables(6, 1250.0, -45.0, 0.055, 0.035, vowelE, 0.3, seed = 31) +
+            Noise(0.0, 0.4, 0.07, 3000.0, 2000.0, swell = true, seed = 37)
+        // A soft, wandering «ooo-oo-ooo» hum.
+        Sfx.FG_STURE_HUM -> listOf(
+            Tone(360.0, 0.0, 0.45, 0.35, vowelO, decay = 2.0, slideTo = 420.0, vibrato = 0.5, vibratoHz = 6.0, attack = 0.05),
+            Tone(420.0, 0.5, 0.35, 0.3, vowelO, decay = 2.5, slideTo = 340.0, vibrato = 0.6, vibratoHz = 6.0, attack = 0.05),
+        )
+        // «Woo-oo-ooh»: the classic, but friendly and a bit wobbly.
+        Sfx.FG_STURE_OOH -> listOf(
+            Tone(330.0, 0.0, 0.8, 0.45, vowelO, decay = 1.4, slideTo = 520.0, vibrato = 0.7, vibratoHz = 7.0, attack = 0.08),
+            Tone(660.0, 0.05, 0.7, 0.14, soft, decay = 1.8, slideTo = 1040.0, vibrato = 0.7, vibratoHz = 7.0),
+            Noise(0.0, 0.8, 0.08, 1500.0, 900.0, swell = true, seed = 38),
+        )
+        // Two quick sniffs of air.
+        Sfx.FG_STURE_SNIFF -> listOf(
+            Noise(0.0, 0.07, 0.5, 3200.0, 5200.0, decay = 14.0, seed = 41),
+            Noise(0.1, 0.08, 0.45, 3400.0, 5400.0, decay = 14.0, seed = 42),
+        )
+        // «Ah … ah … tsjuuu»: soft, with a puff of dust at the end.
+        Sfx.FG_STURE_SNEEZE -> listOf(
+            Tone(500.0, 0.0, 0.26, 0.28, vowelO, decay = 2.0, slideTo = 620.0, attack = 0.04),
+            Tone(620.0, 0.34, 0.3, 0.32, vowelO, decay = 2.0, slideTo = 760.0, attack = 0.04),
+            Noise(0.72, 0.5, 0.7, 3600.0, 900.0, decay = 5.0, attack = 0.002, seed = 45),
+            Tone(800.0, 0.72, 0.22, 0.35, vowelO, decay = 8.0, slideTo = 380.0, attack = 0.002),
         )
 
         // ---- Storhuset ground floor ----

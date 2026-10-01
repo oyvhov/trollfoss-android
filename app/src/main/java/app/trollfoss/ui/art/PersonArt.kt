@@ -45,6 +45,10 @@ fun DrawScope.drawPerson(
     holding: Boolean = false,
     seed: Float = 0f,
 ) {
+    if (species == Species.ROBOT || species == Species.GHOST) {
+        drawHouseFigure(species, look, pose, anim, h, pen, holding, seed)
+        return
+    }
     if (species != Species.FOLK) {
         drawPet(species, look, pose, anim, h, pen, seed)
         return

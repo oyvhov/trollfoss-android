@@ -45,6 +45,9 @@ enum class Fx {
 
     // Storhuset: one event for the whole house; the code is in the param (see [HouseFx]).
     HOUSE,
+
+    // Rolf and Sture: a bow, a dusty sneeze; the code and the figure are in the param (see [FigurarEvent]).
+    FIGURAR,
 }
 
 interface SimListener {
@@ -66,7 +69,7 @@ interface SimListener {
 }
 
 /** What happened when a thing was given to a figure. */
-enum class Give { ATE, FINISHED, DRANK, POTION, WORE, HELD, HAIR, DRESSED, SNEEZE, NONE }
+enum class Give { ATE, FINISHED, DRANK, POTION, WORE, HELD, HAIR, DRESSED, SNEEZE, SNIFF, NONE }
 
 /**
  * The rules of the island: gravity, water, cupboards, seats, machines and what figures do with
@@ -205,6 +208,9 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
 
     /** The rules of Storhuset: its floors, and the passages between them. */
     val house = HouseRules(this, random)
+
+    /** Rolf the robot butler and Sture the ghost: greetings, dusty sneezes and what they do with food. */
+    val figurar = Figurar(this, random)
 
     /** Furniture catalogue, store, wallpaper and tidying up. */
     val designer = Designer(this, random)
@@ -1557,6 +1563,9 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
                 jokes.pepper(p)
                 return Give.SNEEZE
             }
+            // The robot butler runs on «fuel» and the ghost has no tummy: both make a joke of food (not of potions).
+            part == Part.MOUTH && t.type.edible && !t.type.potion && p.species == Species.ROBOT -> return figurar.fuel(p, t)
+            part == Part.MOUTH && t.type.edible && !t.type.potion && p.species == Species.GHOST -> return figurar.sniff(p, t)
             part == Part.MOUTH && t.type.edible -> {
                 t.used++
                 p.anim.chew = 1f
