@@ -464,7 +464,7 @@ class Engine(
             if (a.nextIdle <= 0f) {
                 a.nextIdle = 4f + random.nextFloat() * 8f
                 if (a.face != Face.SLEEP && !p.held && visible(p)) {
-                    val friend = if (p.species == Species.FOLK) chatPartner(p) else null
+                    val friend = if (p.species == Species.FOLK || p.species == Species.ROBOT || p.species == Species.GHOST) chatPartner(p) else null
                     if (friend != null) {
                         chat(p, friend)
                     } else {

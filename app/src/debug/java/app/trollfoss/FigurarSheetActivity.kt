@@ -36,6 +36,7 @@ import app.trollfoss.ui.art.drawPerson
 import app.trollfoss.ui.art.drawThing
 import app.trollfoss.ui.art.groundShadow
 import app.trollfoss.ui.art.headWidth
+import app.trollfoss.ui.screens.drawSpeciesThumb
 
 /**
  * Debug only: a contact sheet of Rolf and Sture for checking the art, since the two of them live on the
@@ -78,6 +79,7 @@ private class Cell(
     val hand: ThingType? = null,
     val time: Float? = null,
     val xray: Boolean = false,
+    val thumb: Boolean = false,
     val tweak: PersonAnim.() -> Unit = {},
 )
 
@@ -121,6 +123,7 @@ private fun DrawScope.sheet(page: String, t: Float, dark: Boolean) {
         "big" -> listOf(listOf(Cell(Species.ROBOT, hand = ThingType.APPLE), Cell(Species.GHOST, hand = ThingType.APPLE)))
         "xray" -> listOf(listOf(Cell(Species.ROBOT, xray = true, time = 1.0f), Cell(Species.ROBOT, xray = true, time = 1.4f), Cell(Species.GHOST, xray = true, time = 1.0f), Cell(Species.GHOST, xray = true, time = 1.3f)))
         "small" -> listOf(listOf(Cell(Species.ROBOT), Cell(Species.GHOST)))
+        "thumb" -> listOf(listOf(Cell(Species.ROBOT, thumb = true), Cell(Species.GHOST, thumb = true), Cell(Species.CAT, thumb = true), Cell(Species.GOAT, thumb = true)))
         else -> listOf(listOf(Cell(Species.ROBOT)))
     }
     val rowH = size.height / rows.size
@@ -162,6 +165,16 @@ private fun DrawScope.smallRow(row: List<Cell>, t: Float) {
 }
 
 private fun DrawScope.figure(cell: Cell, cx: Float, base: Float, hp: Float, t: Float, dark: Boolean) {
+    if (cell.thumb) {
+        // As the task cards and stickers show it: a square box, drawn by drawSpeciesThumb.
+        for ((k, side) in listOf(0.55f, 0.3f, 0.16f).withIndex()) {
+            val box = hp * side * 1.9f
+            val x0 = cx - hp * 0.5f + k * hp * 0.9f * (if (k == 0) 0f else 1f) + (if (k == 2) hp * 0.5f else 0f) - (if (k == 0) 0f else hp * 0.4f)
+            drawRect(Color.White.copy(alpha = 0.55f), Offset(x0, base - box), Size(box, box))
+            drawSpeciesThumb(cell.species, androidx.compose.ui.geometry.Rect(x0, base - box, x0 + box, base))
+        }
+        return
+    }
     val person = Person(1, cell.species, cell.look, 1f)
     val a = person.anim
     a.face = cell.face

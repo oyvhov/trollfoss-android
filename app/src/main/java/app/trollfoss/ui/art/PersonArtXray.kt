@@ -114,7 +114,7 @@ private fun DrawScope.stureXray(h: Float, pen: Pen, t: Float) {
     val giggle = sin(t * 14f) * 0.008f
     withTransform({
         translate(giggle * h, 0f)
-        scale(0.48f, 0.48f, pivot = o(0f, -0.3f))
+        scale(0.48f, 0.48f, pivot = o(0f, -0.6f))
     }) {
         val inner = sheetPath(h, t * 1.5f, 1.5f)
         drawPath(inner, XGlow.copy(alpha = 0.3f), style = Stroke(pen.lw * 7f, join = StrokeJoin.Round))
