@@ -14,6 +14,7 @@ enum class Deed {
     // ---- upper floor ----
 
     // ---- attic ----
+    AT_COSTUME, AT_CATCH, AT_RECORD, AT_STARGAZE, AT_KNIT,
 
     // ---- cellar ----
 
@@ -160,6 +161,11 @@ class TaskBook(private val world: World) {
             // ---- upper floor ----
 
             // ---- attic ----
+            Task("attic_costume", PlaceId.MANOR_ATTIC, 1, thing = ThingType.AT_PIRATE_HAT, match = deed(Deed.AT_COSTUME)),
+            Task("attic_catch", PlaceId.MANOR_ATTIC, 1, species = Species.GHOST, thing = ThingType.AT_SHEET_HAT, match = deed(Deed.AT_CATCH)),
+            Task("attic_record", PlaceId.MANOR_ATTIC, 1, thing = ThingType.AT_RECORD, icon = "note", match = deed(Deed.AT_RECORD)),
+            Task("attic_stars", PlaceId.MANOR_ATTIC, 1, fixture = FixtureType.TELESCOPE, icon = "star", match = deed(Deed.AT_STARGAZE)),
+            Task("attic_knit", PlaceId.MANOR_ATTIC, 1, thing = ThingType.GARMENT, match = deed(Deed.AT_KNIT)),
 
             // ---- cellar ----
 

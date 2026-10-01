@@ -128,6 +128,14 @@ enum class FixtureType {
     // ---- Storhuset upper floor (HouseUpper.kt) ----
 
     // ---- Storhuset attic (HouseAttic.kt) ----
+    // Storage: sheets over old furniture, the costume trunk, rocking horse, spiders, toy cartons, a lantern and a round window.
+    AT_SHEETED, AT_TRUNK, AT_ROCKING_HORSE, AT_SPIDER, AT_CARTON, AT_LANTERN, AT_ROUND_WINDOW,
+    // The ghost's nook: wing chair, gramophone, book tower, candelabra, paper-ghost lights, blanket fort, shadow theatre, clock.
+    AT_WING_CHAIR, AT_GRAMOPHONE, AT_BOOK_TOWER, AT_CANDELABRA, AT_STRING_LIGHTS, AT_BLANKET_FORT, AT_SHADOW_THEATRE, AT_GRANDFATHER,
+    // The tower: star map, weather vane, armillary sphere, barometer, owl hole.
+    AT_STAR_MAP, AT_WEATHER_VANE, AT_ARMILLARY, AT_BAROMETER, AT_OWL_HOLE,
+    // The secret room: map table, treasure chest, globe, family tree, chandelier, sconce.
+    AT_MAP_TABLE, AT_TREASURE_CHEST, AT_GLOBE, AT_FAMILY_TREE, AT_CHANDELIER, AT_SCONCE,
 
     // ---- Storhuset cellar (HouseCellar.kt) ----
 

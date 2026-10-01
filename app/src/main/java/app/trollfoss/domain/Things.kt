@@ -199,6 +199,17 @@ enum class ThingType(
     // ---- upper floor ----
 
     // ---- attic ----
+    /** A torch that lights up what it lies on, and what a finger drags it over. */
+    AT_FLASHLIGHT(0.09f, 0.05f, Cat.TOOL, glows = true),
+    /** Costumes from the trunk: hats at head width, glasses at face width. */
+    AT_PIRATE_HAT(0.17f, 0.10f, Cat.HAT),
+    AT_KNIGHT_HELMET(0.15f, 0.13f, Cat.HAT),
+    AT_FLOWER_HAT(0.21f, 0.14f, Cat.HAT),
+    AT_SHEET_HAT(0.17f, 0.17f, Cat.HAT),
+    AT_EYE_PATCH(0.13f, 0.05f, Cat.GLASSES),
+    AT_FUNNY_GLASSES(0.13f, 0.07f, Cat.GLASSES),
+    /** A record for the gramophone; the variant is which silly tune is on it (0 to 5). It rolls like a wheel. */
+    AT_RECORD(0.07f, 0.07f, Cat.TOY, bounce = 0.3f, rolls = true, variants = 6),
 
     // ---- cellar ----
 

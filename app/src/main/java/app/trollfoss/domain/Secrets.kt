@@ -90,9 +90,14 @@ object Secrets {
         Secret("upper_balcony", PlaceId.MANOR_UPPER, 11.2f, 0.3f, event = true),
 
         // ---- attic ----
-        Secret("attic_ghost", PlaceId.MANOR_ATTIC, 4.0f, 0.3f, event = true),
-        Secret("attic_tower", PlaceId.MANOR_ATTIC, 6.4f, 0.3f, event = true),
-        Secret("attic_secret", PlaceId.MANOR_ATTIC, 8.0f, 0.3f, event = true),
+        // `on` is a blueprint index in HouseAttic.kt (see [AtticIds]): the glimt sits above that furniture.
+        Secret("attic_ghost", PlaceId.MANOR_ATTIC, 3.78f, 0.46f, event = true, on = 12),
+        Secret("attic_trunk", PlaceId.MANOR_ATTIC, 1.85f, 0.56f, event = true, on = 3),
+        Secret("attic_music", PlaceId.MANOR_ATTIC, 4.28f, 0.5f, event = true, on = 13),
+        Secret("attic_tower", PlaceId.MANOR_ATTIC, 6.55f, 0.52f, event = true, on = 22),
+        Secret("attic_stars", PlaceId.MANOR_ATTIC, 5.9f, 0.3f, event = true, on = 20),
+        Secret("attic_secret", PlaceId.MANOR_ATTIC, 8.45f, 0.64f, event = true, on = 30),
+        Secret("attic_tree", PlaceId.MANOR_ATTIC, 8.12f, 0.17f, event = true, on = 31),
 
         // ---- cellar ----
         Secret("cellar_party", PlaceId.MANOR_CELLAR, 9.0f, 0.3f, event = true),
