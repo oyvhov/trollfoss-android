@@ -9,6 +9,7 @@ import app.trollfoss.domain.RoomStyle
 import app.trollfoss.domain.Stored
 import app.trollfoss.domain.Look
 import app.trollfoss.domain.Maalform
+import app.trollfoss.domain.SeasonChoice
 import app.trollfoss.domain.Mode
 import app.trollfoss.domain.Person
 import app.trollfoss.domain.PlaceId
@@ -30,6 +31,10 @@ data class Settings(
     val music: Boolean = true,
     val haptics: Boolean = true,
     val maalform: Maalform = Maalform.NYNORSK,
+    /** Follow the calendar for seasons, or keep one all year. */
+    val season: SeasonChoice = SeasonChoice.AUTO,
+    /** Decorate the village for Christmas, Easter and pumpkin time. */
+    val festive: Boolean = true,
 )
 
 class Saved(val world: World, val settings: Settings)
@@ -72,6 +77,8 @@ class WorldStore(private val file: File) {
                 put("music", settings.music)
                 put("haptics", settings.haptics)
                 put("maalform", settings.maalform.name)
+                put("season", settings.season.name)
+                put("festive", settings.festive)
             })
             put("place", world.place.name)
             put("night", world.night)
@@ -198,6 +205,8 @@ class WorldStore(private val file: File) {
                 music = s.optBoolean("music", defaults.music),
                 haptics = s.optBoolean("haptics", defaults.haptics),
                 maalform = enumOrNull<Maalform>(s.optString("maalform")) ?: defaults.maalform,
+                season = enumOrNull<SeasonChoice>(s.optString("season")) ?: defaults.season,
+                festive = s.optBoolean("festive", defaults.festive),
             )
             val world = World()
             WorldFactory.addFixtures(world)

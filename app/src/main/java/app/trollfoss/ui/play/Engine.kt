@@ -33,6 +33,7 @@ import app.trollfoss.domain.Anatomy
 import app.trollfoss.domain.Body
 import app.trollfoss.domain.Decor
 import app.trollfoss.domain.Face
+import app.trollfoss.domain.Festival
 import app.trollfoss.domain.Fixture
 import app.trollfoss.domain.FixtureType
 import app.trollfoss.domain.Fx
@@ -45,6 +46,7 @@ import app.trollfoss.domain.Passage
 import app.trollfoss.domain.Person
 import app.trollfoss.domain.PlaceId
 import app.trollfoss.domain.Pose
+import app.trollfoss.domain.Season
 import app.trollfoss.domain.Secret
 import app.trollfoss.domain.Sim
 import app.trollfoss.domain.SimListener
@@ -132,6 +134,10 @@ class Engine(
 
     /** Screen pixels above scene y = 0; the place art fills them with more sky or wall. */
     private val top: Float get() = heightPx - u
+
+    /** The season and the feast of the day, set by the app before the first frame. */
+    var season: Season = Season.SUMMER
+    var festival: Festival = Festival.NONE
 
     var cam = startCam
         private set
@@ -309,6 +315,7 @@ class Engine(
         updatePeople(dt)
         particles.update(dt)
         ambient(dt)
+        seasonParticles(dt)
         flights.removeAll { it.t += dt / 0.75f; it.t >= 1f }
         bagCount = world.bag().size
     }
@@ -576,7 +583,7 @@ class Engine(
             particles.add(Particle(PKind.BIRD, if (fromLeft) cam - 0.05f else cam + viewport + 0.05f, 0.08f + random.nextFloat() * 0.18f, if (fromLeft) 0.25f else -0.25f, 0f, 12f, 0.012f, Color.White))
         }
         // Weather motion.
-        val snowing = world.weather == Weather.SNOW || place == PlaceId.MOUNTAIN
+        val snowing = effectiveWeather() == Weather.SNOW
         if (place.outdoor && world.weather == Weather.RAIN) {
             for (i in 0 until drops.size / 2) {
                 drops[i * 2 + 1] += dt * 1.6f
@@ -598,6 +605,47 @@ class Engine(
                 }
             }
         }
+    }
+
+    /** The weather the scene shows: the mountain, and every outdoor place in winter, are snowy when the sun shines. */
+    private fun effectiveWeather(): Weather = when {
+        world.weather != Weather.SUN -> world.weather
+        place == PlaceId.MOUNTAIN -> Weather.SNOW
+        season == Season.WINTER && place.outdoor && place != PlaceId.UNDERWATER -> Weather.SNOW
+        else -> Weather.SUN
+    }
+
+    private val autumnLeaves = listOf(Color(0xFFE8742A), Color(0xFFD2443A), Color(0xFFF2B63C), Color(0xFFB5651D))
+    private val blossoms = listOf(Color(0xFFFFC2D6), Color(0xFFFFFFFF), Color(0xFFFFA8C5))
+
+    /** Leaves in autumn, blossom in spring and fireflies on summer evenings, drifting through outdoor scenes. */
+    private fun seasonParticles(dt: Float) {
+        if (!motion || !place.outdoor || place == PlaceId.UNDERWATER || particles.count > 200) return
+        if (world.weather == Weather.RAIN) return
+        when (season) {
+            Season.AUTUMN -> if (random.nextFloat() < dt * 1.8f) {
+                particles.add(Particle(PKind.LEAF, cam + random.nextFloat() * viewport, -0.04f, (random.nextFloat() - 0.5f) * 0.14f, 0.07f + random.nextFloat() * 0.05f, 7f, 0.013f, autumnLeaves[random.nextInt(autumnLeaves.size)], random.nextFloat() * 360f, (random.nextFloat() - 0.5f) * 260f))
+            }
+            Season.SPRING -> if (random.nextFloat() < dt * 1.2f) {
+                particles.add(Particle(PKind.LEAF, cam + random.nextFloat() * viewport, -0.04f, (random.nextFloat() - 0.5f) * 0.1f, 0.05f + random.nextFloat() * 0.04f, 8f, 0.008f, blossoms[random.nextInt(blossoms.size)], random.nextFloat() * 360f, (random.nextFloat() - 0.5f) * 200f))
+            }
+            Season.SUMMER -> if (night > 0.5f && random.nextFloat() < dt * 1.5f) {
+                particles.add(Particle(PKind.SPARK, cam + random.nextFloat() * viewport, 0.45f + random.nextFloat() * 0.4f, (random.nextFloat() - 0.5f) * 0.05f, (random.nextFloat() - 0.5f) * 0.04f, 3.5f, 0.007f, Color(0xFFD8FF6A)))
+            }
+            Season.WINTER -> Unit
+        }
+    }
+
+    /** A light tint over the whole scene: warm gold in autumn, cool blue in winter, fresh green in spring. */
+    private fun DrawScope.drawSeasonGrade() {
+        val (tint, strength) = when (season) {
+            Season.AUTUMN -> Color(0xFFFF9A3C) to 0.10f
+            Season.WINTER -> Color(0xFFBFD8FF) to 0.10f
+            Season.SPRING -> Color(0xFFBFFFC8) to 0.05f
+            Season.SUMMER -> return
+        }
+        val k = (if (place.outdoor) 1f else 0.45f) * (1f - night * 0.6f)
+        drawRect(tint.copy(alpha = strength * k), Offset(0f, -top), Size(size.width, size.height + top))
     }
 
     fun photoFlash() {
@@ -1946,8 +1994,8 @@ class Engine(
         runPending()
         if (size.width != widthPx || size.height != heightPx) setSize(size.width, size.height, density)
         val lw = max(1.4f, u * 0.0034f)
-        val weather = if (place == PlaceId.MOUNTAIN && world.weather == Weather.SUN) Weather.SNOW else world.weather
-        val pen = Pen(lw, if (motion) time else 0f, night, weather, rainbow)
+        val weather = effectiveWeather()
+        val pen = Pen(lw, if (motion) time else 0f, night, weather, rainbow, season, festival)
 
         val sx0 = if (motion) sin(time * 61f) * shake * dp(6f) else 0f
         val sy0 = if (motion) sin(time * 47f + 1f) * shake * dp(5f) else 0f
@@ -2069,6 +2117,7 @@ class Engine(
 
         timed(5) { particles.draw(this, u, cam, lw) }
         timed(6) { drawNight(lw) }
+        drawSeasonGrade()
         lateText = list
         if (app.trollfoss.BuildConfig.DEBUG) {
             prof[7] += System.nanoTime() - t0
@@ -2116,7 +2165,7 @@ class Engine(
                             val carried = world.carried(b)
                             val holding = carried.any { it.slot == Slot.HAND.ordinal }
                             val figure: DrawScope.(Float) -> Unit = { t ->
-                                val p = Pen(pen.lw, t, pen.night, pen.weather, pen.rainbow)
+                                val p = Pen(pen.lw, t, pen.night, pen.weather, pen.rainbow, pen.season, pen.festival)
                                 if (xrayed(b)) drawSkeleton(b, p) else drawPerson(b.species, b.look, a.pose, a, b.h * u, p, holding, seed = b.id * 0.37f)
                                 if (a.cream > 0f) drawCream(b, p)
                                 if (a.ink > 0f) drawInk(b, p)
@@ -2235,7 +2284,7 @@ class Engine(
         translate(lx, ly + t.h * s * u * 0.5f) {
             rotate(if (lie) -90f else 0f, pivot = Offset(0f, -t.h * s * u * 0.5f)) {
                 scale(s, s, pivot = Offset.Zero) {
-                    drawThing(t.type, t.variant, t.used, t.w * u, t.h * u, Pen(pen.lw / s, pen.t, pen.night, pen.weather, pen.rainbow))
+                    drawThing(t.type, t.variant, t.used, t.w * u, t.h * u, Pen(pen.lw / s, pen.t, pen.night, pen.weather, pen.rainbow, pen.season, pen.festival))
                 }
             }
         }
@@ -2298,7 +2347,7 @@ class Engine(
         val night = look.night / 10f
         val rainbow = look.rainbow / 5f
         val draw: DrawScope.(Float) -> Unit = { t ->
-            val p = Pen(pen.lw, t, night, pen.weather, rainbow)
+            val p = Pen(pen.lw, t, night, pen.weather, rainbow, pen.season, pen.festival)
             if (layer == 0) drawFixtureBack(f, u, p, emptyList()) else drawFixtureFront(f, u, p)
         }
         return with(sprites) {
@@ -2319,7 +2368,7 @@ class Engine(
         val bounds = Rect(-w / 2 - pad, -h - pad * 1.4f, w / 2 + pad * 1.4f, pad)
         val night = look.night / 10f
         val rainbow = look.rainbow / 5f
-        val draw: DrawScope.(Float) -> Unit = { t -> drawThing(b.type, b.variant, b.used, w, h, Pen(pen.lw, t, night, pen.weather, rainbow), 0f) }
+        val draw: DrawScope.(Float) -> Unit = { t -> drawThing(b.type, b.variant, b.used, w, h, Pen(pen.lw, t, night, pen.weather, rainbow, pen.season, pen.festival), 0f) }
         return with(sprites) {
             stamp(look, bounds, pen.t, draw) || (animated(look) && stampSlow(SlowKey(b.id, 2), bounds, pen.t, SLOW_HZ, draw))
         }
@@ -2613,7 +2662,7 @@ class Engine(
                 val s = r * 1.7f / max(type.w, type.h) / u
                 translate(c.x, c.y + type.h * s * u / 2f) {
                     scale(s, s, pivot = Offset.Zero) {
-                        drawThing(type, w.variant, 0, type.w * u, type.h * u, Pen(pen.lw / s, pen.t, 0f, pen.weather, 0f))
+                        drawThing(type, w.variant, 0, type.w * u, type.h * u, Pen(pen.lw / s, pen.t, 0f, pen.weather, 0f, pen.season, pen.festival))
                     }
                 }
             }

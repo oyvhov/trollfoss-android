@@ -76,6 +76,13 @@ object S {
     val language = txt("Målform")
     val nynorsk = txt("Nynorsk")
     val bokmaal = txt("Bokmål")
+    val seasonTitle = txt("Årstid")
+    val seasonAuto = txt("Automatisk")
+    val winter = txt("Vinter")
+    val spring = txt("Vår")
+    val summer = txt("Sommar", "Sommer")
+    val autumn = txt("Haust", "Høst")
+    val festive = txt("Pynt til høgtider", "Pynt til høytider")
     val progress = txt("Framgang", "Fremgang")
     fun progressLine(found: Int, total: Int, recipes: Int, allRecipes: Int, figures: Int) = txt(
         "$found av $total glimt · $recipes av $allRecipes oppskrifter · $figures figurar",

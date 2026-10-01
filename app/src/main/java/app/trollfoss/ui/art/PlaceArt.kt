@@ -33,6 +33,7 @@ fun DrawScope.drawPlaceBack(place: PlaceId, cam: Float, u: Float, pen: Pen, styl
         PlaceId.UNDERWATER -> underwaterBack(st, pen)
         PlaceId.MANOR_GROUND, PlaceId.MANOR_UPPER, PlaceId.MANOR_ATTIC, PlaceId.MANOR_CELLAR, PlaceId.MANOR_GARDEN -> manorBack(place, st, pen, styles)
     }
+    seasonBack(place, st, pen)
 }
 
 /** Draws what lies in front of everything: the water's front face, snowdrifts, grass tufts. */
@@ -49,4 +50,5 @@ fun DrawScope.drawPlaceFront(place: PlaceId, cam: Float, u: Float, pen: Pen) {
         PlaceId.MANOR_GROUND, PlaceId.MANOR_UPPER, PlaceId.MANOR_ATTIC, PlaceId.MANOR_CELLAR, PlaceId.MANOR_GARDEN -> manorFront(place, st, pen)
         else -> Unit
     }
+    seasonFront(place, st, pen)
 }
