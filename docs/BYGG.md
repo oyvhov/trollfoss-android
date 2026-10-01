@@ -116,3 +116,21 @@ lagringar utan `mine`, glimt og oppdrag). Eksisterande testar, `HouseTest` og li
 **Rapport til slutt:** kva som er laga og kva som manglar, avvik, nye `Sfx`/`FixtureType`/`Deed`-id-ar, delte filer du
 endra (og kvifor), skjermbilete (tomt tomt, kvar mal, alle ti romtypar, etasje, utsjånadspanel, kart), yting
 (`TrollfossPerf`), og siste commit på `house/bygg`.
+
+## 6. Slik er det bygd (status)
+
+**Domene:** `Mine.kt` (tilstand, malar, reglar for kor ein kan byggje, vegar, `MineYardFloor`/`MineGroundFloor`/`MineUpperFloor`),
+`MineBuilder.kt` (`sim.mine`: fundament, rom, etasje, riving med lager, utsjånad, innflyttingsfest, bebuarar som går ut og inn,
+trykk på møblar, byggjejobbar med tid), `MineRooms.kt` (ti rom-førehandsval, 23 `MI_`-møblar med mål, tomteting i katalogen),
+`MineDemo.kt` (debug). Alle hendingar går som `Fx.HOUSE` i blokka `HouseFx.MINE` (`MineEvent`).
+Eit byggjearbeid går i sekund (`MineJob`): huset endrar seg ved `commitAt`, møblane kjem ein og ein, og `finishJob()` fullfører alt med
+ein gong (når barnet går ut eller appen går i bakgrunnen), så ingenting går tapt.
+
+**UI:** `ui/screens/BuildPanel.kt` (panelet, bobla, rivedialogen), `MineThumbs.kt` (små bilete og ikon), `MineUi.kt`, `ui/StringsMine.kt`.
+Hammarknappen står ved sida av heimedesignaren på nettbrett og i «Meir»-menyen på telefon.
+
+**Teikning:** `MineKit.kt` (palettar, dører, vindauge, stillas, verktøy, kran), `MineHouseArt.kt` (fasaden), `MineYardArt.kt` (tomta),
+`MineRoomArt.kt` (romma), `MineFixtureArt.kt` (møblane), `MapMine.kt` (kartlandemerket). `MineView.house` er huset teikninga les.
+
+**Debug-ekstra:** `--es mine demo|demo2` (ferdig hus, to sett med romtypar), `--ei shape 0..3`, `--es build on|off`, `--ef cam <x>`
+saman med `--es place mine_yard|mine_ground|mine_upper`.
