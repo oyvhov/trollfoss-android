@@ -60,3 +60,26 @@ jamn. `f.anim` er eit sprett etter trykk: skaler møbelet `1 + f.anim * 0.06` ru
 
 Alt blir teikna 60 gonger i sekundet. Hald det enkelt: ingen store løkker (maks ~200 primitiv per
 stadbakgrunn), ingen allokering av store lister, ingen tekst. `Path` per kall er greitt.
+
+## Årstider og høgtider
+
+`pen.season` (`SUMMER` er den vanlege utsjånaden) og `pen.festival` (jul, påske, gresskartid) følgjer med alle
+teiknefunksjonar. Sommar utan høgtid skal sjå **nøyaktig** ut som han alltid har gjort.
+
+* **Fargar** går gjennom paletten i `ui/art/SeasonKit.kt`: gi han sommarfargen du alt bruker, og få årstidsfargen
+  tilbake. `pen.ground(c)` (eng, mose, åker), `pen.farGround`, `pen.farTrees` (fjerne skogrekkjer), `pen.conifer`
+  (furu og gran), `pen.foliage(c, salt)` (lauvtre og buskar; kvart tre får sin eigen hausfarge), `pen.sandy`
+  (sand, brulegging, jordvegar), `pen.snowy` (tak og avsatsar), `pen.blade` (grasstrå), `pen.plant`
+  (bregner, hekkar). Vinteren er det snø på bakken og taka, lauvtreet er bart (`bareCrown`) og furua har snø.
+  Kall paletten *før* `atNight`, slik at natta og været legg seg oppå.
+* **Ekstra på bakken** (lauv, blomar, skavlar og glitter) er `GroundCover`, ei bufra flate per `u`. Bekkar
+  (`Brook`), dis (`mistBand`), is (`iceSheet`, `icicles`) og tre utan eigen stad (`seasonTree`) ligg i same fil.
+  Det som berre gjeld éin stad ligg i `SeasonArtOutdoor.kt`.
+* **Pynt** (`SeasonArtFeast.kt`): juletre, gåver, kransar, lysslynger, adventsstjerner, påskeegg, tulipanar,
+  vimpel, påskeris, gresskar, lykter, flaggermus, snille pappspøkelse og spindelvev. Kvar del er teikna i eit
+  lite lokalt koordinatsystem (éin eining er høgda i pikslar) frå statiske stiar; berre lysa rører seg med
+  `pen.t`, og dei lyser sterkare om natta. Kvar ting står på ein fast stad per stad i tabellane i
+  `SeasonArtPlaces.kt` (sett frå blåkopiane i `domain/Places.kt`). Bakre pynt blir teikna bak møblane,
+  fremre pynt (stjerner i vindauga) oppå.
+* Testar du på emulatoren: `--es season auto|winter|spring|summer|autumn` og
+  `--es festival none|christmas|easter|pumpkin|auto` (berre debug-bygget).

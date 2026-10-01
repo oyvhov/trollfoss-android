@@ -73,7 +73,7 @@ import kotlinx.coroutines.launch
 fun PlayScreen(vm: TrollfossViewModel) {
     val motion = LocalMotion.current
     val place = vm.place
-    val engine = remember(place, vm.generation) { vm.engineFor(place, motion) }
+    val engine = remember(place, vm.generation, vm.season, vm.festival) { vm.engineFor(place, motion) }
     val tick = remember { mutableLongStateOf(0L) }
     val text = rememberTextMeasurer()
     val density = LocalDensity.current.density

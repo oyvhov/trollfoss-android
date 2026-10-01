@@ -141,18 +141,18 @@ internal fun DrawScope.tivoliBack(st: Stage, pen: Pen) {
         Offset(0f, 0.565f * u), Size(st.w, 0.1f * u),
     )
     drawWaterPlane(st, pen, -9f, 99f, 0.57f, 0.6f, Color.White, 3, 0.1f, 0.14f, 0.5f * (1f - 0.5f * n))
-    drawForestRow(st, 0.2f, 0.64f, 0.03f, 53, 0.06f, 0.03f, 0.05f, Color(0xFF5E8F74).atNight(n, 0.72f), null, skip = 0.55f, ground = Color(0xFF8DBF8B).atNight(n, 0.72f))
+    drawForestRow(st, 0.2f, 0.64f, 0.03f, 53, 0.06f, 0.03f, 0.05f, pen.farTrees(Color(0xFF5E8F74)).atNight(n, 0.72f), null, skip = 0.55f, ground = pen.farGround(Color(0xFF8DBF8B)).atNight(n, 0.72f))
     rollerCoaster(st, pen)
-    drawPath(ridgePath(st, 0.5f, 0.77f, 0.006f, 55), Color(0xFF93C96F).atNight(n, 0.6f))
+    drawPath(ridgePath(st, 0.5f, 0.77f, 0.006f, 55), pen.farGround(Color(0xFF93C96F)).atNight(n, 0.6f))
     farTents(st, pen)
     entranceArch(st, pen)
 
     val ts = tivoliStatic.of(u)
     val back = PlaceId.TIVOLI.back
     inScene(st) {
-        drawPath(ts.pave, Brush.verticalGradient(listOf(Color(0xFFC9BFB2).atNight(n, 0.45f), Color(0xFFE7DED2).atNight(n, 0.45f)), startY = back * u, endY = FRONT_Y * u))
+        drawPath(ts.pave, Brush.verticalGradient(listOf(pen.sandy(Color(0xFFC9BFB2)).atNight(n, 0.45f), pen.sandy(Color(0xFFE7DED2)).atNight(n, 0.45f)), startY = back * u, endY = FRONT_Y * u))
         drawPoints(ts.joints, PointMode.Lines, Color(0xFFB3A898).atNight(n, 0.45f), strokeWidth = pen.lw * 0.7f)
-        drawPath(ts.verge, Color(0xFF7DBA5C).atNight(n, 0.45f))
+        drawPath(ts.verge, pen.ground(Color(0xFF7DBA5C)).atNight(n, 0.45f))
         drawPath(ts.paveEdge, Ink.line, alpha = 0.6f, style = pen.thin)
         for ((i, pts) in ts.confetti.withIndex()) drawPoints(pts, PointMode.Points, bulbColors[i].atNight(n, 0.35f), strokeWidth = 0.009f * u, cap = StrokeCap.Square)
     }
@@ -169,7 +169,7 @@ internal fun DrawScope.tivoliBack(st: Stage, pen: Pen) {
             drawPoints(pts, PointMode.Points, if (glow > 0f) c.lighten(0.3f * glow) else c, strokeWidth = 0.015f * u, cap = StrokeCap.Round, alpha = 0.85f + 0.15f * tw)
         }
     }
-    drawBase(st, pen, Color(0xFFE7DED2).atNight(n, 0.45f), Color(0xFF8E8173).atNight(n, 0.45f))
+    drawBase(st, pen, pen.sandy(Color(0xFFE7DED2)).atNight(n, 0.45f), Color(0xFF8E8173).atNight(n, 0.45f))
     drawBaseStones(st, pen, Color(0xFFB1A99E).atNight(n, 0.45f), 57)
 }
 

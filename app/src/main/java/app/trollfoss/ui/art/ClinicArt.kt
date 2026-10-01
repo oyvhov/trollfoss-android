@@ -134,9 +134,14 @@ private fun DrawScope.treeWindow(st: Stage, pen: Pen) {
         drawRect(Brush.verticalGradient(listOf(lerp(Color(0xFF7CC4F2), Color(0xFF1B1850), n), lerp(Color(0xFFD6F0FF), Color(0xFF4B3A8E), n)), startY = r.top, endY = r.bottom), r.topLeft, r.size)
         val trunkX = st.px(1.72f, 0.7f)
         drawRect(Color(0xFF8A5A3A).atNight(n, 0.5f), Offset(trunkX - 0.018f * u, r.top + r.height * 0.45f), Size(0.036f * u, r.height))
-        drawPath(crownPath(trunkX, r.top + r.height * 0.35f, 0.18f * u, 0.14f * u, 971), Color(0xFF6DBB5A).atNight(n, 0.5f))
-        drawPath(crownPath(trunkX - 0.08f * u, r.top + r.height * 0.3f, 0.09f * u, 0.07f * u, 972), Color(0xFF86CC66).atNight(n, 0.5f))
-        drawRect(Color(0xFF8CC96A).atNight(n, 0.5f), Offset(r.left, r.bottom - 0.03f * u), Size(r.width, 0.03f * u))
+        if (pen.winter) {
+            bareCrown(trunkX, r.top + r.height * 0.4f, 0.2f * u, 0.17f * u, pen, 971, n)
+        } else {
+            drawPath(crownPath(trunkX, r.top + r.height * 0.35f, 0.18f * u, 0.14f * u, 971), pen.foliage(Color(0xFF6DBB5A), 971).atNight(n, 0.5f))
+            drawPath(crownPath(trunkX - 0.08f * u, r.top + r.height * 0.3f, 0.09f * u, 0.07f * u, 972), pen.foliage(Color(0xFF86CC66), 972).atNight(n, 0.5f))
+            if (pen.season == app.trollfoss.domain.Season.SPRING) blossomDots(trunkX, r.top + r.height * 0.33f, 0.2f * u, 0.14f * u, 971, n, count = 24, size = 0.014f * u)
+        }
+        drawRect(pen.ground(Color(0xFF8CC96A)).atNight(n, 0.5f), Offset(r.left, r.bottom - 0.03f * u), Size(r.width, 0.03f * u))
         val by = r.top + r.height * 0.2f + sin(pen.t * 1.3f) * 0.005f * u
         val bx = r.left + r.width * (0.2f + 0.05f * sin(pen.t * 0.4f))
         drawGull(Offset(bx, by), 0.012f * u, 0.5f + 0.5f * sin(pen.t * 6f), Stroke(pen.lw, cap = StrokeCap.Round), 1f - n)

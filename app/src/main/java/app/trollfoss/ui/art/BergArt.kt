@@ -540,6 +540,11 @@ private class BgGeo(
 /** The colours of the meadow flowers: white, yellow, magenta, blue, red, violet. */
 private val BG_FLOWERS = arrayOf(Color(0xFFFFFFFF), Color(0xFFFFD84A), Color(0xFFE8509A), Color(0xFF4F8BFF), Color(0xFFE8473F), Color(0xFFA974F0))
 
+/** Heather and late blooms in autumn: gold, orange, plum, violet, rust, lilac. */
+private val BG_FLOWERS_AUTUMN = arrayOf(Color(0xFFE8A33C), Color(0xFFD9742A), Color(0xFFB5457A), Color(0xFF8A6BD6), Color(0xFFC0392B), Color(0xFFB07AD0))
+
+private fun bgFlower(pen: Pen, k: Int): Color = if (pen.season == app.trollfoss.domain.Season.AUTUMN) BG_FLOWERS_AUTUMN[k] else BG_FLOWERS[k]
+
 private const val BG_CHUNK = 1.0f
 private const val BG_CHUNKS = 10
 
@@ -1416,49 +1421,50 @@ private fun DrawScope.bgGroundAndFoot(st: Stage, pen: Pen, geo: BgGeo) {
     val last = min(BG_CHUNKS - 1, floor((st.cam + st.vw) / BG_CHUNK).toInt() + 1)
     // The forested foothills, then the falls running down through their notches, then the pine belt.
     inScene(st) {
-        drawPath(geo.hills, BgC.hill.bg(pen, 0.55f, 0.3f))
+        drawPath(geo.hills, pen.farTrees(BgC.hill).bg(pen, 0.55f, 0.3f))
         for (c in first..last) {
-            drawPath(geo.hillPines[c], BgC.hillPine.bg(pen, 0.55f, 0.3f))
-            drawPath(geo.hillPinesShade[c], BgC.hillPineShade.bg(pen, 0.55f, 0.3f))
+            drawPath(geo.hillPines[c], pen.farTrees(BgC.hillPine).bg(pen, 0.55f, 0.3f))
+            drawPath(geo.hillPinesShade[c], pen.farTrees(BgC.hillPineShade).bg(pen, 0.55f, 0.3f))
         }
     }
     bgFalls(st, pen, geo)
     inScene(st) {
-        drawPath(geo.treeline, BgC.pine.bg(pen, 0.55f, 0.2f))
+        drawPath(geo.treeline, pen.farTrees(BgC.pine).bg(pen, 0.55f, 0.2f))
     }
     inScene(st) {
         for (c in first..last) {
-            drawPath(geo.pines[c], BgC.pineLit.bg(pen, 0.55f, 0.2f))
-            drawPath(geo.pinesShade[c], BgC.pineShade.bg(pen, 0.55f, 0.2f))
+            drawPath(geo.pines[c], pen.farTrees(BgC.pineLit).bg(pen, 0.55f, 0.2f))
+            drawPath(geo.pinesShade[c], pen.farTrees(BgC.pineShade).bg(pen, 0.55f, 0.2f))
         }
         bgChaletRow(st, pen)
-        val lit = lerp(BgC.meadowLit, Color(0xFFE9F0F6), if (snowy) 0.55f else 0f).bg(pen, 0.5f, 0.2f)
-        val low = lerp(BgC.meadowLow, Color(0xFFD5E0EC), if (snowy) 0.5f else 0f).bg(pen, 0.5f, 0.2f)
+        val lit = pen.ground(lerp(BgC.meadowLit, Color(0xFFE9F0F6), if (snowy) 0.55f else 0f)).bg(pen, 0.5f, 0.2f)
+        val low = pen.ground(lerp(BgC.meadowLow, Color(0xFFD5E0EC), if (snowy) 0.5f else 0f)).bg(pen, 0.5f, 0.2f)
         drawPath(geo.meadow, Brush.verticalGradient(0f to lit, 1f to low, startY = 0.74f * u, endY = 0.97f * u))
-        drawPath(geo.brook, BgC.water.bg(pen, 0.4f, 0.2f))
-        drawPath(geo.pathFill, BgC.path.bg(pen, 0.5f, 0.2f))
-        drawPath(geo.pathEdgeA, BgC.pathDark.bg(pen, 0.5f, 0.2f), alpha = 0.7f, style = Stroke(pen.lw * 1.4f, cap = StrokeCap.Round))
-        drawPath(geo.pathEdgeB, BgC.pathDark.bg(pen, 0.5f, 0.2f), alpha = 0.7f, style = Stroke(pen.lw * 1.4f, cap = StrokeCap.Round))
+        drawPath(geo.brook, (if (pen.winter) SeasonPal.ice else BgC.water).bg(pen, 0.4f, 0.2f))
+        drawPath(geo.pathFill, pen.sandy(BgC.path).bg(pen, 0.5f, 0.2f))
+        drawPath(geo.pathEdgeA, pen.sandy(BgC.pathDark).bg(pen, 0.5f, 0.2f), alpha = 0.7f, style = Stroke(pen.lw * 1.4f, cap = StrokeCap.Round))
+        drawPath(geo.pathEdgeB, pen.sandy(BgC.pathDark).bg(pen, 0.5f, 0.2f), alpha = 0.7f, style = Stroke(pen.lw * 1.4f, cap = StrokeCap.Round))
         val stone = BgC.stone.bg(pen, 0.5f, 0.2f)
         val stoneShade = BgC.stoneShade.bg(pen, 0.5f, 0.2f)
-        val pebble = BgC.pathDark.bg(pen, 0.5f, 0.2f)
-        val grass = BgC.grass.bg(pen, 0.5f, 0.2f)
+        val pebble = pen.sandy(BgC.pathDark).bg(pen, 0.5f, 0.2f)
+        val grass = pen.blade(BgC.grass).bg(pen, 0.5f, 0.2f)
         for (c in first..last) {
             drawPath(geo.stones[c], stone)
             drawPath(geo.stonesShade[c], stoneShade, alpha = 0.6f)
             drawPath(geo.pebbles[c], pebble)
             drawPath(geo.tufts[c], grass)
+            if (pen.winter) continue
             for (k in 0 until 12) {
                 val pts = geo.flowerPts[c][k]
                 if (pts.isEmpty()) continue
                 val big = k % 2 == 1
-                drawPoints(pts, PointMode.Points, BG_FLOWERS[k / 2].bg(pen, 0.45f, 0.1f), strokeWidth = if (big) 0.011f * u else 0.007f * u, cap = StrokeCap.Round)
+                drawPoints(pts, PointMode.Points, bgFlower(pen, k / 2).bg(pen, 0.45f, 0.1f), strokeWidth = if (big) 0.011f * u else 0.007f * u, cap = StrokeCap.Round)
             }
             drawPoints(geo.flowerHearts[c], PointMode.Points, Color(0xFFFFE680).bg(pen, 0.45f, 0.1f), strokeWidth = 0.0035f * u, cap = StrokeCap.Round)
         }
         drawPath(geo.boulders, stone)
         drawPath(geo.bouldersShade, stoneShade)
-        drawPath(geo.bouldersTop, BgC.grass.bg(pen, 0.5f, 0.2f))
+        drawPath(geo.bouldersTop, pen.ground(BgC.grass).bg(pen, 0.5f, 0.2f))
         drawPath(geo.boulders, Ink.line, style = pen.thin)
         // Sparkles on the brook.
         val sparks = ArrayList<Offset>(10)
@@ -1475,7 +1481,7 @@ private fun DrawScope.bgGroundAndFoot(st: Stage, pen: Pen, geo: BgGeo) {
         Brush.verticalGradient(listOf(Color(0x33FFC98A), Color(0x00FFC98A)), startY = 0.74f * u, endY = 0.9f * u),
         Offset(0f, 0.74f * u), Size(st.w, 0.16f * u), alpha = (1f - n) * (1f - overcast(pen)),
     )
-    drawBase(st, pen, BgC.grass.bg(pen, 0.5f, 0.2f), Color(0xFF7A6A5A).atNight(n, 0.5f))
+    drawBase(st, pen, pen.ground(BgC.grass).bg(pen, 0.5f, 0.2f), Color(0xFF7A6A5A).atNight(n, 0.5f))
     drawBaseStones(st, pen, Color(0xFF9A8F86).atNight(n, 0.5f), 29)
 }
 
@@ -1523,7 +1529,7 @@ private fun DrawScope.bgFront(st: Stage, pen: Pen) {
     val first = max(0, floor(st.cam / BG_CHUNK).toInt() - 1)
     val last = min(BG_CHUNKS - 1, floor((st.cam + st.vw) / BG_CHUNK).toInt() + 1)
     val snowy = pen.weather == Weather.SNOW
-    val grassA = lerp(BgC.grass, Color(0xFFDDE8F2), if (snowy) 0.5f else 0f)
+    val grassA = pen.blade(lerp(BgC.grass, Color(0xFFDDE8F2), if (snowy) 0.5f else 0f))
     inScene(st) {
         for (c in first..last) {
             for (g in 0 until 3) {
@@ -1535,12 +1541,12 @@ private fun DrawScope.bgFront(st: Stage, pen: Pen) {
                 }
             }
             val stems = geo.frontStems[c]
-            if (stems.isNotEmpty()) drawPoints(stems, PointMode.Lines, BgC.grass.darken(0.1f).bg(pen, 0.5f, 0.2f), strokeWidth = pen.lw * 1.2f, cap = StrokeCap.Round)
-            for (k in 0 until 6) {
+            if (stems.isNotEmpty() && !pen.winter) drawPoints(stems, PointMode.Lines, pen.blade(BgC.grass).darken(0.1f).bg(pen, 0.5f, 0.2f), strokeWidth = pen.lw * 1.2f, cap = StrokeCap.Round)
+            if (!pen.winter) for (k in 0 until 6) {
                 val pts = geo.frontHeads[c][k]
                 if (pts.isEmpty()) continue
                 drawPoints(pts, PointMode.Points, Ink.line, strokeWidth = 0.0175f * u, cap = StrokeCap.Round)
-                drawPoints(pts, PointMode.Points, BG_FLOWERS[k].bg(pen, 0.45f, 0.1f), strokeWidth = 0.0135f * u, cap = StrokeCap.Round)
+                drawPoints(pts, PointMode.Points, bgFlower(pen, k).bg(pen, 0.45f, 0.1f), strokeWidth = 0.0135f * u, cap = StrokeCap.Round)
                 drawPoints(pts, PointMode.Points, if (k == 1) Color(0xFFFF9A3D) else Color(0xFFFFE680), strokeWidth = 0.005f * u, cap = StrokeCap.Round)
             }
         }
@@ -1548,7 +1554,8 @@ private fun DrawScope.bgFront(st: Stage, pen: Pen) {
     // Butterflies by day, fireflies by night; none in rain or snow.
     val calm = 1f - overcast(pen)
     val day = (1f - n) * calm
-    if (day > 0.05f) {
+    val bugs = pen.season == app.trollfoss.domain.Season.SUMMER || pen.season == app.trollfoss.domain.Season.SPRING
+    if (day > 0.05f && bugs) {
         val cols = intArrayOf(0xFFFFC83D.toInt(), 0xFF4F8BFF.toInt(), 0xFFFFFFFF.toInt())
         for (k in 0 until 3) {
             val bx = st.px(1.6f + k * 2.9f + sin(t * 0.21f + k * 1.7f) * 1.1f, 1.0f)
@@ -1567,7 +1574,7 @@ private fun DrawScope.bgFront(st: Stage, pen: Pen) {
             drawLine(Ink.line, Offset(bx, by - s * 0.2f), Offset(bx, by + s * 0.35f), strokeWidth = pen.lw, alpha = day, cap = StrokeCap.Round)
         }
     }
-    if (n > 0.3f && calm > 0.3f) {
+    if (n > 0.3f && calm > 0.3f && bugs) {
         val a = ramp((n - 0.3f) / 0.5f) * calm
         for (k in 0 until 9) {
             val fx = st.px(0.5f + k * 1.0f + sin(t * 0.3f + k * 2.1f) * 0.6f, 1.0f)

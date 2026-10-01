@@ -197,9 +197,13 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         sfx.enabled = settings.sound
         music.enabled = settings.music
         val today = java.time.LocalDate.now().toEpochDay()
-        season = Seasons.resolve(settings.season, today)
-        festival = if (settings.festive) Seasons.festival(today) else Festival.NONE
+        season = debugSeason ?: Seasons.resolve(settings.season, today)
+        festival = debugFestival ?: if (settings.festive) Seasons.festival(today) else Festival.NONE
     }
+
+    /** Debug builds only: a season and a feast forced by the debug intent (never saved). */
+    private var debugSeason: Season? = null
+    private var debugFestival: Festival? = null
 
     private var debugSkip = 0
 
@@ -474,7 +478,12 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     /** Debug builds only: jump straight to a place or screen for screenshots. */
-    fun debug(placeName: String?, screenName: String?, nightOn: String?, weatherName: String?, secrets: Int, wishes: Boolean = false, skip: Int = 0, task: String? = null) {
+    fun debug(placeName: String?, screenName: String?, nightOn: String?, weatherName: String?, secrets: Int, wishes: Boolean = false, skip: Int = 0, task: String? = null, seasonName: String? = null, festivalName: String? = null) {
+        if (seasonName != null || festivalName != null) {
+            if (seasonName != null) debugSeason = Season.entries.firstOrNull { it.name.equals(seasonName, true) }
+            if (festivalName != null) debugFestival = Festival.entries.firstOrNull { it.name.equals(festivalName, true) }
+            applySettings()
+        }
         placeName?.let { name -> PlaceId.entries.firstOrNull { it.name.equals(name, true) }?.let { travel(it) } }
         when (screenName?.lowercase()) {
             "map" -> open(Screen.Map)
