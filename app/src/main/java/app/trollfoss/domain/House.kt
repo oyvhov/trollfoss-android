@@ -99,6 +99,9 @@ object HouseFx {
     const val CELLAR = 400
     const val GARDEN = 500
     const val STORY = 600
+
+    /** Mitt hus, the child's own house: building sounds and sparkle (see docs/BYGG.md). */
+    const val MINE = 700
 }
 
 /** The golden keys of the house: one hides on each floor, in a funny place that takes a small action. */
