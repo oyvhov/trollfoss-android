@@ -118,9 +118,15 @@ object House {
 
     val passages: List<Passage> by lazy { floors.flatMap { it.passages } }
 
+    /**
+     * True for the places whose fixtures may be ways between places: the floors of the house, and Trollhola
+     * (its end of the secret tunnel from the cellar).
+     */
+    fun hasPassages(place: PlaceId): Boolean = place.manor || place == PlaceId.LAB
+
     /** The passage that [f] is the way in of, or null for any other fixture. */
     fun passageAt(f: Fixture): Passage? {
-        if (!f.place.big) return null
+        if (!hasPassages(f.place)) return null
         return passages.firstOrNull { it.place == f.place && f.place.idBase + it.fixture == f.id }
     }
 
@@ -209,7 +215,11 @@ object House {
 class HouseRules(private val sim: Sim, private val random: Random) {
     private val world get() = sim.world
     private val listener get() = sim.listener
-    private val rules: Map<PlaceId, FloorRules> by lazy { House.floors.associate { it.place to it.rules(sim, random) } }
+    private val rules: Map<PlaceId, FloorRules> by lazy {
+        val floors = House.floors.associate { it.place to it.rules(sim, random) }
+        // Trollhola's end of the secret tunnel belongs to the cellar's rules too.
+        floors + (PlaceId.LAB to floors.getValue(PlaceId.MANOR_CELLAR))
+    }
 
     fun tap(place: PlaceId, f: Fixture, dx: Float, dy: Float): Boolean {
         if (rules[place]?.tap(place, f, dx, dy) == true) return true

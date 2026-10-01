@@ -137,6 +137,8 @@ class DesignerTest {
         val lamp = sim.designer.add(PlaceId.CAFE, FixtureType.FLOWER_POT, 2, 1.0f, 0.9f)!!
         world.found += "home_pillow"
         sim.designer.store(PlaceId.HOME, world.fixturesIn(PlaceId.HOME).first { it.type == FixtureType.BED })
+        // Painting may have finished a dealt task already (it depends on how the deck was shuffled); count only these.
+        world.stickers.clear()
         world.stickers += listOf(1, 2, 3)
         val json = WorldStore.encode(world, Settings()).toString()
         val w2 = WorldStore.decode(org.json.JSONObject(json)).world

@@ -68,7 +68,8 @@ class HouseTest {
             val arrival = House.arrival(p.to, p.arrive)
             assertNotNull("${p.id} arrives at ${p.to}/${p.arrive}", arrival)
             assertTrue("${p.id} arrives inside ${p.to}", arrival!!.x in 0f..p.to.width)
-            assertEquals("${p.id} leaves from its own floor", p.place, House.floor(p.place)?.place)
+            // A way leaves from a floor of the house, or from Trollhola (the mine door at the end of the cellar's tunnel).
+            assertTrue("${p.id} leaves from its own floor", House.hasPassages(p.place) && (p.place == PlaceId.LAB || House.floor(p.place)?.place == p.place))
         }
     }
 

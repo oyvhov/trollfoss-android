@@ -35,6 +35,8 @@ enum class Sfx {
     AT_CREAK, AT_WIND, AT_SCRATCH, AT_OOO, AT_SPRING, AT_KNIT, AT_DONG, AT_COINS,
 
     // ---- cellar ----
+    /** Pipes, steam and machines of the cellar: a metal clang, a hiss, the washer's drum, a saw, rail clacks, a zap, party sounds. */
+    CE_CLANG, CE_HISS, CE_THRUM, CE_RASP, CE_CLACK, CE_ZAP, CE_BASS, CE_HAT, CE_WHISTLE, CE_CREAK, CE_BANG, CE_BELL,
 
     // ---- garden ----
     GA_CROAK, GA_CREAK, GA_WINK, GA_GROW, GA_SPRAY, GA_DIG,
@@ -624,6 +626,72 @@ object Synth {
         }
 
         // ---- Storhuset cellar ----
+
+        // A pipe struck with a spanner: a ringing, slightly out-of-tune clang. Pitched with the playback rate.
+        Sfx.CE_CLANG -> listOf(
+            Tone(330.0, 0.0, 0.95, 0.5, listOf(1.0 to 1.0, 2.76 to 0.55, 5.4 to 0.3, 8.9 to 0.12), decay = 4.5),
+            Tone(247.0, 0.0, 0.6, 0.25, soft, decay = 8.0),
+            Noise(0.0, 0.03, 0.45, 3500.0, 1800.0, decay = 90.0, seed = 31),
+        )
+        // Steam escaping from a pipe.
+        Sfx.CE_HISS -> listOf(
+            Noise(0.0, 0.95, 0.55, 5200.0, 3600.0, swell = true, seed = 32),
+            Noise(0.0, 0.95, 0.22, 2400.0, 1700.0, swell = true, seed = 33),
+        )
+        // The washing machine's drum: a low wobbling hum and some sloshing.
+        Sfx.CE_THRUM -> listOf(
+            Tone(72.0, 0.0, 1.4, 0.42, buzzy, decay = 0.25, vibrato = 0.7, vibratoHz = 9.0, attack = 0.1),
+            Tone(144.0, 0.0, 1.4, 0.12, soft, decay = 0.3, vibrato = 0.5, vibratoHz = 9.0, attack = 0.1),
+            Noise(0.0, 1.4, 0.2, 600.0, 950.0, swell = true, seed = 34),
+        )
+        // A hand saw: four rasping strokes.
+        Sfx.CE_RASP -> (0 until 4).flatMap { i ->
+            listOf(
+                Noise(i * 0.2, 0.17, 0.5, 2300.0, 1500.0, decay = 5.0, attack = 0.01, seed = 35 + i),
+                Tone(230.0, i * 0.2, 0.17, 0.16, buzzy, decay = 6.0, slideTo = 150.0),
+            )
+        }
+        // Rail joints: clack-clack.
+        Sfx.CE_CLACK -> listOf(
+            Noise(0.0, 0.03, 0.7, 3200.0, 1500.0, decay = 120.0, seed = 39),
+            Tone(880.0, 0.0, 0.05, 0.25, soft, decay = 60.0, slideTo = 600.0),
+            Noise(0.13, 0.03, 0.6, 3000.0, 1400.0, decay = 120.0, seed = 40),
+            Tone(780.0, 0.13, 0.05, 0.22, soft, decay = 60.0, slideTo = 540.0),
+        )
+        // Charging: a rising electric buzz with crackles.
+        Sfx.CE_ZAP -> listOf(
+            Tone(120.0, 0.0, 0.55, 0.35, buzzy, decay = 0.8, slideTo = 520.0, vibrato = 2.0, vibratoHz = 40.0, attack = 0.02),
+            Crackle(0.0, 0.55, 0.3, 0.4, seed = 41),
+        )
+        // The jukebox's bass: a round pluck on C3, pitched down with the playback rate.
+        Sfx.CE_BASS -> listOf(
+            Tone(130.8, 0.0, 0.34, 0.75, listOf(1.0 to 1.0, 2.0 to 0.35, 3.0 to 0.12), decay = 7.0, attack = 0.006),
+        )
+        // A hi-hat.
+        Sfx.CE_HAT -> listOf(Noise(0.0, 0.06, 0.5, 7500.0, 6500.0, decay = 70.0, seed = 42))
+        // The boiler's steam whistle.
+        Sfx.CE_WHISTLE -> listOf(
+            Tone(660.0, 0.0, 0.65, 0.35, listOf(1.0 to 1.0, 2.0 to 0.25, 3.0 to 0.1), decay = 0.8, attack = 0.04, vibrato = 0.15, vibratoHz = 8.0),
+            Noise(0.0, 0.65, 0.14, 4500.0, 4500.0, swell = true, seed = 43),
+        )
+        // A stiff valve wheel turning.
+        Sfx.CE_CREAK -> listOf(
+            Tone(170.0, 0.0, 0.42, 0.28, buzzy, decay = 1.5, slideTo = 270.0, vibrato = 1.5, vibratoHz = 22.0, attack = 0.05),
+            Noise(0.0, 0.4, 0.1, 900.0, 1400.0, swell = true, seed = 44),
+        )
+        // The confetti cannon: pop and a puff of fizz.
+        Sfx.CE_BANG -> listOf(
+            Noise(0.0, 0.14, 0.9, 1800.0, 500.0, decay = 22.0, attack = 0.001, seed = 45),
+            Tone(110.0, 0.0, 0.22, 0.6, soft, decay = 14.0, slideTo = 60.0),
+            Crackle(0.05, 0.3, 0.3, 0.3, seed = 46),
+        )
+        // The mine cart's bell: ding-ding.
+        Sfx.CE_BELL -> listOf(
+            Tone(1760.0, 0.0, 0.45, 0.4, bell, decay = 6.0),
+            Tone(2349.0, 0.0, 0.4, 0.18, bell, decay = 7.0),
+            Tone(1760.0, 0.19, 0.5, 0.4, bell, decay = 6.0),
+            Tone(2349.0, 0.19, 0.4, 0.18, bell, decay = 7.0),
+        )
 
         // ---- Storhuset garden ----
         // A frog's «ribbit»: a low buzz that bends up, then a shorter one that sags. Played at a pentatonic rate per frog.

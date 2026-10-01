@@ -142,6 +142,18 @@ enum class FixtureType {
     AT_MAP_TABLE, AT_TREASURE_CHEST, AT_GLOBE, AT_FAMILY_TREE, AT_CHANDELIER, AT_SCONCE,
 
     // ---- Storhuset cellar (HouseCellar.kt) ----
+    // Workshop: Rolf's charging station, a hanging bulb, crates and a barrel, a mouse hole, a saw horse.
+    CE_CHARGER, CE_BULB, CE_CRATES, CE_MOUSE_HOLE, CE_SAW,
+    // Laundry: washer, dryer, the sock monster, the basket under the chute, a clothes line, an ironing board, the chute.
+    CE_WASHER, CE_DRYER, CE_SOCK_MONSTER, CE_BASKET, CE_CLOTHESLINE, CE_IRON_BOARD, CE_CHUTE,
+    // Boiler room: the boiler and its three valves.
+    CE_BOILER, CE_VALVE,
+    // Pool and sauna: springboard, slide, rubber duck, the water to tap, sauna bucket, shower, lifebuoy.
+    CE_DIVING_BOARD, CE_POOL_SLIDE, CE_POOL_FLOAT, CE_POOL_WATER, CE_SAUNA_BUCKET, CE_SHOWER, CE_LIFEBUOY,
+    // Party room: light-up dance floor, jukebox, karaoke screen, snack bar, bar stool, neon signs, confetti cannon.
+    CE_DANCE_FLOOR, CE_JUKEBOX, CE_KARAOKE, CE_SNACK_BAR, CE_BAR_STOOL, CE_NEON, CE_CONFETTI,
+    // The tunnel: the mine cart.
+    CE_MINE_CART,
 
     // ---- Storhuset garden (HouseGarden.kt) ----
     GA_GREENHOUSE, GA_PLANTER, GA_FROG, GA_BRIDGE, GA_SHED, GA_GRILL, GA_PATIO, GA_FLOWER_BED, GA_BIRDHOUSE,

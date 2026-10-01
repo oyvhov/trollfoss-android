@@ -222,6 +222,8 @@ enum class ThingType(
     AT_RECORD(0.07f, 0.07f, Cat.TOY, bounce = 0.3f, rolls = true, variants = 6),
 
     // ---- cellar ----
+    /** A sock, never one of a pair: the sock monster burps them out in odd couples. Variants are the six patterns. */
+    CE_SOCK(0.075f, 0.075f, Cat.TOY, bounce = 0.12f, variants = 6),
 
     // ---- garden ----
     /** A garden vegetable from the greenhouse. Variant: 0 pumpkin, 1 tomato, 2 pea pod. */

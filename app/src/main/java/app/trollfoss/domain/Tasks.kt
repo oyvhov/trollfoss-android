@@ -18,6 +18,8 @@ enum class Deed {
     AT_COSTUME, AT_CATCH, AT_RECORD, AT_STARGAZE, AT_KNIT,
 
     // ---- cellar ----
+    /** A sock fed to the sock monster; the three boiler valves all open; a dive from the springboard; a tune started on the jukebox. */
+    CE_SOCK_FED, CE_VALVES, CE_DIVE, CE_DANCE,
 
     // ---- garden ----
     GA_CHOIR, GA_GIANT, GA_ZIP, GA_GRILL,
@@ -174,6 +176,10 @@ class TaskBook(private val world: World) {
             Task("attic_knit", PlaceId.MANOR_ATTIC, 1, thing = ThingType.GARMENT, match = deed(Deed.AT_KNIT)),
 
             // ---- cellar ----
+            Task("cellar_socks", PlaceId.MANOR_CELLAR, 2, FixtureType.CE_SOCK_MONSTER, ThingType.CE_SOCK, match = deed(Deed.CE_SOCK_FED)),
+            Task("cellar_valves", PlaceId.MANOR_CELLAR, 1, FixtureType.CE_VALVE, match = deed(Deed.CE_VALVES)),
+            Task("cellar_dive", PlaceId.MANOR_CELLAR, 1, FixtureType.CE_DIVING_BOARD, match = deed(Deed.CE_DIVE)),
+            Task("cellar_dance", PlaceId.MANOR_CELLAR, 1, FixtureType.CE_JUKEBOX, icon = "note", match = deed(Deed.CE_DANCE)),
 
             // ---- garden ----
             Task("garden_choir", PlaceId.MANOR_GARDEN, 1, thing = ThingType.MICROPHONE, icon = "note", match = deed(Deed.GA_CHOIR)),
