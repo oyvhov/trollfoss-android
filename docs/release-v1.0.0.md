@@ -11,7 +11,7 @@ under ein stor foss, med folk, dyr og troll å leike med. Ingen reglar, ingen po
   Romstasjonen, Tivoliet, Butikken, Legekontoret, Scena, Havbotnen og **Heileberget** – eit stort, langt
   fjell med taubane, ekko-stein, ørnerede, toppflagg og fjellgeiter.
 - **Levande figurar**: dei pustar, blunkar, ønskjer seg ting i ønskjebobler, pratar saman, går tur, set seg
-  og legg seg til å sove om natta. Nitten figurar med eigne namn, og dyr som tuslar rundt på eiga hand.
+  og legg seg til å sove om natta. Tjue figurar med eigne namn, og dyr som tuslar rundt på eiga hand.
 - **Humor overalt**: prompepute, bananskal, pepar som bles hatten av, kake i fjeset, hikke og rap, kiling.
 - **Heimedesignar** med møbelkatalog, 12 tapet, 9 golv og lager, pluss rydding med kost, søppelbøtte og robotstøvsugar.
 - **Oppdragstavle** med tre biletoppdrag om gongen, klistremerkealbum og spesialmøblar som låsast opp.
