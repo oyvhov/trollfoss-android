@@ -360,18 +360,19 @@ internal fun DrawScope.gardenHouse(st: Stage, pen: Pen) {
         drawPath(g.dormerRoof, GhC.roofLight.ga(pen, 0.6f))
         drawPath(g.dormerRoof, Ink.line, style = pen.stroke)
     }
-    // Windows (scene -> pixels by hand, so the glows can use the screen).
-    inScene(st) {
-        ghWindow(1.3f - 0.0f, EAVE - 0.115f, 0.18f, 0.09f, u, pen, lit, false)
-        ghWindow(-0.05f, 0.03f, 0.22f, 0.19f, u, pen, lit, false)
-        ghWindow(1.25f, 0.03f, 0.22f, 0.19f, u, pen, lit, false)
-        ghWindow(1.78f, 0.03f, 0.22f, 0.19f, u, pen, lit, false)
-        ghWindow(2.0f, 0.4f, 0.28f, 0.27f, u, pen, lit, true)
-        ghWindow(0.62f, 0.4f, 0.28f, 0.27f, u, pen, lit, true)
-        ghWindow(3.0f, 0.4f, 0.22f, 0.25f, u, pen, lit, true)
+    // Windows, drawn only when they are on screen.
+    fun win(cx: Float, top: Float, w: Float, h: Float, flowers: Boolean) {
+        if (st.sees(cx - w, cx + w)) inScene(st) { ghWindow(cx, top, w, h, u, pen, lit, flowers) }
     }
+    win(1.3f, EAVE - 0.115f, 0.18f, 0.09f, false)
+    win(-0.05f, 0.03f, 0.22f, 0.19f, false)
+    win(1.25f, 0.03f, 0.22f, 0.19f, false)
+    win(1.78f, 0.03f, 0.22f, 0.19f, false)
+    win(2.0f, 0.4f, 0.28f, 0.27f, true)
+    win(0.62f, 0.4f, 0.28f, 0.27f, true)
+    win(3.0f, 0.4f, 0.22f, 0.25f, true)
     // The bay tower.
-    inScene(st) {
+    if (st.sees(0.2f, 0.9f)) inScene(st) {
         val body = GhC.siding.ga(pen, 0.5f)
         drawPath(g.towerRoof, GhC.roofLight.ga(pen, 0.6f).gaSnow(pen, 0.25f))
         drawPath(g.towerRoofLines, GhC.roofDark.ga(pen, 0.6f), alpha = 0.5f, style = Stroke(pen.lw * 0.8f))
@@ -386,7 +387,7 @@ internal fun DrawScope.gardenHouse(st: Stage, pen: Pen) {
         ghWindow(0.55f, EAVE + 0.03f, 0.14f, 0.1f, u, pen, lit, false)
     }
     // The balcony, its glass doors and the drainpipe.
-    inScene(st) {
+    if (st.sees(1.5f, 3.4f)) inScene(st) {
         val deckC = GhC.wood.ga(pen, 0.5f)
         // The glass doors: two leaves with bars, curtains and a warm glow at night.
         val dl = 2.43f * u
