@@ -45,41 +45,34 @@ internal fun MapPen.drawCableStation(d: DrawScope, g: MapGeo) {
             d.drawCircle(c(Color(0xFFB9C0CC)), 0.1f, Offset(0.3f + vx + 0.06f, -0.4f))
             d.drawCircle(Ink.line, 0.1f, Offset(0.3f + vx + 0.06f, -0.4f), style = Stroke(lw * 1.6f))
             line(-0.34f, -0.28f, -0.34f, -0.62f, Ink.line, 1.6f)
-            val wave = sin(t * 4f) * 0.02f
+            val wave = 0f
             fill(path(-0.34f, -0.62f, -0.12f, -0.57f + wave, -0.34f, -0.5f), Color(0xFFE94F4F))
             tufts(-0.5f, 0.45f, y = 0.22f, s = 0.05f)
         }
     }
 }
 
-/** The cable with a gentle sag, two cabins gliding in opposite directions and a pylon on the way. */
-internal fun MapPen.drawCableCar(d: DrawScope, g: MapGeo) = with(d) {
+/** The cable with a gentle sag and a lattice pylon half way up (still). */
+internal fun MapPen.drawCableStatic(d: DrawScope, g: MapGeo) = with(d) {
     val a = g.cableTop
     val b = g.cableBottom
-    val sag = 0.012f * h
     val steel = nt(Color(0xFF4A4A57), 0.4f)
-    fun pt(s: Float): Offset = Offset(mix(a.x, b.x, s), mix(a.y, b.y, s) + 4f * sag * s * (1f - s))
-    val cable = Path().apply {
-        moveTo(a.x, a.y)
-        for (k in 1..16) {
-            val s = k / 16f
-            val o = pt(s)
-            lineTo(o.x, o.y)
-        }
-    }
+    val cable = g.cablePath
     drawPath(cable, Ink.line, alpha = 0.5f, style = Stroke(lw * 2.6f, cap = StrokeCap.Round))
     drawPath(cable, steel, style = Stroke(lw * 1.2f, cap = StrokeCap.Round))
-    // A lattice pylon half way up.
-    val pc = pt(0.5f)
+    val pc = g.cablePoint(0.5f)
     val ph = 0.026f * h
     drawLine(Ink.line, Offset(pc.x - ph * 0.45f, pc.y + ph * 1.4f), Offset(pc.x, pc.y - ph * 0.2f), strokeWidth = lw * 2f, cap = StrokeCap.Round)
     drawLine(Ink.line, Offset(pc.x + ph * 0.45f, pc.y + ph * 1.4f), Offset(pc.x, pc.y - ph * 0.2f), strokeWidth = lw * 2f, cap = StrokeCap.Round)
     drawLine(Ink.line, Offset(pc.x - ph * 0.28f, pc.y + ph * 0.7f), Offset(pc.x + ph * 0.28f, pc.y + ph * 0.7f), strokeWidth = lw * 1.4f)
     drawLine(Ink.line, Offset(pc.x - ph * 0.5f, pc.y), Offset(pc.x + ph * 0.5f, pc.y), strokeWidth = lw * 2f, cap = StrokeCap.Round)
-    // The cabins.
+}
+
+/** The two cabins gliding along the cable in opposite directions (live). */
+internal fun MapPen.drawCabins(d: DrawScope, g: MapGeo) = with(d) {
     val s0 = 0.5f + 0.5f * sin(t * 0.11f)
     for ((k, s) in listOf(s0 to Color(0xFFE94F4F), (1f - s0) to Color(0xFFFFC83D)).withIndex()) {
-        val c = pt(s.first)
+        val c = g.cablePoint(s.first)
         val cw = h * 0.026f
         val ch = h * 0.022f
         val sw = sin(t * 1.2f + k * 2f) * cw * 0.05f
@@ -92,12 +85,15 @@ internal fun MapPen.drawCableCar(d: DrawScope, g: MapGeo) = with(d) {
     }
 }
 
-/** Climbers on the hiking trail, goats on the ledges: tiny figures that give the mountain its scale. */
-internal fun MapPen.drawHeileLife(d: DrawScope, g: MapGeo) = with(d) {
-    // The trail itself: a thin switchback path with little posts.
+/** The hiking trail: a thin switchback path with little dashes (still). */
+internal fun MapPen.drawTrail(d: DrawScope, g: MapGeo) = with(d) {
     val tr = g.trailPath
     drawPath(tr, Ink.line, alpha = 0.3f, style = Stroke(lw * 2.2f, cap = StrokeCap.Round, join = StrokeJoin.Round))
     drawPath(g.trailDashes, nt(if (snow) Color.White else Color(0xFFF1E2B8), 0.5f), style = Stroke(lw * 1.2f, cap = StrokeCap.Round))
+}
+
+/** Climbers on the hiking trail and goats on the ledges: tiny figures that give the mountain its scale (live). */
+internal fun MapPen.drawHeileLife(d: DrawScope, g: MapGeo) = with(d) {
     // Three climbers walking up and down, roped as a pair or alone.
     for (k in 0 until 3) {
         val raw = t * 0.0075f * (if (k == 1) -1f else 1f) + k * 0.31f

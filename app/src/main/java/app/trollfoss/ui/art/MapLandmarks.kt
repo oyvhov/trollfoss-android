@@ -29,26 +29,14 @@ import kotlin.math.sqrt
 
 internal fun MapPen.depthScale(yFrac: Float) = 0.84f + 0.22f * ((yFrac - 0.25f) / 0.6f).coerceIn(0f, 1f)
 
-/** Draws the landmark of [place] at its base, bouncing gently when it is the [hl]ighted one. */
-internal fun MapPen.drawLandmark(d: DrawScope, g: MapGeo, place: PlaceId, hl: Boolean) {
+/** Draws the still part of the landmark of [place]: everything that does not move, at its base. */
+internal fun MapPen.drawLandmark(d: DrawScope, g: MapGeo, place: PlaceId) {
     val b = g.bases[place]!!
     val yf = b.y / h
-    if (place == PlaceId.SPACE) {
-        drawSpace(d, g, hl)
-        return
-    }
-    val k = depthScale(yf) * if (hl) 1.05f + 0.015f * sin(t * 6.8f) else 1f
-    val sc = S * k
-    if (hl) {
-        val pulse = 0.5f + 0.5f * sin(t * 3.4f)
-        d.drawOval(Pal.sun, Offset(b.x - sc * 1.6f, b.y - sc * 0.26f), Size(sc * 3.2f, sc * 0.58f), alpha = 0.18f + 0.1f * pulse)
-        d.drawOval(Pal.sun, Offset(b.x - sc * 1.3f, b.y - sc * 0.2f), Size(sc * 2.6f, sc * 0.46f), alpha = 0.38f + 0.15f * pulse)
-        d.drawOval(Color.White, Offset(b.x - sc * 1.3f - pulse * sc * 0.1f, b.y - sc * 0.2f - pulse * sc * 0.02f), Size(sc * 2.6f + pulse * sc * 0.2f, sc * 0.46f + pulse * sc * 0.04f), alpha = 0.9f, style = Stroke(lw * 3.4f))
-        d.drawOval(Pal.sun, Offset(b.x - sc * 1.3f - pulse * sc * 0.1f, b.y - sc * 0.2f - pulse * sc * 0.02f), Size(sc * 2.6f + pulse * sc * 0.2f, sc * 0.46f + pulse * sc * 0.04f), alpha = 1f, style = Stroke(lw * 1.8f))
-    }
-    val lift = if (hl) abs(sin(t * 3.4f)) * 0.014f * h else 0f
+    if (place == PlaceId.SPACE) return
+    val sc = S * depthScale(yf)
     d.withTransform({
-        translate(b.x, b.y - lift)
+        translate(b.x, b.y)
         scale(sc, sc, Offset.Zero)
     }) {
         val bx = Bx(this, this@drawLandmark, sc, yf)
@@ -68,6 +56,40 @@ internal fun MapPen.drawLandmark(d: DrawScope, g: MapGeo, place: PlaceId, hl: Bo
                 "BEACH" -> beach()
                 "UNDERWATER" -> dive()
                 else -> heileberget((g.cableTop.x - b.x) / sc, (g.cableTop.y - b.y) / sc)
+            }
+        }
+    }
+}
+
+/** Draws what moves in the landmark of [place] (smoke, flags, wheels, animals, boats...), on top of the still layer. */
+internal fun MapPen.drawLandmarkLive(d: DrawScope, g: MapGeo, place: PlaceId, hl: Boolean = false) {
+    if (place == PlaceId.SPACE) {
+        drawSpace(d, g, hl)
+        return
+    }
+    val b = g.bases[place]!!
+    val yf = b.y / h
+    val sc = S * depthScale(yf)
+    d.withTransform({
+        translate(b.x, b.y)
+        scale(sc, sc, Offset.Zero)
+    }) {
+        val bx = Bx(this, this@drawLandmarkLive, sc, yf)
+        with(bx) {
+            when (place.name) {
+                "HOME" -> homeLive()
+                "CAFE" -> cafeLive()
+                "SALON" -> salonLive()
+                "TIVOLI" -> tivoliLive()
+                "STAGE" -> concertLive()
+                "FOREST" -> campLive()
+                "LAB" -> caveLive()
+                "MOUNTAIN" -> fjelletLive()
+                "FARM" -> farmLive()
+                "BEACH" -> beachLive()
+                "UNDERWATER" -> diveLive()
+                "HEILEBERGET" -> heilebergetLive((g.cableTop.x - b.x) / sc, (g.cableTop.y - b.y) / sc)
+                else -> Unit
             }
         }
     }
@@ -106,8 +128,13 @@ private fun Bx.awning(x0: Float, x1: Float, yTop: Float, yFront: Float, c1: Colo
     d.drawRect(Ink.line, Offset(x0, yFront + sw * 0.5f), Size(x1 - x0, 0.05f), alpha = 0.12f)
 }
 
-private fun Bx.flag(x: Float, y: Float, hgt: Float, col: Color, len: Float = 0.2f) {
+/** The pole of a flag (the pennant is waved by [flagLive]). */
+private fun Bx.flag(x: Float, y: Float, hgt: Float, @Suppress("UNUSED_PARAMETER") col: Color, @Suppress("UNUSED_PARAMETER") len: Float = 0.2f) {
     line(x, y, x, y - hgt, Ink.line, 1.6f)
+}
+
+/** The waving pennant of a flag drawn by [flag] with the same arguments. */
+private fun Bx.flagLive(x: Float, y: Float, hgt: Float, col: Color, len: Float = 0.2f) {
     val wave = sin(t * 4f + x * 7f) * 0.02f
     val p = path(x, y - hgt, x + len, y - hgt + 0.045f + wave, x, y - hgt + 0.1f)
     fill(p, col)
@@ -246,12 +273,16 @@ private fun Bx.home() {
     for (k in 0 until 5) {
         val lx = 0.86f + k * 0.065f
         val ly = -0.4f + 0.05f * sin((lx - 0.8f) / 0.38f * 3.1416f)
-        val sw = sin(t * 1.3f + k) * 0.012f
+        val sw = 0f
         val p = path(lx - 0.022f, ly, lx + 0.022f, ly, lx + 0.026f + sw, ly + 0.09f, lx - 0.026f + sw, ly + 0.09f)
         fill(p, laundry[k])
         ink(p, 0.7f, 0.8f)
     }
     tufts(-1.05f, -0.5f, 0.45f, 0.9f, 1.1f, y = 0.27f, s = 0.06f)
+}
+
+private fun Bx.homeLive() {
+    chimneySmoke(0.16f, -0.42f - 0.34f * 0.52f, 0.08f, 0.2f)
 }
 
 // ------------------------------------------------------------------------------------- CAFE
@@ -279,7 +310,7 @@ private fun Bx.cafe() {
     win(0.255f, -0.23f, 0.325f, -0.17f, round = true)
     chimney(-0.3f, -wallH - roofH * 0.6f, 0.08f, 0.17f)
     // A hanging bread sign on a bracket.
-    val sway = sin(t * 1.4f) * 0.02f
+    val sway = 0f
     line(-hw, -0.34f, -hw - 0.16f, -0.34f, Ink.line, 2.2f)
     line(-hw - 0.14f, -0.34f, -hw - 0.14f + sway, -0.3f, Ink.line, 1f)
     disc(-hw - 0.14f + sway, -0.23f, 0.075f, Color(0xFFFFF0D2), 1.2f)
@@ -297,6 +328,10 @@ private fun Bx.cafe() {
     ink(cb, 1.1f)
     oval(0.82f, 0.12f, 0.04f, 0.022f, Color(0xFFF4D29C), 0.6f)
     tufts(-0.9f, -0.5f, 0.1f, 0.7f, 1.0f, y = 0.32f, s = 0.055f)
+}
+
+private fun Bx.cafeLive() {
+    chimneySmoke(-0.3f, -0.4f - 0.27f * 0.6f, 0.08f, 0.17f)
 }
 
 // ------------------------------------------------------------------------------------- SALON
@@ -330,20 +365,12 @@ private fun Bx.salon() {
     // The barber pole on the wall, stripes climbing.
     val px0 = -0.5f
     val px1 = -0.43f
-    d.clipRect(px0, -0.44f, px1, -0.08f) {
-        val cols = listOf(Color(0xFFE94F4F), Color(0xFFFFFFFF), Color(0xFF3E7BD6), Color(0xFFFFFFFF))
-        val ph = wrap(t * 0.25f, 1f) * 0.24f
-        for (k in -2 until 10) {
-            val y = -0.08f - k * 0.06f - ph
-            val p = path(px0, y, px1, y - 0.035f, px1, y - 0.035f - 0.06f, px0, y - 0.06f)
-            d.drawPath(p, c(cols[((k % 4) + 4) % 4]))
-        }
-    }
+    d.drawRect(c(Color(0xFFFFFFFF)), Offset(px0, -0.44f), Size(px1 - px0, 0.36f))
     d.drawRect(Ink.line, Offset(px0, -0.44f), Size(px1 - px0, 0.36f), style = Stroke(lw * 1.3f))
     disc((px0 + px1) / 2f, -0.46f, 0.04f, Color(0xFFE94F4F), 1f)
     disc((px0 + px1) / 2f, -0.06f, 0.035f, Color(0xFFB9C0CC), 1f)
     // The scissors sign on a bracket.
-    val sway = sin(t * 1.2f) * 0.02f
+    val sway = 0f
     line(hw, -0.34f, hw + 0.2f, -0.34f, Ink.line, 2.2f)
     val sx = hw + 0.17f + sway
     disc(sx, -0.25f, 0.085f, Color(0xFFFFFFFF), 1.2f)
@@ -366,6 +393,22 @@ private fun Bx.salon() {
         disc(p.x, p.y - 0.07f, 0.025f, if (i % 2 == 0) Color(0xFFFF9EC4) else Color(0xFFFFFFFF), 0.7f)
     }
     tufts(-0.95f, -0.55f, 0.6f, 0.95f, y = 0.3f, s = 0.055f)
+}
+
+private fun Bx.salonLive() {
+    // The barber pole's stripes climbing, inside its outline.
+    val px0 = -0.5f
+    val px1 = -0.43f
+    d.clipRect(px0 + lw, -0.44f + lw, px1 - lw, -0.08f - lw) {
+        val cols = listOf(Color(0xFFE94F4F), Color(0xFFFFFFFF), Color(0xFF3E7BD6), Color(0xFFFFFFFF))
+        val ph = wrap(t * 0.25f, 1f) * 0.24f
+        for (k in -2 until 10) {
+            val y = -0.08f - k * 0.06f - ph
+            val p = path(px0, y, px1, y - 0.035f, px1, y - 0.035f - 0.06f, px0, y - 0.06f)
+            d.drawPath(p, c(cols[((k % 4) + 4) % 4]))
+        }
+    }
+    flagLive(0f, -0.44f - 0.3f - 0.02f, 0.2f, Color(0xFFFF9EC4), 0.17f)
 }
 
 // ------------------------------------------------------------------------------------- SHOP
@@ -401,7 +444,7 @@ private fun Bx.shop() {
     door(0.12f, 0.3f, 0.26f, Color(0xFF6BCB77), steps = true)
     d.drawRect(lerp(c(Color(0xFFBFE6F5)), Color(0xFFFFE9A0), lit), Offset(0.145f, -0.22f), Size(0.11f, 0.15f))
     awning(-0.48f, 0.36f, -0.34f, -0.27f, Color(0xFF2FB57A), Color(0xFFFFFFFF), 9)
-    val sw = sin(t * 1.6f) * 0.012f
+    val sw = 0f
     for (lx in floatArrayOf(-0.3f, 0.12f)) {
         line(lx, -0.27f, lx + sw, -0.22f, Ink.line, 1f)
         disc(lx + sw, -0.2f, 0.028f, Color(0xFFFFC83D), 0.9f)
@@ -458,7 +501,7 @@ private fun Bx.doctor() {
     // The pharmacy sign: a green plus on a white sign, with a heart below. Never a red cross.
     val px = -0.66f
     line(px, 0.04f, px, -0.5f, Ink.line, 2.6f)
-    val sway = sin(t * 1.2f) * 0.01f
+    val sway = 0f
     round(px - 0.12f + sway, -0.68f, px + 0.12f + sway, -0.44f, 0.04f, Color(0xFFFFFFFF), 1.3f)
     val pl = path(px - 0.028f + sway, -0.66f, px + 0.028f + sway, -0.66f, px + 0.028f + sway, -0.595f, px + 0.085f + sway, -0.595f, px + 0.085f + sway, -0.54f, px + 0.028f + sway, -0.54f, px + 0.028f + sway, -0.475f, px - 0.028f + sway, -0.475f, px - 0.028f + sway, -0.54f, px - 0.085f + sway, -0.54f, px - 0.085f + sway, -0.595f, px - 0.028f + sway, -0.595f)
     fill(pl, Color(0xFF2FB57A))
@@ -484,24 +527,31 @@ private fun Bx.doctor() {
 private val gondolaColors = listOf(Color(0xFFFF5A6E), Color(0xFFFFC83D), Color(0xFF5CE0A0), Color(0xFF5AA9E6), Color(0xFFD77BFF))
 
 private fun Bx.ferris(cx: Float, cy: Float, r: Float) {
-    // A-frame legs and braces.
+    // A-frame legs and braces, and the rim; the spokes, gondolas and bulbs turn in [ferrisLive].
     val legs = Path().apply {
         moveTo(cx - 0.34f, 0f); lineTo(cx, cy); lineTo(cx + 0.34f, 0f)
         moveTo(cx - 0.22f, -cy * 0.35f * 0f - 0.3f); lineTo(cx + 0.22f, -0.3f)
     }
     d.drawPath(legs, Ink.line, style = Stroke(lw * 5.4f, cap = StrokeCap.Round, join = StrokeJoin.Round))
     d.drawPath(legs, c(Color(0xFFB9C0CC)), style = Stroke(lw * 3.2f, cap = StrokeCap.Round, join = StrokeJoin.Round))
-    val rot = t * 0.22f
-    // Spokes and rim.
-    val spokes = ArrayList<Offset>()
-    for (k in 0 until 12) {
-        val a = rot + k * 0.5236f
-        spokes.add(Offset(cx, cy))
-        spokes.add(Offset(cx + cos(a) * r, cy + sin(a) * r))
-    }
-    d.drawPoints(spokes, PointMode.Lines, c(Color(0xFFD4DAE4)), strokeWidth = lw * 1.4f, cap = StrokeCap.Round)
     d.drawCircle(Ink.line, r, Offset(cx, cy), style = Stroke(lw * 4.2f))
     d.drawCircle(c(Color(0xFFFF6B8A)), r, Offset(cx, cy), style = Stroke(lw * 2.6f))
+    // The hub: the strings of bulbs run over it, so it is still; the spokes start at its rim.
+    disc(cx, cy, 0.05f, Color(0xFFFFC83D), 1.2f)
+}
+
+private fun Bx.ferrisLive(cx: Float, cy: Float, r: Float) {
+    val rot = t * 0.22f
+    // The spokes end at the inner edge of the rim (in the still), which hid their ends before.
+    val reach = r - lw * 2.1f
+    val hub = 0.05f + lw * 0.5f
+    val spokes = ArrayList<Offset>(24)
+    for (k in 0 until 12) {
+        val a = rot + k * 0.5236f
+        spokes.add(Offset(cx + cos(a) * hub, cy + sin(a) * hub))
+        spokes.add(Offset(cx + cos(a) * reach, cy + sin(a) * reach))
+    }
+    d.drawPoints(spokes, PointMode.Lines, c(Color(0xFFD4DAE4)), strokeWidth = lw * 1.4f, cap = StrokeCap.Butt)
     d.drawCircle(Ink.line, r * 0.6f, Offset(cx, cy), alpha = 0.6f, style = Stroke(lw * 1.4f))
     // Gondolas hang straight down from the rim.
     for (k in 0 until 10) {
@@ -513,11 +563,10 @@ private fun Bx.ferris(cx: Float, cy: Float, r: Float) {
         d.drawRect(lerp(c(Color(0xFFBFE6F5)), Color(0xFFFFD76B), lit), Offset(gx - 0.03f, gy + 0.065f), Size(0.06f, 0.035f))
     }
     // Bulbs along the rim, bright at night.
-    val bulbs = ArrayList<Offset>()
+    val bulbs = ArrayList<Offset>(24)
     for (k in 0 until 24) bulbs.add(Offset(cx + cos(rot + k * 0.2618f) * r, cy + sin(rot + k * 0.2618f) * r))
     if (lit > 0f) d.drawPoints(bulbs, PointMode.Points, Color(0xFFFFE27A), strokeWidth = 0.07f, cap = StrokeCap.Round, alpha = 0.3f * lit)
     d.drawPoints(bulbs, PointMode.Points, lerp(Color(0xFFFFF6D0), Color(0xFFFFF3B0), lit), strokeWidth = 0.022f, cap = StrokeCap.Round)
-    disc(cx, cy, 0.05f, Color(0xFFFFC83D), 1.2f)
 }
 
 private fun Bx.bulbString(x0: Float, y0: Float, x1: Float, y1: Float, sag: Float, count: Int) {
@@ -530,7 +579,7 @@ private fun Bx.bulbString(x0: Float, y0: Float, x1: Float, y1: Float, sag: Float
         val x = mix(x0, x1, f)
         val y = mix(y0, y1, f) + 4f * sag * f * (1f - f) + 0.014f
         val col = cols[k % 5]
-        if (lit > 0f) d.drawCircle(col, 0.04f, Offset(x, y), alpha = 0.3f * lit * (0.75f + 0.25f * sin(t * 2.3f + k)))
+        if (lit > 0f) d.drawCircle(col, 0.04f, Offset(x, y), alpha = 0.3f * lit * 0.875f)
         d.drawCircle(Ink.line, 0.02f, Offset(x, y))
         d.drawCircle(lerp(c(col), Color.White, 0.25f * lit), 0.0155f, Offset(x, y))
     }
@@ -546,7 +595,7 @@ private fun Bx.tivoli() {
     val arc = Path().apply { moveTo(ax - 0.17f, -0.62f); quadraticTo(ax, -0.95f, ax + 0.17f, -0.62f) }
     d.drawPath(arc, Ink.line, style = Stroke(lw * 9f, cap = StrokeCap.Round))
     d.drawPath(arc, c(Color(0xFF3E7BD6)), style = Stroke(lw * 6.4f, cap = StrokeCap.Round))
-    val star = starPath(Offset(ax, -0.84f), 0.07f, 0.03f, sin(t * 0.8f) * 8f)
+    val star = starPath(Offset(ax, -0.84f), 0.07f, 0.03f, 0f)
     glow(ax, -0.84f, 0.2f, Color(0xFFFFE27A), 0.3f)
     fill(star, Pal.sun)
     ink(star, 1f)
@@ -568,10 +617,7 @@ private fun Bx.tivoli() {
     oval(tx, 0f, rx, ry, Color(0xFFC98A55), 1.2f)
     for (k in 0 until 3) {
         val hx = tx + (k - 1) * 0.22f
-        val bob = sin(t * 2.4f + k * 2.1f) * 0.025f
         line(hx, 0.02f, hx, -0.34f, Color(0xFFFFD98A), 2.2f)
-        oval(hx, -0.15f + bob, 0.075f, 0.04f, if (k == 1) Color(0xFFFFFFFF) else Color(0xFFC98A55), 0.9f)
-        disc(hx + 0.07f, -0.2f + bob, 0.028f, if (k == 1) Color(0xFFFFFFFF) else Color(0xFFC98A55), 0.8f)
     }
     val apex = Offset(tx, -0.78f)
     for (i in 0 until 8) {
@@ -599,7 +645,7 @@ private fun Bx.tivoli() {
     // Balloons tied to the booth.
     val cols = listOf(Color(0xFFFF5A6E), Color(0xFF5AA9E6), Color(0xFFFFC83D), Color(0xFF5CE0A0))
     for (k in 0 until 4) {
-        val sway = sin(t * 1.1f + k) * 0.02f
+        val sway = 0f
         val bxp = bx + 0.15f + (k - 1.5f) * 0.06f + sway
         val byp = -0.62f - 0.06f * (k % 2)
         line(bx + 0.14f, -0.32f, bxp, byp + 0.06f, Ink.line, 0.8f)
@@ -609,20 +655,25 @@ private fun Bx.tivoli() {
     tufts(-0.6f, 0.4f, 1.15f, y = 0.4f, s = 0.055f)
 }
 
+private fun Bx.tivoliLive() {
+    ferrisLive(-0.28f, -1.0f, 0.55f)
+    // The carousel horses bob up and down on their poles.
+    val tx = 0.74f
+    for (k in 0 until 3) {
+        val hx = tx + (k - 1) * 0.22f
+        val bob = sin(t * 2.4f + k * 2.1f) * 0.025f
+        oval(hx, -0.15f + bob, 0.075f, 0.04f, if (k == 1) Color(0xFFFFFFFF) else Color(0xFFC98A55), 0.9f)
+        disc(hx + 0.07f, -0.2f + bob, 0.028f, if (k == 1) Color(0xFFFFFFFF) else Color(0xFFC98A55), 0.8f)
+    }
+    flagLive(tx, -0.78f + 0.02f, 0.14f, Color(0xFFFFC83D), 0.16f)
+}
+
 // ------------------------------------------------------------------------------------- STAGE
 
 private fun Bx.concert() {
     val rx = 0.5f
     val ry = 0.13f
     val hgt = 0.5f
-    // Searchlight beams sweeping behind the roof.
-    val strength = 0.1f + 0.22f * lit
-    for (k in 0 until 2) {
-        val sw = sin(t * 0.7f + k * 2.4f) * 0.35f
-        val sx = (k - 0.5f) * 0.3f
-        val beam = path(sx - 0.03f, -hgt - 0.5f, sx + 0.03f, -hgt - 0.5f, sx + 0.3f + sw + (k - 0.5f) * 0.5f, -hgt - 1.35f, sx - 0.1f + sw + (k - 0.5f) * 0.5f, -hgt - 1.35f)
-        fill(beam, if (k == 0) Color(0xFFFF5AC8) else Color(0xFF5CE0FF), strength)
-    }
     shadowOf(-rx, 0f, rx, 0f, rx + 0.6f, 0.08f, rx + 0.25f, -hgt * 0.15f)
     contact(0f, 0.6f, 0.09f)
     // The drum: lit on the left, shaded on the right.
@@ -685,7 +736,7 @@ private fun Bx.concert() {
     val rimP = Path().apply { addOval(Rect(-(rx + 0.07f), -hgt - 0.11f, rx + 0.07f, -hgt + 0.11f)) }
     d.drawPath(rimP, Ink.line, alpha = 0.6f, style = Stroke(lw * 1.1f))
     glow(0f, apexY - 0.04f, 0.22f, Color(0xFFFFE27A), 0.35f)
-    val star = starPath(Offset(0f, apexY - 0.04f), 0.08f, 0.035f, sin(t * 0.9f) * 10f)
+    val star = starPath(Offset(0f, apexY - 0.04f), 0.08f, 0.035f, 0f)
     fill(star, Pal.sun)
     ink(star, 1f)
     // The entrance: a canopy with bulbs over wide steps.
@@ -709,6 +760,21 @@ private fun Bx.concert() {
     val note = Path().apply { moveTo(-0.905f, 0.17f); lineTo(-0.905f, 0.07f); lineTo(-0.86f, 0.06f); lineTo(-0.86f, 0.15f); addOval(Rect(Offset(-0.94f, 0.16f), 0.03f)); addOval(Rect(Offset(-0.895f, 0.145f), 0.03f)) }
     d.drawPath(note, c(Color(0xFFFFD1F2)), style = Stroke(lw * 1.4f, cap = StrokeCap.Round, join = StrokeJoin.Round))
     tufts(-1.1f, 0.85f, 1.1f, y = 0.3f, s = 0.055f)
+}
+
+private fun Bx.concertLive() {
+    // Searchlight beams sweeping over the roof.
+    val hgt = 0.5f
+    val strength = 0.1f + 0.22f * lit
+    for (k in 0 until 2) {
+        val sw = sin(t * 0.7f + k * 2.4f) * 0.35f
+        val sx = (k - 0.5f) * 0.3f
+        val beam = path(sx - 0.03f, -hgt - 0.5f, sx + 0.03f, -hgt - 0.5f, sx + 0.3f + sw + (k - 0.5f) * 0.5f, -hgt - 1.35f, sx - 0.1f + sw + (k - 0.5f) * 0.5f, -hgt - 1.35f)
+        fill(beam, if (k == 0) Color(0xFFFF5AC8) else Color(0xFF5CE0FF), strength)
+    }
+    for (fx in floatArrayOf(-0.72f, 0.72f)) {
+        flagLive(fx, 0.02f, 0.7f, if (fx < 0f) Color(0xFFFF5AC8) else Color(0xFF5CE0FF), 0.24f)
+    }
 }
 
 // ------------------------------------------------------------------------------------- FOREST (camp)
@@ -744,20 +810,6 @@ private fun Bx.camp() {
     line(fx + 0.11f, fy + 0.01f, fx - 0.1f, fy - 0.045f, Color(0xFF7A4B2E), 3.4f)
     glow(fx, fy - 0.1f, 0.4f, Color(0xFFFFB84D), 0.3f)
     d.drawCircle(Color(0xFFFFB84D), 0.26f, Offset(fx, fy - 0.1f), alpha = 0.1f)
-    for ((k, pr) in listOf(0.085f to 0f, 0.06f to 1.7f, 0.05f to 3.1f).withIndex()) {
-        val sp = pr.first * 0.5f
-        val fl = 1f + 0.18f * sin(t * 11f + pr.second)
-        val ox = (k - 1) * 0.045f
-        val p = Path().apply {
-            moveTo(fx + ox - sp * 0.6f, fy - 0.02f)
-            quadraticTo(fx + ox - sp * 0.7f, fy - 0.1f * fl - sp, fx + ox + sin(t * 7f + k) * 0.012f, fy - 0.2f * fl - sp * 0.9f)
-            quadraticTo(fx + ox + sp * 0.7f, fy - 0.1f * fl - sp, fx + ox + sp * 0.6f, fy - 0.02f)
-            close()
-        }
-        fill(p, if (k == 0) Color(0xFFFF8A3D) else if (k == 1) Color(0xFFFFB84D) else Color(0xFFFFE066))
-        ink(p, 0.8f, 0.7f)
-    }
-    smokeAt(fx, fy - 0.3f, 1.3f, dark = true)
     for ((lx, ly) in listOf(0.14f to 0.3f, 0.76f to 0.26f, 0.42f to 0.36f)) {
         oval(lx, ly, 0.1f, 0.035f, Color(0xFFA0663B), 1f)
         oval(lx - 0.09f, ly - 0.004f, 0.022f, 0.03f, Color(0xFFE3B27A), 0.8f)
@@ -781,12 +833,31 @@ private fun Bx.camp() {
     tufts(-0.5f, 0.1f, 0.8f, 1.1f, y = 0.42f, s = 0.06f)
 }
 
+private fun Bx.campLive() {
+    val fx = 0.42f
+    val fy = 0.2f
+    for ((k, pr) in listOf(0.085f to 0f, 0.06f to 1.7f, 0.05f to 3.1f).withIndex()) {
+        val sp = pr.first * 0.5f
+        val fl = 1f + 0.18f * sin(t * 11f + pr.second)
+        val ox = (k - 1) * 0.045f
+        val p = Path().apply {
+            moveTo(fx + ox - sp * 0.6f, fy - 0.02f)
+            quadraticTo(fx + ox - sp * 0.7f, fy - 0.1f * fl - sp, fx + ox + sin(t * 7f + k) * 0.012f, fy - 0.2f * fl - sp * 0.9f)
+            quadraticTo(fx + ox + sp * 0.7f, fy - 0.1f * fl - sp, fx + ox + sp * 0.6f, fy - 0.02f)
+            close()
+        }
+        fill(p, if (k == 0) Color(0xFFFF8A3D) else if (k == 1) Color(0xFFFFB84D) else Color(0xFFFFE066))
+        ink(p, 0.8f, 0.7f)
+    }
+    smokeAt(fx, fy - 0.3f, 1.3f, dark = true)
+}
+
 // ------------------------------------------------------------------------------------- LAB (cave)
 
-private fun Bx.crystals(x: Float, y: Float, s: Float, lean: Float, col: Color, phase: Float) {
-    val glw = 0.65f + 0.35f * sin(t * 1.6f + phase)
-    glow(x, y - s * 0.4f, s * 1.6f, col, 0.35f * glw)
-    if (lit <= 0f) d.drawCircle(col, s * 1.2f, Offset(x, y - s * 0.4f), alpha = 0.12f * glw)
+/** The glow of a crystal cluster: a steady base here, and a pulse on top from [crystalPulse]. */
+private fun Bx.crystals(x: Float, y: Float, s: Float, lean: Float, col: Color, @Suppress("UNUSED_PARAMETER") phase: Float) {
+    glow(x, y - s * 0.4f, s * 1.6f, col, 0.35f * 0.5f)
+    if (lit <= 0f) d.drawCircle(col, s * 1.2f, Offset(x, y - s * 0.4f), alpha = 0.12f * 0.5f)
     val specs = floatArrayOf(-0.3f, 0.6f, 0.16f, -18f, 0f, 1f, 0.2f, 0f, 0.3f, 0.7f, 0.17f, 16f)
     for (k in 0 until 3) {
         val ang = Math.toRadians((specs[k * 4 + 3] + lean).toDouble()).toFloat()
@@ -803,6 +874,21 @@ private fun Bx.crystals(x: Float, y: Float, s: Float, lean: Float, col: Color, p
         fill(hi, col.lighten(0.4f))
         ink(p, 0.9f)
     }
+}
+
+private fun Bx.crystalPulse(x: Float, y: Float, s: Float, col: Color, phase: Float) {
+    val pulse = 0.5f + 0.5f * sin(t * 1.6f + phase)
+    glow(x, y - s * 0.4f, s * 1.6f, col, 0.35f * 0.5f * pulse)
+    if (lit <= 0f) d.drawCircle(col, s * 1.2f, Offset(x, y - s * 0.4f), alpha = 0.12f * 0.5f * pulse)
+}
+
+private fun Bx.caveLive() {
+    crystalPulse(-0.46f, 0.02f, 0.3f, Color(0xFF6FF2FF), 0f)
+    crystalPulse(0.52f, 0.0f, 0.26f, Color(0xFFFF7BD8), 2.1f)
+    crystalPulse(0.05f, -0.76f, 0.2f, Color(0xFFB58CFF), 4f)
+    val pulse = 0.5f + 0.5f * sin(t * 1.7f)
+    d.drawCircle(Color(0xFF6FF2FF), 0.3f, Offset(0f, -0.15f), alpha = 0.12f * 0.5f * pulse)
+    d.drawCircle(Color(0xFFB58CFF), 0.17f, Offset(0f, -0.15f), alpha = 0.22f * 0.5f * pulse)
 }
 
 private fun Bx.cave() {
@@ -833,7 +919,6 @@ private fun Bx.cave() {
     fill(facets, Color(0xFFA9A7BC))
     ink(mound, 1.4f)
     // The mouth: dark with a glowing heart and a fringe of stalactites.
-    val pulse = 0.6f + 0.4f * sin(t * 1.7f)
     val mouth = Path().apply {
         moveTo(-0.27f, 0f)
         lineTo(-0.27f, -0.3f)
@@ -843,8 +928,8 @@ private fun Bx.cave() {
         close()
     }
     fill(mouth, Color(0xFF1E1730))
-    d.drawCircle(Color(0xFF6FF2FF), 0.3f, Offset(0f, -0.15f), alpha = 0.12f * pulse)
-    d.drawCircle(Color(0xFFB58CFF), 0.17f, Offset(0f, -0.15f), alpha = 0.22f * pulse)
+    d.drawCircle(Color(0xFF6FF2FF), 0.3f, Offset(0f, -0.15f), alpha = 0.12f * 0.5f)
+    d.drawCircle(Color(0xFFB58CFF), 0.17f, Offset(0f, -0.15f), alpha = 0.22f * 0.5f)
     for (k in 0 until 4) {
         val x = -0.16f + k * 0.107f
         val ht = 0.035f + 0.03f * ((k * 7) % 3) / 2f
@@ -902,15 +987,6 @@ private fun Bx.fjellet() {
         val py = -0.56f + f * 0.52f
         line(px, py, px, py - 0.08f, if (k % 2 == 0) Color(0xFFE94F4F) else Color(0xFF3E7BD6), 2f)
     }
-    // Two tiny skiers sliding down.
-    for (k in 0 until 2) {
-        val f = wrap(t * 0.07f + k * 0.5f, 1f)
-        val px = mix(0.0f, -0.4f, f) - 0.1f * sin(f * 9f)
-        val py = mix(-0.6f, -0.04f, f)
-        line(px - 0.04f, py + 0.01f, px + 0.05f, py - 0.005f, Ink.line, 1.4f)
-        round(px - 0.012f, py - 0.06f, px + 0.014f, py, 0.008f, if (k == 0) Color(0xFFE94F4F) else Color(0xFF3E7BD6), 0.8f)
-        disc(px, py - 0.075f, 0.014f, Color(0xFFF2C29B), 0.7f)
-    }
     // The chairlift's bottom station and its cable to the top.
     box(0.55f, -0.22f, 0.8f, 0f, Color(0xFFA0663B), 1.1f)
     face(Color(0xFFF7FAFF), 0.5f, -0.22f, 0.675f, -0.36f, 0.85f, -0.22f)
@@ -919,13 +995,6 @@ private fun Bx.fjellet() {
     for (px in floatArrayOf(0.4f, 0.22f)) {
         val py = -0.3f + (0.675f - px) / 0.615f * -0.36f
         line(px, py + 0.03f, px, py - 0.05f, Ink.line, 2f)
-    }
-    for (k in 0 until 3) {
-        val f = wrap(t * 0.05f + k / 3f, 1f)
-        val px = mix(0.675f, 0.06f, f)
-        val py = mix(-0.3f, -0.66f, f)
-        line(px, py, px, py + 0.05f, Ink.line, 1f)
-        round(px - 0.03f, py + 0.05f, px + 0.03f, py + 0.08f, 0.01f, Color(0xFFE94F4F), 0.8f)
     }
     // The log cabin under a snowy roof.
     val hw = 0.4f
@@ -953,6 +1022,27 @@ private fun Bx.fjellet() {
     tufts(-0.8f, 0.0f, 0.6f, y = 0.3f, s = 0.05f)
 }
 
+private fun Bx.fjelletLive() {
+    // Two tiny skiers sliding down.
+    for (k in 0 until 2) {
+        val f = wrap(t * 0.07f + k * 0.5f, 1f)
+        val px = mix(0.0f, -0.4f, f) - 0.1f * sin(f * 9f)
+        val py = mix(-0.6f, -0.04f, f)
+        line(px - 0.04f, py + 0.01f, px + 0.05f, py - 0.005f, Ink.line, 1.4f)
+        round(px - 0.012f, py - 0.06f, px + 0.014f, py, 0.008f, if (k == 0) Color(0xFFE94F4F) else Color(0xFF3E7BD6), 0.8f)
+        disc(px, py - 0.075f, 0.014f, Color(0xFFF2C29B), 0.7f)
+    }
+    // The chairs gliding up the lift.
+    for (k in 0 until 3) {
+        val f = wrap(t * 0.05f + k / 3f, 1f)
+        val px = mix(0.675f, 0.06f, f)
+        val py = mix(-0.3f, -0.66f, f)
+        line(px, py, px, py + 0.05f, Ink.line, 1f)
+        round(px - 0.03f, py + 0.05f, px + 0.03f, py + 0.08f, 0.01f, Color(0xFFE94F4F), 0.8f)
+    }
+    chimneySmoke(0.12f, -0.3f - 0.24f * 0.55f, 0.07f, 0.16f)
+}
+
 // ------------------------------------------------------------------------------------- HEILEBERGET
 
 private fun Bx.heileberget(stx: Float, sty: Float) {
@@ -976,7 +1066,6 @@ private fun Bx.heileberget(stx: Float, sty: Float) {
         door(0.03f, 0.18f, 0.2f, Color(0xFF6E4A33), steps = false)
         win(-0.04f, -0.46f, 0.04f, -0.38f, round = true)
         flag(0f, -wallH - roofH - 0.02f, 0.3f, Color(0xFFE94F4F), 0.22f)
-        line(0.02f, -wallH - roofH - 0.23f, 0.17f, -wallH - roofH - 0.205f, Color.White, 1.5f)
     }
     // The top station of the cable car: a little timber house with a great wheel.
     d.withTransform({ translate(stx, sty) }) {
@@ -993,10 +1082,20 @@ private fun Bx.heileberget(stx: Float, sty: Float) {
         val f = 0.12f + k * 0.17f
         val x = mix(stx, hx - 0.3f, f)
         val y = mix(sty - 0.25f, -0.25f, f) + 0.06f * f * (1f - f) * 2.5f
-        fill(path(x - 0.022f, y, x + 0.022f, y, x, y + 0.055f + sin(t * 3f + k) * 0.008f), cols[k])
+        fill(path(x - 0.022f, y, x + 0.022f, y, x, y + 0.055f), cols[k])
     }
     line(stx, sty - 0.25f, hx - 0.3f, -0.25f, Ink.line, 0.7f, 0.8f)
     tufts(0.0f, 0.6f, y = 0.16f, s = 0.045f)
+}
+
+private fun Bx.heilebergetLive(@Suppress("UNUSED_PARAMETER") stx: Float, @Suppress("UNUSED_PARAMETER") sty: Float) {
+    // The flag on the hut waves.
+    val wallH = 0.26f
+    val roofH = 0.3f
+    d.withTransform({ translate(0.3f, 0f) }) {
+        flagLive(0f, -wallH - roofH - 0.02f, 0.3f, Color(0xFFE94F4F), 0.22f)
+        line(0.02f, -wallH - roofH - 0.23f, 0.17f, -wallH - roofH - 0.205f, Color.White, 1.5f)
+    }
 }
 
 // ------------------------------------------------------------------------------------- FARM
@@ -1046,6 +1145,10 @@ private fun Bx.farm() {
         d.drawCircle(c(hay.darken(0.25f)), 0.02f, Offset(bx, by - 0.07f), style = Stroke(lw * 0.9f))
     }
     fence(-1.75f, 1.75f, 0.3f, -0.2f, 0.2f, Color(0xFFC9A27A), 0.1f)
+    tufts(-1.6f, -0.9f, -0.3f, 0.4f, 1.0f, y = 0.44f, s = 0.055f)
+}
+
+private fun Bx.farmLive() {
     cow(-1.3f, 0.2f, 0.42f, t * 0.9f)
     cow(-1.0f, 0.3f, 0.36f, t * 0.9f + 2f, flip = true)
     cow(1.35f, 0.22f, 0.4f, t * 0.9f + 4f, flip = true)
@@ -1067,7 +1170,6 @@ private fun Bx.farm() {
         disc(0.1f, -0.03f, 0.04f, Color(0xFF3B3346), 1f)
         d.drawCircle(Color.White, 0.02f + 0.025f * wrap(t * 1.5f, 1f), Offset(0.08f + 0.06f * wrap(t * 1.5f, 1f), -0.3f - 0.1f * wrap(t * 1.5f, 1f)), alpha = 0.6f * (1f - wrap(t * 1.5f, 1f)))
     }
-    tufts(-1.6f, -0.9f, -0.3f, 0.4f, 1.0f, y = 0.44f, s = 0.055f)
 }
 
 // ------------------------------------------------------------------------------------- BEACH
@@ -1112,7 +1214,7 @@ private fun Bx.beach() {
     ink(top, 1.1f)
     box(px0, deckY, px1, deckY + 0.04f, Color(0xFFA0663B), 1f)
     val by = 0.28f
-    val bobY = sin(t * 1.4f) * 0.012f
+    val bobY = 0f
     val bx = 1.15f
     d.drawOval(Ink.line, Offset(bx - 0.25f, by + 0.03f + bobY), Size(0.5f, 0.06f), alpha = 0.22f)
     val hull = path(bx - 0.22f, by - 0.06f + bobY, bx + 0.22f, by - 0.06f + bobY, bx + 0.15f, by + 0.03f + bobY, bx - 0.15f, by + 0.03f + bobY)
@@ -1152,6 +1254,10 @@ private fun Bx.beach() {
     tufts(-1.6f, -1.0f, 0.75f, y = 0.4f, s = 0.05f, )
 }
 
+private fun Bx.beachLive() {
+    flagLive(-0.64f, 0.16f, 0.1f, Color(0xFFE94F4F), 0.06f)
+}
+
 // ------------------------------------------------------------------------------------- UNDERWATER
 
 private fun Bx.dive() {
@@ -1163,6 +1269,9 @@ private fun Bx.dive() {
     line(-0.05f, 0.3f, -0.12f, 0.1f, c(Color(0xFF1B3F73)), 2.2f, 0.55f)
     line(-0.12f, 0.1f, 0.08f, 0.08f, c(Color(0xFF1B3F73)), 1.6f, 0.55f)
     for (k in 0 until 4) disc(-0.3f + k * 0.18f, 0.35f, 0.03f, Color(0xFF6FB8E8), 0f).also { d.drawCircle(Color(0xFF9FD8F5), 0.028f, Offset(-0.3f + k * 0.18f, 0.35f), alpha = 0.3f) }
+}
+
+private fun Bx.diveLive() {
     // Ripples spreading from the buoy and bubbles rising.
     for (k in 0 until 2) {
         val ph = wrap(t * 0.4f + k * 0.5f, 1f)
@@ -1173,7 +1282,7 @@ private fun Bx.dive() {
         val ph = wrap(t * 0.5f + k / 5f, 1f)
         d.drawCircle(Color.White, 0.022f + 0.02f * ph, Offset(0.2f + 0.06f * sin(ph * 8f + k), 0.3f - ph * 0.3f), alpha = 0.85f * (1f - ph), style = Stroke(lw * 1.1f))
     }
-    // The periscope.
+    // The periscope looks about.
     val px = 0.46f
     val look = sin(t * 0.5f)
     line(px, 0.03f, px, -0.32f, Ink.line, 6.4f)
@@ -1201,10 +1310,11 @@ private fun Bx.dive() {
     }
 }
 
+
 // ------------------------------------------------------------------------------------- SPACE
 
 /** The space station hanging in the sky from a balloon, inside a little round window onto space. */
-private fun MapPen.drawSpace(d: DrawScope, g: MapGeo, hl: Boolean) {
+internal fun MapPen.drawSpace(d: DrawScope, g: MapGeo, hl: Boolean = false) {
     val spot = mapSpot(PlaceId.SPACE)
     val c0 = Offset(spot.x * w, spot.y * h)
     val r = S * 0.5f
@@ -1272,6 +1382,6 @@ private fun MapPen.drawSpace(d: DrawScope, g: MapGeo, hl: Boolean) {
     for (k in 1..7) {
         val a = ang * 2f - k * 0.3f
         val q = Offset(c.x + cos(a) * r * 1.22f, c.y + sin(a) * r * 0.7f)
-        d.twinkle(q, r * (0.12f - k * 0.012f), Color(0xFFFFF3B0), (1f - k / 8f) * (0.4f + 0.6f * (0.5f + 0.5f * sin(t * 5f + k * 1.3f))))
+        twinkleLive(d, q, r * (0.12f - k * 0.012f), Color(0xFFFFF3B0), (1f - k / 8f) * (0.4f + 0.6f * (0.5f + 0.5f * sin(t * 5f + k * 1.3f))))
     }
 }
