@@ -130,6 +130,9 @@ class DesignerTest {
     fun `wallpaper, floors, added and stored furniture survive saving`() {
         val world = WorldFactory.create(Random(7))
         val sim = sim(world)
+        // A board that nothing here counts for, so the number of stickers does not depend on how the deck is shuffled.
+        world.taskSet.clear()
+        world.taskSet += listOf("sneeze", "slip", "burp")
         sim.designer.restyle(PlaceId.HOME, 1, wall = 4, floor = 3)
         val lamp = sim.designer.add(PlaceId.CAFE, FixtureType.FLOWER_POT, 2, 1.0f, 0.9f)!!
         world.found += "home_pillow"

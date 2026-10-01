@@ -85,9 +85,10 @@ object Secrets {
         Secret("ground_garden", PlaceId.MANOR_GROUND, 10.3f, 0.62f, event = true, on = GroundIx.FERN),
 
         // ---- upper floor ----
-        Secret("upper_slide", PlaceId.MANOR_UPPER, 5.0f, 0.3f, event = true),
-        Secret("upper_bath", PlaceId.MANOR_UPPER, 7.4f, 0.3f, event = true),
-        Secret("upper_balcony", PlaceId.MANOR_UPPER, 11.2f, 0.3f, event = true),
+        // A star inside the pillow fort; one that comes out of the shower with the rainbow; one for the birds.
+        Secret("upper_fort", PlaceId.MANOR_UPPER, 4.76f, 0.84f, inside = HouseUpperIx.FORT, on = HouseUpperIx.FORT),
+        Secret("upper_bath", PlaceId.MANOR_UPPER, 8.4f, 0.5f, event = true, on = HouseUpperIx.SHOWER),
+        Secret("upper_balcony", PlaceId.MANOR_UPPER, 11.82f, 0.3f, event = true, on = HouseUpperIx.FEEDER),
 
         // ---- attic ----
         // `on` is a blueprint index in HouseAttic.kt (see [AtticIds]): the glimt sits above that furniture.

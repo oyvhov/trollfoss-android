@@ -12,6 +12,7 @@ enum class Deed {
     GR_FILM, GR_TABLE, GR_FEED, GR_PIZZA, GR_GROW, GR_LEVER, GR_SPLASH,
 
     // ---- upper floor ----
+    UP_TRAIN, UP_KNOCK, UP_SPLAT, UP_DRESS,
 
     // ---- attic ----
     AT_COSTUME, AT_CATCH, AT_RECORD, AT_STARGAZE, AT_KNIT,
@@ -159,6 +160,10 @@ class TaskBook(private val world: World) {
             Task("ground_plants", PlaceId.MANOR_GROUND, 2, thing = ThingType.WATERING_CAN, match = deed(Deed.GR_GROW)),
 
             // ---- upper floor ----
+            Task("up_train", PlaceId.MANOR_UPPER, 1, FixtureType.UP_TOY_TRAIN, match = deed(Deed.UP_TRAIN)),
+            Task("up_blocks", PlaceId.MANOR_UPPER, 1, FixtureType.UP_BLOCKS, ThingType.UP_BLOCK, match = deed(Deed.UP_KNOCK)),
+            Task("up_paint", PlaceId.MANOR_UPPER, 3, FixtureType.UP_EASEL, ThingType.UP_PAINTBRUSH, match = deed(Deed.UP_SPLAT)),
+            Task("up_dress", PlaceId.MANOR_UPPER, 1, FixtureType.UP_WARDROBE, match = deed(Deed.UP_DRESS)),
 
             // ---- attic ----
             Task("attic_costume", PlaceId.MANOR_ATTIC, 1, thing = ThingType.AT_PIRATE_HAT, match = deed(Deed.AT_COSTUME)),

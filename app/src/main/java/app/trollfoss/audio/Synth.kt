@@ -29,6 +29,7 @@ enum class Sfx {
     GR_WHOOMP, GR_BLEND, GR_RATTLE, GR_TALK, GR_TADA, GR_SHUSH, GR_SLURP,
 
     // ---- upper floor ----
+    UP_WHISTLE, UP_CHUFF, UP_TUMBLE, UP_QUACK, UP_SHOWER, UP_RUSTLE, UP_TWEET, UP_MUSICBOX, UP_DINGDONG, UP_WIPE, UP_SPROING,
 
     // ---- attic ----
     AT_CREAK, AT_WIND, AT_SCRATCH, AT_OOO, AT_SPRING, AT_KNIT, AT_DONG, AT_COINS,
@@ -506,6 +507,75 @@ object Synth {
         )
 
         // ---- Storhuset upper floor ----
+        // The toy train: a steam whistle (two blasts), and the chuff of the engine.
+        Sfx.UP_WHISTLE -> listOf(
+            Tone(988.0, 0.0, 0.34, 0.42, brass, decay = 1.6, slideTo = 940.0, vibrato = 0.12, vibratoHz = 18.0, attack = 0.02),
+            Tone(1244.5, 0.0, 0.34, 0.32, brass, decay = 1.6, slideTo = 1190.0, vibrato = 0.12, vibratoHz = 18.0, attack = 0.02),
+            Noise(0.0, 0.3, 0.1, 5200.0, 4200.0, decay = 3.0, seed = 31),
+            Tone(988.0, 0.42, 0.5, 0.42, brass, decay = 1.2, slideTo = 900.0, vibrato = 0.12, vibratoHz = 18.0, attack = 0.02),
+            Tone(1244.5, 0.42, 0.5, 0.32, brass, decay = 1.2, slideTo = 1120.0, vibrato = 0.12, vibratoHz = 18.0, attack = 0.02),
+            Noise(0.42, 0.45, 0.1, 5200.0, 3800.0, decay = 3.0, seed = 32),
+        )
+        Sfx.UP_CHUFF -> listOf(
+            Noise(0.0, 0.1, 0.55, 2000.0, 500.0, decay = 28.0, seed = 33),
+            Tone(110.0, 0.0, 0.08, 0.3, soft, decay = 30.0, slideTo = 70.0),
+        )
+        // A tower of wooden blocks coming down: knocks of different pitch, one after the other.
+        Sfx.UP_TUMBLE -> listOf(
+            Tone(520.0, 0.0, 0.1, 0.55, pluck, decay = 22.0, slideTo = 400.0),
+            Noise(0.0, 0.04, 0.4, 1800.0, decay = 80.0, seed = 34),
+            Tone(660.0, 0.09, 0.1, 0.5, pluck, decay = 22.0, slideTo = 500.0),
+            Tone(440.0, 0.17, 0.1, 0.5, pluck, decay = 22.0, slideTo = 340.0),
+            Noise(0.17, 0.04, 0.35, 1500.0, decay = 80.0, seed = 35),
+            Tone(590.0, 0.27, 0.1, 0.45, pluck, decay = 22.0, slideTo = 450.0),
+            Tone(380.0, 0.36, 0.12, 0.45, pluck, decay = 20.0, slideTo = 300.0),
+            Noise(0.36, 0.05, 0.35, 1300.0, decay = 70.0, seed = 36),
+            Tone(500.0, 0.47, 0.1, 0.35, pluck, decay = 24.0, slideTo = 400.0),
+            Tone(330.0, 0.58, 0.14, 0.3, pluck, decay = 22.0, slideTo = 260.0),
+        )
+        // A rubber duck's nasal «kvakk-kvakk».
+        Sfx.UP_QUACK -> listOf(
+            Tone(640.0, 0.0, 0.13, 0.5, buzzy, decay = 12.0, slideTo = 400.0, attack = 0.005),
+            Noise(0.0, 0.08, 0.12, 1800.0, 900.0, decay = 25.0, seed = 37),
+            Tone(610.0, 0.17, 0.15, 0.5, buzzy, decay = 10.0, slideTo = 380.0, attack = 0.005),
+        )
+        Sfx.UP_SHOWER -> listOf(
+            Noise(0.0, 1.6, 0.34, 6200.0, 7600.0, swell = true, seed = 38),
+            Noise(0.0, 1.6, 0.22, 2400.0, 3400.0, swell = true, seed = 39),
+        )
+        // Plastic balls or a heap of clothes rustling.
+        Sfx.UP_RUSTLE -> listOf(
+            Noise(0.0, 0.32, 0.45, 3600.0, 1900.0, decay = 9.0, seed = 40),
+            Noise(0.07, 0.28, 0.35, 4600.0, 2400.0, decay = 10.0, seed = 41),
+            Crackle(0.0, 0.34, 0.22, 0.25),
+        )
+        Sfx.UP_TWEET -> listOf(
+            Tone(2600.0, 0.0, 0.06, 0.32, soft, decay = 14.0, slideTo = 3400.0),
+            Tone(3300.0, 0.08, 0.06, 0.3, soft, decay = 14.0, slideTo = 2800.0),
+            Tone(2900.0, 0.17, 0.05, 0.28, soft, decay = 14.0, slideTo = 3600.0),
+            Tone(3600.0, 0.24, 0.12, 0.3, soft, decay = 9.0, slideTo = 3000.0, vibrato = 0.6, vibratoHz = 30.0),
+        )
+        // A music box: a high, glassy pluck that the ballerina's tune plays at different pitches.
+        Sfx.UP_MUSICBOX -> listOf(
+            Tone(1318.5, 0.0, 0.9, 0.38, bell, decay = 4.2),
+            Tone(2637.0, 0.0, 0.5, 0.12, bell, decay = 8.0),
+            Tone(3951.0, 0.0, 0.3, 0.05, soft, decay = 12.0),
+        )
+        Sfx.UP_DINGDONG -> listOf(
+            Tone(783.99, 0.0, 0.9, 0.45, bell, decay = 3.2),
+            Tone(1567.98, 0.0, 0.5, 0.12, bell, decay = 6.0),
+            Tone(622.25, 0.5, 1.2, 0.45, bell, decay = 2.6),
+            Tone(1244.5, 0.5, 0.6, 0.12, bell, decay = 6.0),
+        )
+        // A finger squeaking over wet glass.
+        Sfx.UP_WIPE -> listOf(
+            Noise(0.0, 0.3, 0.26, 3600.0, 5200.0, swell = true, seed = 42),
+            Tone(2300.0, 0.0, 0.28, 0.14, soft, decay = 3.0, slideTo = 3100.0, vibrato = 0.5, vibratoHz = 40.0, attack = 0.04),
+        )
+        Sfx.UP_SPROING -> listOf(
+            Tone(180.0, 0.0, 0.5, 0.5, soft, decay = 3.0, slideTo = 820.0, vibrato = 1.2, vibratoHz = 22.0),
+            Tone(360.0, 0.0, 0.4, 0.22, soft, decay = 4.0, slideTo = 1500.0, vibrato = 1.2, vibratoHz = 24.0),
+        )
 
         // ---- Storhuset attic ----
         // Old wood that creaks up and down: the rocking horse and the trunk lid.

@@ -204,4 +204,29 @@ object S {
 
     /** The shout when Sture is found in his hiding place. */
     val atticFound = txt("Fann deg!", "Fant deg!")
+    // Storhuset Andre høgda: the rooms, in the order of `UpperFloor.rooms`. The floor itself speaks in pictures and sounds.
+    fun upperRoom(index: Int): Txt = when (index) {
+        0 -> txt("Repoet", "Repoet")
+        1 -> txt("Barnerommet")
+        2 -> txt("Leikerommet", "Lekerommet")
+        3 -> txt("Badet")
+        4 -> txt("Soverommet")
+        else -> txt("Altanen")
+    }
+
+    /** What the child's own words for the toys of Andre høgda would be, for a screen reader. */
+    fun upperToy(name: String): Txt = when (name) {
+        "train" -> txt("Leiketog", "Leketog")
+        "blocks" -> txt("Klossetårn", "Klossetårn")
+        "dollhouse" -> txt("Dokkehuset", "Dukkehuset")
+        "ballpit" -> txt("Ballbasseng", "Ballbasseng")
+        "climbing" -> txt("Klatrevegg")
+        "easel" -> txt("Staffeli")
+        "karaoke" -> txt("Karaokescene", "Karaokescene")
+        "puppets" -> txt("Dokketeater", "Dukketeater")
+        "wardrobe" -> txt("Garderobe")
+        "jewelbox" -> txt("Smykkeskrin", "Smykkeskrin")
+        "feeder" -> txt("Fuglemating")
+        else -> txt(name)
+    }
 }

@@ -32,7 +32,9 @@ import kotlin.math.min
 
 /** Draws a piece of furniture fitted into [box] (pixels). */
 fun DrawScope.drawFixtureThumb(type: FixtureType, variant: Int, box: Rect) {
-    val f = Fixture(-1, PlaceId.HOME, type, 0f, 0f, variant)
+    // Furniture that only a floor of the big house knows is drawn by that floor's art, which is chosen by place.
+    val place = app.trollfoss.domain.House.floors.firstOrNull { it.specOf(type) != null }?.place ?: PlaceId.HOME
+    val f = Fixture(-1, place, type, 0f, 0f, variant)
     val spec = f.spec
     // Leave room for the oblique top and side, which reach up and to the right.
     val w = spec.w + 0.12f

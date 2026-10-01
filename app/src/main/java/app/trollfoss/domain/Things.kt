@@ -197,6 +197,16 @@ enum class ThingType(
     GR_TRAY(0.13f, 0.085f, Cat.TOOL),
 
     // ---- upper floor ----
+    /** A toy block with a picture on every side; six colours. Stack them, topple them. */
+    UP_BLOCK(0.05f, 0.05f, Cat.TOY, bounce = 0.22f, variants = 6),
+    /** One odd sock from the laundry chute. It never has a partner. */
+    UP_SOCK(0.065f, 0.05f, Cat.HOME, variants = 6),
+    /** For the easel. */
+    UP_PAINTBRUSH(0.018f, 0.1f, Cat.TOOL, variants = 4),
+    /** A fluffy animal slipper; it makes a very good hat. Variant: 0 bunny, 1 frog, 2 dino. */
+    UP_SLIPPER(0.11f, 0.065f, Cat.HAT, variants = 3),
+    /** Glides slowly down when it is let go. */
+    UP_PAPER_PLANE(0.09f, 0.035f, Cat.TOY, bounce = 0.12f, lift = 0.22f, variants = 3),
 
     // ---- attic ----
     /** A torch that lights up what it lies on, and what a finger drags it over. */
