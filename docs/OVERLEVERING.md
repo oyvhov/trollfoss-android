@@ -58,7 +58,7 @@ Kvar ligg som git-branch `house/<namn>` og som worktree `C:\trollfoss-wt\<namn>`
 | `house/kjeller` | Kjellaren (vaskerom, fyrrom, basseng, festrom, tunnel + Trollhola-dør) | art og tunnel committa; rapport ikkje lesen — sjekk |
 | `house/figurar` | Roboten Rolf og spøkelset Sture: art (`PersonArtRolf/Sture/House/Xray.kt`), åtferd (`domain/Figurar.kt`), 12 `FG_`-lydar, `Fx.FIGURAR`, `Give.SNIFF`, debug `FigurarSheetActivity` | ferdig, 17 testar + lint grøne; **rører `Engine.kt`, `Sim.kt`, `Life.kt`, `Anatomy.kt` (flett tidleg og sjekk konfliktar)**; ikkje merga `main` inn |
 | `house/kart` | Storhuset på kartet (`ui/art/MapManor.kt`, tunnel-sti via `manor_tunnel`, spot (0.76, 0.355)) | ferdig, `main` flettet inn, testar grøne |
-| `house/sesong` | Sesongar og høgtider i dei gamle stadene (`SeasonArt*.kt`, debug-ekstra `--es season/festival`) | committa, 4 commitar; kan vere uferdig |
+| `house/sesong` | Sesongar og høgtider i dei 15 gamle stadene (`SeasonKit.kt` palett, `SeasonArt*.kt`, debug-ekstra `--es season/festival`; jul, påske, gresskar) | ferdig, testar og lint grøne; sommar skal vere uendra (ikkje pikselsjekka); rør `PlayScreen.kt`, `TrollfossViewModel.kt`, `MainActivity.kt`, `SceneKit.kt` og stadkunsten; rain/natt/feiringar om natta og ytinga ikkje sett; storhuset og kartet ikkje med |
 | `house/bygg` | **Mitt hus**: byggjemotor, 10 romtypar, 23 `MI_`-møblar, fasade/tomt/rom-teikning, byggjepanel, effektar, demo, `MineTest`, kartlandemerke (`MapMine.kt`) | mykje skrive (5 700 liner), **aldri sett på ei eining**; sjå statusdelen i `docs/BYGG.md` på greina |
 
 Dei fire fyrste rapportane (stova, oppe, hage, kart) står oppsummerte over; rapportar frå loft, kjeller og figurar
