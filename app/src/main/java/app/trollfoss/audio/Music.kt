@@ -293,17 +293,21 @@ object MusicComposer {
             padLevel = 0.1,
             seed = 107,
         ),
-        // Bright and breezy: the garden.
+        // Bright and breezy, a little pastoral: the garden. Sixteen bars in G that wander round Em, C, D and Am,
+        // a plucked arpeggio, wind-chime bells in the G pentatonic and no drums, so frogs and birds can join in.
         MusicTheme.GARDEN to Recipe(
-            bpm = 100.0,
-            chords = listOf(intArrayOf(55, 59, 62, 67), intArrayOf(62, 66, 69), intArrayOf(52, 55, 59, 64), intArrayOf(60, 64, 67)),
-            bass = intArrayOf(31, 38, 28, 36),
+            bpm = 96.0,
+            chords = listOf(
+                intArrayOf(55, 59, 62, 67), intArrayOf(55, 59, 64, 67), intArrayOf(55, 60, 64, 67), intArrayOf(57, 62, 66, 69),
+                intArrayOf(54, 59, 62, 66), intArrayOf(52, 59, 64, 67), intArrayOf(57, 60, 64, 69), intArrayOf(57, 62, 66, 69),
+            ),
+            bass = intArrayOf(31, 28, 36, 38, 35, 28, 33, 38),
             arpeggio = intArrayOf(0, 1, 2, 1, 0, 2, 1, 2),
-            pluckDecay = 5.0,
-            arpeggioLevel = 0.17,
-            bells = intArrayOf(79, 83, 86, 88, 91),
-            bellChance = 0.3,
-            padLevel = 0.13,
+            pluckDecay = 5.5,
+            arpeggioLevel = 0.16,
+            bells = intArrayOf(79, 81, 83, 86, 88, 91),
+            bellChance = 0.35,
+            padLevel = 0.12,
             seed = 109,
         ),
         // A lullaby for the night.

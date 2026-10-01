@@ -81,7 +81,7 @@ object GardenFloor : Floor {
             surfaces = listOf(SurfaceSpec(-0.08f, 0.08f, -0.17f)),
             dropZone = RRect(-0.16f, -0.26f, 0.16f, 0.02f),
         )
-        FixtureType.GA_HAMMOCK -> FixtureSpec(0.74f, 0.34f, spots = listOf(SpotSpec(0f, -0.15f, Pose.LIE)))
+        FixtureType.GA_HAMMOCK -> FixtureSpec(0.74f, 0.34f, front = true, spots = listOf(SpotSpec(0f, -0.15f, Pose.LIE)))
         FixtureType.GA_GNOME -> FixtureSpec(0.1f, 0.16f)
         FixtureType.GA_MOWER -> FixtureSpec(0.16f, 0.09f)
         FixtureType.GA_SPRINKLER -> FixtureSpec(0.1f, 0.06f)
@@ -103,12 +103,12 @@ object GardenFloor : Floor {
             spots = listOf(SpotSpec(0.12f, -0.38f, Pose.SIT, hidden = true), SpotSpec(0.25f, -0.38f, Pose.SIT, hidden = true)),
             light = RRect(-0.05f, -0.65f, 0.42f, -0.28f),
         )
-        // Two lanes: climbing up and climbing down. Nobody can be dropped on them; the rules move the climbers.
+        // Two lanes: climbing up (a figure dropped at the foot goes up) and climbing down (dropped at the top, it comes down). The rules move the climbers.
         FixtureType.GA_LADDER -> FixtureSpec(
             0.1f, 0.42f,
-            spots = listOf(SpotSpec(0f, 0f, Pose.STAND, hidden = true), SpotSpec(0f, 0f, Pose.STAND, hidden = true)),
+            spots = listOf(SpotSpec(0f, 0f, Pose.STAND), SpotSpec(0f, 0f, Pose.STAND)),
         )
-        FixtureType.GA_SWING -> FixtureSpec(0.22f, 0.62f, spots = listOf(SpotSpec(0f, -0.14f, Pose.SIT)))
+        FixtureType.GA_SWING -> FixtureSpec(0.22f, 0.62f, front = true, spots = listOf(SpotSpec(0f, -0.14f, Pose.SIT)))
         // The zip line's carriage: the fixture's bottom is the rider's hips, the trolley is above.
         FixtureType.GA_ZIP -> FixtureSpec(0.14f, 0.4f, spots = listOf(SpotSpec(0f, 0f, Pose.SIT)))
         FixtureType.GA_ZIP_POLE -> FixtureSpec(0.1f, 0.5f)
