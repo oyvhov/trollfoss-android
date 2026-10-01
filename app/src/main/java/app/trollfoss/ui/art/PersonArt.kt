@@ -22,6 +22,7 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 private val MouthDark = Color(0xFF7A2440)
 private val Tongue = Color(0xFFFF7F9E)
@@ -962,6 +963,71 @@ private fun DrawScope.animalEyes(c: Offset, r: Float, spread: Float, y: Float, a
     }
 }
 
+/** A small curly goat horn: a tapered arch sweeping up, out and back down, with a few growth rings. */
+private fun DrawScope.goatHorn(c: Offset, r: Float, side: Float, pen: Pen) {
+    val p0 = Offset(c.x + side * r * 0.3f, c.y - r * 0.8f)
+    val p1 = Offset(c.x + side * r * 0.24f, c.y - r * 1.38f)
+    val p2 = Offset(c.x + side * r * 0.96f, c.y - r * 1.46f)
+    val p3 = Offset(c.x + side * r * 0.88f, c.y - r * 1.0f)
+    val n = 14
+    val lx = FloatArray(n + 1)
+    val ly = FloatArray(n + 1)
+    val rx = FloatArray(n + 1)
+    val ry = FloatArray(n + 1)
+    for (i in 0..n) {
+        val s = i / n.toFloat()
+        val q = 1f - s
+        val bx = q * q * q * p0.x + 3f * q * q * s * p1.x + 3f * q * s * s * p2.x + s * s * s * p3.x
+        val by = q * q * q * p0.y + 3f * q * q * s * p1.y + 3f * q * s * s * p2.y + s * s * s * p3.y
+        val dx = 3f * q * q * (p1.x - p0.x) + 6f * q * s * (p2.x - p1.x) + 3f * s * s * (p3.x - p2.x)
+        val dy = 3f * q * q * (p1.y - p0.y) + 6f * q * s * (p2.y - p1.y) + 3f * s * s * (p3.y - p2.y)
+        val len = sqrt(dx * dx + dy * dy).coerceAtLeast(0.0001f)
+        val hw = r * 0.12f * (1f - 0.8f * s)
+        val nx = -dy / len
+        val ny = dx / len
+        lx[i] = bx + nx * hw
+        ly[i] = by + ny * hw
+        rx[i] = bx - nx * hw
+        ry[i] = by - ny * hw
+    }
+    val horn = Path().apply {
+        moveTo(lx[0], ly[0])
+        for (i in 1..n) lineTo(lx[i], ly[i])
+        for (i in n downTo 0) lineTo(rx[i], ry[i])
+        close()
+    }
+    inked(horn, Color(0xFFEFE0BC), pen)
+    for (i in intArrayOf(3, 6, 9)) {
+        drawLine(Ink.line.copy(alpha = 0.45f), Offset(lx[i] * 0.8f + rx[i] * 0.2f, ly[i] * 0.8f + ry[i] * 0.2f), Offset(lx[i] * 0.2f + rx[i] * 0.8f, ly[i] * 0.2f + ry[i] * 0.8f), strokeWidth = pen.lw * 0.6f, cap = StrokeCap.Round)
+    }
+}
+
+/** Goat eyes: a big white with an amber iris and the goat's sideways rectangular pupil. */
+private fun DrawScope.goatEyes(c: Offset, r: Float, a: PersonAnim, pen: Pen, closed: Boolean) {
+    for (side in listOf(-1f, 1f)) {
+        val e = Offset(c.x + side * r * 0.47f, c.y - r * 0.14f)
+        if (closed || a.blink > 0f) {
+            val arc = Path().apply {
+                moveTo(e.x - r * 0.17f, e.y)
+                quadraticTo(e.x, e.y + r * 0.13f, e.x + r * 0.17f, e.y)
+            }
+            drawPath(arc, Ink.line, style = Stroke(pen.lw * 1.1f, cap = StrokeCap.Round))
+        } else {
+            val white = rect(e.x, e.y, r * 0.4f, r * 0.38f)
+            drawOval(Color.White, white.topLeft, white.size)
+            val ix = e.x + a.lookX * r * 0.05f
+            val iy = e.y + a.lookY * r * 0.05f + r * 0.01f
+            clipPath(ovalPath(white)) {
+                drawOval(Color(0xFFF2B63A), Offset(ix - r * 0.15f, iy - r * 0.15f), Size(r * 0.3f, r * 0.3f))
+            }
+            // The pupil lies on its side, like a little bar.
+            drawRoundRect(Ink.line, Offset(ix - r * 0.12f, iy - r * 0.045f), Size(r * 0.24f, r * 0.09f), androidx.compose.ui.geometry.CornerRadius(r * 0.03f))
+            drawCircle(Color.White, r * 0.04f, Offset(ix - r * 0.07f, iy - r * 0.09f))
+            drawOval(Ink.line, white.topLeft, white.size, style = pen.thin)
+        }
+    }
+}
+
 /**
  * Cow, sheep and fjord horse: sitting up and facing us like the pets, with the head around -0.62 h and
  * the muzzle over the mouth point at -0.49 h.
@@ -976,12 +1042,24 @@ private fun DrawScope.drawFarmAnimal(species: Species, look: Look, pose: Pose, a
     val sway = sin(t * 2f) * 0.06f
 
     // Tail
-    val tail = Path().apply {
-        moveTo(0.24f * h, -0.1f * h)
-        quadraticTo((0.46f + sway) * h, -0.14f * h, (0.4f + sway) * h, -0.36f * h)
+    if (species == Species.GOAT) {
+        // A short perky tail that flicks up behind the rump.
+        val flick = sin(t * 3.2f) * 0.025f
+        val tuft = Path().apply {
+            moveTo(0.22f * h, -0.16f * h)
+            quadraticTo((0.34f + flick) * h, -0.2f * h, (0.36f + flick) * h, -0.33f * h)
+            quadraticTo((0.27f + flick) * h, -0.27f * h, 0.24f * h, -0.08f * h)
+            close()
+        }
+        inked(tuft, coat.darken(0.05f), pen)
+    } else {
+        val tail = Path().apply {
+            moveTo(0.24f * h, -0.1f * h)
+            quadraticTo((0.46f + sway) * h, -0.14f * h, (0.4f + sway) * h, -0.36f * h)
+        }
+        drawPath(tail, Ink.line, style = Stroke(0.05f * h + pen.lw * 2, cap = StrokeCap.Round))
+        drawPath(tail, if (species == Species.HORSE) Color(0xFF3A3340) else coat.darken(0.15f), style = Stroke(0.05f * h, cap = StrokeCap.Round))
     }
-    drawPath(tail, Ink.line, style = Stroke(0.05f * h + pen.lw * 2, cap = StrokeCap.Round))
-    drawPath(tail, if (species == Species.HORSE) Color(0xFF3A3340) else coat.darken(0.15f), style = Stroke(0.05f * h, cap = StrokeCap.Round))
 
     // Body
     if (species == Species.SHEEP) {
@@ -1025,7 +1103,26 @@ private fun DrawScope.drawFarmAnimal(species: Species, look: Look, pose: Pose, a
     }
     // Ears and horns
     for (side in listOf(-1f, 1f)) {
-        rotate(side * (28f + sin(t * 2.4f + side) * 5f), pivot = Offset(c.x + side * r * 0.8f, c.y - r * 0.35f)) {
+        if (species == Species.GOAT) {
+            // Long goat ears stick out sideways like little wings, with a flick now and then.
+            val base = Offset(c.x + side * r * 0.7f, c.y - r * 0.32f)
+            rotate(side * (sin(t * 2.4f + side) * 5f - 8f), pivot = base) {
+                val ear = Path().apply {
+                    moveTo(c.x + side * r * 0.62f, c.y - r * 0.5f)
+                    quadraticTo(c.x + side * r * 1.2f, c.y - r * 0.66f, c.x + side * r * 1.66f, c.y - r * 0.28f)
+                    quadraticTo(c.x + side * r * 1.2f, c.y - r * 0.06f, c.x + side * r * 0.66f, c.y - r * 0.12f)
+                    close()
+                }
+                inked(ear, face, pen)
+                val inner = Path().apply {
+                    moveTo(c.x + side * r * 0.86f, c.y - r * 0.4f)
+                    quadraticTo(c.x + side * r * 1.2f, c.y - r * 0.5f, c.x + side * r * 1.46f, c.y - r * 0.28f)
+                    quadraticTo(c.x + side * r * 1.2f, c.y - r * 0.18f, c.x + side * r * 0.86f, c.y - r * 0.2f)
+                    close()
+                }
+                drawPath(inner, EarPink.copy(alpha = 0.6f))
+            }
+        } else rotate(side * (28f + sin(t * 2.4f + side) * 5f), pivot = Offset(c.x + side * r * 0.8f, c.y - r * 0.35f)) {
             inkedOval(Rect(c.x + side * r * 0.8f - r * 0.3f, c.y - r * 0.5f, c.x + side * r * 0.8f + r * 0.3f, c.y - r * 0.22f), face, pen)
             drawOval(EarPink.copy(alpha = 0.6f), Offset(c.x + side * r * 0.8f - r * 0.16f, c.y - r * 0.43f), Size(r * 0.32f, r * 0.13f))
         }
@@ -1038,17 +1135,7 @@ private fun DrawScope.drawFarmAnimal(species: Species, look: Look, pose: Pose, a
             }
             inked(horn, Color(0xFFF3E6C8), pen)
         }
-        if (species == Species.GOAT) {
-            // Horns sweeping back from the forehead.
-            val horn = Path().apply {
-                moveTo(c.x + side * r * 0.3f, c.y - r * 0.85f)
-                quadraticTo(c.x + side * r * 0.42f, c.y - r * 1.45f, c.x + side * r * 0.95f, c.y - r * 1.3f)
-                quadraticTo(c.x + side * r * 0.62f, c.y - r * 1.2f, c.x + side * r * 0.56f, c.y - r * 0.8f)
-                close()
-            }
-            inked(horn, Color(0xFFE9D9B5), pen)
-            for (k in 1..2) drawLine(Ink.line.copy(alpha = 0.5f), Offset(c.x + side * r * (0.4f + k * 0.12f), c.y - r * (1.0f + k * 0.12f)), Offset(c.x + side * r * (0.5f + k * 0.12f), c.y - r * (1.12f + k * 0.12f)), strokeWidth = pen.lw * 0.6f)
-        }
+        if (species == Species.GOAT) goatHorn(c, r, side, pen)
         if (species == Species.HORSE) {
             val ear = Path().apply {
                 moveTo(c.x + side * r * 0.25f, c.y - r * 0.85f)
@@ -1081,6 +1168,21 @@ private fun DrawScope.drawFarmAnimal(species: Species, look: Look, pose: Pose, a
         else drawArc(Ink.line, 20f, 140f, false, Offset(m.x - r * 0.14f, m.y - r * 0.12f), Size(r * 0.28f, r * 0.14f), style = Stroke(pen.lw, cap = StrokeCap.Round))
         return
     }
+    if (species == Species.GOAT) {
+        // The goatee hangs from the chin, tucked in behind the head.
+        val sw = sin(t * 2.1f) * 0.04f
+        val beard = Path().apply {
+            moveTo(c.x - r * 0.2f, c.y + r * 0.72f)
+            cubicTo(c.x - r * 0.26f, c.y + r * 1.1f, c.x - r * 0.18f, c.y + r * 1.36f, c.x - r * (0.12f - sw), c.y + r * 1.52f)
+            lineTo(c.x - r * (0.05f - sw), c.y + r * 1.38f)
+            lineTo(c.x + r * sw, c.y + r * 1.7f)
+            lineTo(c.x + r * (0.06f + sw), c.y + r * 1.38f)
+            lineTo(c.x + r * (0.12f + sw), c.y + r * 1.52f)
+            cubicTo(c.x + r * 0.18f, c.y + r * 1.36f, c.x + r * 0.26f, c.y + r * 1.1f, c.x + r * 0.2f, c.y + r * 0.72f)
+            close()
+        }
+        inked(beard, if (look.skin == 0) Color(0xFFEDE5D4) else coat.lighten(0.3f), pen)
+    }
     inkedCircle(c, r, face, pen)
     if (species == Species.SHEEP) {
         // A woolly fringe on top.
@@ -1090,24 +1192,42 @@ private fun DrawScope.drawFarmAnimal(species: Species, look: Look, pose: Pose, a
     // Muzzle
     val muzzle = Rect(c.x - r * 0.6f, c.y + r * 0.12f, c.x + r * 0.6f, c.y + r * 0.82f)
     inkedOval(muzzle, if (species == Species.COW) Color(0xFFFFB3C1) else face.lighten(0.25f), pen)
-    drawOval(Ink.line.copy(alpha = 0.8f), Offset(c.x - r * 0.32f, c.y + r * 0.34f), Size(r * 0.14f, r * 0.12f))
-    drawOval(Ink.line.copy(alpha = 0.8f), Offset(c.x + r * 0.18f, c.y + r * 0.34f), Size(r * 0.14f, r * 0.12f))
-    animalEyes(c, r, 0.42f, -0.2f, a, pen, closed)
+    if (species == Species.GOAT) {
+        // A small pink nose with two nostrils.
+        inkedOval(Rect(c.x - r * 0.2f, c.y + r * 0.22f, c.x + r * 0.2f, c.y + r * 0.42f), Color(0xFFE8A0A8), pen, shade = false)
+        drawOval(Ink.line.copy(alpha = 0.8f), Offset(c.x - r * 0.12f, c.y + r * 0.28f), Size(r * 0.08f, r * 0.08f))
+        drawOval(Ink.line.copy(alpha = 0.8f), Offset(c.x + r * 0.04f, c.y + r * 0.28f), Size(r * 0.08f, r * 0.08f))
+        goatEyes(c, r, a, pen, closed)
+    } else {
+        drawOval(Ink.line.copy(alpha = 0.8f), Offset(c.x - r * 0.32f, c.y + r * 0.34f), Size(r * 0.14f, r * 0.12f))
+        drawOval(Ink.line.copy(alpha = 0.8f), Offset(c.x + r * 0.18f, c.y + r * 0.34f), Size(r * 0.14f, r * 0.12f))
+        animalEyes(c, r, 0.42f, -0.2f, a, pen, closed)
+    }
     val m = Offset(c.x, c.y + r * 0.62f)
     if (chewing || a.face == Face.OOH || a.face == Face.WOW || a.face == Face.LAUGH) {
         drawOval(MouthDark, Offset(m.x - r * 0.16f, m.y - r * 0.05f), Size(r * 0.32f, r * (0.1f + 0.08f * abs(sin(t * 14f)))))
+    } else if (species == Species.GOAT) {
+        // A little cat-like smile under the nose.
+        drawLine(Ink.line, Offset(c.x, c.y + r * 0.42f), Offset(c.x, m.y - r * 0.03f), strokeWidth = pen.lw * 0.8f, cap = StrokeCap.Round)
+        drawArc(Ink.line, 10f, 160f, false, Offset(m.x - r * 0.2f, m.y - r * 0.1f), Size(r * 0.2f, r * 0.14f), style = Stroke(pen.lw, cap = StrokeCap.Round))
+        drawArc(Ink.line, 10f, 160f, false, Offset(m.x, m.y - r * 0.1f), Size(r * 0.2f, r * 0.14f), style = Stroke(pen.lw, cap = StrokeCap.Round))
     } else {
         drawArc(Ink.line, 20f, 140f, false, Offset(m.x - r * 0.16f, m.y - r * 0.12f), Size(r * 0.32f, r * 0.14f), style = Stroke(pen.lw, cap = StrokeCap.Round))
     }
     if (species == Species.GOAT) {
-        // A goatee: a little pointed beard under the chin.
-        val beard = Path().apply {
-            moveTo(c.x - r * 0.2f, c.y + r * 0.72f)
-            quadraticTo(c.x - r * 0.12f, c.y + r * 1.25f, c.x, c.y + r * 1.4f)
-            quadraticTo(c.x + r * 0.12f, c.y + r * 1.25f, c.x + r * 0.2f, c.y + r * 0.72f)
-            close()
+        // A tuft of hair between the horns.
+        val tuftTop = Path().apply {
+            moveTo(c.x - r * 0.2f, c.y - r * 0.92f)
+            lineTo(c.x - r * 0.14f, c.y - r * 1.2f)
+            lineTo(c.x - r * 0.04f, c.y - r * 1.0f)
+            lineTo(c.x + r * 0.06f, c.y - r * 1.26f)
+            lineTo(c.x + r * 0.1f, c.y - r * 1.0f)
+            lineTo(c.x + r * 0.2f, c.y - r * 1.14f)
+            lineTo(c.x + r * 0.22f, c.y - r * 0.92f)
         }
-        inked(beard, coat.lighten(0.3f), pen)
+        val tuft = Path().apply { addPath(tuftTop); lineTo(c.x - r * 0.2f, c.y - r * 0.8f); close() }
+        drawPath(tuft, face)
+        drawPath(tuftTop, Ink.line, style = pen.stroke)
     }
     if (species == Species.COW) {
         // A cowbell on a red collar.
