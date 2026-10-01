@@ -16,6 +16,9 @@ Same kontrakt som Komet. Publiser berre når brukaren ber om ein ny release.
 - GitHub må oppgi `digest: sha256:…` for APK-en. Appen kontrollerer storleik, hash, pakkenamn,
   minste Android-versjon, versjon og signatur før Android får spørsmål om installasjon.
 - Testutgåver skal merkast som prerelease og ikkje som «latest».
+- Appen viser utgivingsnotatet som ren tekst på foreldresida og kuttar det. Markdown (`![bilete](…)`,
+  `##` og `**fet**`) blir synleg som teikn. Skriv dei første linene som vanleg tekst, og legg bilete og
+  overskrifter lenger ned eller utelat dei.
 
 Automatisk sjekk skjer når appen kjem fram, høgst éin gong per tolv timar. «Sjekk no» på foreldresida
 går utanom ventetida. Ingenting blir lasta ned eller installert utan at ein vaksen vel det.
@@ -83,13 +86,20 @@ gh release edit $tag --repo oyvhov/trollfoss-android --draft=false --latest
 
 1. Hent release-lista **utan token** og stadfest utgåva, `draft=false` og rett digest.
 2. Last ned `browser_download_url` til ei eiga fil og samanlikn SHA-256 med den bygde APK-en.
-3. Byggje ei eldre lokal utgåve av same kjelde og installer henne på emulatoren:
+3. Byggje ei eldre lokal utgåve av same kjelde, med lågare versjonsnamn og lågare versjonskode, og
+   installer henne på emulatoren. AGP godtek ikkje versjonskode 0, så frå og med 1.0.1 brukar du førre
+   utgåves kode (for 1.0.1: `1` og `1.0.0`):
 
    ```powershell
-   ./gradlew.bat --gradle-user-home C:\JellyBin\.gradle-home assembleRelease "-PtrollfossVersionCode=0" "-PtrollfossVersionName=0.9.0"
+   ./gradlew.bat --gradle-user-home C:\JellyBin\.gradle-home assembleRelease "-PtrollfossVersionCode=1" "-PtrollfossVersionName=1.0.0"
    ```
 
-   Denne APK-en skal aldri delast. Bygg den ekte releasen på nytt etterpå.
+   Denne APK-en skal aldri delast. Bygg den ekte releasen på nytt etterpå (bygga er ikkje bit-identiske;
+   den kontrollerte fila er den i `dist/`, ikkje den i `app/build/`).
+
+   Den første utgåva (1.0.0, kode 1) kan ikkje testast heilt: det finst ingen lågare kode. Då testar du
+   berre at appen finn utgåva, lastar ned og kontrollerer fila. Han skal avvise henne med «Oppdateringa
+   kunne ikkje stadfestast. Ingenting vart installert.» når koden ikkje er høgare enn den installerte.
 4. Opne Kart → tannhjulet → gongestykket → Appoppdateringar → **Sjekk no**. Vel **Last ned
    oppdatering** og så **Installer oppdatering**. Gi løyve til å installere frå Trollfoss om Android spør.
 5. Opne appen og stadfest ny versjon, og at figurar og ting er bevarte.
