@@ -2756,6 +2756,8 @@ class Engine(
             out += Triple(c, l.width / 2 * u, color)
         }
         for (b in world.bodiesIn(place)) {
+            // Sture glows softly, so a ghost in the dark attic is always easy to find.
+            if (b is Person && b.species == Species.GHOST && !hidden(b)) out += Triple(Offset(sx(b.x), sy(b.y - b.h * 0.55f)), b.h * 0.95f * u, Color(0xFFBDF1FF))
             if (b !is Thing || !b.type.glows || hidden(b)) continue
             out += Triple(Offset(sx(b.x), sy(b.y - b.h / 2)), 0.13f * u, Color(0xFFFFE58A))
         }

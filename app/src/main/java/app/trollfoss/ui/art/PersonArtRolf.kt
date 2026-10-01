@@ -95,13 +95,13 @@ internal fun DrawScope.rolf(look: Look, pose: Pose, a: PersonAnim, h: Float, pen
             val len = 0.12f + 0.045f * sin(t * 26f + side * 2f)
             val flame = Path().apply {
                 moveTo((fx - 0.05f) * h, -0.02f * h)
-                quadraticTo(fx * h, (-0.02f + len * 1.7f) * h, (fx + 0.05f) * h, -0.02f * h)
+                quadraticTo(fx * h, (-0.02f + len * 3.4f) * h, (fx + 0.05f) * h, -0.02f * h)
                 close()
             }
             drawPath(flame, Color(0xFFFFA63D))
             val core = Path().apply {
                 moveTo((fx - 0.02f) * h, -0.02f * h)
-                quadraticTo(fx * h, (-0.02f + len * 1.0f) * h, (fx + 0.02f) * h, -0.02f * h)
+                quadraticTo(fx * h, (-0.02f + len * 2.0f) * h, (fx + 0.02f) * h, -0.02f * h)
                 close()
             }
             drawPath(core, Color(0xFFFFE27A))
