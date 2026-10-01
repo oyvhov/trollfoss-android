@@ -14,3 +14,5 @@ for teiknereglane.
   `oyvhov/trollfoss-android`).
 - Alt barnet ser av tekst, skal finnast på både nynorsk og bokmål (`Txt(nn, nb)`).
 - Stil: vanleg og moderne med lett nordisk preg, ikkje stereotypisk norsk. Grafikk og musikk er laga i kode.
+
+**Pågåande arbeid:** les docs/OVERLEVERING.md først (status, greiner house/*, flettesteg, reglar, kva som står att). Designkontraktar: docs/HUSET.md (Storhuset) og docs/BYGG.md (Mitt hus).
