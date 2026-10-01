@@ -54,6 +54,10 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             task = extras.getString("task"),
             seasonName = extras.getString("season"),
             festivalName = extras.getString("festival"),
+            mine = extras.getString("mine"),
+            shape = extras.getInt("shape", 0),
+            build = extras.getString("build"),
+            cam = extras.getFloat("cam", Float.NaN),
         )
     }
 

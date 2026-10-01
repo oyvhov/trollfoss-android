@@ -214,6 +214,9 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
 
     /** Furniture catalogue, store, wallpaper and tidying up. */
     val designer = Designer(this, random)
+
+    /** Mitt hus: building, the housewarming and what the furniture of the child's own house does. */
+    val mine = MineBuilder(this, random)
     private var pools: List<Pool> = emptyList()
 
     fun invalidate(place: PlaceId) {
@@ -1692,7 +1695,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         FixtureType.SHIPWRECK, FixtureType.CABLE_CAR, FixtureType.CABLE_STATION, FixtureType.ROCK_LEDGE, FixtureType.SUMMIT_ROCK,
         FixtureType.ECHO_ROCK, FixtureType.MOUNTAIN_HUT, FixtureType.EAGLE_NEST, FixtureType.SUMMIT_FLAG -> false
         // Small things on furniture (the radio on the table) go with their furniture; running rides wait.
-        else -> f.host < 0 && !(f.on && f.type in MOVING)
+        else -> f.host < 0 && !(f.on && f.type in MOVING) && !(f.place.mine && House.passageAt(f) != null)
     }
 
     /**
@@ -1702,6 +1705,8 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     fun clampFixture(place: PlaceId, f: Fixture, x: Float, y: Float): FloatArray {
         val half = f.spec.w / 2f
         var cx = x.coerceIn(half + 0.01f, place.width - half - 0.01f)
+        // Furniture stays inside the rooms that stand: an empty slot of Mitt hus is open air.
+        if (place.mine) cx = Mine.clampX(world.mine, place, cx, half)
         val cy = if (f.spec.wall) {
             y.coerceIn(place.ceiling + f.spec.h + 0.02f, place.back - 0.01f)
         } else {

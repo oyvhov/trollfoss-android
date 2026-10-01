@@ -71,6 +71,8 @@ object Decor {
                 CatalogueItem(FixtureType.CORAL, 0), CatalogueItem(FixtureType.CORAL, 1), CatalogueItem(FixtureType.KELP),
                 CatalogueItem(FixtureType.GIANT_CLAM, stickers = 3), CatalogueItem(FixtureType.CHEST, stickers = 2),
             )
+            place == PlaceId.MINE_YARD -> outdoor + MineRooms.yardCatalogue
+            place.mine -> indoor + MineRooms.roomCatalogue
             place.outdoor -> outdoor
             else -> indoor
         }

@@ -92,6 +92,20 @@ fun PlayScreen(vm: TrollfossViewModel) {
         }
     }
 
+    // Mitt hus: the builder panel follows the open flag; build mode (frames with a plus) is on while it is open.
+    val mineUi = vm.mineUi
+    val mineVersion = vm.mineVersion
+    LaunchedEffect(mineUi.open, place, engine.designMode) {
+        vm.sim.mine.setBuildMode(mineUi.open && place.mine && !engine.designMode, place)
+    }
+    LaunchedEffect(mineVersion) {
+        if (vm.world.mine.wantPanel) {
+            vm.world.mine.wantPanel = false
+            mineUi.open = true
+        }
+    }
+    LaunchedEffect(engine.designMode) { if (engine.designMode) mineUi.open = false }
+
     Box(Modifier.fillMaxSize()) {
         Canvas(
             Modifier
@@ -198,6 +212,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
             Row(Modifier.align(Alignment.BottomStart).padding(edge), horizontalArrangement = Arrangement.spacedBy(gap)) {
                 RoundButton(S.workshop.str(), onClick = { vm.open(Screen.Creator(null)) }, tone = Tones.Grape, icon = Icons.Workshop)
                 RoundButton(S.designer.str(), onClick = { engine.designMode = true }, tone = Tones.Berry, icon = DesignIcons.Roller)
+                if (place.mine) RoundButton(app.trollfoss.ui.SM.build.str(), onClick = { mineUi.open = !mineUi.open }, tone = if (mineUi.open) Tones.Sun else Tones.Mint, icon = BuildIcons.Hammer)
             }
         }
         if (!engine.designMode && compact) {
@@ -233,6 +248,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
                     RoundButton(S.camera.str(), onClick = { menuOpen = false; photo() }, size = small, tone = Tones.Cream, tapSound = false, icon = Icons.Camera)
                     RoundButton(S.workshop.str(), onClick = { menuOpen = false; vm.open(Screen.Creator(null)) }, size = small, tone = Tones.Grape, icon = Icons.Workshop)
                     RoundButton(S.designer.str(), onClick = { menuOpen = false; engine.designMode = true }, size = small, tone = Tones.Berry, icon = DesignIcons.Roller)
+                    if (place.mine) RoundButton(app.trollfoss.ui.SM.build.str(), onClick = { menuOpen = false; mineUi.open = !mineUi.open }, size = small, tone = if (mineUi.open) Tones.Sun else Tones.Mint, icon = BuildIcons.Hammer)
                 }
             }
         }
@@ -248,6 +264,28 @@ fun PlayScreen(vm: TrollfossViewModel) {
                 vm.scheduleSave()
             })
         }
+
+        // Mitt hus: the builder panel (it steps aside while a job is at work, so the building can be watched).
+        val mine = vm.world.mine
+        AnimatedVisibility(
+            visible = place.mine && mineUi.open && !engine.designMode && mine.job == null && mineVersion >= 0,
+            enter = slideInHorizontally { it } + fadeIn(),
+            exit = slideOutHorizontally { it } + fadeOut(),
+            modifier = Modifier.align(Alignment.CenterEnd),
+        ) {
+            BuildPanel(vm, engine, place, compact, onClose = { mineUi.open = false; vm.scheduleSave() })
+        }
+        // At the empty plot a bubble points at the hammer: on a phone the menu opens by itself so the hammer shows.
+        val showHint = place == app.trollfoss.domain.PlaceId.MINE_YARD && !mine.started && !mineUi.open && !engine.designMode && mine.job == null
+        LaunchedEffect(showHint, compact) { if (showHint && compact) menuOpen = true }
+        if (showHint) {
+            if (compact) {
+                BuildHint(pointDown = false, modifier = Modifier.align(Alignment.TopEnd).padding(top = edge + btn + 6.dp + 48.dp, end = edge))
+            } else {
+                BuildHint(pointDown = true, modifier = Modifier.align(Alignment.BottomStart).padding(bottom = edge + btn + 8.dp, start = edge + (btn + gap) * 2 - 10.dp))
+            }
+        }
+        if (place.mine && mine.askDemolish >= 0) DemolishDialog(vm)
 
         PlaceBanner(place.let { S.place(it).str() }, key = place)
 

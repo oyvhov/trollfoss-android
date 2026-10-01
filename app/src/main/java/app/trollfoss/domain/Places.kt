@@ -69,7 +69,7 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
         else -> ordinal * 100
     }
     val addedFrom: Int get() = if (big) 200 else 40
-    val addedMax: Int get() = if (big) 259 else 59
+    val addedMax: Int get() = if (mine) 299 else if (big) 259 else 59
 
     /**
      * The floor is a band with depth («skrå-3D»): the back wall meets the floor at [back], the front edge

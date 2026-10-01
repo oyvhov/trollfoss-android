@@ -124,6 +124,9 @@ object Secrets {
         Secret("garden_gnome", PlaceId.MANOR_GARDEN, 1.52f, 0.72f, event = true, on = GardenIx.GNOME0),
         Secret("garden_sand", PlaceId.MANOR_GARDEN, 6.82f, 0.7f, event = true, on = GardenIx.SANDBOX),
         Secret("garden_shed", PlaceId.MANOR_GARDEN, 2.93f, 0.58f, inside = GardenIx.SHED, on = GardenIx.SHED),
+        Secret("mine_start", PlaceId.MINE_YARD, 1.75f, 0.7f, event = true),
+        Secret("mine_second_floor", PlaceId.MINE_YARD, 3.1f, 0.12f, event = true),
+        Secret("mine_housewarming", PlaceId.MINE_YARD, 6.4f, 0.68f, event = true),
     )
 
     fun byId(id: String): Secret? = all.firstOrNull { it.id == id }
