@@ -157,7 +157,7 @@ internal fun DrawScope.upBathMirror(f: Fixture, u: Float, pen: Pen) {
         when (f.mode) {
             0 -> {
                 // Clear: two shines that glide across now and then.
-                val g = ((t * 0.4f) % 2f)
+                val g = 5f
                 if (g < 1f) {
                     val x = c.x - rx + 2f * rx * g
                     drawLine(Color.White.copy(alpha = 0.8f), Offset(x - 0.02f * u, c.y + ry * 0.4f), Offset(x + 0.02f * u, c.y - ry * 0.4f), strokeWidth = 0.014f * u, cap = StrokeCap.Round)
@@ -187,7 +187,7 @@ internal fun DrawScope.upBathMirror(f: Fixture, u: Float, pen: Pen) {
     }
     drawPath(glass, Ink.line, style = pen.thin)
     // A little sparkle on the frame now and then.
-    val sp = (t * 0.3f) % 3f
+    val sp = 9f
     if (f.mode == 0 && sp < 0.6f) twinkle(Offset(c.x + rx * 0.7f, c.y - ry * 0.75f), 0.018f * u * sin(PI.toFloat() * sp / 0.6f), Color.White, 1f)
 }
 
@@ -242,7 +242,7 @@ internal fun DrawScope.upCanopyBed(f: Fixture, u: Float, pen: Pen) {
     fun q(x: Float, y: Float, z: Float) = fxQ(u, x, y, z)
     val t = pen.t
     val d = BED_D
-    val sway = sin(t * 0.9f) * 0.003f * u + upBeat(f) * sin(upBeat(f) * 25f) * 0.012f * u
+    val sway = upBeat(f) * sin(upBeat(f) * 25f) * 0.012f * u
     val post = Color(0xFFF7F3EC)
     val top = -0.5f
     upShadow(u, 0.42f, d)
@@ -282,7 +282,7 @@ internal fun DrawScope.upCanopyBedFront(f: Fixture, u: Float, pen: Pen) {
     fun q(x: Float, y: Float, z: Float) = fxQ(u, x, y, z)
     val t = pen.t
     val n = pen.night
-    val sway = sin(t * 0.9f + 1f) * 0.003f * u + upBeat(f) * sin(upBeat(f) * 25f + 1f) * 0.012f * u
+    val sway = upBeat(f) * sin(upBeat(f) * 25f + 1f) * 0.012f * u
     fxBedFront(f, u, pen)
     val post = Color(0xFFF7F3EC)
     val top = -0.5f
@@ -365,7 +365,7 @@ internal fun DrawScope.upWardrobe(f: Fixture, u: Float, pen: Pen) {
         drawRoundRect(trim, m.topLeft, m.size, CornerRadius(0.008f * u), style = Stroke(0.007f * u))
         drawRoundRect(Ink.line, m.topLeft, m.size, CornerRadius(0.008f * u), style = pen.thin)
         drawLine(Color.White.copy(alpha = 0.7f), Offset(m.left + 0.02f * u, m.top + 0.08f * u), Offset(m.left + 0.06f * u, m.top + 0.02f * u), strokeWidth = 0.01f * u, cap = StrokeCap.Round)
-        val g = (t * 0.35f) % 2.4f
+        val g = 5f
         if (g < 0.6f) twinkle(Offset(m.right - 0.025f * u, m.top + 0.07f * u), 0.02f * u * sin(PI.toFloat() * g / 0.6f), Color.White, 1f)
         val rc = p(0.083f, -0.24f)
         drawPath(starPath(rc, 0.034f * u, 0.016f * u), UpC.yellow)
@@ -450,7 +450,7 @@ internal fun DrawScope.upVanity(f: Fixture, u: Float, pen: Pen) {
     drawPath(glass, Brush.verticalGradient(listOf(Color(0xFFE7F5FF), Color(0xFFB4DAF0)), startY = mc.y - ry, endY = mc.y + ry))
     clipPath(glass) {
         drawLine(Color.White.copy(alpha = 0.8f), Offset(mc.x - rx * 0.55f, mc.y - ry * 0.2f), Offset(mc.x - rx * 0.25f, mc.y - ry * 0.65f), strokeWidth = 0.012f * u, cap = StrokeCap.Round)
-        val g = (t * 0.33f) % 2.5f
+        val g = 5f
         if (g < 1f) drawLine(Color.White.copy(alpha = 0.5f), Offset(mc.x - rx + 2f * rx * g - 0.03f * u, mc.y + ry * 0.5f), Offset(mc.x - rx + 2f * rx * g + 0.03f * u, mc.y - ry * 0.5f), strokeWidth = 0.012f * u, cap = StrokeCap.Round)
     }
     drawPath(glass, Ink.line, style = pen.thin)
@@ -571,13 +571,9 @@ internal fun DrawScope.upRockingChair(f: Fixture, u: Float, pen: Pen) {
         }
         capsule(q(-0.088f, -0.13f, 0.02f), q(-0.088f, -0.13f, 0.085f), 0.01f * u, UpC.oak, pen)
         capsule(q(0.088f, -0.13f, 0.02f), q(0.088f, -0.13f, 0.085f), 0.01f * u, UpC.oak, pen)
-        // The blanket over the left arm and back, with a pattern of little hearts.
-        val bl = Path().apply {
-            val a = q(-0.1f, -0.136f, 0.01f); val b2 = q(-0.1f, -0.136f, 0.085f)
-            moveTo(a.x, a.y); lineTo(b2.x, b2.y); lineTo(b2.x - 0.012f * u, b2.y + 0.06f * u); lineTo(a.x - 0.014f * u, a.y + 0.055f * u); close()
-        }
-        inked(bl, Color(0xFFF2A65A), pen, shade = false)
-        val hc = q(-0.103f, -0.108f, 0.04f)
-        drawPath(fxHeart(hc.x, hc.y, 0.006f * u), Color(0xFFFFF3C4))
+        // A knitted blanket over the left arm, with a little heart.
+        inkedRound(Rect(-0.108f * u, -0.146f * u, -0.074f * u, -0.066f * u), 0.008f * u, Color(0xFFF2A65A), pen, shade = false)
+        drawLine(Color(0xFFD9803A), p(-0.108f, -0.126f), p(-0.074f, -0.126f), strokeWidth = pen.lw * 0.8f)
+        drawPath(fxHeart(-0.091f * u, -0.1f * u, 0.006f * u), Color(0xFFFFF3C4))
     }
 }

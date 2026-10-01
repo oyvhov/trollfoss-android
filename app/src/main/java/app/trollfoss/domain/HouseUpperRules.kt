@@ -192,6 +192,19 @@ class HouseUpperRules(private val sim: Sim, private val random: Random) : FloorR
     }
 
     private fun stepPortrait(f: Fixture, dt: Float) {
+        // Blinking is driven from here so a still portrait costs nothing to draw: `bob` is the blink in progress, `angle` the time to the next one.
+        if (f.bob > 0f) {
+            f.bob = max(0f, f.bob - dt)
+            live(f)
+        } else if (f.angle == 0f) {
+            f.angle = 1f + random.nextFloat() * 6f
+        } else {
+            f.angle -= dt
+            if (f.angle <= 0f) {
+                f.bob = 0.14f
+                f.angle = 3f + random.nextFloat() * 5f
+            }
+        }
         if (f.angleV > 0f) {
             f.angleV -= dt
             if (f.angleV <= 0f) wave(f, quiet = false)
@@ -691,7 +704,29 @@ class HouseUpperRules(private val sim: Sim, private val random: Random) : FloorR
                     sim.invalidate(place)
                 }
             }
-            FixtureType.UP_DOLLHOUSE -> if (f.timer > 0f) f.timer = max(0f, f.timer - dt)
+            FixtureType.UP_DOLLHOUSE -> if (f.timer > 0f) {
+                f.timer = max(0f, f.timer - dt)
+                live(f)
+            }
+            FixtureType.UP_PUPPET_THEATER -> if (f.mode != 0) {
+                f.timer += dt
+                if (f.timer > 25f) {
+                    f.mode = 0
+                    f.timer = 0f
+                    fx(UpperCodes.PUPPET, f, 0)
+                }
+            } else {
+                f.timer = 0f
+            }
+            FixtureType.UP_WARDROBE -> if (f.open) {
+                f.timer += dt
+                if (f.timer > 15f) {
+                    f.open = false
+                    f.timer = 0f
+                    sim.invalidate(place)
+                    fx(UpperCodes.WARDROBE, f, 0)
+                }
+            }
             FixtureType.UP_POSTER -> if (f.timer > 0f) {
                 f.timer = max(0f, f.timer - dt)
                 live(f)
@@ -716,6 +751,8 @@ class HouseUpperRules(private val sim: Sim, private val random: Random) : FloorR
         if (mirrorClock <= 0f) {
             mirrorClock = 0.25f
             UpperMirror.update(world)
+            // The dollhouse picture is stamped once per look: the arrangement of its figures is part of the look.
+            fixture(HouseUpperIx.DOLLHOUSE)?.let { if (it.count != UpperMirror.signature) it.count = UpperMirror.signature }
         }
         wanderClock -= dt
         if (wanderClock <= 0f) {

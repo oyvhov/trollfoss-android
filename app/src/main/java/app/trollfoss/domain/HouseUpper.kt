@@ -64,11 +64,11 @@ object UpperFloor : Floor {
             f(FixtureType.UP_WINDOW_SEAT, 1.27f, 0, -0.07f),       // 2 window bench, the cat's place
             w(FixtureType.DUMBWAITER, 1.76f, 0.58f),               // 3 hatch to the kitchen
             f(FixtureType.FIRE_POLE, 1.98f, 0, 0f),                // 4 down to the hall
-            f(FixtureType.STAIRCASE, 2.50f, 0, -0.07f),            // 5 down to the hall
+            f(FixtureType.STAIRCASE, 2.50f, 0, 0.02f),             // 5 down to the hall
             f(FixtureType.LIFT, 3.10f, 0, -0.08f),                 // 6
             f(FixtureType.SLIDE, 7.38f, 0, -0.04f),                // 7 playroom slide to the living room
             f(FixtureType.SLIDE, 11.56f, 1, 0.03f),                // 8 balcony slide to the garden
-            f(FixtureType.HATCH, 8.42f, 0, 0.075f),                // 9 laundry chute in the bathroom
+            f(FixtureType.HATCH, 8.42f, 0, 0.05f),                 // 9 laundry chute in the bathroom
             w(FixtureType.UP_WINDOW, 1.27f, 0.69f, 0),             // 10 landing window above the bench
             w(FixtureType.UP_PORTRAIT, 0.40f, 0.30f, 0),           // 11 grandpa
             w(FixtureType.UP_PORTRAIT, 0.76f, 0.30f, 1),           // 12 grandma
@@ -83,7 +83,7 @@ object UpperFloor : Floor {
             f(FixtureType.UP_DOLLHOUSE, 4.12f, 0, -0.07f),         // 21 the big house in small
             f(FixtureType.UP_FORT, 4.76f, 0, -0.06f),              // 22 blanket fort
             f(FixtureType.UP_NIGHT_LAMP, 5.1f, 0, -0.06f),         // 23
-            f(FixtureType.UP_TOY_TRAIN, 4.0f, 0, 0.07f),           // 24
+            f(FixtureType.UP_TOY_TRAIN, 4.0f, 0, 0.03f),           // 24
             f(FixtureType.UP_BLOCKS, 4.66f, 0, 0.055f),            // 25
             f(FixtureType.TOY_BOX, 5.08f, 0, 0.04f),               // 26
             f(FixtureType.RUG, 4.0f, 2, 0.01f),                    // 27 play mat
@@ -91,8 +91,8 @@ object UpperFloor : Floor {
             f(FixtureType.UP_KARAOKE, 6.3f, 0, -0.06f),            // 29
             f(FixtureType.UP_TRAMPOLINE, 5.7f, 0, 0.06f),          // 30
             f(FixtureType.UP_BALL_PIT, 6.62f, 0, 0.06f),           // 31
-            f(FixtureType.UP_EASEL, 7.84f, 0, 0.035f),             // 32
-            f(FixtureType.UP_PUPPET_THEATER, 7.96f, 0, -0.07f),    // 33
+            f(FixtureType.UP_EASEL, 7.73f, 0, 0.035f),             // 32
+            f(FixtureType.UP_PUPPET_THEATER, 8.02f, 0, -0.07f),    // 33
             w(FixtureType.UP_POSTER, 6.98f, 0.30f, 1),             // 34 dinosaur
             w(FixtureType.UP_POSTER, 7.62f, 0.27f, 2),             // 35 rainbow
             f(FixtureType.UP_SHOWER, 8.4f, 0, -0.07f),             // 36
@@ -231,6 +231,11 @@ object UpperMirror {
     var figures: List<MiniFigure> = emptyList()
         private set
 
+    /** A number that changes when the little figures stand differently (coarsely), so a picture of the dollhouse can be kept until then. */
+    @Volatile
+    var signature = 0
+        private set
+
     /** The floors of the big house, bottom to top, as the dollhouse shows them (the garden counts as floor 4). */
     val floors = listOf(PlaceId.MANOR_GROUND, PlaceId.MANOR_UPPER, PlaceId.MANOR_ATTIC, PlaceId.MANOR_CELLAR, PlaceId.MANOR_GARDEN)
 
@@ -250,6 +255,9 @@ object UpperMirror {
             out += MiniFigure(floor, (p.x / at.width).coerceIn(0.02f, 0.98f), tone, kind)
         }
         figures = out
+        var h = 17
+        for (m in out) h = h * 31 + (m.floor * 97 + (m.x * 14f).toInt() * 7 + m.kind * 3 + m.tone)
+        signature = h
     }
 }
 

@@ -35,7 +35,7 @@ private fun lerpF(a: Float, b: Float, t: Float) = a + (b - a) * t
 internal fun DrawScope.upRailing(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
     fun q(x: Float, y: Float, z: Float) = fxQ(u, x, y, z)
-    val t = pen.t
+    val t = 0f
     val d = 0.05f
     val white = Color(0xFFF7F3EC)
     // Posts at the ends and between, a bottom rail, balusters, and the top rail.
@@ -118,7 +118,7 @@ private fun DrawScope.bird(c: Offset, s: Float, dir: Float, species: Int, flap: 
 internal fun DrawScope.upBirdFeeder(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
     val t = pen.t
-    val sway = sin(t * 1.1f) * 0.004f
+    val sway = 0f
     val visit = f.angle
     val empty = f.count >= 6
     translate(sway * u * 0.5f, 0f) {
@@ -175,7 +175,7 @@ internal fun DrawScope.upBirdFeeder(f: Fixture, u: Float, pen: Pen) {
 /** A rattan egg chair with a mustard cushion on a chain from the beam. It swings. */
 internal fun DrawScope.upHangingChair(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
-    val t = pen.t
+    val t = 0f
     upShadow(u, 0.22f, 0.1f, 0.5f)
     // The seat swings about the beam; its swing is a little smaller than the seat's own.
     val pivot = p(0f, -0.79f)

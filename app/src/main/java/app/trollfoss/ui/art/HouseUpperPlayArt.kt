@@ -138,7 +138,7 @@ internal fun DrawScope.upClimbingWall(f: Fixture, u: Float, pen: Pen) {
     drawRect(Ink.line, board.topLeft, board.size, style = pen.stroke)
     // The bell on a bracket at the top, which swings a little.
     val b = p(0f, -0.66f)
-    val sw = sin(t * 1.6f) * 5f
+    val sw = 0f
     capsule(p(0f, -0.62f), p(0f, -0.665f), 0.008f * u, UpC.walnut, pen)
     rotate(sw, p(0f, -0.665f)) {
         val body = Path().apply {
@@ -265,7 +265,7 @@ internal fun DrawScope.upKaraoke(f: Fixture, u: Float, pen: Pen) {
     val bd = fxFront(u, -0.31f, -0.62f, 0.31f, -0.1f, d - 0.03f)
     drawRect(Color(0xFF3B2A6B), bd.topLeft, bd.size)
     clipRect(bd.left, bd.top, bd.right, bd.bottom) {
-        for (k in 0 until 16) drawCircle(Color.White.copy(alpha = 0.4f + 0.6f * (0.5f + 0.5f * sin(t * 2f + k * 1.7f))), 0.0035f * u, Offset(bd.left + bd.width * hash01(k, 171), bd.top + bd.height * hash01(k, 172)))
+        for (k in 0 until 16) drawCircle(Color.White.copy(alpha = if (on) 0.4f + 0.6f * (0.5f + 0.5f * sin(t * 2f + k * 1.7f)) else 0.75f), 0.0035f * u, Offset(bd.left + bd.width * hash01(k, 171), bd.top + bd.height * hash01(k, 172)))
     }
     drawRect(Ink.line, bd.topLeft, bd.size, style = pen.stroke)
     // The screen.
@@ -290,7 +290,7 @@ internal fun DrawScope.upKaraoke(f: Fixture, u: Float, pen: Pen) {
             drawCircle(Color.White.copy(alpha = 0.8f), 0.003f * u, Offset(bx - 0.003f * u, by - 0.003f * u))
         } else {
             // Standby: a big music note, dimmed.
-            fxNote(Offset(sc.center.x, sc.center.y + 0.01f * u), 0.04f * u, Color.White, 0.35f + 0.1f * sin(t * 1.5f))
+            fxNote(Offset(sc.center.x, sc.center.y + 0.01f * u), 0.04f * u, Color.White, 0.4f)
         }
     }
     // Speakers either side of the backdrop.

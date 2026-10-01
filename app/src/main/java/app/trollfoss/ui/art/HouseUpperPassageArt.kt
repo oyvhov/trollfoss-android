@@ -62,7 +62,7 @@ internal fun DrawScope.upStairsDown(f: Fixture, u: Float, pen: Pen) {
         }
         // Light and a faint hum of dust from the hall.
         val glowAt = q(0.1f, 0f, z1 - 0.02f)
-        fxGlow(glowAt, 0.3f * u, Color(0xFFFFD27A), 0.55f + 0.1f * sin(pen.t * 1.4f))
+        fxGlow(glowAt, 0.3f * u, Color(0xFFFFD27A), 0.6f)
     }
     drawPath(hole, Ink.line, style = pen.stroke)
     // Rails at the two sides running back, and the front rail with its balusters and newel posts.
@@ -113,7 +113,7 @@ internal fun DrawScope.upStairsUp(f: Fixture, u: Float, pen: Pen) {
     fxFace(arch, Color(0xFF241A33), pen)
     clipPath(arch) {
         val c = q((wx + wr) / 2f, sill - 0.12f, 0.07f)
-        fxGlow(c, 0.2f * u, Color(0xFFFFC96B), 0.5f + 0.15f * sin(pen.t * 1.7f))
+        fxGlow(c, 0.2f * u, Color(0xFFFFC96B), 0.55f)
         // A bulb on a cord and the lid of a trunk.
         val bulb = q((wx + wr) / 2f + 0.01f, doorTop + 0.1f, 0.07f)
         drawLine(Ink.line.copy(alpha = 0.7f), Offset(bulb.x, bulb.y - 0.1f * u), bulb, strokeWidth = pen.lw * 0.6f)
@@ -215,7 +215,7 @@ internal fun DrawScope.upLift(f: Fixture, u: Float, pen: Pen) {
     }
     drawPath(arc, Ink.line, style = Stroke(0.02f * u + pen.lw * 2f, cap = StrokeCap.Round))
     drawPath(arc, UpC.brass, style = Stroke(0.02f * u, cap = StrokeCap.Round))
-    val lit = ((t * 0.9f).toInt() % 3)
+    val lit = if (upBeat(f) > 0.01f) (((1f - upBeat(f)) * 7f).toInt() % 3) else 1
     for (k in 0..2) {
         val s = k / 2f
         val c = p(-0.09f + 0.18f * s, -0.45f - 0.03f * sin(PI.toFloat() * s) * 0.9f)
@@ -289,7 +289,7 @@ internal fun DrawScope.upSlideIndoor(f: Fixture, u: Float, pen: Pen) {
     capsule(q(-0.335f, platTop - 0.105f, 0.01f), q(-0.335f, platTop - 0.105f, 0.14f), 0.01f * u, UpC.sky, pen)
     val flagBase = p(-0.22f, platTop)
     capsule(flagBase, Offset(flagBase.x, flagBase.y - 0.14f * u), 0.006f * u, UpC.walnut, pen)
-    val wave = sin(t * 4f) * 0.008f * u
+    val wave = 0.004f * u
     val flag = Path().apply {
         moveTo(flagBase.x, flagBase.y - 0.14f * u)
         quadraticTo(flagBase.x + 0.03f * u, flagBase.y - 0.145f * u + wave, flagBase.x + 0.055f * u, flagBase.y - 0.128f * u)
@@ -331,7 +331,7 @@ internal fun DrawScope.upSlideIndoor(f: Fixture, u: Float, pen: Pen) {
     }
     // Glints running down the chute.
     for (k in 0 until 3) {
-        val tt = (t * 0.55f + k / 3f) % 1f
+        val tt = 0.15f + k * 0.3f
         val pt = cubic(a, b, c, d, tt)
         twinkle(pt, 0.02f * u * sin(PI.toFloat() * tt), Color.White, 0.95f)
     }
@@ -404,7 +404,7 @@ internal fun DrawScope.upSlideBalcony(f: Fixture, u: Float, pen: Pen) {
     drawPath(shineP, Color.White.copy(alpha = 0.55f), style = Stroke(0.007f * u, cap = StrokeCap.Round))
     // A breeze: speed lines that blow along the tube.
     for (k in 0 until 3) {
-        val tt = (t * 0.45f + k / 3f) % 1f
+        val tt = 0.2f + k * 0.3f
         val pt = cubic(a, b, c, d, tt)
         twinkle(pt, 0.022f * u * sin(PI.toFloat() * tt), Color.White, 0.95f)
     }
@@ -439,7 +439,7 @@ internal fun DrawScope.upPole(f: Fixture, u: Float, pen: Pen) {
     drawOval(UpC.brassDark, Offset(-0.03f * u, (top - 0.004f) * u), Size(0.06f * u, 0.026f * u))
     drawOval(Ink.line, Offset(-0.03f * u, (top - 0.004f) * u), Size(0.06f * u, 0.026f * u), style = pen.thin)
     // The bell on a bracket.
-    val sway = sin(pen.t * 1.3f) * 1f + (if (upBeat(f) > 0.01f) sin(upBeat(f) * 40f) * 8f * upBeat(f) else 0f)
+    val sway = if (upBeat(f) > 0.01f) sin(upBeat(f) * 40f) * 8f * upBeat(f) else 0f
     val bell = p(0.058f, top + 0.3f)
     capsule(p(0.004f, top + 0.3f), p(0.035f, top + 0.3f), 0.008f * u, UpC.brassDark, pen)
     rotate(sway, Offset(bell.x, bell.y - 0.03f * u)) {

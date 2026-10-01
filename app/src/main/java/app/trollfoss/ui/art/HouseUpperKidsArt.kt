@@ -52,7 +52,7 @@ internal fun DrawScope.upPortrait(f: Fixture, u: Float, pen: Pen) {
     val m = 0.0135f * u
     val inner = Rect(-w / 2f + m, -h + m, w / 2f - m, -m)
     drawRect(Brush.verticalGradient(listOf(portraitSky[v].lighten(0.3f), portraitSky[v]), startY = inner.top, endY = inner.bottom), inner.topLeft, inner.size)
-    val closed = ((t * 1f + v * 1.7f) % 4.6f) < 0.14f
+    val closed = f.bob > 0f
     clipRect(inner.left, inner.top, inner.right, inner.bottom) {
         val cx = inner.center.x
         val iw = inner.width
@@ -264,7 +264,7 @@ internal fun DrawScope.upPortrait(f: Fixture, u: Float, pen: Pen) {
 
 /** Curtains tied back, or drawn across the window. */
 private fun DrawScope.curtains(u: Float, l: Float, r: Float, top: Float, bottom: Float, closed: Boolean, color: Color, pen: Pen, t: Float) {
-    val sway = sin(t * 0.8f) * 0.003f * u
+    val sway = 0f
     if (closed) {
         val mid = (l + r) / 2f
         for ((a, b) in listOf(l to mid, mid to r)) {
@@ -349,7 +349,7 @@ internal fun DrawScope.upWindow(f: Fixture, u: Float, pen: Pen) {
                 }
             }
             if (n < 0.95f) {
-                val cp = cloudPath(((-0.05f + 0.1f * ((t * 0.03f) % 1f)) - 0.05f) * u, (-h + 0.12f) * u, 0.035f * u)
+                val cp = cloudPath(-0.05f * u, (-h + 0.12f) * u, 0.035f * u)
                 drawPath(cp, Color.White.copy(alpha = 0.9f * (1f - n)))
             }
             // The roofs of the village below.
@@ -367,9 +367,9 @@ internal fun DrawScope.upWindow(f: Fixture, u: Float, pen: Pen) {
             if (n < 0.5f) drawCircle(Color(0xFFFFD447).copy(alpha = 1f - n * 2f), 0.03f * u, Offset(0.08f * u, -0.26f * u))
             else drawCircle(Color(0xFFFFF0BF).copy(alpha = n), 0.022f * u, Offset(0.08f * u, -0.26f * u))
             // A bird sits on the sill now and then.
-            val bird = (t % 17f) < 6f
+            val bird = true
             if (bird) {
-                val b = Offset(0.09f * u, -0.034f * u + sin(t * 3f) * 0.001f * u)
+                val b = Offset(0.09f * u, -0.034f * u)
                 drawOval(Color(0xFFFFFFFF), Offset(b.x - 0.014f * u, b.y - 0.018f * u), Size(0.028f * u, 0.02f * u))
                 drawCircle(Color(0xFFE7A25A), 0.009f * u, Offset(b.x + 0.012f * u, b.y - 0.018f * u))
                 drawCircle(Ink.line, 0.002f * u, Offset(b.x + 0.014f * u, b.y - 0.019f * u))
@@ -756,11 +756,12 @@ internal fun DrawScope.upDollhouse(f: Fixture, u: Float, pen: Pen) {
     drawPath(inside, Ink.line, style = pen.stroke)
     fxBox(u, 0.04f, -0.6f, 0.09f, -0.5f, 0.04f, Color(0xFF9D9AAA), pen, z = 0.04f, top = Color(0xFFC3C0CF), side = Color(0xFF6C6985))
     val sm = q(0.065f, -0.605f, 0.06f)
-    fxPuffs(sm.x, sm.y, t, 0.012f * u, 0.1f * u, Color.White, 0.8f, 4, 0.3f, 0.02f * u)
+    drawCircle(Color.White.copy(alpha = 0.7f), 0.012f * u, Offset(sm.x + 0.004f * u, sm.y - 0.02f * u))
+    drawCircle(Color.White.copy(alpha = 0.5f), 0.016f * u, Offset(sm.x + 0.012f * u, sm.y - 0.05f * u))
     // The flag on the top, and the tiny figures.
     val fl = q((l + r) / 2f, ridge - 0.002f, d / 2f)
     drawLine(Ink.line, fl, Offset(fl.x, fl.y - 0.04f * u), strokeWidth = pen.lw)
-    drawPath(Path().apply { poly(fl.x, fl.y - 0.04f * u, fl.x + 0.022f * u + sin(t * 4f) * 0.003f * u, fl.y - 0.032f * u, fl.x, fl.y - 0.024f * u) }, UpC.red)
+    drawPath(Path().apply { poly(fl.x, fl.y - 0.04f * u, fl.x + 0.022f * u, fl.y - 0.032f * u, fl.x, fl.y - 0.024f * u) }, UpC.red)
     val wave = f.timer
     val figs = UpperMirror.figures
     val rows = floatArrayOf(lv[0] - 0.012f, lv[1] - 0.012f, lv[2] - 0.012f, -0.058f, -0.014f)
@@ -769,7 +770,7 @@ internal fun DrawScope.upDollhouse(f: Fixture, u: Float, pen: Pen) {
         val y = rows[m.floor.coerceIn(0, 4)]
         val z = if (m.floor == 4) 0.08f else if (m.floor == 3) 0.05f else 0.06f
         val c = q(x, y - if (m.floor == 3) 0.012f else 0f, z)
-        val hop = abs(sin(t * 2.2f + i * 1.7f)) * 0.0015f * u * (if (wave > 0f) 3f else 0.3f)
+        val hop = if (wave > 0f) abs(sin(t * 2.2f + i * 1.7f)) * 0.0045f * u else 0f
         doll(Offset(c.x, c.y - hop), m.tone, m.kind, u, pen, wave, t + i)
     }
     // The front door's bell button.
@@ -795,7 +796,7 @@ internal fun DrawScope.upPuppets(f: Fixture, u: Float, pen: Pen) {
         // A moon and stars on the backcloth.
         drawCircle(Color(0xFFFFF0BF), 0.026f * u, p(0.06f, -0.3f))
         drawCircle(Color(0xFF4B3A96), 0.022f * u, p(0.072f, -0.306f))
-        for (k in 0 until 6) drawCircle(Color.White.copy(alpha = 0.5f + 0.5f * sin(t * 2f + k * 1.9f)), 0.003f * u, p(-0.08f + k * 0.03f, -0.33f + (k % 3) * 0.03f))
+        for (k in 0 until 6) drawCircle(Color.White.copy(alpha = if (open) 0.5f + 0.5f * sin(t * 2f + k * 1.9f) else 0.8f), 0.003f * u, p(-0.08f + k * 0.03f, -0.33f + (k % 3) * 0.03f))
         if (open) {
             val bob = sin(t * 3.1f) * 0.01f
             if (f.mode == 1) {
@@ -832,7 +833,7 @@ internal fun DrawScope.upPuppets(f: Fixture, u: Float, pen: Pen) {
     }
     drawRect(Ink.line, win.topLeft, win.size, style = pen.stroke)
     // The curtains: drawn across when closed, tied back when open.
-    val sway = sin(t * 1.2f) * 0.002f * u
+    val sway = if (open) sin(t * 1.2f) * 0.002f * u else 0f
     if (!open) {
         for ((a, b) in listOf(-0.1f to 0f, 0f to 0.1f)) {
             val r = Rect(a * u, win.top, b * u, win.bottom)
@@ -922,14 +923,14 @@ internal fun DrawScope.upPoster(f: Fixture, u: Float, pen: Pen) {
         val cx = rect.center.x
         when (v) {
             0 -> {
-                for (k in 0 until 9) drawCircle(Color.White.copy(alpha = 0.5f + 0.5f * sin(t * 2f + k * 1.7f)), 0.003f * u, Offset(rect.left + w * hash01(k, 151), rect.top + h * hash01(k, 152) * 0.8f))
+                for (k in 0 until 9) drawCircle(Color.White.copy(alpha = if (alive > 0f) 0.5f + 0.5f * sin(t * 6f + k * 1.7f) else 0.85f), 0.003f * u, Offset(rect.left + w * hash01(k, 151), rect.top + h * hash01(k, 152) * 0.8f))
                 drawCircle(Color(0xFFF2A65A), 0.032f * u, Offset(rect.right - 0.03f * u, rect.top + 0.05f * u))
                 drawArc(Color(0xFFD9803A), 0f, 360f, false, Offset(rect.right - 0.044f * u, rect.top + 0.036f * u), Size(0.028f * u, 0.028f * u), style = pen.thin)
                 // The rocket takes off when the poster is tapped.
                 val lift = alive * 0.1f * u
                 translate(sin(alive * 20f) * 0.002f * u, -lift) {
                     val rk = Offset(cx - 0.012f * u, rect.bottom - 0.065f * u)
-                    val flame = 0.014f * u + 0.012f * u * sin(t * 25f).coerceAtLeast(0f) + alive * 0.03f * u
+                    val flame = 0.014f * u + (if (alive > 0f) 0.012f * u * sin(t * 25f).coerceAtLeast(0f) else 0f) + alive * 0.03f * u
                     drawPath(Path().apply { poly(rk.x - 0.01f * u, rk.y + 0.045f * u, rk.x + 0.01f * u, rk.y + 0.045f * u, rk.x, rk.y + 0.045f * u + flame * 2f) }, UpC.orange)
                     drawPath(Path().apply { poly(rk.x - 0.005f * u, rk.y + 0.045f * u, rk.x + 0.005f * u, rk.y + 0.045f * u, rk.x, rk.y + 0.045f * u + flame) }, Color(0xFFFFEE88))
                     val body = Path().apply {
@@ -978,21 +979,21 @@ internal fun DrawScope.upPoster(f: Fixture, u: Float, pen: Pen) {
                 drawPath(cloudPath(cc.x - 0.07f * u, cc.y + 0.004f * u, 0.022f * u), Color.White)
                 drawPath(cloudPath(cc.x + 0.07f * u, cc.y + 0.004f * u, 0.022f * u), Color.White)
                 for (k in 0 until 3) {
-                    val tw = 0.5f + 0.5f * sin(t * 3f + k * 2f + alive * 20f)
+                    val tw = if (alive > 0f) 0.5f + 0.5f * sin(t * 3f + k * 2f + alive * 20f) else 0.8f
                     twinkle(Offset(rect.left + 0.03f * u + k * 0.05f * u, rect.top + 0.035f * u + (k % 2) * 0.025f * u), (0.012f + 0.014f * alive) * u * tw, Color.White, 1f)
                 }
             }
             else -> {
                 // A blue fish with bubbles; it flips its tail.
                 val fc = Offset(cx - 0.005f * u, rect.top + h * 0.55f)
-                val tail = sin(t * 5f) * 0.01f * u * (0.4f + alive)
+                val tail = 0f
                 drawPath(Path().apply { poly(fc.x - 0.05f * u, fc.y, fc.x - 0.085f * u, fc.y - 0.03f * u + tail, fc.x - 0.085f * u, fc.y + 0.03f * u + tail) }, UpC.orange)
                 drawOval(Color(0xFF3D7FD6), Offset(fc.x - 0.055f * u, fc.y - 0.035f * u), Size(0.11f * u, 0.07f * u))
                 drawOval(Ink.line, Offset(fc.x - 0.055f * u, fc.y - 0.035f * u), Size(0.11f * u, 0.07f * u), style = pen.thin)
                 drawCircle(Color.White, 0.01f * u, Offset(fc.x + 0.03f * u, fc.y - 0.008f * u))
                 drawCircle(Ink.line, 0.005f * u, Offset(fc.x + 0.032f * u, fc.y - 0.008f * u))
                 for (k in 0 until 4) {
-                    val ph = (t * 0.4f + k * 0.25f + alive) % 1f
+                    val ph = if (alive > 0f) (t * 0.4f + k * 0.25f + alive) % 1f else k * 0.25f + 0.1f
                     drawCircle(Color.White.copy(alpha = 0.8f * (1f - ph)), (0.005f + 0.002f * k) * u, Offset(fc.x + 0.05f * u + k * 0.006f * u, fc.y - 0.04f * u - ph * 0.08f * u), style = pen.thin)
                 }
             }
@@ -1122,7 +1123,6 @@ internal fun DrawScope.upFort(f: Fixture, u: Float, pen: Pen) {
             }
             // The flap's slit and ribbon.
             drawLine(Ink.line, p(0f, -0.28f), p(0f, 0f), strokeWidth = pen.lw * 1.2f, cap = StrokeCap.Round)
-            drawLine(UpC.red, p(-0.06f, -0.12f), p(0.06f, -0.12f), strokeWidth = 0.01f * u, cap = StrokeCap.Round)
             drawPath(fxHeart(0f, -0.12f * u, 0.014f * u), UpC.red)
         }
     } else {
@@ -1134,7 +1134,7 @@ internal fun DrawScope.upFort(f: Fixture, u: Float, pen: Pen) {
     drawPath(front, Ink.line, style = pen.stroke)
     // Blanket peg ropes and bunting flags on the top.
     capsule(apex, Offset(0f, -0.38f * u), 0.006f * u, UpC.walnut, pen)
-    val wave = sin(t * 3.5f) * 0.004f * u
+    val wave = 0.003f * u
     drawPath(Path().apply { poly(0f, -0.38f * u, 0.05f * u, -0.365f * u + wave, 0f, -0.345f * u) }, UpC.red)
     drawPath(Path().apply { poly(0f, -0.38f * u, 0.05f * u, -0.365f * u + wave, 0f, -0.345f * u) }, Ink.line, style = pen.thin)
     // Pegs at the corners.
