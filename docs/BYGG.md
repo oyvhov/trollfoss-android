@@ -36,6 +36,14 @@ kartknappen er rett der, og heile bygda finst). Eksisterande lagringar er uendra
 
 ## 2. Det som alt finst (grunnmuren)
 
+Lokalt tillegg 2026-10-01: nettbrett har romoversikt med romsymbol, og sidepanel reserverer synleg
+arbeidsplass utan å forstørre tinga. Kjøkenbenken blandar egg og mjølk til deig (mjølet står i bollen),
+plantekassa tek frø og vatning og gir bær eller blomar, og sagbenken gjer ei planke til to pinnar.
+Resultata er vanlege flyttbare ting: bær og deig kan bakast i omnen, og pinnar kan bli gitar på
+arbeidsbenken. Trykk på benk/kasse hentar fram råvarer eller reiskapar også i gamle lagringar.
+Dei nye aktivitetane verkar også når møblane blir flytta gjennom lageret til andre hus.
+Oppskriftsbilete viser moglege kombinasjonar; barnet vel sjølv kva det vil gjere.
+
 - `domain/Mine.kt`: `RoomKind` (ti typar), `MineHouse` (malen, utsjånaden og slot-liste for kvar etasje), `Mine`
   (konstantar, `canBuild`, `buildUpper`, `sync`), og flatene `MineYardFloor`, `MineGroundFloor`, `MineUpperFloor`
   (blåkopi med dør og trapp, vegar, ankomstpunkt). Staten ligg i `World.mine` og blir lagra av `WorldStore` ("mine").

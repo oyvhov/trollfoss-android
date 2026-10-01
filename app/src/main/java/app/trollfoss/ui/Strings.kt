@@ -17,10 +17,11 @@ fun Txt.str(): String = get(LocalMaalform.current)
  * labels, the grown-up page and accessibility descriptions.
  */
 object S {
+    val mapDrag = Txt("Dra kartet sidelengs", "Dra kartet sidelengs")
     val appName = txt("Trollfoss")
 
     fun place(id: PlaceId): Txt = when (id) {
-        PlaceId.HOME -> txt("Heime", "Hjemme")
+        PlaceId.HOME -> txt("Familiehuset", "Familiehuset")
         PlaceId.CAFE -> txt("Bakeriet")
         PlaceId.SALON -> txt("Frisøren")
         PlaceId.BEACH -> txt("Stranda", "Stranden")
@@ -43,6 +44,7 @@ object S {
         PlaceId.MINE_YARD -> txt("Mitt hus")
         PlaceId.MINE_GROUND -> txt("Mitt hus")
         PlaceId.MINE_UPPER -> txt("Mitt hus, oppe", "Mitt hus, oppe")
+        PlaceId.VAGSTADDALEN -> txt("Vagstaddalen", "Vagstaddalen")
     }
 
     val map = txt("Kart")

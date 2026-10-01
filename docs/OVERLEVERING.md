@@ -1,5 +1,82 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – NETTBRETT OG SAMANHENGANDE LEIK (2026-10-01, Codex):** Arbeidet er framleis lokalt på `main`.
+> `PlayViewport` held storleiken på tinga fast når sidepanelet opnar seg, og sentrerer arbeid, sekk og kontrollar
+> i den synlege delen. Romoversikt med store møbelsymbol gir direkte romval i Familiehuset, Storhuset og Mitt hus.
+> Eit valt enderom held fram som mål for tapet/golv sjølv når kameraet ikkje kan sentrere det heilt.
+> Større panel/kort på nettbrett, eksplisitt lukk i møbelpanelet og sekkbrett over botnverktøya.
+> Kameraet fangar no eit bilete berre ved fotografering, i staden for å ta opp eit ekstra grafikklag kvar ramme.
+>
+> `MinePlay` koplar saman eksisterande ting: frø + vatning → bær/blomar; egg + mjølk på kjøkenbenken → deig;
+> planke på sagbenken → to pinnar. Deig og bær kan bakast i omnen, og pinnar + hammar blir gitar på arbeidsbenken.
+> Råvarer/reiskapar kjem ved trykk også i gamle rom. Delvise blandingar blir lagra, vasskanna blir verande,
+> og dei nye møblane verkar også etter flytting gjennom lageret til andre hus. Bilettips og oppskriftsbok er oppdaterte.
+>
+> **Kontroll:** 346 einingstestar (inkludert heile bake-/gitar-kjedene, lagring midt i ei blanding og flytting av
+> kjøkenbenk til Familiehuset). `testDebugUnitTest`, `lintDebug`, `assembleDebug` via `Build-Locked.ps1`.
+> UI på `emulator-5554`, 1920 × 1200 / 240 dpi: romval, møbelpanel, faktisk tapetendring av `HOME:0`,
+> dra egg/mjølk til bollen → deig og oppskrift lagra; frø og to vatningar → moden plante → jordbær.
+> Kamerabilete er henta ut og visuelt stadfesta. Mobil 2400 × 1080 / 420 dpi: byggjepanel og Meir-meny.
+> 4:3-nettbrett 1600 × 1200 / 240 dpi avdekte liten kollisjon mellom etasjeknappar og stjerneteljar;
+> etasjeknappane er flytta ved sida av kart/oppdrag på nettbrett.
+> Bilete ligg i `screenshots/village-after/`, særleg `tablet-dough-made.png`, `tablet-greenhouse-ripe.png`,
+> `tablet-wall-applied.png`, `tablet-camera-photo.png` og `phone-polish-*.png`.
+>
+> **Yting/avgrensing:** Før desse endringane gav kald oppstart rett etter skjermomlegging ein ny FocusEvent-ANR
+> kl. 19:03:57. Nye installasjonar og dei oppvarma UI-kontrollane ovanfor gav ingen nye ANR eller krasj.
+> Oppvarma kortmåling: Mitt hus-kjøken 6,6–7,3 ms/ramme, Familiehuset 15,5–15,7 ms/ramme. Målet < 12 ms
+> er dermed ikkje nådd i alle rom, og ekte nettbrett er ikkje prøvd. Full røyktest og oppdateringsflyt står framleis att.
+> **Ved sluttgjenoppretting:** ny FocusEvent-ANR kl. 19:46:10 ved kald start rett etter nullstilling av skjermen.
+> Originalen opnar i `MANOR_GROUND`. Sporet frå `dumpsys dropbox --print data_app_anr 2026-10-01 19:46`
+> (`.gradle-tmp/last-trollfoss-anr.txt`) viser main ventande i `RenderProxy::setStopped`, og RenderThread i
+> `libEGL_emulation` → `qemu_pipe_read` → `glCreateProgram_enc` → Skia-programbygging. Dette peikar på
+> grafikkemulatoren ved oppstart; ikkje stadfesta som ei generell apparatfeil eller som løyst. Appen kom vidare,
+> og ny prosess-start utan skjermbyte gav ingen ny ANR (`restore-warm-restart.png`). Storhuset var framleis
+> tungt i den korte oppvarma målinga, om lag 31–34 ms/ramme. Ikkje framstill dette arbeidet som full ytingsgodkjenning.
+> Sluttkontroll etter siste bygg er grøn: `tablet-four-three-builder-final.png` viser knappar utan overlapping,
+> rombyte med panelet ope og sekkbrett er kontrollerte (`tablet-four-three-room-selected-final.png`,
+> `tablet-four-three-bag-final.png`); `phone-polish-designer-final.png` viser møbelpanelet på mobil.
+> Denne økta si opphavlege lagring i `files/tablet-polish-original.json` er sett tilbake med lik SHA-256.
+> Testfotoet er teke ut av albumet (kopi ligg i skjermbiletemappa); skjermmål, tettleik og rotasjon er nullstilte.
+> Ingen ny publisert APK, push eller commit. Spole-emulatorane er ikkje brukte.
+
+> **LOKALE ENDRINGAR (2026-10-01, Codex):** Brukaren presiserte at kameraet skulle lenger VEKK på nettbrett.
+> Minste breidde der er no 2,35 scene-einingar (før utgåva: 2,05; den første lokale 1,85-rettinga var feil retning).
+> Det gir om lag 13 % mindre figurar enn utgåva; breie telefonar fyller framleis skjermhøgda. Bakken og skuggen
+> under Mitt hus følgjer dei skrå bakre hjørna. Ingen push eller ny publisert utgåve; alt dette ligg lokalt på `main`.
+> Himmel- og veggfyll bruker `Stage.backgroundTop` frå skjermhøgda, så zoominga ikkje gir ei mørk stripe øvst.
+> Den opphavlege geometrien og plasseringa av ting er uendra; eit nytt testtilfelle dekkjer breitt, 4:3 og kvadratisk format.
+>
+> Retta ein reprodusert NPE i `MapLive.drawHighlight` når kartet vart opna frå `MINE_GROUND`: innvendige etasjar
+> bruker no huset sitt reisemål (`PlaceId.mapPlace`) for ballong, kartposisjon og ring. Mitt hus var dessutan ikkje
+> kopla til den ferdige kartteikninga; kartet viser no barnet sitt hus og oppdaterer biletet etter bygging/måling.
+> Kartet er 60 % breiare og kan dragast sidelengs; nytt kartikon med brettar, elv og stadmarkør. «Heime» er omdøypt
+> til **Familiehuset**, etter brukaren sitt val. **Vagstaddalen** er ein ny stad med laftehytte som kan opnast, svingande
+> elv, fiske, bål, katt og tre glimt. Nye `PlaceId` er lagde sist og har eigne fixture-id-ar; gamle lagringar blir utvida.
+>
+> Mitt hus har no ei open tretrapp og faste Inn/Ut/Oppe/Nede-knappar som bruker dei ekte passasjane. Byggjepanelet
+> har namngjevne faner og kort, rettleiing for rom og etasje, synleg lukk/Ferdig, og scroll der det trengst. Eige
+> målingsikon opnar veggfargane i tomta; tolv fargar i fire kolonnar passar også på mobil. Møbelverkstaden har sofaikon.
+> Viktig Compose-retting: kvar underfane observerer `vm.mineVersion`, elles vart romval/fargeval ståande til fanebyte.
+> Mørk `GameText` har ikkje lenger mørk kontur over same fyllfarge; korta er leselege og lange namn kjem heilt fram.
+>
+> **Kontroll:** 339 einingstestar, `lintDebug` og `assembleDebug` er grøne. På `emulator-5554` i mobilformat
+> (2400 × 1080 / 420 dpi) og nettbrettformat (1920 × 1200 / 240 dpi): husmal, bygging av stove/kjøken/etasje,
+> romval utan fanebyte, fargeval og markør, Inn/Ut/Oppe/Nede, kart frå Mitt hus-etasjar og Storhuset sin kjellar,
+> kartdragging, reise til Vagstaddalen, hyttedører og elv. Ingen krasj i loggen etter desse kontrollane.
+> Bilete i `screenshots/village-after/`: `phone-house-choices-final.png`, `phone-enter-rooms-final.png`,
+> `phone-floor-requirement-final.png`, `phone-paint-changed-final.png`, `phone-map-upper-final.png`,
+> `phone-cabin-open-final.png`, `phone-river-final.png`, og `tablet-*-checked.png`.
+> Bakgrunnsfyll er også sett i Mitt hus, Familiehuset, alle Storhuset-etasjane, Romstasjonen, Vagstaddalen og
+> Heileberget (`tablet-*-background-final.png`). Ein kald oppstart samstundes med lint gav ein FocusEvent-ANR
+> (6:51:43); omstart utan bygging og den oppvarma kontrollen fungerte. `lastanr` hadde same tidspunkt etter
+> sluttkontrollen og gjenoppretting. Ikkje bruk dette som ein ytingsgaranti.
+> Spole-emulatorane vart ikkje starta. Den opphavlege lagringa er teken vare på i `files/navigation-original.json`;
+> testlagringane ligg i eigne app-interne filer. Den opphavlege lagringa er sett tilbake (SHA-256 stadfesta lik),
+> og skjermmål, tettleik og rotasjon er nullstilte etter formatkontrollen.
+> Full røyktest av alle eldre rom og oppdateringsflyten nedanfor står framleis att. Ytingsmålet < 12 ms er ikkje
+> stadfesta; dei tidlegare korte `MINE_YARD`-prøvane under denne økta gav 29–31 ms. Gjer ei eiga oppvarma måling.
+
 > **UTGÅVE: v1.1.0 er publisert (2026-10-01).** Tag `v1.1.0` = commit `f400457`, éin signert APK (2,9 MB, kode 2,
 > SHA-256 `2487c913…6f5e`, sertifikat `de170fe9…`), notat i `docs/release-v1.1.0.md`; stadfesta utan token og med
 > nedlasta hash. CI køyrer på `main`. **Ikkje gjort:** den ekte oppdateringstesten gjennom appen (bygg ei lokal

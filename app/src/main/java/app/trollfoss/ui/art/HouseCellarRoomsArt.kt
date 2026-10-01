@@ -425,7 +425,7 @@ private fun DrawScope.rooms(st: Stage, pen: Pen, cs: CellarStatic) {
 private fun DrawScope.workshopWall(st: Stage, pen: Pen, cs: CellarStatic, x0: Float, x1: Float) {
     val u = st.u
     val honey = Color(0xFFD9A15E)
-    drawRect(honey, Offset(st.x(x0), SKY_TOP * u), Size((x1 - x0) * u, (BACK - SKY_TOP) * u))
+    drawRect(honey, Offset(st.x(x0), st.backgroundTop), Size((x1 - x0) * u, BACK * u - st.backgroundTop))
     // A darker wainscot, the boards, and their grain.
     drawRect(Color(0xFFB97F46), Offset(st.x(x0), 0.56f * u), Size((x1 - x0) * u, (BACK - 0.56f) * u))
     inScene(st) {
@@ -517,7 +517,7 @@ private fun DrawScope.workshopThings(st: Stage, pen: Pen, cs: CellarStatic) {
 private fun DrawScope.laundryWall(st: Stage, pen: Pen, cs: CellarStatic, x0: Float, x1: Float) {
     val u = st.u
     val w = (x1 - x0) * u
-    drawRect(Color(0xFFBFE3F2), Offset(st.x(x0), SKY_TOP * u), Size(w, (BACK - SKY_TOP) * u))
+    drawRect(Color(0xFFBFE3F2), Offset(st.x(x0), st.backgroundTop), Size(w, BACK * u - st.backgroundTop))
     // White tiles up to a blue stripe.
     drawRect(Color(0xFFF3FBFA), Offset(st.x(x0), 0.42f * u), Size(w, (BACK - 0.42f) * u))
     inScene(st) { drawPoints(cs.tileLines, PointMode.Lines, Color(0xFF9ED6CF), strokeWidth = pen.lw * 0.6f) }
@@ -599,11 +599,11 @@ private fun DrawScope.laundryThings(st: Stage, pen: Pen) {
 private fun DrawScope.boilerWall(st: Stage, pen: Pen, cs: CellarStatic, x0: Float, x1: Float) {
     val u = st.u
     val w = (x1 - x0) * u
-    drawRect(Color(0xFF8A4A3A), Offset(st.x(x0), SKY_TOP * u), Size(w, (BACK - SKY_TOP) * u))
+    drawRect(Color(0xFF8A4A3A), Offset(st.x(x0), st.backgroundTop), Size(w, BACK * u - st.backgroundTop))
     inScene(st) { drawPath(cs.brickShade, Color(0xFF9A5644), alpha = 0.7f) }
     inScene(st) { drawPoints(cs.bricks, PointMode.Lines, Color(0xFF3E2820), strokeWidth = pen.lw * 0.8f) }
     // Soot above, a warm glow below (it breathes).
-    drawRect(Brush.verticalGradient(listOf(Color(0xFF1C1410).copy(alpha = 0.55f), Color.Transparent), startY = SKY_TOP * u, endY = 0.45f * u), Offset(st.x(x0), SKY_TOP * u), Size(w, (0.45f - SKY_TOP) * u))
+    drawRect(Brush.verticalGradient(listOf(Color(0xFF1C1410).copy(alpha = 0.55f), Color.Transparent), startY = SKY_TOP * u, endY = 0.45f * u), Offset(st.x(x0), st.backgroundTop), Size(w, 0.45f * u - st.backgroundTop))
     // The iron plate behind the boiler, with rivets.
     if (st.sees(3.6f, 4.4f)) {
         val plate = Rect(st.o(3.66f, 0.12f), st.o(4.34f, BACK - 0.02f))
@@ -645,7 +645,7 @@ private fun DrawScope.boilerThings(st: Stage, pen: Pen) {
 private fun DrawScope.poolWall(st: Stage, pen: Pen, cs: CellarStatic, x0: Float, x1: Float) {
     val u = st.u
     val w = (x1 - x0) * u
-    drawRect(Color(0xFF54CFCB), Offset(st.x(x0), SKY_TOP * u), Size(w, (BACK - SKY_TOP) * u))
+    drawRect(Color(0xFF54CFCB), Offset(st.x(x0), st.backgroundTop), Size(w, BACK * u - st.backgroundTop))
     inScene(st) { drawPath(cs.poolLight, Color(0xFF7BE0DA)) }
     inScene(st) { drawPoints(cs.poolWall, PointMode.Lines, Color(0xFFB8F0EE), strokeWidth = pen.lw * 0.6f) }
     // A frieze of waves, on a blue band.
@@ -729,8 +729,8 @@ private fun DrawScope.poolLadder(st: Stage, pen: Pen, x: Float) {
 private fun DrawScope.partyWall(st: Stage, pen: Pen, cs: CellarStatic, x0: Float, x1: Float) {
     val u = st.u
     val w = (x1 - x0) * u
-    drawRect(Color(0xFF3A2670), Offset(st.x(x0), SKY_TOP * u), Size(w, (BACK - SKY_TOP) * u))
-    drawRect(Brush.verticalGradient(listOf(Color(0xFF241548), Color(0x00241548)), startY = SKY_TOP * u, endY = 0.5f * u), Offset(st.x(x0), SKY_TOP * u), Size(w, (0.5f - SKY_TOP) * u))
+    drawRect(Color(0xFF3A2670), Offset(st.x(x0), st.backgroundTop), Size(w, BACK * u - st.backgroundTop))
+    drawRect(Brush.verticalGradient(listOf(Color(0xFF241548), Color(0x00241548)), startY = SKY_TOP * u, endY = 0.5f * u), Offset(st.x(x0), st.backgroundTop), Size(w, 0.5f * u - st.backgroundTop))
     val colors = listOf(Color(0xFFFF5FA8), Color(0xFF2FD6C8), Color(0xFFFFC83D), Color(0xFF8B7BFF))
     inScene(st) {
         for ((i, p) in cs.memphis.withIndex()) {
@@ -874,7 +874,7 @@ private fun DrawScope.pillar(st: Stage, pen: Pen, x: Float) {
 private fun DrawScope.ceiling(st: Stage, pen: Pen) {
     val u = st.u
     val wood = Color(0xFF6E4630)
-    drawRect(Brush.verticalGradient(listOf(Ink.line.copy(alpha = 0.55f), Ink.line.copy(alpha = 0f)), startY = SKY_TOP * u, endY = 0.0f), Offset(0f, SKY_TOP * u), Size(st.w, -SKY_TOP * u))
+    drawRect(Brush.verticalGradient(listOf(Ink.line.copy(alpha = 0.55f), Ink.line.copy(alpha = 0f)), startY = SKY_TOP * u, endY = 0.0f), Offset(0f, st.backgroundTop), Size(st.w, -st.backgroundTop))
     // The beam.
     drawRect(wood, Offset(0f, 0f), Size(st.w, 0.05f * u))
     drawRect(wood.lighten(0.18f), Offset(0f, 0.004f * u), Size(st.w, 0.01f * u))

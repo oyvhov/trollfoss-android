@@ -37,7 +37,7 @@ internal fun List<RoomStyle>.floorOf(i: Int): Int = getOrNull(i)?.floor ?: 0
 /** Papers the back wall from scene x [x0] to [x1] (and all the way up) with wallpaper [index]. */
 internal fun DrawScope.paperWall(st: Stage, index: Int, back: Float, x0: Float = -9f, x1: Float = 99f) {
     val u = st.u
-    drawWallpaper(index, max(st.x(x0), -2f), SKY_TOP * u - 2f, min(st.x(x1), st.w + 2f), back * u, -st.cam * u, 0f, u)
+    drawWallpaper(index, max(st.x(x0), -2f), st.backgroundTop - 2f, min(st.x(x1), st.w + 2f), back * u, -st.cam * u, 0f, u)
 }
 
 /** Lays flooring [index] on the floor band between front-edge x [x0] and [x1], receding to [back]. */
@@ -123,8 +123,8 @@ internal fun DrawScope.crown(st: Stage, pen: Pen, color: Color) {
     val u = st.u
     drawRect(
         Brush.verticalGradient(listOf(Ink.line.copy(alpha = 0.16f), Ink.line.copy(alpha = 0f)), startY = SKY_TOP * u, endY = 0f),
-        Offset(0f, SKY_TOP * u),
-        Size(st.w, -SKY_TOP * u),
+        Offset(0f, st.backgroundTop),
+        Size(st.w, -st.backgroundTop),
     )
     drawRect(color, Offset(0f, 0f), Size(st.w, 0.02f * u))
     drawLine(color.lighten(0.5f), Offset(0f, 0.004f * u), Offset(st.w, 0.004f * u), strokeWidth = pen.lw)
@@ -273,9 +273,9 @@ internal fun DrawScope.homeBack(st: Stage, pen: Pen, styles: List<RoomStyle> = e
         if (!st.sees(a, b)) continue
         val paper = styles.wallOf(i)
         if (paper > 0) {
-            drawWallpaper(paper, st.x(a), SKY_TOP * u - 2f, st.x(b), back * u, -st.cam * u, 0f, u)
+            drawWallpaper(paper, st.x(a), st.backgroundTop - 2f, st.x(b), back * u, -st.cam * u, 0f, u)
         } else {
-            drawRect(homeWalls[i], Offset(st.x(a), SKY_TOP * u), Size((b - a) * u, (back - SKY_TOP) * u))
+            drawRect(homeWalls[i], Offset(st.x(a), st.backgroundTop), Size((b - a) * u, back * u - st.backgroundTop))
         }
     }
     // Bedroom: soft blue wallpaper with small flowers.
@@ -595,7 +595,7 @@ internal fun DrawScope.cafeBack(st: Stage, pen: Pen, styles: List<RoomStyle> = e
     if (paper > 0) {
         paperWall(st, paper, back)
     } else {
-        drawRect(Color(0xFFFFF5E4), Offset(0f, SKY_TOP * u), Size(st.w, (back - SKY_TOP) * u))
+        drawRect(Color(0xFFFFF5E4), Offset(0f, st.backgroundTop), Size(st.w, back * u - st.backgroundTop))
         inScene(st) { drawPath(cs.stripes, Color(0xFFCDEFDF)) }
         drawRect(Color(0xFF8ED6B7), Offset(0f, 0.6f * u), Size(st.w, (back - 0.6f) * u))
         inScene(st) { drawPoints(cs.beads, PointMode.Lines, Color(0xFF6DBF9C), strokeWidth = pen.lw * 0.7f) }
@@ -735,7 +735,7 @@ internal fun DrawScope.salonBack(st: Stage, pen: Pen, styles: List<RoomStyle> = 
     if (paper > 0) {
         paperWall(st, paper, back)
     } else {
-        drawRect(Color(0xFFFFD6E6), Offset(0f, SKY_TOP * u), Size(st.w, (back - SKY_TOP) * u))
+        drawRect(Color(0xFFFFD6E6), Offset(0f, st.backgroundTop), Size(st.w, back * u - st.backgroundTop))
         inScene(st) { drawPoints(ss.dots, PointMode.Points, Color(0xFFE3C3F2), strokeWidth = 0.012f * u, cap = StrokeCap.Round) }
         drawRect(Color(0xFFD7C4F4), Offset(0f, 0.58f * u), Size(st.w, (back - 0.58f) * u))
         inScene(st) { drawPath(ss.arches, Color(0xFFB79CE3), style = Stroke(pen.lw * 0.9f)) }

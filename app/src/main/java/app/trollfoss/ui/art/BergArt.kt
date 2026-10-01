@@ -941,7 +941,7 @@ private fun DrawScope.bgSky(st: Stage, pen: Pen) {
     val gold = lerp(lerp(BgC.skyGold, greyLow, oc), Color(0xFF7A4FA8), n)
     drawRect(
         Brush.verticalGradient(0f to top, 0.45f to mid, 0.78f to low, 1f to gold, startY = SKY_TOP * u, endY = 0.8f * u),
-        Offset(0f, SKY_TOP * u), Size(st.w, (0.86f - SKY_TOP) * u),
+        Offset(0f, st.backgroundTop), Size(st.w, 0.86f * u - st.backgroundTop),
     )
     val vis = (1f - n) * (1f - 0.85f * oc)
     val sun = Offset(st.fx(0.13f, 0.03f), -0.1f * u)

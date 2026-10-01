@@ -18,6 +18,9 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
     val house: MineHouse get() = world.mine
 
     val rules: FloorRules = MineRules(this)
+    internal val play = MinePlay(sim)
+
+    fun dropFixture(place: PlaceId, f: Fixture, t: Thing): Boolean = play.drop(place, f, t)
 
     private fun fx(code: Int, arg: Int = 0, x: Float = 0f, y: Float = 0.5f, f: Fixture? = null) {
         sim.listener.onFx(Fx.HOUSE, x, y, f, null, HouseFx.pack(code, arg))
@@ -470,22 +473,20 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
 
     /** What the furniture of the rooms and the yard does when it is tapped. True when [f] is one of them. */
     fun tapFixture(place: PlaceId, f: Fixture): Boolean {
+        if (play.tap(place, f)) return true
         val x = f.x + f.shiftX
         val y = f.y - f.spec.h / 2f
         when (f.type) {
             FixtureType.MI_FIREPLACE -> { f.count++; f.on = true; fx(MineEvent.FLARE, if (f.count % 5 == 0) 1 else 0, x, y, f) }
             FixtureType.MI_DINING_TABLE -> { f.on = !f.on; fx(MineEvent.CANDLE, if (f.on) 1 else 0, x, f.y - f.spec.h, f) }
             FixtureType.MI_CHANDELIER -> { f.on = !f.on; fx(MineEvent.CHANDELIER, if (f.on) 1 else 0, x, y, f) }
-            FixtureType.MI_COUNTER -> { f.on = true; f.timer = 1.3f; fx(MineEvent.TOAST, 0, x, f.y - f.spec.h, f) }
             FixtureType.MI_BEDSIDE -> { f.on = !f.on; fx(MineEvent.NIGHT_LIGHT, if (f.on) 1 else 0, x, y, f) }
             FixtureType.MI_BLOCKS -> { f.mode = 1 - f.mode; fx(if (f.mode == 1) MineEvent.BLOCKS_FALL else MineEvent.BLOCKS_BUILD, 0, x, y, f) }
             FixtureType.MI_ROCKING_HORSE -> { f.on = true; f.timer = 3f; fx(MineEvent.HORSE, 0, x, y, f) }
             FixtureType.MI_BIG_BOOKCASE -> { f.mode = (f.mode + 1) % 3; fx(MineEvent.LADDER, f.mode, x, y, f) }
             FixtureType.MI_GLOBE -> { f.on = true; f.timer = 3.5f; fx(MineEvent.GLOBE, 0, x, y, f) }
-            FixtureType.MI_SAW_BENCH -> { f.on = true; f.timer = 1.6f; fx(MineEvent.SAW_BENCH, 0, x, f.y - f.spec.h, f) }
             FixtureType.MI_LAUNDRY_BASKET -> { f.count++; fx(MineEvent.SOCKS, f.count, x, y, f) }
             FixtureType.MI_GUITAR -> { f.on = true; f.timer = 1.4f; fx(MineEvent.STRUM, 0, x, y, f) }
-            FixtureType.MI_PLANT_BED -> { f.count = (f.count + 1) % 4; fx(MineEvent.WATER_BED, f.count, x, y, f) }
             FixtureType.MI_HANGING_POT -> { f.on = true; f.timer = 2f; fx(MineEvent.HANGING_POT, 0, x, y, f) }
             FixtureType.MI_COAT_RACK -> { f.on = true; f.timer = 1.6f; fx(MineEvent.COAT_RACK, 0, x, y, f) }
             FixtureType.MI_MAILBOX -> { f.on = !f.on; fx(MineEvent.MAILBOX, if (f.on) 1 else 0, x, y, f) }
@@ -517,6 +518,7 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
     }
 
     fun stepFixture(f: Fixture, dt: Float) {
+        if (play.step(f, dt)) return
         if (f.timer <= 0f) return
         if (f.type !in TIMED) return
         f.timer -= dt
@@ -549,6 +551,7 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
 
 /** The rules of the three places of Mitt hus: all of them live in [MineBuilder]. */
 class MineRules(private val builder: MineBuilder) : FloorRules {
+    override fun drop(place: PlaceId, f: Fixture, t: Thing): Boolean = builder.dropFixture(place, f, t)
     override fun tap(place: PlaceId, f: Fixture, dx: Float, dy: Float): Boolean = builder.tapFixture(place, f)
 
     override fun step(place: PlaceId, f: Fixture, dt: Float) = builder.stepFixture(f, dt)

@@ -359,11 +359,11 @@ private fun DrawScope.drawRoom(h: MineHouse, place: PlaceId, i: Int, kind: RoomK
     val dark = n * 0.0f
     // The wall.
     if (chosenWall > 0) {
-        drawWallpaper(chosenWall, l, SKY_TOP * u - 2f, r, BACK * u, -st.cam * u, 0f, u)
+        drawWallpaper(chosenWall, l, st.backgroundTop - 2f, r, BACK * u, -st.cam * u, 0f, u)
     } else if (kind == RoomKind.GREENHOUSE) {
-        drawRect(Brush.verticalGradient(listOf(Color(0xFFBFE9F2).atNight(n, 0.5f), Color(0xFFE9F8F0).atNight(n, 0.4f)), startY = SKY_TOP * u, endY = BACK * u), Offset(l, SKY_TOP * u), Size(r - l, (BACK - SKY_TOP) * u))
+        drawRect(Brush.verticalGradient(listOf(Color(0xFFBFE9F2).atNight(n, 0.5f), Color(0xFFE9F8F0).atNight(n, 0.4f)), startY = SKY_TOP * u, endY = BACK * u), Offset(l, st.backgroundTop), Size(r - l, BACK * u - st.backgroundTop))
     } else {
-        drawRect(s.wall.atNight(n, 0.15f), Offset(l, SKY_TOP * u), Size(r - l, (BACK - SKY_TOP) * u))
+        drawRect(s.wall.atNight(n, 0.15f), Offset(l, st.backgroundTop), Size(r - l, BACK * u - st.backgroundTop))
         translate(st.x(i * 2f)) {
             val px = geo.wallLines
             if (px.isNotEmpty()) drawPoints(px, PointMode.Lines, s.wall2.copy(alpha = if (kind == RoomKind.BEDROOM) 0f else 0.55f), strokeWidth = pen.lw * 0.7f)
@@ -405,7 +405,7 @@ private fun DrawScope.drawRoom(h: MineHouse, place: PlaceId, i: Int, kind: RoomK
     drawRect(skirt, Offset(l, 0f), Size(r - l, 0.02f * u))
     drawLine(Ink.line, Offset(l, 0.02f * u), Offset(r, 0.02f * u), strokeWidth = pen.lw * 0.7f)
     drawLine(Ink.line, Offset(l, 0f), Offset(r, 0f), strokeWidth = pen.lw * 0.7f)
-    drawRect(Brush.verticalGradient(listOf(Ink.line.copy(alpha = 0.16f), Ink.line.copy(alpha = 0f)), startY = SKY_TOP * u, endY = 0f), Offset(l, SKY_TOP * u), Size(r - l, -SKY_TOP * u))
+    drawRect(Brush.verticalGradient(listOf(Ink.line.copy(alpha = 0.16f), Ink.line.copy(alpha = 0f)), startY = SKY_TOP * u, endY = 0f), Offset(l, st.backgroundTop), Size(r - l, -st.backgroundTop))
     // The floor.
     if (chosenFloor > 0) {
         layFloor(st, chosenFloor, BACK, i * 2f, i * 2f + 2f)

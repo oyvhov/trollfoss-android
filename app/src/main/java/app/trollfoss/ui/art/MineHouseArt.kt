@@ -54,6 +54,9 @@ internal fun mineColumns(h: MineHouse): Int {
 /** How wide the house is in scene units, from the left corner to the far side wall (the tower on the left is not counted). */
 internal fun mineHouseWidth(h: MineHouse): Float = mineColumns(h) * Mine.FACADE_MW + Oblique.DX * shp(h.shape).depth + (if (h.shape == 2) 0.6f else 0f)
 
+/** The house's depth on the ground plane, shared with the lawn beneath its rear corners. */
+internal fun mineHouseDepth(h: MineHouse): Float = shp(h.shape).depth
+
 /** How much the house is scaled so that two floors and a roof fit under the top of a phone screen. */
 internal fun mineFit(h: MineHouse, baseY: Float): Float = min(1f, (baseY - 0.04f) / mineHouseHeight(h))
 
@@ -114,6 +117,7 @@ private fun DrawScope.drawMineHouseBody(
 
     // A soft shadow on the ground under the whole house.
     drawOval(Ink.shadow, Offset(left - 0.05f * k, base - 0.01f * k), androidx.compose.ui.geometry.Size((last + 1) * mw + dxs + 0.1f * k, 0.05f * k))
+    quadFill(Ink.shadow, null, left, base, left + dxs, base + dys, left + (last + 1) * mw + dxs + 0.035f * k, base + dys, left + (last + 1) * mw + 0.035f * k, base)
 
     if (h.shape == 2) drawTower(h, left - 0.3f * k, base, k, pen, night, t, lit, wallC, trim, roofC, winter, detail)
 

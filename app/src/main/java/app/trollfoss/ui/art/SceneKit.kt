@@ -61,6 +61,8 @@ internal object Pal {
  * [w] and [h] the screen in pixels and [width] the place's width in units.
  */
 internal class Stage(val cam: Float, val u: Float, val w: Float, val h: Float, val width: Float) {
+    /** The visible upper edge after the engine anchors y = 1 at the bottom of the screen. */
+    val backgroundTop: Float = min(SKY_TOP * u, u - h)
     /** Screen width in scene units. */
     val vw: Float = w / u
     val camMax: Float = max(0f, width - vw)
@@ -176,8 +178,8 @@ internal fun DrawScope.drawSky(st: Stage, pen: Pen, mood: Mood, horizon: Float) 
     val low = lerp(lerp(dayLow, greyLow, oc), Color(0xFF55409A), pen.night)
     drawRect(
         Brush.verticalGradient(0f to top, 0.55f to mid, 1f to low, startY = SKY_TOP * st.u, endY = horizon * st.u),
-        Offset(0f, SKY_TOP * st.u),
-        Size(st.w, st.h - SKY_TOP * st.u),
+        Offset(0f, st.backgroundTop),
+        Size(st.w, st.h - st.backgroundTop),
     )
 }
 
@@ -725,8 +727,8 @@ internal fun DrawScope.drawBaseStones(st: Stage, pen: Pen, color: Color, salt: I
 // ------------------------------------------------------------------------------------ oblique 3D
 
 /**
- * How far above the scene's top the backgrounds reach: on tablets the engine zooms out and anchors the
- * scene at the bottom, so the top of the screen shows y from about -0.32 to 0.
+ * The upper edge of the original scenery geometry. Background fills reach further through
+ * [Stage.backgroundTop] when a tablet shows more sky or wall above the scene.
  */
 internal const val SKY_TOP = -0.34f
 

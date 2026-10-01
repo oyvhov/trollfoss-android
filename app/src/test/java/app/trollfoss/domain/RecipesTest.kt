@@ -17,6 +17,7 @@ class RecipesTest {
     fun `every book recipe really makes its result`() {
         for (r in Recipes.book) {
             val made: Made? = when (r.machine) {
+                FixtureType.MI_COUNTER, FixtureType.MI_SAW_BENCH -> Recipes.houseWork(r.machine, r.inputs)
                 FixtureType.CAMPFIRE -> if (r.inputs.single() == ThingType.DRAGON_EGG) Made(ThingType.DRAGON_EGG) else Recipes.fire(r.inputs.single())?.let { Made(it) }
                 FixtureType.STOVE -> Recipes.stove(r.inputs.single())?.let { Made(it) }
                 FixtureType.OVEN -> Recipes.oven(r.inputs).single().first

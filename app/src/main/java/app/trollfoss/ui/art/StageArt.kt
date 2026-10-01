@@ -58,7 +58,7 @@ internal fun DrawScope.stageBack(st: Stage, pen: Pen, styles: List<RoomStyle> = 
     } else {
         drawRect(
             Brush.verticalGradient(listOf(Color(0xFF1B0D24), Color(0xFF3E1F4A)), startY = SKY_TOP * u, endY = back * u),
-            Offset(0f, SKY_TOP * u), Size(st.w, (back - SKY_TOP) * u),
+            Offset(0f, st.backgroundTop), Size(st.w, back * u - st.backgroundTop),
         )
     }
     // The starry backdrop behind the stage.

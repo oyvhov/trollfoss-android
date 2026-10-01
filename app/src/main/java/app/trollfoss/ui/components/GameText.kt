@@ -58,7 +58,7 @@ fun GameText(
     )
     val fill = if (textAlign != null && textAlign != TextAlign.Start) Modifier.fillMaxWidth() else Modifier
     Box(modifier, contentAlignment = Alignment.TopStart) {
-        BasicText(
+        if (color != outline && outline.alpha > 0f) BasicText(
             text,
             style = base.copy(color = outline, drawStyle = Stroke(width = rim, join = StrokeJoin.Round), shadow = Shadow(outline, Offset(0f, drop), 0f)),
             maxLines = maxLines,

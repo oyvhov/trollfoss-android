@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -58,9 +59,12 @@ import app.trollfoss.ui.components.IconCanvas
 import app.trollfoss.ui.components.Icons
 import app.trollfoss.ui.components.LocalFeedback
 import app.trollfoss.ui.components.RoundButton
+import app.trollfoss.ui.components.CloseButton
 import app.trollfoss.ui.components.Tones
 import app.trollfoss.ui.play.Engine
 import app.trollfoss.ui.theme.T
+import app.trollfoss.ui.SM
+import app.trollfoss.ui.str
 import kotlin.math.max
 import kotlin.math.min
 
@@ -76,6 +80,8 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
     var tab by remember(place) { mutableIntStateOf(DesignTab.FURNITURE.ordinal) }
     val feedback = LocalFeedback.current
     val version = engine.designVersion
+    val compact = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp < 520
+    val currentRoom = engine.visibleRoom
     val glow by animateFloatAsState(if (engine.overStore) 1f else 0f, label = "store glow")
     val tabs = DesignTab.entries.filter { (it != DesignTab.WALL && it != DesignTab.FLOOR) || Decor.decoratable(place) }
     val shape = RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp)
@@ -84,7 +90,7 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
     Column(
         modifier
             .fillMaxHeight()
-            .width(248.dp)
+            .width(playPanelWidth(compact, designer = true))
             .onGloballyPositioned { engine.storeZone = it.boundsInRoot() }
             .clip(shape)
             .background(if (glow > 0.01f) androidx.compose.ui.graphics.lerp(T.Cream, T.SunTop, glow) else T.Cream.copy(alpha = 0.97f))
@@ -92,11 +98,15 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
             .padding(horizontal = 10.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            GameText(SM.furnish.str(), fontSize = 20.sp, color = T.Ink)
+            CloseButton(onClose, size = if (compact) 40.dp else 48.dp)
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
             for (t in tabs) {
                 val on = t.ordinal == tab
                 RoundButton(
-                    description = t.name,
+                    description = when (t) { DesignTab.FURNITURE -> SM.furnish; DesignTab.WALL -> SM.wallpaper; DesignTab.FLOOR -> SM.flooring; DesignTab.STORE -> SM.storage; DesignTab.TIDY -> SM.tidy }.str(),
                     onClick = { tab = t.ordinal },
                     size = if (on) 46.dp else 40.dp,
                     tone = if (on) Tones.Sun else Tones.Cream,
@@ -110,6 +120,8 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                 )
             }
         }
+        GameText(when (DesignTab.entries[tab]) { DesignTab.FURNITURE -> SM.furnish; DesignTab.WALL -> SM.wallpaper; DesignTab.FLOOR -> SM.flooring; DesignTab.STORE -> SM.storage; DesignTab.TIDY -> SM.tidy }.str(), fontSize = 18.sp, color = T.Ink)
+        if (Decor.rooms(place).size > 1) GameText(roomLabel(world, place, currentRoom).str(), fontSize = 13.sp, color = T.Ink)
 
         Box(Modifier.fillMaxWidth().weight(1f)) {
             // Read the version so the panel redraws after every change.
@@ -131,7 +143,7 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                 }
                 DesignTab.WALL, DesignTab.FLOOR -> {
                     val wall = DesignTab.entries[tab] == DesignTab.WALL
-                    val current = Decor.style(world, place, engine.room)
+                    val current = Decor.style(world, place, currentRoom)
                     val n = if (wall) Decor.WALLS else Decor.FLOORS
                     LazyVerticalGrid(GridCells.Fixed(2), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         itemsIndexed(List(n) { it }) { _, i ->
@@ -162,7 +174,7 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                     }
                 }
                 DesignTab.TIDY -> {
-                    RoundButton("Rydd", onClick = { engine.tidy() }, modifier = Modifier.align(Alignment.Center), size = 120.dp, tone = Tones.Sun, icon = DesignIcons.Broom)
+                    RoundButton(SM.tidy.str(), onClick = { engine.tidy() }, modifier = Modifier.align(Alignment.Center), size = 120.dp, tone = Tones.Sun, icon = DesignIcons.Broom)
                 }
             }
         }
@@ -177,7 +189,7 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                 IconCanvas(DesignIcons.Sticker, Modifier.size(28.dp))
                 GameText("${world.stickers.size}", fontSize = 20.sp, style = MaterialTheme.typography.titleLarge, color = Color.White)
             }
-            RoundButton("Ferdig", onClick = onClose, size = 56.dp, tone = Tones.Mint, icon = Icons.Check)
+            RoundButton(SM.done.str(), onClick = onClose, size = 56.dp, tone = Tones.Mint, icon = Icons.Check)
         }
     }
 }
@@ -187,7 +199,7 @@ private fun Tile(chosen: Boolean = false, onClick: () -> Unit, content: @Composa
     val feedback = LocalFeedback.current
     Box(
         Modifier
-            .size(104.dp)
+            .fillMaxWidth().aspectRatio(1f)
             .clip(RoundedCornerShape(18.dp))
             .background(if (chosen) T.SunTop else Color.White)
             .border(if (chosen) 4.dp else 2.5.dp, if (chosen) T.Sun else T.Ink, RoundedCornerShape(18.dp))
@@ -217,7 +229,8 @@ private fun LockBadge(item: CatalogueItem) {
 /** A small drawing of a piece of furniture, scaled to fit its card. */
 @Composable
 private fun FurnitureThumb(type: FixtureType, variant: Int, place: PlaceId, locked: Boolean) {
-    CachedThumb("fixture:$type:$variant", 88.dp, Modifier.graphicsLayer { alpha = if (locked) 0.45f else 1f }) {
+    val compact = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp < 520
+    CachedThumb("fixture:$type:$variant", if (compact) 88.dp else 112.dp, Modifier.graphicsLayer { alpha = if (locked) 0.45f else 1f }) {
         drawFixtureThumb(type, variant, Rect(0f, 0f, size.width, size.height))
     }
 }

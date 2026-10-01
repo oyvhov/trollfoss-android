@@ -5,6 +5,8 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +14,8 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -54,6 +59,7 @@ import app.trollfoss.ui.art.drawIslandMapLive
 import app.trollfoss.ui.art.inkedRound
 import app.trollfoss.ui.art.mapLabel
 import app.trollfoss.ui.art.mapSpot
+import app.trollfoss.ui.art.MAP_WIDTH_FACTOR
 import app.trollfoss.ui.art.rememberMapLayer
 import app.trollfoss.ui.components.CloseButton
 import app.trollfoss.ui.components.GameText
@@ -81,15 +87,22 @@ fun MapScreen(vm: TrollfossViewModel) {
         val start = withFrameNanos { it }
         while (true) withFrameNanos { t = if (motion) (it - start) / 1e9f else 0f }
     }
-    val from = vm.place
+    val from = vm.place.mapPlace
+    val scroll = rememberScrollState()
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        val w = maxWidth
+        val viewportWidth = constraints.maxWidth
+        val w = maxWidth * MAP_WIDTH_FACTOR
         val h = maxHeight
+        val mapWidth = with(LocalDensity.current) { w.roundToPx() }
+        fun centered(place: PlaceId) = (mapSpot(place).x * mapWidth - viewportWidth / 2f).toInt().coerceIn(0, mapWidth - viewportWidth)
+        LaunchedEffect(mapWidth, from) { scroll.scrollTo(centered(from)) }
         // The still scenery is drawn once into a bitmap (off the main thread); each frame draws only what moves.
         // The secret path from the cellar of Storhuset to Trollhola shows once all five golden keys are found.
         val tunnel = remember(vm.generation, vm.houseKeys) { HouseKeys.TUNNEL in vm.world.flags }
-        val mapLayer = rememberMapLayer(constraints.maxWidth, constraints.maxHeight, if (vm.night) 1f else 0f, vm.weather, tunnel = tunnel)
+        val mapLayer = rememberMapLayer(mapWidth, constraints.maxHeight, if (vm.night) 1f else 0f, vm.weather, tunnel = tunnel, house = vm.world.mine)
+        Box(Modifier.fillMaxSize().horizontalScroll(scroll)) {
+        Box(Modifier.width(w).fillMaxHeight()) {
         // The map is its own layer: every frame only it is redrawn, not the labels and buttons over it.
         Canvas(Modifier.fillMaxSize().graphicsLayer()) {
             val pen = Pen(max(1.4f, size.height * 0.0034f), t, if (vm.night) 1f else 0f, vm.weather)
@@ -157,6 +170,7 @@ fun MapScreen(vm: TrollfossViewModel) {
                         vm.sfx(Sfx.WHOOSH, 0.8f)
                         scope.launch {
                             flight.snapTo(0f)
+                            launch { scroll.animateScrollTo(centered(place), tween(if (motion) 1400 else 1)) }
                             flight.animateTo(1f, tween(if (motion) 1400 else 1, easing = FastOutSlowInEasing))
                             vm.travel(place)
                         }
@@ -167,6 +181,8 @@ fun MapScreen(vm: TrollfossViewModel) {
                 GameText(label, fontSize = 19.sp, style = MaterialTheme.typography.titleLarge, color = if (place == (target ?: from)) T.Sun else Color.White, textAlign = TextAlign.Center, maxLines = 1)
             }
         }
+        }
+        }
 
         CloseButton({ vm.back() }, Modifier.align(Alignment.TopStart).padding(16.dp))
         Row(Modifier.align(Alignment.BottomStart).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -174,7 +190,7 @@ fun MapScreen(vm: TrollfossViewModel) {
             RoundButton(S.workshop.str(), onClick = { vm.open(Screen.Creator(null)) }, tone = Tones.Grape, icon = Icons.Workshop)
         }
         RoundButton(S.parents.str(), onClick = { vm.open(Screen.ParentGate) }, modifier = Modifier.align(Alignment.TopEnd).padding(16.dp), size = 52.dp, tone = Tones.Cream, icon = Icons.Gear)
-        Box(Modifier) {}
+        GameText(S.mapDrag.str(), modifier = Modifier.align(Alignment.TopCenter).padding(top = 16.dp), fontSize = 14.sp, color = Color.White)
     }
 }
 

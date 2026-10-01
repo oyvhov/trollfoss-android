@@ -17,6 +17,13 @@ import kotlin.math.max
 /** How many pixels wide the landmark is, for a map [mapW] pixels wide. */
 internal fun mapMineSize(mapW: Float): Float = mapW * 0.085f
 
+/** Copy only the persistent appearance: a worker must never read the live house while it is being built. */
+internal fun MineHouse.mapSnapshot(): MineHouse = MineHouse().also {
+    it.started = started; it.shape = shape; it.wall = wall; it.roof = roof; it.roofColor = roofColor
+    it.door = door; it.windows = windows; it.chimney = chimney; it.flag = flag; it.upperBuilt = upperBuilt
+    ground.copyInto(it.ground); upper.copyInto(it.upper)
+}
+
 /**
  * Draws the child's house standing with the middle of its front at ([cx], [base]), about [size] pixels wide, with the
  * map's line width [lw]. The still parts only (no smoke, no flag waving).

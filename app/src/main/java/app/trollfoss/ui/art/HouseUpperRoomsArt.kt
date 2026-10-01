@@ -396,9 +396,9 @@ internal fun DrawScope.upperRooms(st: Stage, pen: Pen, styles: List<RoomStyle>) 
         val l = st.x(max(a, -1f))
         val r = st.x(b)
         if (paper > 0) {
-            drawWallpaper(paper, l, SKY_TOP * u - 2f, r, BACK * u, -st.cam * u, 0f, u)
+            drawWallpaper(paper, l, st.backgroundTop - 2f, r, BACK * u, -st.cam * u, 0f, u)
         } else {
-            clipRect(l, SKY_TOP * u - 2f, r + 1f, BACK * u) { roomWall(st, pen, i, s) }
+            clipRect(l, st.backgroundTop - 2f, r + 1f, BACK * u) { roomWall(st, pen, i, s) }
         }
     }
     // Floors, each in its own room.
@@ -450,7 +450,7 @@ internal fun DrawScope.upperRoomsFront(st: Stage, pen: Pen) {
 
 private fun DrawScope.roomWall(st: Stage, pen: Pen, i: Int, s: UpStatic) {
     val u = st.u
-    val top = SKY_TOP * u
+    val top = st.backgroundTop
     val w = st.w + 4f
     when (i) {
         0 -> {
@@ -732,7 +732,7 @@ private fun DrawScope.balconyFrame(st: Stage, pen: Pen) {
     val left = st.x(roomEdge(5)) - 2f
     clipRect(left = left, top = SKY_TOP * u - 2f, right = st.w + 2f, bottom = st.h + 4f) {
         // The roof over the balcony: boards, a beam and the post at the right.
-        drawRect(Color(0xFF8A5E3A), Offset(left, SKY_TOP * u - 2f), Size(st.w - left + 4f, (0.0f - SKY_TOP) * u + 2f))
+        drawRect(Color(0xFF8A5E3A), Offset(left, st.backgroundTop - 2f), Size(st.w - left + 4f, 0.0f * u - st.backgroundTop + 2f))
         var yy = SKY_TOP
         while (yy < 0f) {
             drawLine(Color(0xFF6E4630), Offset(left, yy * u), Offset(st.w + 2f, yy * u), strokeWidth = pen.lw * 0.8f)

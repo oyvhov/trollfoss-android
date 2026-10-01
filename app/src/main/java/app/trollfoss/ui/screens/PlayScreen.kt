@@ -78,7 +78,9 @@ fun PlayScreen(vm: TrollfossViewModel) {
     val text = rememberTextMeasurer()
     val density = LocalDensity.current.density
     val layer = rememberGraphicsLayer()
+    var capturePhoto by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val compact = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp < 520
 
     LaunchedEffect(engine) {
         var last = withFrameNanos { it }
@@ -106,13 +108,25 @@ fun PlayScreen(vm: TrollfossViewModel) {
     }
     LaunchedEffect(engine.designMode) { if (engine.designMode) mineUi.open = false }
 
+    val btn = if (compact) 44.dp else 64.dp
+    val edge = if (compact) 8.dp else 16.dp
+    val gap = if (compact) 8.dp else 12.dp
+    var menuOpen by remember { mutableStateOf(false) }
+    val builderOpen = place.mine && mineUi.open && !engine.designMode && vm.world.mine.job == null
+    val panelWidth = when {
+        engine.designMode -> playPanelWidth(compact, designer = true)
+        builderOpen -> playPanelWidth(compact, designer = false)
+        else -> 0.dp
+    }
     Box(Modifier.fillMaxSize()) {
         Canvas(
             Modifier
                 .fillMaxSize()
                 .drawWithContent {
-                    layer.record { this@drawWithContent.drawContent() }
-                    drawLayer(layer)
+                    if (capturePhoto) {
+                        layer.record { this@drawWithContent.drawContent() }
+                        drawLayer(layer)
+                    } else drawContent()
                 }
                 .pointerInput(engine) {
                     awaitPointerEventScope {
@@ -131,13 +145,14 @@ fun PlayScreen(vm: TrollfossViewModel) {
                 },
         ) {
             tick.longValue
-            engine.setSize(size.width, size.height, density)
+            engine.setSize(size.width, size.height, density, panelWidth.toPx())
             engine.draw(this, text)
         }
 
         // The controls are small on a phone (a screen less than about 520 dp tall) and big on a tablet.
-        val compact = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp < 520
         engine.compact = compact
+
+        Box(Modifier.fillMaxSize().padding(end = panelWidth)) {
 
         // In the big house: the five golden keys, top and centre.
         if (place.manor && !engine.designMode) {
@@ -158,10 +173,6 @@ fun PlayScreen(vm: TrollfossViewModel) {
 
         // The controls. On a phone (a screen less than about 520 dp tall) they are small and the less common ones
         // sit behind one button, so the scene has the room; on a tablet they stay big and in the corners.
-        val btn = if (compact) 44.dp else 64.dp
-        val edge = if (compact) 8.dp else 16.dp
-        val gap = if (compact) 8.dp else 12.dp
-        var menuOpen by remember { mutableStateOf(false) }
         LaunchedEffect(place, engine.designMode) { menuOpen = false }
 
         // Top left: the map and the task board, with a badge for tasks still to do.
@@ -181,9 +192,16 @@ fun PlayScreen(vm: TrollfossViewModel) {
 
         val photo = {
             scope.launch {
-                val image = layer.toImageBitmap()
-                engine.photoFlash()
-                vm.savePhoto(image)
+                if (!capturePhoto) {
+                    capturePhoto = true
+                    try {
+                        // Capture one complete frame; ordinary play avoids an extra recording layer.
+                        withFrameNanos { }
+                        withFrameNanos { }
+                        vm.savePhoto(layer.toImageBitmap())
+                        engine.photoFlash()
+                    } finally { capturePhoto = false }
+                }
             }
             Unit
         }
@@ -211,8 +229,12 @@ fun PlayScreen(vm: TrollfossViewModel) {
             }
             Row(Modifier.align(Alignment.BottomStart).padding(edge), horizontalArrangement = Arrangement.spacedBy(gap)) {
                 RoundButton(S.workshop.str(), onClick = { vm.open(Screen.Creator(null)) }, tone = Tones.Grape, icon = Icons.Workshop)
-                RoundButton(S.designer.str(), onClick = { engine.designMode = true }, tone = Tones.Berry, icon = DesignIcons.Roller)
+                RoundButton(app.trollfoss.ui.SM.furnish.str(), onClick = { engine.designMode = true }, tone = Tones.Berry, icon = DesignIcons.Sofa)
                 if (place.mine) RoundButton(app.trollfoss.ui.SM.build.str(), onClick = { mineUi.open = !mineUi.open }, tone = if (mineUi.open) Tones.Sun else Tones.Mint, icon = BuildIcons.Hammer)
+                if (place.mine) RoundButton(app.trollfoss.ui.SM.paint.str(), onClick = {
+                    mineUi.tab = 2; mineUi.open = true
+                    if (place != app.trollfoss.domain.PlaceId.MINE_YARD) vm.travel(app.trollfoss.domain.PlaceId.MINE_YARD)
+                }, tone = Tones.Berry, icon = DesignIcons.Roller)
             }
         }
         if (!engine.designMode && compact) {
@@ -247,11 +269,20 @@ fun PlayScreen(vm: TrollfossViewModel) {
                     RoundButton(S.weather.str(), onClick = { vm.cycleWeather() }, size = small, tone = Tones.Cream, icon = weatherIcon)
                     RoundButton(S.camera.str(), onClick = { menuOpen = false; photo() }, size = small, tone = Tones.Cream, tapSound = false, icon = Icons.Camera)
                     RoundButton(S.workshop.str(), onClick = { menuOpen = false; vm.open(Screen.Creator(null)) }, size = small, tone = Tones.Grape, icon = Icons.Workshop)
-                    RoundButton(S.designer.str(), onClick = { menuOpen = false; engine.designMode = true }, size = small, tone = Tones.Berry, icon = DesignIcons.Roller)
+                    RoundButton(app.trollfoss.ui.SM.furnish.str(), onClick = { menuOpen = false; engine.designMode = true }, size = small, tone = Tones.Berry, icon = DesignIcons.Sofa)
                     if (place.mine) RoundButton(app.trollfoss.ui.SM.build.str(), onClick = { menuOpen = false; mineUi.open = !mineUi.open }, size = small, tone = if (mineUi.open) Tones.Sun else Tones.Mint, icon = BuildIcons.Hammer)
+                    if (place.mine) RoundButton(app.trollfoss.ui.SM.paint.str(), onClick = {
+                        menuOpen = false; mineUi.tab = 2; mineUi.open = true
+                        if (place != app.trollfoss.domain.PlaceId.MINE_YARD) vm.travel(app.trollfoss.domain.PlaceId.MINE_YARD)
+                    }, size = small, tone = Tones.Berry, icon = DesignIcons.Roller)
                 }
             }
         }
+        if (place.mine && !engine.designMode) MineTravelButtons(vm, place, compact,
+            if (compact) Modifier.align(Alignment.TopCenter).padding(top = 8.dp)
+            else Modifier.align(Alignment.TopStart).padding(start = edge + (btn + gap) * 2, top = 8.dp))
+        if (!compact) RoomNavigator(vm, engine, Modifier.align(Alignment.TopCenter).padding(top = 100.dp, start = 20.dp, end = 20.dp))
+        } // The controls belong to the visible scene, beside the panel.
         AnimatedVisibility(
             visible = engine.designMode,
             enter = slideInHorizontally { it } + fadeIn(),

@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
@@ -195,14 +196,18 @@ private fun DrawScope.miCounter(f: Fixture, u: Float, pen: Pen) {
         }
     } else drawLine(Ink.line, Offset(tp.x - 0.02f * u, tp.y - 0.033f * u), Offset(tp.x + 0.02f * u, tp.y - 0.033f * u), strokeWidth = pen.lw * 1.4f)
     drawCircle(Color(0xFFD2443A), 0.004f * u, Offset(tp.x + 0.024f * u, tp.y - 0.02f * u))
-    // A kettle and a bowl of fruit.
+    // A kettle and the mixing bowl: flour is already here, the child brings egg and milk.
     val kp = fxQ(u, 0.05f, -0.2f, 0.05f)
     inkedRound(Rect(kp.x - 0.022f * u, kp.y - 0.05f * u, kp.x + 0.022f * u, kp.y), 0.012f * u, FxC.sky, pen)
     drawLine(Ink.line, Offset(kp.x + 0.02f * u, kp.y - 0.035f * u), Offset(kp.x + 0.04f * u, kp.y - 0.05f * u), strokeWidth = pen.lw * 1.5f, cap = StrokeCap.Round)
     val bp = fxQ(u, 0.13f, -0.2f, 0.07f)
     inkedRound(Rect(bp.x - 0.025f * u, bp.y - 0.018f * u, bp.x + 0.025f * u, bp.y), 0.01f * u, FxC.cream, pen)
-    drawCircle(Color(0xFFD2443A), 0.012f * u, Offset(bp.x - 0.01f * u, bp.y - 0.022f * u))
-    drawCircle(Color(0xFFFFC83D), 0.012f * u, Offset(bp.x + 0.008f * u, bp.y - 0.024f * u))
+    drawOval(Color(0xFFF6E8C7), Offset(bp.x - 0.022f * u, bp.y - 0.026f * u), Size(0.044f * u, 0.015f * u))
+    val stir = if (f.on) sin(pen.t * 14f) * 0.015f * u else 0f
+    drawLine(Ink.line, Offset(bp.x + stir, bp.y - 0.023f * u), Offset(bp.x + 0.018f * u + stir, bp.y - 0.065f * u), strokeWidth = pen.lw * 2f, cap = StrokeCap.Round)
+    drawLine(FxC.wood, Offset(bp.x + stir, bp.y - 0.023f * u), Offset(bp.x + 0.018f * u + stir, bp.y - 0.065f * u), strokeWidth = pen.lw, cap = StrokeCap.Round)
+    if (f.count and 1 != 0) inkedOval(Rect(bp.x - 0.014f * u, bp.y - 0.028f * u, bp.x + 0.003f * u, bp.y - 0.016f * u), FxC.yellow, pen, shade = false)
+    if (f.count and 2 != 0) drawOval(Color.White, Offset(bp.x + 0.003f * u, bp.y - 0.025f * u), Size(0.014f * u, 0.008f * u))
 }
 
 private fun DrawScope.miBedside(f: Fixture, u: Float, pen: Pen) {
@@ -717,47 +722,43 @@ private fun DrawScope.miDoor(f: Fixture, u: Float, pen: Pen) {
     drawCircle(Ink.line, 0.012f * u, Offset(0f, -h - 0.04f * u), style = pen.thin)
 }
 
-/** The stairs of the hall: up to the second floor (boarded off with tape until it is built), or down to the ground floor. */
+/** Light open wooden steps below, a proper stairwell above. The travel buttons stay reachable from any room. */
 private fun DrawScope.miStairs(f: Fixture, u: Float, pen: Pen) {
     val built = f.mode == 1
     val upstairs = f.place == PlaceId.MINE_UPPER
-    val steps = 8
-    val w = 0.84f
-    val h = 0.5f
-    val d = 0.2f
-    scale(if (upstairs) -1f else 1f, 1f, Offset(0f, 0f)) {
-        miShadow(u, w, d)
-        // The stringer: a side board under the steps.
-        val sw = w / steps
-        for (k in 0 until steps) {
-            val x0 = -w / 2f + k * sw
-            val top = -(k + 1) * (h / steps)
-            fxBox(u, x0, top, x0 + sw, 0f, d, FxC.oak.lighten(0.04f), pen, rad = 0.002f, top = FxC.oak.lighten(0.2f), side = FxC.oakDark)
-        }
-        // A banister along the front.
-        val rail = Path().apply { moveTo(-w / 2f * u, -0.06f * u); lineTo(w / 2f * u, -(h + 0.06f) * u) }
-        for (k in 0..steps step 2) {
-            val x = -w / 2f + k * sw
-            val y = -(k + 0.0f) * (h / steps)
-            drawLine(Ink.line, Offset(x * u, (y + 0.0f) * u), Offset(x * u, (y - 0.09f) * u), strokeWidth = pen.lw * 2.2f, cap = StrokeCap.Round)
-            drawLine(FxC.paint, Offset(x * u, (y + 0.0f) * u), Offset(x * u, (y - 0.09f) * u), strokeWidth = pen.lw * 1.1f, cap = StrokeCap.Round)
-        }
-        drawPath(rail, Ink.line, style = Stroke(0.012f * u + pen.lw * 2f, cap = StrokeCap.Round))
-        drawPath(rail, FxC.walnut, style = Stroke(0.012f * u, cap = StrokeCap.Round))
-        if (!built && !upstairs) {
-            // Not built yet: a barrier of striped tape across the top of the stairs, and a little lamp.
-            val y = -(h + 0.03f)
+    val wood = FxC.oak.lighten(0.18f)
+    if (upstairs) {
+        val opening = fxFlat(u, -0.38f, 0.38f, 0f, 0f, 0.22f)
+        drawPath(opening, Color(0xFF403447)); drawPath(opening, Ink.line, style = pen.stroke)
+        clipPath(opening) {
             for (k in 0 until 6) {
-                val x = -0.12f + k * 0.07f
-                drawLine(Ink.line, Offset((x + 0.2f) * u, y * u), Offset((x + 0.26f) * u, (y + 0.035f) * u), strokeWidth = 0.028f * u + pen.lw * 2f)
+                val y = -0.01f + k * 0.022f
+                fxBox(u, -0.31f, y, 0.31f, y + 0.016f, 0.035f, wood.darken(k * 0.07f), pen, z = 0.2f - k * 0.033f)
             }
-            drawLine(FxC.yellow, Offset(0.08f * u, y * u + 0.0f), Offset(0.4f * u, (y + 0.018f) * u), strokeWidth = 0.028f * u)
-            for (k in 0 until 5) {
-                val x = 0.1f + k * 0.065f
-                drawLine(Ink.line, Offset(x * u, (y - 0.012f) * u), Offset((x + 0.025f) * u, (y + 0.04f) * u), strokeWidth = 0.012f * u)
-            }
-            drawCircle(FxC.yellow, 0.014f * u, Offset(0.08f * u, (y - 0.035f) * u))
-            drawCircle(Ink.line, 0.014f * u, Offset(0.08f * u, (y - 0.035f) * u), style = pen.thin)
         }
+        // Railings surround the far edge; the near edge stays open to walk into.
+        for (x in floatArrayOf(-0.38f, -0.19f, 0f, 0.19f, 0.38f)) {
+            capsule(fxQ(u, x, 0f, 0.22f), fxQ(u, x, -0.16f, 0.22f), 0.007f * u, FxC.paint, pen)
+        }
+        capsule(fxQ(u, -0.4f, -0.16f, 0.22f), fxQ(u, 0.4f, -0.16f, 0.22f), 0.012f * u, wood, pen)
+        return
+    }
+    miShadow(u, 0.78f, 0.18f)
+    val side = Path().apply {
+        moveTo(-0.39f * u, 0f); lineTo(0.39f * u, -0.42f * u)
+        lineTo(0.39f * u, -0.34f * u); lineTo(-0.39f * u, 0.05f * u); close()
+    }
+    drawPath(side, FxC.oakDark); drawPath(side, Ink.line, style = pen.thin)
+    for (k in 0 until 6) {
+        val x = -0.39f + k * 0.13f
+        val y = -(k + 1) * 0.07f
+        fxBox(u, x, y, x + 0.145f, y + 0.025f, 0.18f, wood, pen, rad = 0.004f, top = wood.lighten(0.1f), side = FxC.oakDark)
+        if (k % 2 == 0) capsule(Offset((x + 0.04f) * u, y * u), Offset((x + 0.04f) * u, (y - 0.15f) * u), 0.007f * u, FxC.paint, pen)
+    }
+    capsule(Offset(-0.35f * u, -0.22f * u), Offset(0.35f * u, -0.6f * u), 0.012f * u, wood, pen)
+    if (!built) {
+        // A small gate at the landing is calmer than construction tape across the whole staircase.
+        fxBox(u, 0.26f, -0.55f, 0.39f, -0.4f, 0.03f, FxC.paint, pen, rad = 0.008f)
+        drawCircle(FxC.yellow, 0.016f * u, Offset(0.33f * u, -0.48f * u))
     }
 }

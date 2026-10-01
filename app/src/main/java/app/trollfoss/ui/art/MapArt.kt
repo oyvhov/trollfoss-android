@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.drawscope.clipPath
 import app.trollfoss.domain.PlaceId
+import app.trollfoss.domain.MineHouse
 import app.trollfoss.domain.Txt
 import app.trollfoss.ui.S
 import app.trollfoss.domain.Weather
@@ -28,9 +29,7 @@ import kotlin.math.sin
  */
 fun mapSpot(place: PlaceId): Offset = when (place) {
     PlaceId.MOUNTAIN -> Offset(0.17f, 0.25f)
-    // Mitt hus: the child's own plot (placeholder spot; the builder finds the right one).
-    PlaceId.MINE_YARD -> Offset(0.35f, 0.4f)
-    PlaceId.MINE_GROUND, PlaceId.MINE_UPPER -> Offset(0.5f, 0.5f)
+    PlaceId.MINE_YARD, PlaceId.MINE_GROUND, PlaceId.MINE_UPPER -> Offset(0.35f, 0.36f)
     PlaceId.LAB -> Offset(0.62f, 0.25f)
     PlaceId.SPACE -> Offset(0.85f, 0.19f)
     PlaceId.TIVOLI -> Offset(0.12f, 0.54f)
@@ -47,9 +46,12 @@ fun mapSpot(place: PlaceId): Offset = when (place) {
     PlaceId.HEILEBERGET -> Offset(0.32f, 0.095f)
     // Storhuset, the big house on its hill right of the waterfall: only the ground floor is on the map (the
     // others are inside the house). The estate is wide: its lane runs left to the cave road, the secret path too.
-    PlaceId.MANOR_GROUND -> Offset(0.76f, 0.355f)
-    PlaceId.MANOR_UPPER, PlaceId.MANOR_ATTIC, PlaceId.MANOR_CELLAR, PlaceId.MANOR_GARDEN -> Offset(0.5f, 0.5f)
+    PlaceId.MANOR_GROUND, PlaceId.MANOR_UPPER, PlaceId.MANOR_ATTIC, PlaceId.MANOR_CELLAR, PlaceId.MANOR_GARDEN -> Offset(0.76f, 0.355f)
+    PlaceId.VAGSTADDALEN -> Offset(0.94f, 0.34f)
 }
+
+/** The island extends beyond the screen; its height and landmarks keep their readable scale. */
+internal const val MAP_WIDTH_FACTOR = 1.6f
 
 /**
  * The village of Trollfoss seen from above at a slight angle, filling [size] (any landscape shape):
@@ -61,13 +63,13 @@ fun mapSpot(place: PlaceId): Offset = when (place) {
  * ([rememberMapLayer]) and draws only the moving parts per frame ([drawIslandMapLive]); this entry is
  * for tests and tools, and as a fallback. [tunnel] shows the secret path from the cellar of Storhuset to Trollhola.
  */
-fun DrawScope.drawIslandMap(pen: Pen, highlight: PlaceId?, t: Float, tunnel: Boolean = false) {
+fun DrawScope.drawIslandMap(pen: Pen, highlight: PlaceId?, t: Float, tunnel: Boolean = false, mine: MineHouse = MineHouse()) {
     val g = mapGeo(size.width, size.height)
     val kit = liveKitFor(g, pen.lw, pen.night, pen.weather, pen.rainbow)
-    val live = MapPen(size.width, size.height, pen, t, tunnel)
+    val live = MapPen(size.width, size.height, pen, t, tunnel, mine)
     drawMapSky(this, g.w, g.h, pen.lw, pen.night, pen.weather, pen.rainbow)
     live.drawLiveSky(this, kit)
-    drawMapFront(this, g, pen.lw, pen.night, pen.weather, pen.rainbow, tunnel)
+    drawMapFront(this, g, pen.lw, pen.night, pen.weather, pen.rainbow, tunnel, mine)
     live.drawLive(this, g, kit, highlight)
 }
 
@@ -81,8 +83,8 @@ internal fun drawMapSky(d: DrawScope, w: Float, h: Float, lw: Float, night: Floa
  * The scenery that never moves, from the mountains to the vignette. The sky is left empty (transparent)
  * where nothing covers it, so the clouds and the northern lights can pass behind the mountains.
  */
-internal fun drawMapFront(d: DrawScope, g: MapGeo, lw: Float, night: Float, weather: Weather, rainbow: Float, tunnel: Boolean = false) {
-    val m = MapPen(g.w, g.h, Pen(lw, 0f, night, weather, rainbow), 0f, tunnel)
+internal fun drawMapFront(d: DrawScope, g: MapGeo, lw: Float, night: Float, weather: Weather, rainbow: Float, tunnel: Boolean = false, mine: MineHouse = MineHouse()) {
+    val m = MapPen(g.w, g.h, Pen(lw, 0f, night, weather, rainbow), 0f, tunnel, mine)
     m.drawFarWorld(d, g)
     m.drawGround(d, g)
     m.drawWaters(d, g)
@@ -95,7 +97,7 @@ internal fun drawMapFront(d: DrawScope, g: MapGeo, lw: Float, night: Float, weat
 }
 
 /** Everything the map needs for one frame. */
-internal class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float, val tunnel: Boolean = false) {
+internal class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float, val tunnel: Boolean = false, val mine: MineHouse? = null) {
     val n = pen.night
     val snow = pen.weather == Weather.SNOW
     val rain = pen.weather == Weather.RAIN

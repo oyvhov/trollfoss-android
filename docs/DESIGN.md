@@ -33,14 +33,14 @@ trolla er det einaste eventyret.
 
 ## 2. Verda: bygda Trollfoss
 
-Kartet viser bygda ovanfrå med **15 stader** i tre rader: fjella med trollhola og romstasjonen
+Kartet viser bygda ovanfrå med **18 reisemål**: dei femten opphavlege stadene, Storhuset, Mitt hus og Vagstaddalen. Kartet er 60 prosent breiare enn skjermen og kan dragast sidelengs. Fjella med trollhola og romstasjonen ligg
 øvst, dalen med tivoli, butikk, foss, lege, bakeri og gard i midten, og strandlinja med frisør,
-heime, konserthus, strand og dykkebøya ytst – og bak alt saman det store, lange fjellet **Heileberget**. Kvar stad er ei brei scene i skrå-3D (sjå §5) som ein
+Familiehuset, konserthus, strand og dykkebøya ytst – og bak alt saman det store, lange fjellet **Heileberget**. Kvar stad er ei brei scene i skrå-3D (sjå §5) som ein
 sveipar sidelengs i.
 
 | Stad | Id | Stemning | Hjartet i staden |
 | --- | --- | --- | --- |
-| **Heime** | `HOME` | Eit lyst, vanleg hus: soverom, stove, kjøkken, bad. | Seng, kiste (hittegods), vedomn, radio (dansemusikk), piano, klokke, kjøleskap, komfyr, badekar, do, postkasse med dagens pakke. |
+| **Familiehuset** | `HOME` | Eit lyst, vanleg hus: soverom, stove, kjøkken, bad. | Seng, kiste (hittegods), vedomn, radio (dansemusikk), piano, klokke, kjøleskap, komfyr, badekar, do, postkasse med dagens pakke. |
 | **Bakeriet** | `CAFE` | Mynte og krem, rutete golv. | Omn (deig + eple = kake), blender (frukt = smoothie), fruktkasse, is-maskin, kakedisk, mjølsekk. |
 | **Frisøren** | `SALON` | Rosa og lilla, terrazzo. | Frisørstolar, hårvask, tørkehjelm, saks, føn, fargesprayar, klesstativ, hattar. |
 | **Stranda** | `BEACH` | Sommar ved fjorden. | Brygge og fiskeplass (kvar femte fangst er skatt), båt, parasoll, solseng, sandslott, lundefugl. |
@@ -56,7 +56,20 @@ sveipar sidelengs i.
 | **Havbotnen** | `UNDERWATER` | Lysstrålar gjennom vatnet. | Alt sym. Ubåt å køyre, kjempemusling med perle, skipsvrak, tare, korallar, blekksprut som sprutar blekk. |
 | **Heileberget** | `HEILEBERGET` | Eit stort, langt fjell (ni scenebreidder, dobbelt så langt som dei andre), gyllent ettermiddagslys, to fossar. | Fjellhytte, taubane som glir opp til ein avsats og ned att, ekko-stein som svarar tre gonger (geitene breler tilbake), ørnerede og eit toppflagg som går til topps når nokon står på toppen. Tre fjellgeiter, BesteSonja og Tuva, kikkert og termos. |
 
-Kvar stad har **tre glimt** (45 i alt): under ting, inni ting, eller dei dukkar opp når du gjer noko
+Storhuset har fire etasjar og ein hage (sjå `HUSET.md`), og Mitt hus har ei tomt og to etasjar som barnet byggjer sjølv (sjå `BYGG.md`). Etasjane deler eitt reisemål på kartet.
+
+På nettbrett ligg ei lita biletoversikt over romma over scena. Eit trykk glir til rommet, og markøren følgjer
+romval og sveiping. Byggje- og møbelpanel reserverer plass på høgre side; figurar og ting held same storleik,
+og arbeidsområdet og sekken flyttar seg inn i den synlege delen. Sekken opnar over verktøylinja.
+
+Mitt hus knyter romma saman gjennom brukbare ting: frø og vatning i drivhuset gir bær eller blomar; egg og
+mjølk blir deig i mjølbollen på kjøkenbenken, og deigen kan bakast med bæra i omnen. I verkstaden gir saga to
+pinnar av ein planke; pinnane kan bli ein gitar på arbeidsbenken. Resultata er vanlege flyttbare ting som
+kan serverast, spelast på og takast med mellom rom og stader. Bilettips og oppdagingsboka viser oppskriftene.
+
+**Vagstaddalen** (`VAGSTADDALEN`) er ein roleg dal med ei lita laftehytte, ei svingande elv frå fjellet og grøne elvebreidder. Hyttedørene kan opnast; det finst fiskeplass, bål, benk, ved og ein katt. Scena er 5,4 einingar brei, med plass til å leike på begge sider av elva.
+
+Verda har **76 glimt**. Vagstaddalen og dei femten opphavlege stadene har tre kvar: under ting, inni ting, eller dei dukkar opp når du gjer noko
 (fiskar opp ei kiste, køyrer traktoren, sender opp raketten, slår av tyngdekrafta, tek pariserhjulet
 over toppen, skannar fem varer, røntgar nokon, spelar i band med trommer, xylofon og song).
 
@@ -192,7 +205,8 @@ bak eit gongestykke (lyd, musikk, målform, oppdatering, nullstill).
 ## 9. Android og oppdatering
 
 Liggjande på mobil og nettbrett, oppslukande. Kotlin + Jetpack Compose, alt teikna på `Canvas`. Min.
-Android 8.0. Nettbrett zoomar ut så minst 2,05 scenebreidder får plass, med meir himmel eller vegg over.
+Android 8.0. Nettbrett viser minst 2,35 scene-einingar i breidda, med meir himmel eller vegg over.
+Kameraet er om lag 13 prosent lenger unna enn i v1.1.0. Breie telefonar fyller framleis skjermhøgda.
 **Spelmotor:** stille møblar og ting blir teikna éin gong per utsjånad til eit bilete og stempla inn
 («sprite cache»). Det som rører seg sjølv, blir oppdaga automatisk og teikna på nytt 8 gonger i
 sekundet inn i same bilete; figurane 13 gonger i sekundet (24 når dei blir haldne), medan hopp,

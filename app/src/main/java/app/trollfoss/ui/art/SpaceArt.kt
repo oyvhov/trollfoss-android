@@ -121,8 +121,8 @@ internal fun DrawScope.spaceBack(st: Stage, pen: Pen) {
             0f to Color(0xFF6E7A8B), 0.28f to Color(0xFFA9B4C1), 0.36f to Color(0xFFD2DAE2), 0.42f to Color(0xFFEEF2F6), 0.72f to Color(0xFFE5EAF0), 1f to Color(0xFFB9C3CF),
             startY = SKY_TOP * u, endY = back * u,
         ),
-        Offset(0f, SKY_TOP * u),
-        Size(st.w, (back - SKY_TOP) * u),
+        Offset(0f, st.backgroundTop),
+        Size(st.w, back * u - st.backgroundTop),
     )
     inScene(st) {
         drawPoints(ss.seams, PointMode.Lines, Color(0xFFA9B4C1), strokeWidth = pen.lw * 0.8f)

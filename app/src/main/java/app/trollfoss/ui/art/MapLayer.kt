@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import app.trollfoss.domain.PlaceId
+import app.trollfoss.domain.MineHouse
 import app.trollfoss.domain.Weather
 import kotlin.math.ceil
 import kotlin.math.max
@@ -37,13 +38,14 @@ class MapLayer internal constructor(
     internal val image: ImageBitmap?,
     internal val g: MapGeo,
     internal val kit: LiveKit,
+    internal val mine: MineHouse,
 )
 
 /** The pen width for a map [heightPx] tall: the same on every screen. */
 internal fun mapPenWidth(heightPx: Float): Float = max(1.4f, heightPx * 0.0034f)
 
 /** Draws the still layers into new bitmaps. Slow (a second or two on a phone): call it off the main thread. */
-internal fun buildMapLayer(w: Int, h: Int, night: Float, weather: Weather, rainbow: Float, tunnel: Boolean = false): MapLayer {
+internal fun buildMapLayer(w: Int, h: Int, night: Float, weather: Weather, rainbow: Float, tunnel: Boolean = false, mine: MineHouse = MineHouse()): MapLayer {
     val g = mapGeo(w.toFloat(), h.toFloat())
     val lw = mapPenWidth(h.toFloat())
     val kit = LiveKit(g, lw, night, weather, rainbow)
@@ -57,7 +59,7 @@ internal fun buildMapLayer(w: Int, h: Int, night: Float, weather: Weather, rainb
         }
         val bitmap = ImageBitmap(w, h)
         CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, Canvas(bitmap), size) {
-            drawMapFront(this, g, lw, night, weather, rainbow, tunnel)
+            drawMapFront(this, g, lw, night, weather, rainbow, tunnel, mine)
         }
         kit.findHiddenRiver(bitmap)
         sky = skyBitmap
@@ -66,7 +68,7 @@ internal fun buildMapLayer(w: Int, h: Int, night: Float, weather: Weather, rainb
         sky = null
         image = null
     }
-    return MapLayer(w, h, night, weather, rainbow, tunnel, lw, sky, image, g, kit)
+    return MapLayer(w, h, night, weather, rainbow, tunnel, lw, sky, image, g, kit, mine)
 }
 
 /**
@@ -83,10 +85,10 @@ fun DrawScope.drawIslandMapLive(pen: Pen, highlight: PlaceId?, t: Float, layer: 
     val sky = layer.sky
     val image = layer.image
     if (sky == null || image == null) {
-        drawIslandMap(pen, highlight, t, layer.tunnel)
+        drawIslandMap(pen, highlight, t, layer.tunnel, layer.mine)
         return
     }
-    val live = MapPen(layer.w.toFloat(), layer.h.toFloat(), Pen(layer.lw, t, layer.night, layer.weather, layer.rainbow), t, layer.tunnel)
+    val live = MapPen(layer.w.toFloat(), layer.h.toFloat(), Pen(layer.lw, t, layer.night, layer.weather, layer.rainbow), t, layer.tunnel, layer.mine)
     drawImage(sky)
     live.drawLiveSky(this, layer.kit)
     drawImage(image)

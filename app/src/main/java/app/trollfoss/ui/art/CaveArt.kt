@@ -133,8 +133,8 @@ internal fun DrawScope.labBack(st: Stage, pen: Pen) {
     val cs = caveStatic.of(u)
     drawRect(
         Brush.verticalGradient(0f to Color(0xFF221A3C), 0.5f to Color(0xFF392A62), 1f to Color(0xFF4A3677), startY = 0f, endY = back * u),
-        Offset(0f, SKY_TOP * u),
-        Size(st.w, (back - SKY_TOP) * u),
+        Offset(0f, st.backgroundTop),
+        Size(st.w, back * u - st.backgroundTop),
     )
     val glow = 0.6f + 0.35f * sin(t * 1.2f)
     inScene(st) {

@@ -11,6 +11,12 @@ data class Recipe(val key: String, val machine: FixtureType, val inputs: List<Th
  * checks that each recipe really produces its result.
  */
 object Recipes {
+    /** The counter contains flour; egg and milk make dough. Sawed planks become parts for the workbench. */
+    fun houseWork(machine: FixtureType, inputs: List<ThingType>): Made? = when {
+        machine == FixtureType.MI_COUNTER && inputs.size == 2 && ThingType.EGG in inputs && ThingType.MILK in inputs -> Made(ThingType.DOUGH)
+        machine == FixtureType.MI_SAW_BENCH && inputs == listOf(ThingType.PLANK) -> Made(ThingType.STICK)
+        else -> null
+    }
     private val heat: Map<ThingType, ThingType> = mapOf(
         ThingType.EGG to ThingType.FRIED_EGG,
         ThingType.FISH to ThingType.GRILLED_FISH,
@@ -140,6 +146,8 @@ object Recipes {
     /** Everything the discovery book shows, in book order. */
     val book: List<Recipe> by lazy {
         buildList {
+            add(Recipe("mine_dough", FixtureType.MI_COUNTER, listOf(ThingType.EGG, ThingType.MILK), Made(ThingType.DOUGH)))
+            add(Recipe("mine_saw", FixtureType.MI_SAW_BENCH, listOf(ThingType.PLANK), Made(ThingType.STICK)))
             heat.forEach { (from, to) -> add(Recipe("fire_${from.name}", FixtureType.CAMPFIRE, listOf(from), Made(to))) }
             add(Recipe("stove_DOUGH", FixtureType.STOVE, listOf(ThingType.DOUGH), Made(ThingType.PANCAKE)))
             add(Recipe("oven_DOUGH", FixtureType.OVEN, listOf(ThingType.DOUGH), Made(ThingType.BUN)))
@@ -156,6 +164,8 @@ object Recipes {
     fun keyFor(machine: FixtureType, inputs: List<ThingType>): String? {
         val sorted = inputs.sortedBy { it.ordinal }
         return when (machine) {
+            FixtureType.MI_COUNTER -> if (houseWork(machine, inputs) != null) "mine_dough" else null
+            FixtureType.MI_SAW_BENCH -> if (houseWork(machine, inputs) != null) "mine_saw" else null
             FixtureType.CAMPFIRE -> inputs.singleOrNull()?.takeIf { it in heat || it == ThingType.DRAGON_EGG }?.let { "fire_${it.name}" }
             FixtureType.STOVE -> inputs.singleOrNull()?.let { if (it == ThingType.DOUGH) "stove_DOUGH" else if (it in heat) "fire_${it.name}" else null }
             FixtureType.OVEN -> oven(inputs).singleOrNull()?.second

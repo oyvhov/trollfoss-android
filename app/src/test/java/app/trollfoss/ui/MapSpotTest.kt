@@ -6,6 +6,7 @@ import app.trollfoss.ui.art.manorGate
 import app.trollfoss.ui.art.manorUnit
 import app.trollfoss.ui.art.mapLabel
 import app.trollfoss.ui.art.mapSpot
+import app.trollfoss.ui.art.MAP_WIDTH_FACTOR
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -35,7 +36,7 @@ class MapSpotTest {
         val label = mapLabel(place)
         val chars = max(label.nn.length, label.nb.length)
         val half = (chars * 10.5f + 6f) / 2f
-        val cx = spot.x * s.w
+        val cx = spot.x * s.w * MAP_WIDTH_FACTOR
         val cy = spot.y * s.h + 46f
         return Box(cx - half, cy - 17f, cx + half, cy + 17f)
     }
@@ -69,10 +70,22 @@ class MapSpotTest {
     fun wordsAndSpotsStayClearOfTheCornerButtons() {
         for (s in screens) for (p in places) {
             val w = word(p, s)
-            for (c in corners(s)) assertFalse("$p touches a corner button on the ${s.name}", w.overlaps(c, 4f))
+            val pan = (mapSpot(p).x * s.w * MAP_WIDTH_FACTOR - s.w / 2f).coerceIn(0f, s.w * (MAP_WIDTH_FACTOR - 1f))
+            val visible = Box(w.l - pan, w.t, w.r - pan, w.b)
+            for (c in corners(s)) assertFalse("$p touches a corner button on the ${s.name}", visible.overlaps(c, 4f))
             val spot = mapSpot(p)
             assertTrue("$p is inside the map", spot.x in 0.04f..0.96f && spot.y in 0.05f..0.9f)
         }
+    }
+
+    @Test
+    fun everyFloorUsesItsHouseLandmarkWhenLeavingForTheMap() {
+        for (p in PlaceId.entries) {
+            assertTrue("$p must have a map landmark", p.mapPlace.onMap)
+            assertEquals(mapSpot(p.mapPlace), mapSpot(p))
+        }
+        assertEquals(PlaceId.MINE_YARD, PlaceId.MINE_UPPER.mapPlace)
+        assertEquals(PlaceId.MANOR_GROUND, PlaceId.MANOR_CELLAR.mapPlace)
     }
 
     @Test

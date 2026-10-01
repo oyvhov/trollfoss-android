@@ -46,6 +46,8 @@ import app.trollfoss.ui.components.IconCanvas
 import app.trollfoss.ui.components.Icons
 import app.trollfoss.ui.components.LocalFeedback
 import app.trollfoss.ui.components.RoundButton
+import app.trollfoss.ui.components.CloseButton
+import app.trollfoss.ui.components.GameText
 import app.trollfoss.ui.components.Tones
 import app.trollfoss.ui.play.Engine
 import app.trollfoss.ui.str
@@ -66,13 +68,13 @@ fun BuildPanel(vm: TrollfossViewModel, engine: Engine, place: PlaceId, compact: 
     val sim = vm.sim
     val ui = vm.mineUi
     val shape = RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp)
-    val tile = if (compact) 88.dp else 104.dp
-    val width = if (compact) 224.dp else 262.dp
+    val tile = if (compact) 88.dp else 120.dp
+    val width = playPanelWidth(compact, designer = false)
     val scope = rememberCoroutineScope()
 
     fun focusX(x: Float) {
         scope.launch {
-            val from = engine.cam + engine.viewport / 2f
+            val from = engine.cam + engine.visibleViewport / 2f
             val to = x
             Animatable(from).animateTo(to, tween(420)) { engine.focusOn(value) }
         }
@@ -89,16 +91,16 @@ fun BuildPanel(vm: TrollfossViewModel, engine: Engine, place: PlaceId, compact: 
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         if (version < 0) Unit
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            GameText(if (h.started) SM.myHouse.str() else SM.chooseHouse.str(), fontSize = 20.sp, color = T.Ink)
+            CloseButton(onClose, size = if (compact) 40.dp else 48.dp)
+        }
         val tabs = buildList {
             add(BuildTab.ROOMS); add(BuildTab.FLOOR); add(BuildTab.LOOK)
             if (Mine.canParty(h)) add(BuildTab.PARTY)
         }
         if (!h.started) {
             // The foundation: four houses to choose from.
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                IconCanvas(BuildIcons.Hammer, Modifier.size(34.dp))
-                IconCanvas(BuildIcons.HouseHappy, Modifier.size(34.dp))
-            }
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 for (row in 0 until 2) {
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -107,7 +109,10 @@ fun BuildPanel(vm: TrollfossViewModel, engine: Engine, place: PlaceId, compact: 
                             Tile(size = tile, desc = SM.template(i).str(), onClick = {
                                 if (sim.mine.layFoundation(i)) { focusX(Mine.FACADE_X0 + 0.7f); vm.changed() }
                             }) {
-                                CachedThumb("mine:tpl:$i", tile - 8.dp) { drawTemplateThumb(i) }
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    CachedThumb("mine:tpl:$i", tile - 32.dp) { drawTemplateThumb(i) }
+                                    GameText(SM.template(i).str(), fontSize = 11.sp, color = T.Ink, maxLines = 2)
+                                }
                             }
                         }
                     }
@@ -115,17 +120,19 @@ fun BuildPanel(vm: TrollfossViewModel, engine: Engine, place: PlaceId, compact: 
             }
         } else {
             val tab = tabs.getOrElse(ui.tab) { BuildTab.ROOMS }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                for (t in tabs) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+              for (row in tabs.chunked(2)) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                for (t in row) {
                     val on = t == tab
-                    RoundButton(
-                        description = when (t) { BuildTab.ROOMS -> SM.rooms.str(); BuildTab.FLOOR -> SM.floor.str(); BuildTab.LOOK -> SM.look.str(); BuildTab.PARTY -> SM.party.str() },
-                        onClick = { ui.tab = tabs.indexOf(t) },
-                        size = if (on) 46.dp else 40.dp,
-                        tone = if (on) Tones.Sun else Tones.Cream,
-                        icon = when (t) { BuildTab.ROOMS -> BuildIcons.RoomPlus; BuildTab.FLOOR -> BuildIcons.Crane; BuildTab.LOOK -> BuildIcons.Brush; BuildTab.PARTY -> BuildIcons.Party },
-                    )
+                    val label = when (t) { BuildTab.ROOMS -> SM.rooms; BuildTab.FLOOR -> SM.anotherFloor; BuildTab.LOOK -> SM.paint; BuildTab.PARTY -> SM.partyTab }.str()
+                    Row(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(if (on) T.SunTop else Color.White)
+                        .border(if (on) 3.dp else 1.dp, if (on) T.Sun else T.Ink.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                        .clickable { ui.tab = tabs.indexOf(t) }.padding(6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        IconCanvas(when (t) { BuildTab.ROOMS -> BuildIcons.RoomPlus; BuildTab.FLOOR -> BuildIcons.Crane; BuildTab.LOOK -> BuildIcons.Brush; BuildTab.PARTY -> BuildIcons.Party }, Modifier.size(30.dp))
+                        GameText(label, fontSize = if (compact) 12.sp else 14.sp, color = T.Ink, maxLines = 1)
+                    }
                 }
+              }
             }
             Box(Modifier.fillMaxWidth().weight(1f)) {
                 when (tab) {
@@ -137,7 +144,8 @@ fun BuildPanel(vm: TrollfossViewModel, engine: Engine, place: PlaceId, compact: 
             }
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-            RoundButton(SM.done.str(), onClick = onClose, size = if (compact) 48.dp else 56.dp, tone = Tones.Mint, icon = Icons.Check)
+            GameText(SM.done.str(), fontSize = 16.sp, color = T.Ink, modifier = Modifier.padding(end = 8.dp))
+            RoundButton(SM.done.str(), onClick = onClose, size = 40.dp, tone = Tones.Mint, icon = Icons.Check)
         }
     }
 }
@@ -166,26 +174,29 @@ private fun Tile(size: Dp, desc: String = "", chosen: Boolean = false, enabled: 
 
 @Composable
 private fun RoomsTab(vm: TrollfossViewModel, engine: Engine, place: PlaceId, tile: Dp, focusSlot: (Int) -> Unit) {
-    val h = vm.world.mine
+    // Domain fields are mutable; each tab must observe the version itself to refresh after slot changes.
+    val h = remember(vm.mineVersion) { vm.world.mine }
     val sim = vm.sim
     val feedback = LocalFeedback.current
     if (place == PlaceId.MINE_YARD) {
         // Rooms are built from the inside: a door takes you there.
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)) {
+        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)) {
             RoundButton(SM.goInside.str(), onClick = { vm.travel(PlaceId.MINE_GROUND) }, size = 96.dp, tone = Tones.Sea, icon = BuildIcons.DoorIn)
+            GameText(SM.goInside.str(), fontSize = 18.sp, color = T.Ink)
             CachedThumb("mine:house:${h.hash()}", 110.dp) { drawHouseThumb(h) }
         }
         return
     }
     val selected = if (h.selectedPlace == place) h.selected else -1
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        GameText(SM.chooseSlot.str(), fontSize = 16.sp, color = T.Ink)
         // The five slots of the floor: tap one to look at it.
         Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
             for (i in 0 until Mine.SLOTS) {
                 val standing = h.standing(place, i)
                 val can = Mine.canBuild(h, place, i)
                 val chosen = i == selected
-                val chip = if (tile < 100.dp) 32.dp else 38.dp
+                val chip = if (tile < 100.dp) 32.dp else 48.dp
                 Box(
                     Modifier
                         .size(chip)
@@ -220,19 +231,29 @@ private fun RoomsTab(vm: TrollfossViewModel, engine: Engine, place: PlaceId, til
                 )
             }
             selected >= 0 && Mine.canBuild(h, place, selected) -> {
+                GameText(SM.chooseRoom.str(), fontSize = 16.sp, color = T.Ink)
                 for (row in RoomKind.entries.chunked(2)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         for (k in row) {
                             Tile(size = tile, desc = SM.kind(k).str(), enabled = !vm.sim.mine.busy, onClick = {
                                 if (sim.mine.buildRoom(place, selected, k)) { focusSlot(selected); vm.changed() }
                             }) {
-                                CachedThumb("mine:kind:${k.name}", tile - 8.dp) { drawKindThumb(k) }
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    CachedThumb("mine:kind:${k.name}", tile - 32.dp) { drawKindThumb(k) }
+                                    GameText(SM.kind(k).str(), fontSize = 11.sp, color = T.Ink, maxLines = 2)
+                                }
                             }
                         }
                     }
                 }
             }
-            else -> IconCanvas(BuildIcons.HouseHappy, Modifier.size(96.dp))
+            else -> GameText(
+                when {
+                    Mine.buildable(h, place).isNotEmpty() -> SM.chooseSlot.str()
+                    (1 until Mine.SLOTS).all { h.standing(place, it) } -> SM.allBuilt.str()
+                    else -> SM.buildBelow.str()
+                }, fontSize = 18.sp, color = T.Ink,
+            )
         }
     }
 }
@@ -241,26 +262,30 @@ private fun RoomsTab(vm: TrollfossViewModel, engine: Engine, place: PlaceId, til
 
 @Composable
 private fun FloorTab(vm: TrollfossViewModel, place: PlaceId, tile: Dp) {
-    val h = vm.world.mine
+    val h = remember(vm.mineVersion) { vm.world.mine }
     val can = Mine.canBuildUpper(h)
-    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)) {
-        CachedThumb("mine:floors:${h.upperBuilt}", tile + 40.dp) { drawFloorsThumb(h.upperBuilt) }
+    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)) {
+        CachedThumb("mine:floors:${h.upperBuilt}", tile - 24.dp) { drawFloorsThumb(h.upperBuilt) }
         when {
-            h.upperBuilt -> IconCanvas(Icons.Check, Modifier.size(56.dp))
+            h.upperBuilt -> {
+                GameText(SM.floorReady.str(), fontSize = 18.sp, color = T.Ink)
+                RoundButton(SM.upstairs.str(), onClick = { vm.travel(PlaceId.MINE_UPPER) }, size = 64.dp, tone = Tones.Mint, icon = Icons.Up)
+            }
             else -> {
+                GameText(if (can) SM.floor.str() else SM.needRooms.str(), fontSize = 14.sp, color = T.Ink)
                 RoundButton(
-                    SM.buildHouse.str(), onClick = {
+                    SM.floor.str(), onClick = {
                         // The crane works in the yard: the child is taken there to watch.
                         if (place != PlaceId.MINE_YARD) vm.travel(PlaceId.MINE_YARD)
                         if (vm.sim.mine.buildUpper()) vm.changed()
                     },
-                    size = 92.dp, tone = if (can) Tones.Mint else Tones.Cream, enabled = can && !vm.sim.mine.busy, icon = BuildIcons.Crane,
+                    size = 64.dp, tone = if (can) Tones.Mint else Tones.Cream, enabled = can && !vm.sim.mine.busy, icon = BuildIcons.Crane,
                 )
                 // Two rooms are needed first: two little houses that fill up.
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     for (i in 0 until Mine.ROOMS_FOR_FLOOR) {
                         val have = h.roomCount() > i
-                        IconCanvas(BuildIcons.RoomPlus, Modifier.size(34.dp).alpha(if (have) 1f else 0.35f))
+                        IconCanvas(BuildIcons.RoomPlus, Modifier.size(24.dp).alpha(if (have) 1f else 0.35f))
                     }
                 }
             }
@@ -272,33 +297,36 @@ private fun FloorTab(vm: TrollfossViewModel, place: PlaceId, tile: Dp) {
 
 @Composable
 private fun LookTab(vm: TrollfossViewModel, tile: Dp, compact: Boolean) {
-    val h = vm.world.mine
+    val h = remember(vm.mineVersion) { vm.world.mine }
     val sim = vm.sim
-    val small = if (compact) 34.dp else 38.dp
+    val small = if (compact) 44.dp else 48.dp
     val med = if (compact) 48.dp else 56.dp
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        CachedThumb("mine:house:${h.hash()}", tile + 20.dp) { drawHouseThumb(h) }
+        GameText(SM.wallColours.str(), fontSize = 16.sp, color = T.Ink)
         // Wall colours.
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                for (row in 0 until 2) {
+                for (row in 0 until 3) {
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        for (c in 0 until 6) {
-                            val i = row * 6 + c
+                        for (c in 0 until 4) {
+                            val i = row * 4 + c
                             Swatch(small, h.wall == i, MineC.wall(i)) { sim.mine.restyle(wall = i); vm.changed() }
                         }
                     }
                 }
             }
         }
+        CachedThumb("mine:house:${h.hash()}", tile) { drawHouseThumb(h) }
+        GameText(SM.roof.str(), fontSize = 16.sp, color = T.Ink)
         // Roof types, then roof colours.
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            for (i in 0 until Mine.ROOFS) {
+        for (row in (0 until Mine.ROOFS).toList().chunked(3)) Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            for (i in row) {
                 Tile(size = med, chosen = h.roof == i, onClick = { sim.mine.restyle(roof = i); vm.changed() }) {
                     CachedThumb("mine:roof:$i:${h.roofColor}:${h.wall}", med - 8.dp) { drawRoofThumb(i, h.roofColor, h.wall) }
                 }
             }
         }
+        GameText(SM.roofColours.str(), fontSize = 16.sp, color = T.Ink)
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             for (row in 0 until 2) {
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -310,6 +338,7 @@ private fun LookTab(vm: TrollfossViewModel, tile: Dp, compact: Boolean) {
             }
         }
         // Doors and windows.
+        GameText(SM.doors.str(), fontSize = 16.sp, color = T.Ink)
         for (row in 0 until 2) {
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 for (c in 0 until 3) {
@@ -320,14 +349,16 @@ private fun LookTab(vm: TrollfossViewModel, tile: Dp, compact: Boolean) {
                 }
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            for (i in 0 until Mine.WINDOWS) {
+        GameText(SM.windows.str(), fontSize = 16.sp, color = T.Ink)
+        for (row in (0 until Mine.WINDOWS).toList().chunked(3)) Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            for (i in row) {
                 Tile(size = med, chosen = h.windows == i, onClick = { sim.mine.restyle(windows = i); vm.changed() }) {
                     CachedThumb("mine:window:$i:${h.wall}:${h.roofColor}", med - 8.dp) { drawWindowThumb(i, h.wall, h.roofColor) }
                 }
             }
         }
         // The chimney and the flag: on or off.
+        GameText(SM.extras.str(), fontSize = 16.sp, color = T.Ink)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Tile(size = med, chosen = h.chimney, onClick = { sim.mine.restyle(chimney = !h.chimney); vm.changed() }) {
                 CachedThumb("mine:chimney:${h.chimney}", med - 8.dp) { drawChimneyThumb(h.chimney) }
@@ -361,11 +392,11 @@ private fun Swatch(size: Dp, chosen: Boolean, color: Color, onClick: () -> Unit)
 
 @Composable
 private fun PartyTab(vm: TrollfossViewModel, engine: Engine) {
-    val h = vm.world.mine
-    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)) {
+    val h = remember(vm.mineVersion) { vm.world.mine }
+    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)) {
         IconCanvas(BuildIcons.Party, Modifier.size(110.dp))
         RoundButton(
-            SM.party.str(), onClick = { if (vm.sim.mine.housewarming(engine.cam + engine.viewport / 2f)) vm.changed() },
+            SM.party.str(), onClick = { if (vm.sim.mine.housewarming(engine.cam + engine.visibleViewport / 2f)) vm.changed() },
             size = 92.dp, tone = Tones.Berry, enabled = h.party == null && !vm.sim.mine.busy, icon = BuildIcons.Party,
         )
     }

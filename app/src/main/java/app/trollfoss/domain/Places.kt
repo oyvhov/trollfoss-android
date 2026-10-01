@@ -44,19 +44,28 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
     MINE_GROUND(10.0f, false, 0.90f, 0.07f),
     /** The upper floor, built later: five slots above the ground floor's. */
     MINE_UPPER(10.0f, false, 0.90f, 0.07f),
+    /** A quiet river valley with a small log cabin. Append new places to preserve saved ordinals. */
+    VAGSTADDALEN(5.4f, true, 0.88f, 0.02f),
     ;
 
     /** True for the five places that make up the big house. */
     val manor: Boolean get() = this in MANOR_GROUND..MANOR_GARDEN
 
     /** True for the three places of the child's own house. */
-    val mine: Boolean get() = ordinal >= MINE_YARD.ordinal
+    val mine: Boolean get() = this in MINE_YARD..MINE_UPPER
 
     /** True for the places that belong to a house with floors and passages: the big house and the child's own. */
     val big: Boolean get() = manor || mine
 
     /** True when the place has a button on the map. The other floors are reached from inside the house. */
     val onMap: Boolean get() = !big || this == MANOR_GROUND || this == MINE_YARD
+
+    /** Floors share one landmark. Used for the balloon and highlight when opening the map from inside. */
+    val mapPlace: PlaceId get() = when {
+        mine -> MINE_YARD
+        manor -> MANOR_GROUND
+        else -> this
+    }
 
     /**
      * Fixture ids are [idBase] plus the blueprint index. The older places have room for 100 ids each
@@ -66,6 +75,7 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
     val idBase: Int get() = when {
         manor -> 1500 + (ordinal - MANOR_GROUND.ordinal) * 300
         mine -> 3000 + (ordinal - MINE_YARD.ordinal) * 300
+        this == VAGSTADDALEN -> 3900
         else -> ordinal * 100
     }
     val addedFrom: Int get() = if (big) 200 else 40
@@ -639,6 +649,8 @@ object Places {
 
             // Mitt hus: the stairs and doors only; the rooms are built by the child (see [Mine]).
             PlaceId.MINE_YARD, PlaceId.MINE_GROUND, PlaceId.MINE_UPPER -> House.floor(id)!!.blueprint()
+
+            PlaceId.VAGSTADDALEN -> Vagstaddalen.blueprint()
 
             PlaceId.HEILEBERGET -> PlaceSpec(
                 id,

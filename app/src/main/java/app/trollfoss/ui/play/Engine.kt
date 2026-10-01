@@ -128,10 +128,16 @@ class Engine(
     private var density = 1f
     /**
      * Pixels per scene unit. On wide phones the scene fills the height; on tablets it zooms out so at
-     * least [MIN_VIEW] units show across, and the scene sits on the bottom edge with sky (or wall) above.
+     * least [TABLET_VIEW] units show across, and the scene sits on the bottom edge with sky (or wall) above.
      */
-    val u: Float get() = min(heightPx, widthPx / MIN_VIEW)
+    private var panelPx = 0f
+    private var geometry = PlayViewport(1f, 1f)
+    val u: Float get() = geometry.unit
     val viewport: Float get() = widthPx / u
+    val visibleViewport: Float get() = geometry.visibleUnits
+    var visibleRoom by mutableIntStateOf(0)
+        private set
+    private var chosenRoom: Int? = null
 
     /** Screen pixels above scene y = 0; the place art fills them with more sky or wall. */
     private val top: Float get() = heightPx - u
@@ -221,12 +227,18 @@ class Engine(
 
     // ---------------------------------------------------------------------------------- geometry
 
-    fun setSize(width: Float, height: Float, density: Float) {
+    fun setSize(width: Float, height: Float, density: Float, panelWidth: Float = 0f) {
+        val oldFocus = if (widthPx > 1f && panelPx != panelWidth) centerX() else null
         widthPx = max(1f, width)
         heightPx = max(1f, height)
         this.density = density
-        focus?.let { cam = it - viewport / 2f; focus = null }
+        panelPx = panelWidth
+        if (geometry.width != widthPx || geometry.height != heightPx || geometry.panel != panelPx) {
+            geometry = PlayViewport(widthPx, heightPx, panelPx)
+        }
+        (focus ?: oldFocus)?.let { cam = it - visibleViewport / 2f; focus = null }
         clampCam()
+        visibleRoom = room
     }
 
     /** The scene x to centre the camera on once the size is known (arriving by stairs, slide or lift). */
@@ -234,17 +246,26 @@ class Engine(
 
     /** Centres the camera on [x]; applied at once if the size is known, otherwise at the first layout. */
     fun focusOn(x: Float) {
+        chosenRoom = null
         if (widthPx > 1f) {
-            cam = x - viewport / 2f
+            cam = x - visibleViewport / 2f
             clampCam()
         } else {
             focus = x
         }
     }
 
+    /** Keep an end room selected even when its centre lies beyond the camera's travel limit. */
+    fun selectRoom(index: Int) {
+        val range = Decor.rooms(place).getOrNull(index) ?: return
+        focusOn((range.start + range.endInclusive) / 2f)
+        chosenRoom = index
+        visibleRoom = index
+    }
+
     private fun clampCam() {
-        val maxCam = max(0f, place.width - viewport)
-        cam = if (place.width <= viewport) (place.width - viewport) / 2f else cam.coerceIn(0f, maxCam)
+        val maxCam = max(0f, place.width - visibleViewport)
+        cam = if (place.width <= visibleViewport) (place.width - visibleViewport) / 2f else cam.coerceIn(0f, maxCam)
     }
 
     private fun sx(x: Float) = (x - cam) * u
@@ -258,7 +279,7 @@ class Engine(
 
     private val bagRadius get() = dp(if (compact) 26f else 38f)
     private val bagMargin get() = dp(if (compact) 8f else 20f)
-    private val bagCenter get() = Offset(widthPx - bagMargin - bagRadius, heightPx - bagMargin - bagRadius)
+    private val bagCenter get() = Offset(geometry.right - bagMargin - bagRadius, heightPx - bagMargin - bagRadius)
 
     // ---------------------------------------------------------------------------------- update
 
@@ -325,7 +346,7 @@ class Engine(
         bagCount = world.bag().size
     }
 
-    private fun accepts(f: Fixture, t: Thing): Boolean = when (f.spec.machine) {
+    private fun accepts(f: Fixture, t: Thing): Boolean = app.trollfoss.domain.MinePlay.accepts(world, f, t) || when (f.spec.machine) {
         app.trollfoss.domain.Machine.BLENDER -> !f.on && world.inMachine(f).size < 3
         app.trollfoss.domain.Machine.CAULDRON -> !f.on && world.inMachine(f).size < 2
         app.trollfoss.domain.Machine.TOILET -> true
@@ -694,6 +715,7 @@ class Engine(
         }
         if (g.target is Target.Furniture) overStore = storeZone?.contains(at) == true
         if (g.moved && g.target is Target.Pan && grabs.count { it.value.target is Target.Pan } == 1) {
+            chosenRoom = null
             cam -= dx / u
             clampCam()
         }
@@ -738,10 +760,14 @@ class Engine(
 
     // ---------------------------------------------------------------------------------- home designer
 
-    private fun centerX(): Float = cam + viewport / 2f
+    private fun centerX(): Float {
+        val middle = cam + visibleViewport / 2f
+        val range = chosenRoom?.let { Decor.rooms(place).getOrNull(it) } ?: return middle
+        return middle.coerceIn(range.start + 0.1f, range.endInclusive - 0.1f)
+    }
 
     /** The room in the middle of the screen, which wallpaper and floor choices apply to. */
-    val room: Int get() = Decor.roomAt(place, centerX())
+    val room: Int get() = chosenRoom ?: Decor.roomAt(place, centerX())
 
     /** Puts a piece from the catalogue in the middle of the screen. */
     fun addFurniture(type: FixtureType, variant: Int) {
@@ -1025,7 +1051,7 @@ class Engine(
     private fun trayRect(): Rect {
         val right = bagCenter.x - bagRadius - dp(if (compact) 8f else 14f)
         val left = dp(if (compact) 12f else 104f)
-        val bottom = heightPx - dp(if (compact) 8f else 16f)
+        val bottom = heightPx - dp(if (compact) 8f else 108f)
         val height = dp(if (compact) 66f else 92f)
         return Rect(left, bottom - height, max(left + height, right), bottom)
     }
@@ -1337,7 +1363,7 @@ class Engine(
         override val place: PlaceId get() = this@Engine.place
         override val time: Float get() = this@Engine.time
         override val random: Random get() = this@Engine.random
-        override val centerX: Float get() = cam + viewport / 2f
+        override val centerX: Float get() = cam + visibleViewport / 2f
         override fun changed() = host.changed()
         override fun sfx(effect: Sfx, volume: Float, rate: Float) = host.sfx(effect, volume, rate)
         override fun after(seconds: Float, block: () -> Unit) { pending += (this@Engine.time + seconds) to block }
@@ -2933,7 +2959,8 @@ class Engine(
         /** How many pictures [drawChatIcon] knows. */
         const val CHAT_ICONS = 6
 
-        /** Scene units that always fit across the screen; a 16:10 tablet zooms out to show them. */
+        /** Scene units that fit across a tablet; keeps figures close while wide phones still fill the height. */
         const val MIN_VIEW = 2.05f
+        const val TABLET_VIEW = 2.35f
     }
 }

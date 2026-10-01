@@ -85,7 +85,7 @@ internal fun DrawScope.shopBack(st: Stage, pen: Pen, styles: List<RoomStyle> = e
     if (styles.wallOf(0) > 0) {
         paperWall(st, styles.wallOf(0), back)
     } else {
-        drawRect(Color(0xFFF7F4EF), Offset(0f, SKY_TOP * u), Size(st.w, (back - SKY_TOP) * u))
+        drawRect(Color(0xFFF7F4EF), Offset(0f, st.backgroundTop), Size(st.w, back * u - st.backgroundTop))
     }
     drawRect(Color(0xFF2FB57A), Offset(0f, 0.025f * u), Size(st.w, 0.028f * u))
     drawRect(Color(0xFFFFD166), Offset(0f, 0.053f * u), Size(st.w, 0.008f * u))

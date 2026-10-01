@@ -432,13 +432,15 @@ internal fun DrawScope.groundFront(st: Stage, pen: Pen) {
 private fun DrawScope.fillWall(st: Stage, xl: Float, xr: Float, y0: Float, y1: Float, color: Color) {
     val l = max(st.x(xl), -2f)
     val r = min(st.x(xr), st.w + 2f)
-    if (r > l) drawRect(color, Offset(l, y0 * st.u), Size(r - l, (y1 - y0) * st.u))
+    val top = if (y0 <= SKY_TOP) st.backgroundTop else y0 * st.u
+    if (r > l) drawRect(color, Offset(l, top), Size(r - l, y1 * st.u - top))
 }
 
 private fun DrawScope.fillWallBrush(st: Stage, xl: Float, xr: Float, y0: Float, y1: Float, top: Color, bottom: Color) {
     val l = max(st.x(xl), -2f)
     val r = min(st.x(xr), st.w + 2f)
-    if (r > l) drawRect(Brush.verticalGradient(listOf(top, bottom), startY = y0 * st.u, endY = y1 * st.u), Offset(l, y0 * st.u), Size(r - l, (y1 - y0) * st.u))
+    val upper = if (y0 <= SKY_TOP) st.backgroundTop else y0 * st.u
+    if (r > l) drawRect(Brush.verticalGradient(listOf(top, bottom), startY = y0 * st.u, endY = y1 * st.u), Offset(l, upper), Size(r - l, y1 * st.u - upper))
 }
 
 /** Crown moulding, skirting and the shadow in the corner, for one room only. */

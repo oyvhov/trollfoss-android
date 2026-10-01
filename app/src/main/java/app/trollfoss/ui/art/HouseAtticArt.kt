@@ -335,7 +335,7 @@ internal fun DrawScope.atticBack(st: Stage, pen: Pen, styles: List<RoomStyle>) {
         }
     }
     // The roof's shadow lies over the top of every wall.
-    drawRect(g.beamBrush, Offset(0f, SKY_TOP * u), Size(st.w, (0.25f - SKY_TOP) * u))
+    drawRect(g.beamBrush, Offset(0f, st.backgroundTop), Size(st.w, 0.25f * u - st.backgroundTop))
     // Floors, and the thresholds between them.
     for (i in 0 until 4) {
         if (!st.sees(atFloorEdge(i) - 0.1f, atFloorEdge(i + 1) + atWallEdge(1) - atFloorEdge(1) + 0.4f)) continue
@@ -368,7 +368,7 @@ internal fun DrawScope.atticFront(st: Stage, pen: Pen) {
 
 private fun DrawScope.storageWall(st: Stage, g: AtticStatic, left: Float, right: Float) {
     val u = st.u
-    drawRect(g.storageWall, Offset(left, SKY_TOP * u - 2f), Size(right - left, (BACK - SKY_TOP) * u + 2f))
+    drawRect(g.storageWall, Offset(left, st.backgroundTop - 2f), Size(right - left, BACK * u - st.backgroundTop + 2f))
     clipRect(left, SKY_TOP * u - 2f, right, BACK * u) {
         inScene(st) {
             drawPoints(g.boards, PointMode.Lines, AtC.beamDark, strokeWidth = 1.3f * 1.3f, cap = StrokeCap.Butt, alpha = 0.45f)
@@ -379,7 +379,7 @@ private fun DrawScope.storageWall(st: Stage, g: AtticStatic, left: Float, right:
 
 private fun DrawScope.nookWall(st: Stage, g: AtticStatic, left: Float, right: Float) {
     val u = st.u
-    drawRect(g.nookWall, Offset(left, SKY_TOP * u - 2f), Size(right - left, (BACK - SKY_TOP) * u + 2f))
+    drawRect(g.nookWall, Offset(left, st.backgroundTop - 2f), Size(right - left, BACK * u - st.backgroundTop + 2f))
     clipRect(left, SKY_TOP * u - 2f, right, BACK * u) {
         inScene(st) {
             drawPoints(g.nookBoards, PointMode.Lines, AtC.blueDark, strokeWidth = 1.4f, alpha = 0.5f)
@@ -401,7 +401,7 @@ private fun DrawScope.towerWall(st: Stage, g: AtticStatic, left: Float, right: F
     // Darker toward the curved sides, lighter in the middle where the window throws its light.
     drawRect(
         Brush.horizontalGradient(0f to Color(0xFF16222E), 0.5f to AtC.navy, 1f to Color(0xFF16222E), startX = l, endX = r),
-        Offset(left, SKY_TOP * u - 2f), Size(right - left, (BACK - SKY_TOP) * u + 2f),
+        Offset(left, st.backgroundTop - 2f), Size(right - left, BACK * u - st.backgroundTop + 2f),
     )
     clipRect(left, SKY_TOP * u - 2f, right, BACK * u) {
         inScene(st) { drawPoints(g.stoneLines, PointMode.Lines, Color(0xFF0E1822), strokeWidth = 1.5f, alpha = 0.55f) }
@@ -412,7 +412,7 @@ private fun DrawScope.secretWall(st: Stage, g: AtticStatic, left: Float, right: 
     val u = st.u
     drawRect(
         Brush.verticalGradient(0f to AtC.velvetDark, 0.5f to AtC.velvet, 1f to Color(0xFF6A2332), startY = SKY_TOP * u, endY = BACK * u),
-        Offset(left, SKY_TOP * u - 2f), Size(right - left, (BACK - SKY_TOP) * u + 2f),
+        Offset(left, st.backgroundTop - 2f), Size(right - left, BACK * u - st.backgroundTop + 2f),
     )
     clipRect(left, SKY_TOP * u - 2f, right, BACK * u) {
         inScene(st) {
@@ -426,7 +426,7 @@ private fun DrawScope.secretWall(st: Stage, g: AtticStatic, left: Float, right: 
             drawRect(AtC.gold, Offset(atWallEdge(3) * u, 0.565f * u), Size((9.6f - atWallEdge(3)) * u, 0.02f * u))
             drawLine(Ink.line, Offset(atWallEdge(3) * u, 0.565f * u), Offset(9.6f * u, 0.565f * u), strokeWidth = pen.lw * 0.8f)
             drawLine(Ink.line, Offset(atWallEdge(3) * u, 0.585f * u), Offset(9.6f * u, 0.585f * u), strokeWidth = pen.lw * 0.8f)
-            drawRect(g.glow, Offset(atWallEdge(3) * u, SKY_TOP * u), Size(2.2f * u, (BACK - SKY_TOP) * u))
+            drawRect(g.glow, Offset(atWallEdge(3) * u, st.backgroundTop), Size(2.2f * u, BACK * u - st.backgroundTop))
         }
     }
 }
@@ -564,8 +564,8 @@ private fun DrawScope.post(st: Stage, pen: Pen, x: Float, i: Int) {
         2 -> AtC.brassDark
         else -> AtC.goldDark
     }
-    drawRect(Brush.horizontalGradient(0f to col.lighten(0.18f), 1f to col.darken(0.2f), startX = l, endX = l + w), Offset(l, SKY_TOP * u), Size(w, (BACK - SKY_TOP) * u + 2f))
-    drawLine(Ink.line, Offset(l, SKY_TOP * u), Offset(l, BACK * u), strokeWidth = pen.lw)
+    drawRect(Brush.horizontalGradient(0f to col.lighten(0.18f), 1f to col.darken(0.2f), startX = l, endX = l + w), Offset(l, st.backgroundTop), Size(w, BACK * u - st.backgroundTop + 2f))
+    drawLine(Ink.line, Offset(l, st.backgroundTop), Offset(l, BACK * u), strokeWidth = pen.lw)
     drawLine(Ink.line, Offset(l + w, SKY_TOP * u), Offset(l + w, BACK * u), strokeWidth = pen.lw)
     // Nail heads (or brass studs) up the post.
     var y = 0.05f

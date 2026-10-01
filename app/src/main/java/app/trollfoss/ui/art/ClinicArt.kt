@@ -61,7 +61,7 @@ internal fun DrawScope.doctorBack(st: Stage, pen: Pen, styles: List<RoomStyle> =
 
 private fun DrawScope.pastelWall(st: Stage, pen: Pen, back: Float) {
     val u = st.u
-    drawRect(Color(0xFFD9F2EA), Offset(0f, SKY_TOP * u), Size(st.w, (back - SKY_TOP) * u))
+    drawRect(Color(0xFFD9F2EA), Offset(0f, st.backgroundTop), Size(st.w, back * u - st.backgroundTop))
     // Soft polka dots on the upper wall.
     val dots = ArrayList<Offset>(60)
     var row = 0

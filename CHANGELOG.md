@@ -1,5 +1,25 @@
 # Endringslogg
 
+## Ikkje utgjeve
+
+## 1.2.0 – Nettbrett, Vagstaddalen og samanhengande leik
+
+- Nettbrett har ei biletoversikt over romma i Familiehuset, Storhuset og Mitt hus, med direkte romval.
+- Sidepanel held arbeidsområdet, kontrollane og sekken synlege. Kameraet zoomar ikkje inn når panelet opnar seg; måling og møblar gjeld det valde rommet.
+- Større byggjekort og romval på nettbrett, og møbelpanelet har ein tydeleg lukkeknapp. Sekken opnar over verktøya.
+- Drivhus → kjøken: så frø, vatne, hauste bær, bland egg og mjølk på kjøkenbenken og bak med deigen i omnen. Ting kan brukast vidare i andre rom; dei nye benkane og plantekassene verkar også etter flytting til andre hus.
+- Verkstad: sag ein planke til to pinnar, og bruk pinnane og verktøy på arbeidsbenken til å lage ein gitar. Nye oppskrifter og bilettips viser samanhengane.
+- Vanleg leik slepp ekstra biletlagring kvar ramme; kameraknappen fangar berre ramma som skal lagrast.
+- Kameraet på nettbrett er lenger unna: meir av huset og området rundt er synleg.
+- Himmel og veggar strekkjer seg heilt opp på nettbrett også med kameraet lenger tilbake.
+- Mitt hus har no bakke og skugge under heile fasaden, også under baksida som tidlegare såg ut til å sveve.
+- Retta kartkrasj når ein forlèt ein etasje i Mitt hus eller Storhuset. Kartet viser Mitt hus slik barnet har bygd det.
+- Eit 60 prosent breiare kart som kan dragast sidelengs, og eit tydeleg kartikon.
+- «Heime» heiter no «Familiehuset».
+- Vagstaddalen: ei lita laftehytte med dører som kan opnast, ei svingande elv, fiske, bål og tre glimt.
+- Mitt hus har lettare etasjeskifte, ei lettare tretrapp, byggjepanel med namn på vala, og ein eigen målingsknapp som opnar fargevala.
+- Byggjepanelet oppdaterer romval og fargeval straks dei endrar seg, viser heile namna og forklarer når eit rom oppe treng eit rom under.
+
 ## 1.1.0 – Storhuset, Mitt hus og fire årstider
 
 - Storhuset: eit stort hus med fire etasjar og ein hage (Storstova, Andre høgda, Loftet, Kjellaren, Hagen), trapp, heis, rutsjebanar, brannstolpe, luker og hemmelege dører, fem gylne nøklar som opnar tunnelen til Trollhola, mørke etasjar med lommelykt, roboten Rolf og spøkelset Sture. Huset ligg på kartet.

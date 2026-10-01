@@ -774,6 +774,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         f.anim = max(0f, f.anim - dt * 2.5f)
         if (time - f.tapTime > 3.5f) f.taps = 0
         if (place.big) house.step(place, f, dt)
+        if (!place.mine) mine.play.step(f, dt)
         when (f.type) {
             FixtureType.BOAT -> f.bob = sin(time * 1.7f + f.id) * 0.007f
             FixtureType.PINE_TREE -> {
@@ -1053,6 +1054,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         f.tapTime = time
         f.anim = 1f
         val top = f.top
+        if (!place.mine && mine.play.tap(place, f)) return
         if (House.hasPassages(place) && house.tap(place, f, dx, dy)) return
         if (attractions.tap(place, f, dx, dy)) return
         when (f.type) {
@@ -1453,6 +1455,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
      * A thing dropped over a machine. Returns true when the machine took it; otherwise it falls as usual.
      */
     fun dropInto(place: PlaceId, f: Fixture, t: Thing): Boolean {
+        if (!place.mine && mine.play.drop(place, f, t)) return true
         if (place.big && house.drop(place, f, t)) return true
         when (f.type) {
             FixtureType.BLENDER -> {

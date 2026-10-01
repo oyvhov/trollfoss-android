@@ -136,6 +136,7 @@ private fun SecretsPage(vm: TrollfossViewModel) {
         // Fourteen places: five small cards a row, so the whole village fits on a phone.
         for (place in PlaceId.entries) {
             val secrets = Secrets.inPlace(place)
+            if (secrets.isEmpty()) continue
             Column(
                 Modifier
                     .width(138.dp)
@@ -258,7 +259,8 @@ private fun DrawScope.drawRecipe(r: Recipe, known: Boolean) {
         x += slot * (if (i < r.inputs.size - 1) 0.85f else 0.75f)
     }
     // The machine, small.
-    val fixture = Fixture(0, PlaceId.HOME, r.machine, 0f, 0f)
+    val fixturePlace = app.trollfoss.domain.House.floors.firstOrNull { it.specOf(r.machine) != null }?.place ?: PlaceId.HOME
+    val fixture = Fixture(0, fixturePlace, r.machine, 0f, 0f)
     val m = slot * 0.9f / max(fixture.spec.w, fixture.spec.h)
     translate(x + slot * 0.2f, size.height * 0.95f) { drawFixtureBack(fixture, m, Pen(pen.lw * 0.7f)) }
     x += slot * 0.95f

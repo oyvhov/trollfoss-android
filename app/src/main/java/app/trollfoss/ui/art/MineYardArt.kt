@@ -96,6 +96,12 @@ internal fun DrawScope.mineYardBack(st: Stage, pen: Pen) {
     drawForestRow(st, 0.38f, 0.74f, 0.03f, 11, 0.09f, 0.14f, 0.24f, Color(0xFF4B8C6C).atNight(n, 0.65f), Color(0xFF3E7B5C).atNight(n, 0.65f))
     drawPath(ridgePath(st, 0.55f, 0.775f, 0.01f, 19), (if (season == Season.WINTER) Color(0xFFD5E2EF) else Color(0xFF82B862)).atNight(n, 0.55f))
 
+    val grass = grassOf(season).atNight(n, 0.4f)
+    val lawn = Brush.verticalGradient(0f to grass.lighten(0.06f), 1f to grass.darken(0.12f), startY = place_back * u, endY = FRONT_Y * u)
+    // The facade recedes farther than the playable lawn. Extend the plot under its rear corners in the
+    // same ground plane, rather than leaving the side wall hanging over the distant forest.
+    if (h.started) drawHouseGround(st, h, lawn)
+
     // Trees on the far edge of the plot.
     val leaf = leafOf(season)
     val treeY = (place_back + 0.008f) * u
@@ -107,9 +113,8 @@ internal fun DrawScope.mineYardBack(st: Stage, pen: Pen) {
     }
 
     // The lawn.
-    val grass = grassOf(season).atNight(n, 0.4f)
     drawRect(
-        Brush.verticalGradient(0f to grass.lighten(0.06f), 1f to grass.darken(0.12f), startY = place_back * u, endY = FRONT_Y * u),
+        lawn,
         Offset(0f, place_back * u), Size(st.w, (FRONT_Y - place_back) * u),
     )
     val ys = yardStatic.of(u)
@@ -159,6 +164,27 @@ internal fun DrawScope.mineYardBack(st: Stage, pen: Pen) {
 }
 
 private const val place_back = 0.78f
+
+private fun DrawScope.drawHouseGround(st: Stage, h: MineHouse, lawn: Brush) {
+    val u = st.u
+    val k = u * mineFit(h, YARD_BASE)
+    val depth = mineHouseDepth(h) * k
+    val dx = Oblique.DX * depth
+    val rearY = YARD_BASE * u + Oblique.DY * depth
+    val left = st.x(Mine.FACADE_X0)
+    val right = left + mineColumns(h) * Mine.FACADE_MW * k + dx
+    val back = place_back * u
+    val ground = Path().apply {
+        moveTo(left - 0.3f * u, back)
+        quadraticTo(left - 0.2f * u, rearY - 0.025f * u, left + dx - 0.12f * u, rearY - 0.025f * u)
+        lineTo(right + 0.08f * u, rearY - 0.025f * u)
+        cubicTo(right + 0.28f * u, rearY - 0.025f * u, right + 0.33f * u, back, right + 0.55f * u, back)
+        lineTo(right + 0.55f * u, FRONT_Y * u)
+        lineTo(left - 0.3f * u, FRONT_Y * u)
+        close()
+    }
+    drawPath(ground, lawn)
+}
 
 private fun floorStripeStart(st: Stage): Float {
     val a = st.cam - 1f

@@ -43,30 +43,41 @@ object Icons {
 
     val Map: DrawScope.() -> Unit = {
         u { s, pen ->
-            val island = Path().apply {
-                moveTo(10f * s, 70f * s)
-                quadraticTo(22f * s, 40f * s, 50f * s, 38f * s)
-                quadraticTo(80f * s, 40f * s, 90f * s, 70f * s)
-                quadraticTo(50f * s, 86f * s, 10f * s, 70f * s)
-                close()
+            // Three folded panels, a blue river, a dotted route and a red location pin.
+            val paper = Path().apply {
+                moveTo(8f * s, 26f * s); lineTo(35f * s, 18f * s); lineTo(62f * s, 29f * s)
+                lineTo(91f * s, 20f * s); lineTo(91f * s, 79f * s); lineTo(62f * s, 90f * s)
+                lineTo(35f * s, 78f * s); lineTo(8f * s, 88f * s); close()
             }
-            inked(island, T.MintTop, pen)
-            val hill = Path().apply {
-                moveTo(28f * s, 64f * s)
-                lineTo(48f * s, 36f * s)
-                lineTo(66f * s, 64f * s)
-                close()
+            inked(paper, Color(0xFFFFF2CF), pen, shade = false)
+            drawLine(Color(0xFF8BCAC0), Offset(18f * s, 34f * s), Offset(77f * s, 75f * s), 9f * s, StrokeCap.Round)
+            for (x in floatArrayOf(35f, 62f)) drawLine(T.Ink.copy(alpha = 0.4f), Offset(x * s, (if (x == 35f) 22f else 33f) * s), Offset(x * s, (if (x == 35f) 75f else 86f) * s), 2.5f * s)
+            for (k in 0 until 5) drawCircle(T.Ink, 2.5f * s, Offset((20f + k * 8f) * s, (70f - k * 5f) * s))
+            val pin = Path().apply {
+                moveTo(72f * s, 59f * s)
+                cubicTo(65f * s, 49f * s, 52f * s, 39f * s, 56f * s, 25f * s)
+                cubicTo(60f * s, 7f * s, 84f * s, 7f * s, 89f * s, 25f * s)
+                cubicTo(93f * s, 39f * s, 80f * s, 49f * s, 72f * s, 59f * s); close()
             }
-            inked(hill, Color(0xFF7CCBFF), pen)
-            drawLine(T.Ink, Offset(50f * s, 38f * s), Offset(50f * s, 12f * s), strokeWidth = 5f * s, cap = StrokeCap.Round)
-            val flag = Path().apply {
-                moveTo(50f * s, 12f * s)
-                lineTo(74f * s, 20f * s)
-                lineTo(50f * s, 28f * s)
-                close()
-            }
-            inked(flag, T.Berry, pen)
+            inked(pin, T.Berry, pen)
+            inkedCircle(Offset(72f * s, 29f * s), 7f * s, Color.White, pen, shade = false)
         }
+    }
+
+    val Up: DrawScope.() -> Unit = {
+        u { s, pen ->
+            val arrow = Path().apply {
+                moveTo(50f * s, 14f * s); lineTo(16f * s, 48f * s); lineTo(37f * s, 48f * s)
+                lineTo(37f * s, 85f * s); lineTo(63f * s, 85f * s); lineTo(63f * s, 48f * s)
+                lineTo(84f * s, 48f * s); close()
+            }
+            inked(arrow, T.Mint, pen)
+        }
+    }
+    val Down: DrawScope.() -> Unit = {
+        drawContext.transform.rotate(180f, center)
+        Up()
+        drawContext.transform.rotate(-180f, center)
     }
 
     val Sun: DrawScope.() -> Unit = {

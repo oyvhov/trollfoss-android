@@ -38,6 +38,14 @@ internal fun MapPen.drawLandmark(d: DrawScope, g: MapGeo, place: PlaceId) {
     val yf = b.y / h
     if (place == PlaceId.SPACE) return
     val sc = S * depthScale(yf) * landmarkScale(place)
+    if (place == PlaceId.MINE_YARD) {
+        mine?.let { d.drawMapMine(it, b.x, b.y, sc * 1.5f, lw, n, snow) }
+        return
+    }
+    if (place == PlaceId.VAGSTADDALEN) {
+        d.drawMapValley(b.x, b.y, sc, pen)
+        return
+    }
     d.withTransform({
         translate(b.x, b.y)
         scale(sc, sc, Offset.Zero)
@@ -59,7 +67,8 @@ internal fun MapPen.drawLandmark(d: DrawScope, g: MapGeo, place: PlaceId) {
                 "BEACH" -> beach()
                 "MANOR_GROUND" -> manor()
                 "UNDERWATER" -> dive()
-                else -> heileberget((g.cableTop.x - b.x) / sc, (g.cableTop.y - b.y) / sc)
+                "HEILEBERGET" -> heileberget((g.cableTop.x - b.x) / sc, (g.cableTop.y - b.y) / sc)
+                else -> Unit
             }
         }
     }
@@ -74,6 +83,10 @@ internal fun MapPen.drawLandmarkLive(d: DrawScope, g: MapGeo, place: PlaceId, hl
     val b = g.bases[place]!!
     val yf = b.y / h
     val sc = S * depthScale(yf) * landmarkScale(place)
+    if (place == PlaceId.MINE_YARD) {
+        mine?.let { d.drawMapMineSmoke(it, b.x, b.y, sc * 1.5f, (t * 0.4f) % 1f) }
+        return
+    }
     d.withTransform({
         translate(b.x, b.y)
         scale(sc, sc, Offset.Zero)
