@@ -19,6 +19,9 @@ enum class Deed {
     // ---- garden ----
 
     // ---- stories and seasons ----
+
+    // ---- Mitt hus (MineBuilder.kt) ----
+    MI_ROOM, MI_FLOOR, MI_LOOK, MI_PARTY,
 }
 
 /**
@@ -160,6 +163,13 @@ class TaskBook(private val world: World) {
             // ---- garden ----
 
             // ---- stories and seasons ----
+
+            // ---- Mitt hus: five tasks that send the child to the plot (the deeds are recorded for the yard, wherever the work is done).
+            Task("mine_first_room", PlaceId.MINE_YARD, 1, FixtureType.SOFA) { d, _, _, _, _ -> d == Deed.MI_ROOM },
+            Task("mine_three_rooms", PlaceId.MINE_YARD, 3, FixtureType.BED) { d, _, _, _, _ -> d == Deed.MI_ROOM },
+            Task("mine_floor", PlaceId.MINE_YARD, 1, FixtureType.STAIRCASE) { d, _, _, _, _ -> d == Deed.MI_FLOOR },
+            Task("mine_furnish", null, 2, FixtureType.ARMCHAIR) { d, p, _, _, _ -> d == Deed.FURNISH && p.mine },
+            Task("mine_dress", PlaceId.MINE_YARD, 3, FixtureType.MI_MAILBOX) { d, _, _, _, _ -> d == Deed.MI_LOOK },
         )
     }
 }

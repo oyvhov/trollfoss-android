@@ -9,6 +9,7 @@ import app.trollfoss.domain.RoomStyle
 import app.trollfoss.domain.Stored
 import app.trollfoss.domain.Look
 import app.trollfoss.domain.Maalform
+import app.trollfoss.domain.Guest
 import app.trollfoss.domain.Mine
 import app.trollfoss.domain.SeasonChoice
 import app.trollfoss.domain.Mode
@@ -109,6 +110,7 @@ class WorldStore(private val file: File) {
                 put("upperBuilt", h.upperBuilt)
                 put("ground", JSONArray(h.ground.toList()))
                 put("upper", JSONArray(h.upper.toList()))
+                put("guests", JSONArray().apply { h.guests.forEach { g -> put(JSONObject().put("id", g.id).put("place", g.place.name).put("x", g.x.toDouble())) } })
             })
             put("discoveries", JSONArray(world.discoveries.toList()))
             put("styles", JSONObject().apply { world.styles.forEach { (k, s) -> put(k, JSONArray(listOf(s.wall, s.floor))) } })
@@ -250,6 +252,13 @@ class WorldStore(private val file: File) {
                 h.upperBuilt = o.optBoolean("upperBuilt", false)
                 o.optJSONArray("ground")?.let { a -> for (i in 0 until minOf(a.length(), Mine.SLOTS)) h.ground[i] = a.optInt(i, 0) }
                 o.optJSONArray("upper")?.let { a -> for (i in 0 until minOf(a.length(), Mine.SLOTS)) h.upper[i] = a.optInt(i, 0) }
+                o.optJSONArray("guests")?.let { a ->
+                    for (i in 0 until a.length()) {
+                        val g = a.optJSONObject(i) ?: continue
+                        val gp = enumOrNull<PlaceId>(g.optString("place")) ?: continue
+                        h.guests += Guest(g.optInt("id", -1), gp, g.optDouble("x", 1.0).toFloat())
+                    }
+                }
             }
             Mine.sync(world)
             world.discoveries += strings(json.optJSONArray("discoveries"))
@@ -330,6 +339,9 @@ class WorldStore(private val file: File) {
             }
             val known = json.optJSONArray("places")?.let { a -> strings(a).mapNotNull { enumOrNull<PlaceId>(it) }.toSet() }
                 ?: world.bodies.values.mapNotNull { it.place }.toSet()
+            // Guests of a housewarming that was cut short by closing the app go home.
+            Mine.returnGuests(world)
+            Mine.syncFixtures(world)
             WorldFactory.addMissingPlaces(world, known)
             return Saved(world, settings)
         }

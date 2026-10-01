@@ -113,6 +113,11 @@ enum class FixtureType {
     // Home designer catalogue, and tidying up
     RUG, PICTURE, AQUARIUM, BEANBAG, ARMCHAIR, BUNK_BED, TOY_BOX, DESK, FLOWER_POT, TRASH_BIN, ROBOT_VACUUM,
 
+    // Mitt hus (MineRooms.kt): the child's own house. Rooms first, then the yard.
+    MI_FIREPLACE, MI_DINING_TABLE, MI_CHANDELIER, MI_COUNTER, MI_BEDSIDE, MI_BLOCKS, MI_ROCKING_HORSE, MI_BIG_BOOKCASE,
+    MI_GLOBE, MI_SAW_BENCH, MI_LAUNDRY_BASKET, MI_GUITAR, MI_PLANT_BED, MI_HANGING_POT, MI_COAT_RACK,
+    MI_MAILBOX, MI_FENCE, MI_FLOWER_BED, MI_SWING, MI_BIRD_BATH, MI_GNOME, MI_SANDBOX, MI_APPLE_TREE,
+
     // Storhuset, the big house. Ways between floors (shared; specs in [House]):
     STAIRCASE, LIFT, SLIDE, FIRE_POLE, HATCH, LADDER, SECRET_DOOR, DOOR, DUMBWAITER,
 
