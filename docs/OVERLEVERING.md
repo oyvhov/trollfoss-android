@@ -1,5 +1,25 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **OPPDATERING (nyast, 2026-10-01 ca. 15:00): alle ni greinene `house/*` og `claude/gracious-kapitsa-ff5964`
+> (rein tekst i oppdateringsnotatet) er flettet inn i `main`. `main` er grøn: 334 enhetstestar, `lintDebug` og
+> `assembleDebug` går gjennom (commit `644a056`, ikkje pusha, ingen release). Tabellen i §3 under viser
+> greinene slik dei såg ut før flettinga; bruk han som oppslagsverk for kva kvar branch inneheldt.**
+>
+> Fletteproblem som er retta (sjå commit «Merge fixes»): same hjelpenamn i ulike filer (`heartPath`, `Opening`),
+> ei øydelagd Synth-fletting, samanslåtte debug-ekstra (`MainActivity`/`TrollfossViewModel.debug`: sesong, fest,
+> mine, shape, build, cam), duplikate glimt frå union-fletting, `House.hasPassages` omfattar no `place.big` + LAB,
+> og nokre testar som antok gamle tal (kjellaren har eigne figurar; draumehuset-testen).
+>
+> **Det som står att, i rekkjefølgje:** (1) **sjå appen på ein frisk emulator**: telefon-emulatoren var overbelasta
+> og viste «Process system isn't responding», så røyktesten gav berre krasj-fri logg, ingen brukbare bilete. Start
+> emulatoren på nytt og køyr `scripts\Smoke-Houses.ps1` via `Run-Locked.ps1` (ny lagring + alle åtte nye stader;
+> bileta hamnar i `screenshots\smoke\`); sjekk nyspel-starten på tomta, byggjepanelet, kvar etasje dag/natt, trapper,
+> nøklar, kartet og kompakt meny. (2) **Yting:** `adb logcat -s TrollfossPerf` (mål < 12 ms/ramme etter oppvarming;
+> Kjellaren var 2,3 gonger Heime; sjå §3). (3) Auk `MusicPlayer.VERSION` og `SoundFx.VERSION`. (4) `Thumbs.kt`:
+> teikn fixturar med eigen stad (huset sine møblar er «pending»-boksar i miniatyrar). (5) Dokumentasjon/endringslogg/
+> roadmap og `docs/release-v1.1.0.md`. (6) Spør brukaren om utgåve 1.1.0 (kode 2; `docs/RELEASE_WORKFLOW.md`).
+> Ikkje-starta ting: §5. Mitt hus er skrive men aldri sett på ei eining (se «Status» i `docs/BYGG.md`).
+
 Skrive 2026-10-01 av Claude (Sonnet 5.5) fordi bruksgrensa (vekegrensa) var nesten tom. Les dette fyrst,
 deretter `AGENTS.md`, `docs/AI_INSTRUCTIONS.md`, `docs/HUSET.md` og `docs/BYGG.md`. Appen heiter **Trollfoss**
 (Kotlin og Jetpack Compose, `C:\topa`, offentleg repo `oyvhov/trollfoss-android`). Brukaren skriv nynorsk og vil
