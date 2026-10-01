@@ -1,6 +1,13 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
-> **OPPDATERING (nyast, 2026-10-01 ca. 15:00): alle ni greinene `house/*` og `claude/gracious-kapitsa-ff5964`
+> **UTGÅVE: v1.1.0 er publisert (2026-10-01).** Tag `v1.1.0` = commit `f400457`, éin signert APK (2,9 MB, kode 2,
+> SHA-256 `2487c913…6f5e`, sertifikat `de170fe9…`), notat i `docs/release-v1.1.0.md`; stadfesta utan token og med
+> nedlasta hash. CI køyrer på `main`. **Ikkje gjort:** den ekte oppdateringstesten gjennom appen (bygg ei lokal
+> 1.0.0 med `-PtrollfossVersionCode=1 -PtrollfossVersionName=1.0.0`, installer, Kart → tannhjul → reknestykket →
+> Appoppdateringar → Sjekk no → last ned og installer; sjå `docs/RELEASE_WORKFLOW.md` §5). Visuell kontroll på ei
+> frisk emulator (nye spel, Storstova og Loftet er sett og ser bra ut; resten av romma, natt, nettbrett, yting
+> og Mitt hus-bygginga gjenstår) og punkta under «Det som står att» gjeld framleis.
+>> **OPPDATERING (nyast, 2026-10-01 ca. 15:00): alle ni greinene `house/*` og `claude/gracious-kapitsa-ff5964`
 > (rein tekst i oppdateringsnotatet) er flettet inn i `main`. `main` er grøn: 334 enhetstestar, `lintDebug` og
 > `assembleDebug` går gjennom (commit `644a056`, ikkje pusha, ingen release). Tabellen i §3 under viser
 > greinene slik dei såg ut før flettinga; bruk han som oppslagsverk for kva kvar branch inneheldt.**
