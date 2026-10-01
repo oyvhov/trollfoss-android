@@ -136,19 +136,19 @@ internal fun DrawScope.beachBack(st: Stage, pen: Pen) {
 
     val b = beachMemo.of(u)
     inScene(st) {
-        drawPath(b.shelf, Brush.horizontalGradient(listOf(Color(0xFFEBD49E).atNight(n, 0.5f), Color(0xFF8FD6D0).atNight(n, 0.5f), Color(0xFF4FA3DD).atNight(n, 0.5f)), startX = 2.3f * u, endX = 2.74f * u))
+        drawPath(b.shelf, Brush.horizontalGradient(listOf(pen.sandy(Color(0xFFEBD49E)).atNight(n, 0.5f), Color(0xFF8FD6D0).atNight(n, 0.5f), Color(0xFF4FA3DD).atNight(n, 0.5f)), startX = 2.3f * u, endX = 2.74f * u))
         drawPath(
             b.sand,
             Brush.verticalGradient(
-                0f to Color(0xFFE6C48A).atNight(n, 0.45f),
-                0.08f to Color(0xFFF7E4B8).atNight(n, 0.45f),
-                1f to Color(0xFFF0CD8E).atNight(n, 0.45f),
+                0f to pen.sandy(Color(0xFFE6C48A)).atNight(n, 0.45f),
+                0.08f to pen.sandy(Color(0xFFF7E4B8)).atNight(n, 0.45f),
+                1f to pen.sandy(Color(0xFFF0CD8E)).atNight(n, 0.45f),
                 startY = back * u,
                 endY = FRONT_Y * u,
             ),
         )
-        drawPath(b.ripples, Color(0xFFD9B27A).atNight(n, 0.45f), alpha = 0.6f, style = Stroke(pen.lw * 0.8f, cap = StrokeCap.Round))
-        drawPath(b.steps, Color(0xFFD2A86E).atNight(n, 0.45f), alpha = 0.55f)
+        drawPath(b.ripples, pen.sandy(Color(0xFFD9B27A)).atNight(n, 0.45f), alpha = 0.6f, style = Stroke(pen.lw * 0.8f, cap = StrokeCap.Round))
+        drawPath(b.steps, pen.sandy(Color(0xFFD2A86E)).atNight(n, 0.45f), alpha = 0.55f)
         translate(0.006f * u, 0.004f * u) { drawPath(b.towel, Ink.shadow) }
         drawPath(b.towel, Color(0xFF4FB3E8).atNight(n, 0.45f))
         drawPath(b.towelStripes, Color(0xFFFFF4D6).atNight(n, 0.45f))
@@ -164,7 +164,7 @@ internal fun DrawScope.beachBack(st: Stage, pen: Pen) {
         )
     }
     beachDetails(st, pen)
-    drawBase(st, pen, Color(0xFFF3D9A6).atNight(n, 0.45f), Color(0xFFCE9F66).atNight(n, 0.45f))
+    drawBase(st, pen, pen.sandy(Color(0xFFF3D9A6)).atNight(n, 0.45f), Color(0xFFCE9F66).atNight(n, 0.45f))
     drawLine(Color(0xFFE2B77E).atNight(n, 0.45f), Offset(0f, 0.988f * u), Offset(st.w, 0.988f * u), strokeWidth = 0.004f * u)
     drawBaseStones(st, pen, Color(0xFFB9B2C2).atNight(n, 0.45f), 17)
 }
@@ -185,7 +185,7 @@ private fun DrawScope.beachFarShore(st: Stage, pen: Pen) {
         lineTo(lx(-0.1f), (hz + 0.008f) * u)
         close()
     }
-    drawPath(land, Color(0xFF86B585).atNight(n, 0.7f))
+    drawPath(land, pen.farGround(Color(0xFF86B585)).atNight(n, 0.7f))
     val s = 0.042f * u
     val roof = Color(0xFF5B5566)
     val walls = listOf(Color(0xFFF7F4EE), Color(0xFFFFE08A), Color(0xFFA9D3F0))
@@ -552,10 +552,10 @@ internal fun DrawScope.forestBack(st: Stage, pen: Pen) {
         Color(0xFF9DB5D8).atNight(n, 0.75f), Color(0xFF849FC9).atNight(n, 0.75f),
         Color(0xFFEEF3FC).atNight(n, 0.7f), Color(0xFFD3DFF3).atNight(n, 0.7f), 0.35f, 13,
     )
-    drawForestRow(st, 0.2f, 0.6f, 0.04f, 5, 0.045f, 0.06f, 0.11f, Color(0xFF6F9E95).atNight(n, 0.75f), null)
-    drawForestRow(st, 0.38f, 0.7f, 0.03f, 9, 0.085f, 0.15f, 0.26f, Color(0xFF3F7D62).atNight(n, 0.65f), Color(0xFF356B53).atNight(n, 0.65f))
+    drawForestRow(st, 0.2f, 0.6f, 0.04f, 5, 0.045f, 0.06f, 0.11f, pen.farTrees(Color(0xFF6F9E95)).atNight(n, 0.75f), null)
+    drawForestRow(st, 0.38f, 0.7f, 0.03f, 9, 0.085f, 0.15f, 0.26f, pen.farTrees(Color(0xFF3F7D62)).atNight(n, 0.65f), pen.farTrees(Color(0xFF356B53)).atNight(n, 0.65f))
     val mp = 0.55f
-    drawPath(ridgePath(st, mp, 0.755f, 0.012f, 17), Color(0xFF82B862).atNight(n, 0.55f))
+    drawPath(ridgePath(st, mp, 0.755f, 0.012f, 17), pen.farGround(Color(0xFF82B862)).atNight(n, 0.55f))
     val cabinX = 0.3f * st.span(mp)
     val cbx = st.px(cabinX, mp)
     if (cbx > -0.3f * u && cbx < st.w + 0.3f * u) {
@@ -598,10 +598,10 @@ private fun DrawScope.cliffAndFall(st: Stage, pen: Pen) {
         drawPath(cl.body, Brush.horizontalGradient(listOf(rock.lighten(0.12f), rock, rock.darken(0.15f)), startX = 2.5f * u, endX = 3.8f * u))
         drawPath(cl.facets, rock.darken(0.1f))
         drawPath(cl.facets, Ink.line, alpha = 0.3f, style = pen.thin)
-        drawPath(cl.ledges, rock.lighten(0.22f))
+        drawPath(cl.ledges, pen.snowy(rock.lighten(0.22f), 0.92f))
         drawPath(cl.ledges, Ink.line, alpha = 0.55f, style = pen.thin)
         drawPoints(cl.cracks, PointMode.Lines, Ink.line, strokeWidth = pen.lw * 0.8f, cap = StrokeCap.Round, alpha = 0.45f)
-        drawPath(cl.moss, Color(0xFF5E9E4F).atNight(n, 0.5f))
+        drawPath(cl.moss, pen.ground(Color(0xFF5E9E4F)).atNight(n, 0.5f))
         drawPath(cl.moss, Ink.line, alpha = 0.5f, style = pen.thin)
         drawPath(cl.edge, Ink.line, style = pen.stroke)
 
@@ -665,24 +665,24 @@ private fun DrawScope.forestFloor(st: Stage, pen: Pen) {
     val n = pen.night
     val g = forestGround.of(u)
     val back = PlaceId.FOREST.back
-    val fern = Color(0xFF4E9A48).atNight(n, 0.45f)
-    val moss = Color(0xFF7DB85F).atNight(n, 0.45f)
+    val fern = pen.plant(Color(0xFF4E9A48)).atNight(n, 0.45f)
+    val moss = pen.ground(Color(0xFF7DB85F)).atNight(n, 0.45f)
     inScene(st) {
         drawRect(Color(0xFF5E7468).atNight(n, 0.5f), Offset(2.5f * u, 0.95f * u), Size(2.1f * u, 0.03f * u))
         drawPath(g.bed, Color(0xFF8C9A92).atNight(n, 0.5f))
-        drawPath(g.fill, Brush.verticalGradient(0f to moss.darken(0.12f), 0.12f to moss, 1f to Color(0xFF62A04B).atNight(n, 0.45f), startY = back * u, endY = FRONT_Y * u))
-        drawPath(g.patches, Color(0xFF5C9A45).atNight(n, 0.45f), alpha = 0.55f)
-        drawPath(g.trail, Color(0xFFBF9E6C).atNight(n, 0.45f), alpha = 0.85f)
+        drawPath(g.fill, Brush.verticalGradient(0f to moss.darken(0.12f), 0.12f to moss, 1f to pen.ground(Color(0xFF62A04B)).atNight(n, 0.45f), startY = back * u, endY = FRONT_Y * u))
+        drawPath(g.patches, pen.ground(Color(0xFF5C9A45)).atNight(n, 0.45f), alpha = 0.55f)
+        drawPath(g.trail, pen.sandy(Color(0xFFBF9E6C)).atNight(n, 0.45f), alpha = 0.85f)
         drawPath(g.pebbles, Color(0xFFA8A29A).atNight(n, 0.45f))
         drawPath(g.stones, Color(0xFF9A9CA8).atNight(n, 0.45f))
         drawPath(g.stones, Ink.line, style = pen.thin)
-        drawPath(g.tufts, Color(0xFF4F9440).atNight(n, 0.45f))
-        drawPoints(g.flowers, PointMode.Points, Color(0xFFFFF6D8).atNight(n, 0.4f), strokeWidth = 0.008f * u, cap = StrokeCap.Round)
+        drawPath(g.tufts, pen.blade(Color(0xFF4F9440)).atNight(n, 0.45f))
+        if (!pen.winter) drawPoints(g.flowers, PointMode.Points, Color(0xFFFFF6D8).atNight(n, 0.4f), strokeWidth = 0.008f * u, cap = StrokeCap.Round)
         drawPath(g.edge, Ink.line, style = pen.stroke)
         drawPath(g.fronds, Ink.line, style = Stroke(pen.lw * 2.4f, cap = StrokeCap.Round))
         drawPath(g.fronds, fern, style = Stroke(pen.lw * 1.1f, cap = StrokeCap.Round))
         drawPoints(g.leaflets, PointMode.Lines, fern, strokeWidth = pen.lw * 1.6f, cap = StrokeCap.Round)
-        drawPath(g.leaves, Color(0xFF2E7D46).atNight(n, 0.45f))
+        drawPath(g.leaves, pen.plant(Color(0xFF2E7D46)).atNight(n, 0.45f))
         drawPoints(g.berries, PointMode.Points, Color(0xFFD8243A).atNight(n, 0.35f), strokeWidth = 0.014f * u, cap = StrokeCap.Round)
     }
     if (st.sees(2.45f, 2.75f)) {
@@ -698,12 +698,12 @@ private fun DrawScope.forestFloor(st: Stage, pen: Pen) {
             if (k % 2 == 1) tails.add(st.o(bx + sway * 0.97f, tip + 0.012f) to st.o(bx + sway * 0.9f, tip + 0.055f))
         }
         drawPath(stems, Ink.line, style = Stroke(u * 0.0075f, cap = StrokeCap.Round))
-        drawPath(stems, Color(0xFF5E9B45).atNight(n, 0.45f), style = Stroke(u * 0.004f, cap = StrokeCap.Round))
+        drawPath(stems, pen.plant(Color(0xFF5E9B45)).atNight(n, 0.45f), style = Stroke(u * 0.004f, cap = StrokeCap.Round))
         for ((a, b) in tails) capsule(a, b, 0.012f * u, Color(0xFF7A4B2E).atNight(n, 0.4f), pen)
     }
-    val pad = Color(0xFF4FA35A).atNight(n, 0.45f)
+    val pad = pen.plant(Color(0xFF4FA35A)).atNight(n, 0.45f)
     for ((i, px) in floatArrayOf(2.72f, 3.36f).withIndex()) {
-        if (!st.sees(px - 0.06f, px + 0.06f)) continue
+        if (pen.winter || !st.sees(px - 0.06f, px + 0.06f)) continue
         val cx = px + sin(t * 0.4f + i) * 0.004f
         val cy = 0.812f - i * 0.01f
         val leaf = Path().apply { floorDisc(u, st.cam, cx, cy, 0.04f - i * 0.006f, 0.05f, 14) }
@@ -715,14 +715,14 @@ private fun DrawScope.forestFloor(st: Stage, pen: Pen) {
             drawCircle(Pal.sun, 0.004f * u, f)
         }
     }
-    drawBase(st, pen, Color(0xFF6FAE5A).atNight(n, 0.45f), Color(0xFF6B4A34).atNight(n, 0.45f))
+    drawBase(st, pen, pen.ground(Color(0xFF6FAE5A)).atNight(n, 0.45f), Color(0xFF6B4A34).atNight(n, 0.45f))
     inScene(st) { drawPath(g.roots, Color(0xFF4A3222).atNight(n, 0.4f), style = Stroke(pen.lw * 1.2f, cap = StrokeCap.Round)) }
     drawBaseStones(st, pen, Color(0xFF9A9CA8).atNight(n, 0.45f), 23)
 }
 
 private fun DrawScope.fireflies(st: Stage, pen: Pen) {
     val k = ramp((pen.night - 0.35f) / 0.4f)
-    if (k <= 0f) return
+    if (k <= 0f || pen.season == app.trollfoss.domain.Season.AUTUMN || pen.winter) return
     val u = st.u
     val a = ArrayList<Offset>(8)
     val b = ArrayList<Offset>(8)

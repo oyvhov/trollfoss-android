@@ -514,16 +514,18 @@ internal fun DrawScope.drawForestRow(
 
 /** A near pine with ink outline; [snow] lays snow on its tiers. */
 internal fun DrawScope.drawPine(bx: Float, by: Float, w: Float, h: Float, color: Color, pen: Pen, snow: Color? = null) {
+    val body0 = pen.conifer(color)
+    val snow0 = snow ?: if (pen.winter) Pal.snow.atNight(pen.night, 0.45f) else null
     val tw = w * 0.13f
     drawRect(Color(0xFF6E4A33), Offset(bx - tw / 2f, by - h * 0.16f), Size(tw, h * 0.16f))
     drawRect(Ink.line, Offset(bx - tw / 2f, by - h * 0.16f), Size(tw, h * 0.16f), style = pen.thin)
     val by2 = by - h * 0.08f
     val hh = h * 0.92f
     val body = Path().apply { addPine(bx, by2, w, hh) }
-    drawPath(body, color)
-    drawPath(Path().apply { addPineShade(bx, by2, w, hh) }, color.shadow())
+    drawPath(body, body0)
+    drawPath(Path().apply { addPineShade(bx, by2, w, hh) }, body0.shadow())
     drawPath(body, Ink.line, style = pen.stroke)
-    if (snow != null) {
+    if (snow0 != null) {
         val hw = w / 2f
         val s = Path().apply {
             moveTo(bx, by2 - hh * 1.005f)
@@ -537,7 +539,7 @@ internal fun DrawScope.drawPine(bx: Float, by: Float, w: Float, h: Float, color:
             addOval(Rect(bx - hw * 0.9f, by2 - hh * 0.34f, bx - hw * 0.42f, by2 - hh * 0.26f))
             addOval(Rect(bx - hw * 0.3f, by2 - hh * 0.4f, bx + hw * 0.2f, by2 - hh * 0.33f))
         }
-        drawPath(s, snow)
+        drawPath(s, snow0)
         drawPath(s, Ink.line, style = pen.thin)
     }
 }
@@ -569,8 +571,14 @@ internal fun DrawScope.drawBirch(bx: Float, by: Float, h: Float, pen: Pen, leaf:
     }
     drawPoints(marks, PointMode.Lines, Ink.line, strokeWidth = h * 0.012f, cap = StrokeCap.Round)
     inkLine(Offset(bx, by - h * 0.55f), Offset(bx - h * 0.1f, by - h * 0.68f), pen, width = pen.lw * 1.2f)
+    if (pen.winter) {
+        bareCrown(bx, by - h * 0.78f, h * 0.26f, h * 0.3f, pen, salt, night)
+        return
+    }
     val crown = crownPath(bx, by - h * 0.8f, h * 0.24f, h * 0.22f, salt)
-    inked(crown, leaf.atNight(night, 0.5f), pen)
+    val leafC = if (pen.season == app.trollfoss.domain.Season.AUTUMN) recolor(leaf, SeasonPal.birchGold, 0.92f) else pen.foliage(leaf, salt)
+    inked(crown, leafC.atNight(night, 0.5f), pen)
+    if (pen.season == app.trollfoss.domain.Season.SPRING) blossomDots(bx, by - h * 0.8f, h * 0.24f, h * 0.22f, salt, night)
 }
 
 /** A grass tuft of five blades, bottom centre at ([bx], [by]). */
@@ -588,7 +596,7 @@ internal fun tuftPath(bx: Float, by: Float, h: Float, sway: Float): Path = Path(
 
 internal fun DrawScope.drawTuft(bx: Float, by: Float, h: Float, color: Color, pen: Pen, sway: Float) {
     val p = tuftPath(bx, by, h, sway)
-    drawPath(p, color)
+    drawPath(p, pen.blade(color))
     drawPath(p, Ink.line, style = pen.thin)
 }
 
@@ -803,7 +811,7 @@ internal fun DrawScope.drawHouse3d(
 ) {
     val h = w / 2f
     val wl = wall.atNight(night, 0.5f)
-    val rf = roof.atNight(night, 0.5f)
+    val rf = pen.snowy(roof).atNight(night, 0.5f)
     val vx = Oblique.DX * depth
     val vy = Oblique.DY * depth
     val lit = ramp((night - 0.35f) / 0.4f)

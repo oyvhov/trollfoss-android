@@ -476,7 +476,11 @@ private fun DrawScope.fxSky(r: Rect, u: Float, pen: Pen, seed: Float) {
     if (snow) {
         top = lerp(top, Color(0xFFB7C4D6), 0.4f * (1f - night * 0.5f))
         low = lerp(low, Color(0xFFEFF3F8), 0.4f * (1f - night * 0.5f))
+    } else if (pen.winter) {
+        top = lerp(top, Color(0xFFB7C4D6), 0.2f * (1f - night * 0.5f))
+        low = lerp(low, Color(0xFFEFF3F8), 0.2f * (1f - night * 0.5f))
     }
+    val cold = snow || pen.winter
     drawRect(Brush.verticalGradient(listOf(top, low), r.top, r.bottom), r.topLeft, r.size)
     val w = r.width
     val h = r.height
@@ -519,7 +523,13 @@ private fun DrawScope.fxSky(r: Rect, u: Float, pen: Pen, seed: Float) {
             drawArc(cols[k].copy(alpha = 0.6f * pen.rainbow), 180f, 180f, false, Offset(c.x - rr, c.y - rr), Size(rr * 2f, rr * 2f), style = Stroke(w * 0.045f))
         }
     }
-    val far = lerp(Color(0xFF8FA8C8), Color(0xFF2A2F5A), night)
+    val farBase = when (pen.season) {
+        app.trollfoss.domain.Season.AUTUMN -> Color(0xFFB59B78)
+        app.trollfoss.domain.Season.SPRING -> Color(0xFF8FB8B0)
+        app.trollfoss.domain.Season.WINTER -> Color(0xFFB8C6DC)
+        else -> Color(0xFF8FA8C8)
+    }
+    val far = lerp(farBase, Color(0xFF2A2F5A), night)
     val hills = Path().apply {
         moveTo(r.left, r.bottom)
         lineTo(r.left, r.top + h * 0.72f)
@@ -534,7 +544,7 @@ private fun DrawScope.fxSky(r: Rect, u: Float, pen: Pen, seed: Float) {
     drawPath(hills, far)
     drawPath(fxPoly(1f, r.left + w * 0.22f, r.top + h * 0.52f, r.left + w * 0.27f, r.top + h * 0.56f, r.left + w * 0.17f, r.top + h * 0.56f), Color.White.copy(alpha = 0.85f - night * 0.4f))
     drawPath(fxPoly(1f, r.left + w * 0.62f, r.top + h * 0.46f, r.left + w * 0.68f, r.top + h * 0.51f, r.left + w * 0.56f, r.top + h * 0.51f), Color.White.copy(alpha = 0.85f - night * 0.4f))
-    val near = if (snow) lerp(Color(0xFFF1F5FB), Color(0xFF7E86B0), night) else lerp(Color(0xFF7ED06A), Color(0xFF1E3A3A), night)
+    val near = if (cold) lerp(Color(0xFFF1F5FB), Color(0xFF7E86B0), night) else lerp(pen.ground(Color(0xFF7ED06A)), Color(0xFF1E3A3A), night)
     drawPath(blobPath(r.left - w * 0.1f, r.bottom + h * 0.1f, r.left + w * 0.3f, r.top + h * 0.8f, r.left + w * 0.7f, r.top + h * 0.86f, r.right + w * 0.1f, r.top + h * 0.78f, r.right + w * 0.1f, r.bottom + h * 0.1f), near)
     if (rain) {
         for (k in 0 until 8) {
@@ -543,7 +553,21 @@ private fun DrawScope.fxSky(r: Rect, u: Float, pen: Pen, seed: Float) {
             drawLine(Color.White.copy(alpha = 0.6f), Offset(x, y), Offset(x - 0.006f * u, y + 0.018f * u), pen.lw * 0.6f, StrokeCap.Round)
         }
     }
-    if (snow) {
+    if (pen.season != app.trollfoss.domain.Season.SUMMER && !pen.winter) {
+        // A little tree on the near hill: golden in autumn, in blossom in spring.
+        val tx = r.left + w * 0.24f
+        val ty = r.top + h * 0.9f
+        drawLine(Color(0xFF6B4A33).copy(alpha = 1f), Offset(tx, ty), Offset(tx, ty - h * 0.18f), w * 0.035f, StrokeCap.Round)
+        val crown = crownPath(tx, ty - h * 0.3f, w * 0.13f, h * 0.15f, 311)
+        drawPath(crown, lerp(pen.foliage(Color(0xFF6DBB5A), 3), Color(0xFF1E3A3A), night * 0.6f))
+        if (pen.season == app.trollfoss.domain.Season.SPRING) blossomDots(tx, ty - h * 0.3f, w * 0.13f, h * 0.15f, 311, night, count = 9, size = w * 0.03f)
+    } else if (pen.winter) {
+        val tx = r.left + w * 0.24f
+        val ty = r.top + h * 0.9f
+        drawLine(Color(0xFF4A3B3B), Offset(tx, ty), Offset(tx, ty - h * 0.18f), w * 0.03f, StrokeCap.Round)
+        bareCrown(tx, ty - h * 0.16f, w * 0.12f, h * 0.2f, pen, 311, night)
+    }
+    if (cold) {
         for (k in 0 until 10) {
             val y = r.top + fxFrac(t * 0.22f + k * 0.17f) * h
             val x = r.left + fxFrac(k * 0.29f + seed) * w + sin(t * 1.5f + k) * 0.006f * u

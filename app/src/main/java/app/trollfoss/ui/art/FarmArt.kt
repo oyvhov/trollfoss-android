@@ -141,10 +141,10 @@ internal fun DrawScope.farmBack(st: Stage, pen: Pen) {
     }
     drawPath(fjord, Color(0xFF6FB4E6).atNight(n, 0.7f))
     drawLine(Color.White, Offset(st.px(0.45f * span, fp), 0.502f * u), Offset(st.px(0.6f * span, fp), 0.502f * u), strokeWidth = pen.lw * 0.8f, alpha = 0.6f * (1f - n))
-    drawForestRow(st, 0.2f, 0.545f, 0.03f, 43, 0.05f, 0.03f, 0.06f, Color(0xFF5E8F74).atNight(n, 0.72f), null, skip = 0.45f, ground = Color(0xFF8DBF8B).atNight(n, 0.72f))
+    drawForestRow(st, 0.2f, 0.545f, 0.03f, 43, 0.05f, 0.03f, 0.06f, pen.farTrees(Color(0xFF5E8F74)).atNight(n, 0.72f), null, skip = 0.45f, ground = pen.farGround(Color(0xFF8DBF8B)).atNight(n, 0.72f))
     farmFields(st, pen)
     val mp = 0.5f
-    drawPath(ridgePath(st, mp, 0.712f, 0.008f, 47), Color(0xFF93C96F).atNight(n, 0.6f))
+    drawPath(ridgePath(st, mp, 0.712f, 0.008f, 47), pen.farGround(Color(0xFF93C96F)).atNight(n, 0.6f))
     val hx = 0.55f * st.span(mp)
     val hbx = st.px(hx, mp)
     if (hbx > -0.4f * u && hbx < st.w + 0.4f * u) {
@@ -155,7 +155,7 @@ internal fun DrawScope.farmBack(st: Stage, pen: Pen) {
 
     val fs = farmStatic.of(u)
     inScene(st) {
-        drawPath(fs.ground, Brush.verticalGradient(0f to Color(0xFF8CC46A).atNight(n, 0.5f), 1f to Color(0xFF6DAF55).atNight(n, 0.45f), startY = YARD_BACK * u, endY = FRONT_Y * u))
+        drawPath(fs.ground, Brush.verticalGradient(0f to pen.ground(Color(0xFF8CC46A)).atNight(n, 0.5f), 1f to pen.ground(Color(0xFF6DAF55)).atNight(n, 0.45f), startY = YARD_BACK * u, endY = FRONT_Y * u))
         drawPath(fs.groundEdge, Ink.line, alpha = 0.6f, style = pen.thin)
         drawPath(fs.stripes, Color.White, alpha = 0.06f)
         val wood = Color(0xFFC9A27A).atNight(n, 0.45f)
@@ -168,14 +168,14 @@ internal fun DrawScope.farmBack(st: Stage, pen: Pen) {
     if (st.sees(-0.1f, 1.8f)) barn(st, pen, fs)
     if (st.sees(3.25f, 4.1f)) shed(st, pen, fs)
     inScene(st) {
-        val dirt = Color(0xFFCFAA76).atNight(n, 0.45f)
+        val dirt = pen.sandy(Color(0xFFCFAA76)).atNight(n, 0.45f)
         drawPath(fs.tracks, dirt)
         drawPath(fs.ruts, dirt.darken(0.2f), style = Stroke(pen.lw * 1.4f, cap = StrokeCap.Round))
         drawPath(fs.tracks, dirt.darken(0.3f), alpha = 0.6f, style = pen.thin)
-        drawPath(fs.tufts, Color(0xFF55A044).atNight(n, 0.45f))
-        drawPoints(fs.flowers, PointMode.Points, Color(0xFFFFF6D8).atNight(n, 0.4f), strokeWidth = 0.008f * u, cap = StrokeCap.Round)
+        drawPath(fs.tufts, pen.blade(Color(0xFF55A044)).atNight(n, 0.45f))
+        if (!pen.winter) drawPoints(fs.flowers, PointMode.Points, Color(0xFFFFF6D8).atNight(n, 0.4f), strokeWidth = 0.008f * u, cap = StrokeCap.Round)
     }
-    drawBase(st, pen, Color(0xFF6FAE5A).atNight(n, 0.45f), Color(0xFF7A5438).atNight(n, 0.45f))
+    drawBase(st, pen, pen.ground(Color(0xFF6FAE5A)).atNight(n, 0.45f), Color(0xFF7A5438).atNight(n, 0.45f))
     drawBaseStones(st, pen, Color(0xFFA9A3A0).atNight(n, 0.45f), 49)
 }
 
@@ -185,7 +185,7 @@ private fun DrawScope.farmFields(st: Stage, pen: Pen) {
     val n = pen.night
     val p = 0.34f
     val ridge = ridgePath(st, p, 0.64f, 0.06f, 45)
-    drawPath(ridge, Color(0xFFA5D06F).atNight(n, 0.65f))
+    drawPath(ridge, pen.farGround(Color(0xFFA5D06F)).atNight(n, 0.65f))
     val colors = listOf(Color(0xFFEBCB5E), Color(0xFFB5DC76), Color(0xFFB98B5A), Color(0xFF86C267))
     val patches = List(colors.size) { Path() }
     val rows = ArrayList<Offset>(80)
@@ -219,9 +219,9 @@ private fun DrawScope.farmFields(st: Stage, pen: Pen) {
         }
     }
     clipPath(ridge) {
-        for ((k, path) in patches.withIndex()) drawPath(path, colors[k].atNight(n, 0.65f))
+        for ((k, path) in patches.withIndex()) drawPath(path, pen.field(k, colors[k]).atNight(n, 0.65f))
         drawPoints(rows, PointMode.Lines, Color(0xFF6E5A36).atNight(n, 0.65f), strokeWidth = pen.lw * 0.5f, alpha = 0.35f)
-        drawPath(hedges, Color(0xFF4F8A45).atNight(n, 0.65f), style = Stroke(pen.lw * 1.6f, join = StrokeJoin.Round))
+        drawPath(hedges, pen.plant(Color(0xFF4F8A45)).atNight(n, 0.65f), style = Stroke(pen.lw * 1.6f, join = StrokeJoin.Round))
     }
 }
 
@@ -234,8 +234,16 @@ private fun DrawScope.appleTree(st: Stage, pen: Pen, fs: FarmStatic) {
     drawPath(trunk, Color(0xFF8A5A3A).atNight(n, 0.45f))
     drawPath(trunk, Ink.line, style = pen.stroke)
     capsule(st.o(2.625f, 0.55f), st.o(2.54f, 0.47f), 0.012f * u, Color(0xFF8A5A3A).atNight(n, 0.45f), pen)
+    if (pen.winter) {
+        bareCrown(st.x(2.62f), 0.46f * u, 0.22f * u, 0.2f * u, pen, 733, n)
+        return
+    }
     val crown = crownPath(st.x(2.62f), 0.42f * u, 0.2f * u, 0.15f * u, 733)
-    inked(crown, Color(0xFF5DAE4E).atNight(n, 0.45f), pen)
+    inked(crown, pen.foliage(Color(0xFF5DAE4E), 733).atNight(n, 0.45f), pen)
+    if (pen.season == app.trollfoss.domain.Season.SPRING) {
+        blossomDots(st.x(2.62f), 0.42f * u, 0.2f * u, 0.15f * u, 733, n, count = 30, size = 0.02f * u)
+        return
+    }
     val red = Color(0xFFE0463A).atNight(n, 0.35f)
     inScene(st) {
         drawPoints(fs.apples, PointMode.Points, red, strokeWidth = 0.022f * u, cap = StrokeCap.Round)
@@ -250,7 +258,7 @@ private fun DrawScope.barn(st: Stage, pen: Pen, fs: FarmStatic) {
     val n = pen.night
     val red = Color(0xFFB8342B).atNight(n, 0.45f)
     val white = Color(0xFFF7F3EC).atNight(n, 0.45f)
-    val roof = Color(0xFF55505C).atNight(n, 0.45f)
+    val roof = pen.snowy(Color(0xFF55505C)).atNight(n, 0.45f)
     val pts = FloatArray(fs.barnFront.size)
     for (i in fs.barnFront.indices step 2) {
         pts[i] = st.x(fs.barnFront[i])
@@ -363,7 +371,7 @@ private fun DrawScope.shed(st: Stage, pen: Pen, fs: FarmStatic) {
     val roofTop = Path().apply {
         poly(st.x(3.38f), 0.185f * u, st.x(4.06f), 0.185f * u, st.x(4.06f + sx), (0.185f + sy) * u, st.x(3.38f + sx), (0.185f + sy) * u)
     }
-    drawPath(roofTop, Color(0xFF6B6672).atNight(n, 0.45f))
+    drawPath(roofTop, pen.snowy(Color(0xFF6B6672)).atNight(n, 0.45f))
     drawPath(roofTop, Ink.line, style = pen.stroke)
     inkedRound(Rect(st.x(3.38f + sx), (0.185f + sy) * u, st.x(4.06f + sx), (0.205f + sy) * u), 0.003f * u, Color(0xFF55505C).atNight(n, 0.45f), pen, shade = false)
     for (x in floatArrayOf(3.42f + sx, 4.0f + sx)) {

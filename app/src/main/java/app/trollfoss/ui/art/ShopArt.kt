@@ -157,7 +157,7 @@ private fun DrawScope.street(st: Stage, pen: Pen, r: Rect) {
         val top = r.bottom - h
         drawRect(walls[i % walls.size].atNight(n, 0.55f), Offset(x, top), Size(w, h))
         val roof = Path().apply { poly(x - 0.01f * u, top, x + w / 2f, top - 0.06f * u, x + w + 0.01f * u, top) }
-        drawPath(roof, Color(0xFF6B6672).atNight(n, 0.5f))
+        drawPath(roof, pen.snowy(Color(0xFF6B6672)).atNight(n, 0.5f))
         val win = Path()
         for (row in 0 until 2) for (col in 0 until 3) {
             val wx = x + w * (0.12f + col * 0.3f)
@@ -168,12 +168,17 @@ private fun DrawScope.street(st: Stage, pen: Pen, r: Rect) {
     }
     val tx = st.px(0.55f, 0.6f)
     drawLine(Color(0xFF7A5134).atNight(n, 0.5f), Offset(tx, r.bottom), Offset(tx, r.bottom - 0.12f * u), strokeWidth = 0.018f * u)
-    drawPath(crownPath(tx, r.bottom - 0.17f * u, 0.09f * u, 0.08f * u, 953), Color(0xFF6DBB5A).atNight(n, 0.5f))
+    if (pen.winter) {
+        bareCrown(tx, r.bottom - 0.14f * u, 0.09f * u, 0.12f * u, pen, 953, n)
+    } else {
+        drawPath(crownPath(tx, r.bottom - 0.17f * u, 0.09f * u, 0.08f * u, 953), pen.foliage(Color(0xFF6DBB5A), 953).atNight(n, 0.5f))
+        if (pen.season == app.trollfoss.domain.Season.SPRING) blossomDots(tx, r.bottom - 0.17f * u, 0.09f * u, 0.08f * u, 953, n, count = 12, size = 0.012f * u)
+    }
     val lamp = st.px(1.2f, 0.6f)
     drawLine(Color(0xFF55505E), Offset(lamp, r.bottom), Offset(lamp, r.bottom - 0.2f * u), strokeWidth = 0.008f * u)
     drawCircle(Color(0xFFFFE27A), 0.014f * u, Offset(lamp, r.bottom - 0.2f * u), alpha = 0.4f + 0.6f * lit)
     if (lit > 0f) drawCircle(Color(0xFFFFE27A), 0.07f * u, Offset(lamp, r.bottom - 0.2f * u), alpha = 0.3f * lit)
-    drawRect(Color(0xFF9097A3).atNight(n, 0.5f), Offset(r.left, r.bottom - 0.03f * u), Size(r.width, 0.03f * u))
+    drawRect(pen.sandy(Color(0xFF9097A3)).atNight(n, 0.5f), Offset(r.left, r.bottom - 0.03f * u), Size(r.width, 0.03f * u))
 }
 
 private fun DrawScope.shopWindow(st: Stage, pen: Pen, r: Rect, pane: Float) {
