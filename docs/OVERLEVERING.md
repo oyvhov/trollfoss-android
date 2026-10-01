@@ -54,9 +54,9 @@ Kvar ligg som git-branch `house/<namn>` og som worktree `C:\trollfoss-wt\<namn>`
 | `house/stova` | Storstova (59 møblar, 6 rom, Sofie-nøkkel, 6 glimt, 5 oppdrag, 17 lydar, 41 `GR_`-typar) | ferdig, `main` flettet inn, testar grøne; ikkje sett om natta/tablet |
 | `house/oppe` | Andre høgda (55 møblar, 6 rom, leiketog, dokkehus, ballbasseng, garderobe, nøkkel i badet, 3 glimt, 4 oppdrag) | ferdig, 111 testar og lint grøne; balkong og natt aldri sett |
 | `house/hage` | Hagen (40 møblar, dam med ekte vatn, frosk-kor, drivhus, hagenissar, nøkkel via kompost, 6 glimt, 4 oppdrag) | ferdig, 120 testar og lint grøne; tretopphytta og froskekoret ikkje sett |
-| `house/loft` | Loftet (Sture, drakt-kista, tårn, hemmeleg rom, mørke) | committa og `main` flettet inn; rapport ikkje lesen — sjekk |
+| `house/loft` | Loftet (35 møblar, 4 rom, Sture-åtferd og gøym-og-leit, drakt-kista, grammofon, tårn, hemmeleg rom, nøkkel hos Sture, 7 glimt, 5 oppdrag, 8 `AT_`-lydar) | ferdig, `main` flettet inn, 34 testar + alt grønt; ingen bilete av mørke/lommelykt, `AT_`-møblar er pending-boksar i panel-miniatyrar |
 | `house/kjeller` | Kjellaren (vaskerom, fyrrom, basseng, festrom, tunnel + Trollhola-dør) | art og tunnel committa; rapport ikkje lesen — sjekk |
-| `house/figurar` | Roboten Rolf og spøkelset Sture (art, åtferd) | committa; rapport ikkje lesen — sjekk |
+| `house/figurar` | Roboten Rolf og spøkelset Sture: art (`PersonArtRolf/Sture/House/Xray.kt`), åtferd (`domain/Figurar.kt`), 12 `FG_`-lydar, `Fx.FIGURAR`, `Give.SNIFF`, debug `FigurarSheetActivity` | ferdig, 17 testar + lint grøne; **rører `Engine.kt`, `Sim.kt`, `Life.kt`, `Anatomy.kt` (flett tidleg og sjekk konfliktar)**; ikkje merga `main` inn |
 | `house/kart` | Storhuset på kartet (`ui/art/MapManor.kt`, tunnel-sti via `manor_tunnel`, spot (0.76, 0.355)) | ferdig, `main` flettet inn, testar grøne |
 | `house/sesong` | Sesongar og høgtider i dei gamle stadene (`SeasonArt*.kt`, debug-ekstra `--es season/festival`) | committa, 4 commitar; kan vere uferdig |
 | `house/bygg` | **Mitt hus**: byggjemotor, 10 romtypar, 23 `MI_`-møblar, fasade/tomt/rom-teikning, byggjepanel, effektar, demo, `MineTest`, kartlandemerke (`MapMine.kt`) | mykje skrive (5 700 liner), **aldri sett på ei eining**; sjå statusdelen i `docs/BYGG.md` på greina |
