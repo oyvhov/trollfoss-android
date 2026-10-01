@@ -369,11 +369,17 @@ internal fun DrawScope.twigVase(base: Offset, h: Float, pen: Pen) {
         for (i in twigs.indices step 2) {
             val tip = Offset(twigs[i], twigs[i + 1])
             drawLine(SeasonPal.twig, Offset(0f, -0.4f), tip, strokeWidth = 0.025f, cap = StrokeCap.Round)
-            // A feather: a short fat stroke near the tip with a darker quill.
-            val fe = Offset(tip.x * 0.96f, tip.y + 0.045f)
-            drawLine(Ink.line, fe, Offset(fe.x + 0.02f, fe.y + 0.1f), strokeWidth = 0.11f + lp.lw * 2f, cap = StrokeCap.Round)
-            drawLine(cols[k % cols.size], fe, Offset(fe.x + 0.02f, fe.y + 0.1f), strokeWidth = 0.11f, cap = StrokeCap.Round)
-            drawLine(cols[k % cols.size].darken(0.25f), Offset(fe.x, fe.y - 0.02f), Offset(fe.x + 0.02f, fe.y + 0.1f), strokeWidth = 0.014f)
+            // A feather: a pointed leaf of colour with a darker quill, just below the tip.
+            val fe = Offset(tip.x * 0.96f, tip.y + 0.03f)
+            val feather = Path().apply {
+                moveTo(fe.x, fe.y)
+                quadraticTo(fe.x + 0.07f, fe.y + 0.04f, fe.x + 0.03f, fe.y + 0.17f)
+                quadraticTo(fe.x - 0.05f, fe.y + 0.1f, fe.x, fe.y)
+                close()
+            }
+            drawPath(feather, Ink.line, style = Stroke(lp.lw * 2f, join = StrokeJoin.Round))
+            drawPath(feather, cols[k % cols.size])
+            drawLine(cols[k % cols.size].darken(0.3f), fe, Offset(fe.x + 0.03f, fe.y + 0.16f), strokeWidth = 0.012f, cap = StrokeCap.Round)
             k++
         }
         val vase = Path().apply {

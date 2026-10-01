@@ -134,18 +134,18 @@ private val easter: Map<PlaceId, Feast> = mapOf(
     PlaceId.HOME to Feast(
         back = listOf(
             bunting(-0.3f, 0.04f, 1.2f, 0.04f, 0.04f, 10), bunting(1.2f, 0.04f, 2.7f, 0.04f, 0.04f, 10), bunting(2.7f, 0.04f, 4.4f, 0.04f, 0.04f, 11),
-            vase(1.02f, 0.84f, 0.2f), egg(0.84f, 0.84f, 0.06f, 0),
-            eggs(0.2f, 0.14f, 0.9f, 0.14f, 0.05f, 4),
+            eggs(0.3f, 0.1f, 1.4f, 0.1f, 0.05f, 4), eggs(2.5f, 0.1f, 3.1f, 0.1f, 0.04f, 3), eggs(3.5f, 0.1f, 4.1f, 0.1f, 0.04f, 3),
+            vase(0.5f, 0.955f, 0.17f), egg(0.75f, 0.955f, 0.06f, 0), egg(1.95f, 0.96f, 0.06f, 2),
         ),
     ),
     PlaceId.CAFE to Feast(
         back = listOf(
-            vase(2.02f, 0.84f, 0.22f), egg(1.9f, 0.84f, 0.06f, 1), egg(2.14f, 0.84f, 0.06f, 2),
-            eggs(1.8f, 0.14f, 2.9f, 0.14f, 0.06f, 5),
+            eggs(1.75f, 0.1f, 2.9f, 0.1f, 0.06f, 5), vase(1.25f, 0.955f, 0.18f),
+            egg(0.5f, 0.955f, 0.06f, 1), egg(0.62f, 0.955f, 0.05f, 3),
         ),
     ),
     PlaceId.SALON to Feast(
-        back = listOf(bunting(-0.3f, 0.04f, 1.5f, 0.04f, 0.05f, 12), bunting(1.5f, 0.04f, 3.3f, 0.04f, 0.05f, 12), vase(1.9f, 0.84f, 0.2f)),
+        back = listOf(bunting(-0.3f, 0.04f, 1.5f, 0.04f, 0.05f, 12), bunting(1.5f, 0.04f, 3.3f, 0.04f, 0.05f, 12), vase(1.6f, 0.955f, 0.17f), egg(0.2f, 0.955f, 0.06f, 4)),
     ),
     PlaceId.SHOP to Feast(
         back = listOf(
@@ -154,7 +154,7 @@ private val easter: Map<PlaceId, Feast> = mapOf(
         ),
     ),
     PlaceId.DOCTOR to Feast(
-        back = listOf(bunting(-0.3f, 0.04f, 1.5f, 0.04f, 0.05f, 12), bunting(1.5f, 0.04f, 3.3f, 0.04f, 0.05f, 12), vase(2.2f, 0.84f, 0.18f)),
+        back = listOf(bunting(-0.3f, 0.04f, 1.5f, 0.04f, 0.05f, 12), bunting(1.5f, 0.04f, 3.3f, 0.04f, 0.05f, 12), vase(1.15f, 0.955f, 0.16f), egg(2.0f, 0.955f, 0.06f, 0)),
     ),
     PlaceId.STAGE to Feast(
         back = listOf(bunting(-0.3f, 0.05f, 1.6f, 0.05f, 0.06f, 12), bunting(1.6f, 0.05f, 3.5f, 0.05f, 0.06f, 12), egg(2.4f, 0.85f, 0.07f, 2)),
@@ -204,55 +204,55 @@ private val pumpkins: Map<PlaceId, Feast> = mapOf(
     PlaceId.HOME to Feast(
         back = listOf(
             web(0.0f, 0.03f, 0.2f, 1f), web(4.2f, 0.03f, 0.2f, -1f),
-            bat(0.7f, 0.03f, 0.1f, 0.06f, 0f), bat(2.9f, 0.03f, 0.13f, 0.06f, 2f), ghost(1.55f, 0.03f, 0.12f, 0.12f, 1f),
-            pumpkin(0.78f, 0.86f, 0.08f, true), pumpkin(2.38f, 0.84f, 0.07f, false),
+            bat(0.7f, 0.03f, 0.1f, 0.06f, 0f), bat(2.9f, 0.03f, 0.13f, 0.06f, 2f), ghost(1.5f, 0.03f, 0.12f, 0.12f, 1f),
+            pumpkin(0.5f, 0.955f, 0.1f, true), pumpkin(2.0f, 0.96f, 0.08f, false),
         ),
     ),
     PlaceId.CAFE to Feast(
         back = listOf(
             web(0.0f, 0.03f, 0.2f, 1f), web(3.0f, 0.03f, 0.2f, -1f),
-            bat(1.1f, 0.03f, 0.12f, 0.06f, 1f), ghost(2.0f, 0.03f, 0.1f, 0.12f, 2f), lantern(2.6f, 0.03f, 0.1f, 0f),
-            pumpkin(1.95f, 0.85f, 0.08f, true),
+            bat(1.1f, 0.1f, 0.1f, 0.06f, 1f), ghost(2.0f, 0.1f, 0.1f, 0.12f, 2f), lantern(2.65f, 0.1f, 0.1f, 0f),
+            pumpkin(0.55f, 0.955f, 0.1f, true), pumpkin(1.3f, 0.96f, 0.08f, false),
         ),
     ),
     PlaceId.SALON to Feast(
-        back = listOf(web(0.0f, 0.03f, 0.2f, 1f), web(2.8f, 0.03f, 0.2f, -1f), bat(1.3f, 0.03f, 0.1f, 0.06f, 0f), ghost(2.1f, 0.03f, 0.12f, 0.12f, 3f), pumpkin(0.5f, 0.85f, 0.08f, true)),
+        back = listOf(web(0.0f, 0.03f, 0.2f, 1f), web(2.8f, 0.03f, 0.2f, -1f), bat(1.3f, 0.03f, 0.1f, 0.06f, 0f), ghost(2.1f, 0.03f, 0.12f, 0.12f, 3f), pumpkin(1.3f, 0.955f, 0.1f, true), pumpkin(2.0f, 0.96f, 0.08f, false)),
     ),
     PlaceId.SHOP to Feast(
-        back = listOf(web(0.0f, 0.03f, 0.2f, 1f), web(3.4f, 0.03f, 0.2f, -1f), ghost(1.6f, 0.08f, 0.12f, 0.12f, 1f), bat(2.6f, 0.08f, 0.1f, 0.06f, 2f), pumpkin(1.25f, 0.85f, 0.08f, true)),
+        back = listOf(web(0.0f, 0.03f, 0.2f, 1f), web(3.4f, 0.03f, 0.2f, -1f), ghost(1.6f, 0.08f, 0.12f, 0.12f, 1f), bat(2.6f, 0.08f, 0.1f, 0.06f, 2f), pumpkin(2.2f, 0.955f, 0.1f, true), pumpkin(0.9f, 0.96f, 0.08f, false)),
     ),
     PlaceId.DOCTOR to Feast(
-        back = listOf(web(0.0f, 0.03f, 0.2f, 1f), web(3.0f, 0.03f, 0.2f, -1f), ghost(2.3f, 0.03f, 0.1f, 0.12f, 1f), bat(0.9f, 0.03f, 0.1f, 0.06f, 2f), pumpkin(1.5f, 0.85f, 0.07f, true)),
+        back = listOf(web(0.0f, 0.03f, 0.2f, 1f), web(3.0f, 0.03f, 0.2f, -1f), ghost(2.3f, 0.03f, 0.1f, 0.12f, 1f), bat(0.9f, 0.03f, 0.1f, 0.06f, 2f), pumpkin(1.25f, 0.955f, 0.1f, true), pumpkin(2.0f, 0.96f, 0.08f, false)),
     ),
     PlaceId.STAGE to Feast(
-        back = listOf(web(0.0f, 0.03f, 0.2f, 1f), web(3.2f, 0.03f, 0.2f, -1f), bat(1.0f, 0.04f, 0.12f, 0.07f, 0f), bat(2.4f, 0.04f, 0.1f, 0.06f, 2f), pumpkin(2.5f, 0.86f, 0.08f, true)),
+        back = listOf(web(0.0f, 0.03f, 0.2f, 1f), web(3.2f, 0.03f, 0.2f, -1f), bat(1.0f, 0.04f, 0.12f, 0.07f, 0f), bat(2.4f, 0.04f, 0.1f, 0.06f, 2f), pumpkin(1.5f, 0.96f, 0.1f, true), pumpkin(0.5f, 0.96f, 0.08f, false)),
     ),
     PlaceId.LAB to Feast(
-        back = listOf(web(0.0f, 0.03f, 0.2f, 1f), web(2.8f, 0.03f, 0.2f, -1f), bat(1.2f, 0.03f, 0.12f, 0.06f, 1f), ghost(2.4f, 0.03f, 0.1f, 0.12f, 2f), pumpkin(0.5f, 0.86f, 0.08f, true)),
+        back = listOf(web(0.0f, 0.03f, 0.2f, 1f), web(2.8f, 0.03f, 0.2f, -1f), bat(1.2f, 0.03f, 0.12f, 0.06f, 1f), ghost(2.4f, 0.03f, 0.1f, 0.12f, 2f), pumpkin(0.6f, 0.96f, 0.1f, true), pumpkin(1.3f, 0.96f, 0.08f, false)),
     ),
     PlaceId.SPACE to Feast(
-        back = listOf(web(0.0f, 0.03f, 0.2f, 1f), web(3.6f, 0.03f, 0.2f, -1f), ghost(1.5f, 0.04f, 0.14f, 0.12f, 1f), bat(2.7f, 0.04f, 0.1f, 0.06f, 2f), pumpkin(1.2f, 0.86f, 0.07f, true)),
+        back = listOf(web(0.0f, 0.03f, 0.2f, 1f), web(3.6f, 0.03f, 0.2f, -1f), ghost(1.5f, 0.04f, 0.14f, 0.12f, 1f), bat(2.7f, 0.04f, 0.1f, 0.06f, 2f), pumpkin(0.75f, 0.96f, 0.1f, true), pumpkin(2.4f, 0.96f, 0.08f, false)),
     ),
     PlaceId.UNDERWATER to Feast(
         back = listOf(pumpkin(1.0f, 0.93f, 0.08f, true), pumpkin(3.0f, 0.93f, 0.08f, true), ghost(2.0f, 0.1f, 0.2f, 0.12f, 1f)),
     ),
     PlaceId.FOREST to Feast(
-        back = listOf(pumpkin(0.62f, 0.85f, 0.08f, true), pumpkin(1.22f, 0.9f, 0.06f, false), pumpkin(2.12f, 0.9f, 0.08f, true), lantern(1.1f, 0.2f, 0.1f, 0f), lantern(2.0f, 0.26f, 0.1f, 2f)),
+        back = listOf(pumpkin(0.62f, 0.96f, 0.1f, true), pumpkin(1.05f, 0.96f, 0.08f, false), pumpkin(2.05f, 0.955f, 0.1f, true), lantern(1.1f, 0.2f, 0.1f, 0f), lantern(2.0f, 0.26f, 0.1f, 2f)),
     ),
     PlaceId.BEACH to Feast(
-        back = listOf(pumpkin(0.7f, 0.87f, 0.08f, true), pumpkin(1.5f, 0.9f, 0.07f, false), pumpkin(1.9f, 0.88f, 0.08f, true)),
+        back = listOf(pumpkin(0.7f, 0.96f, 0.1f, true), pumpkin(1.5f, 0.96f, 0.08f, false), pumpkin(1.9f, 0.96f, 0.1f, true)),
     ),
     PlaceId.MOUNTAIN to Feast(
-        back = listOf(pumpkin(0.5f, 0.88f, 0.08f, true), pumpkin(2.0f, 0.9f, 0.07f, false), pumpkin(3.4f, 0.88f, 0.08f, true)),
+        back = listOf(pumpkin(0.5f, 0.96f, 0.1f, true), pumpkin(1.5f, 0.96f, 0.08f, false), pumpkin(3.3f, 0.96f, 0.1f, true)),
     ),
     PlaceId.FARM to Feast(
-        back = listOf(pumpkin(1.9f, 0.84f, 0.08f, true), pumpkin(3.0f, 0.86f, 0.08f, true), pumpkin(3.3f, 0.88f, 0.06f, false), ghost(2.0f, 0.1f, 0.2f, 0.12f, 1f), lantern(0.6f, 0.3f, 0.08f, 1f)),
+        back = listOf(pumpkin(1.9f, 0.955f, 0.1f, true), pumpkin(3.0f, 0.955f, 0.1f, true), pumpkin(3.3f, 0.96f, 0.08f, false), ghost(2.0f, 0.1f, 0.2f, 0.12f, 1f), lantern(0.6f, 0.3f, 0.08f, 1f)),
     ),
     PlaceId.TIVOLI to Feast(
-        back = listOf(pumpkin(1.3f, 0.88f, 0.08f, true), pumpkin(2.0f, 0.9f, 0.08f, true), bat(1.0f, 0.1f, 0.18f, 0.07f, 0f), bat(2.7f, 0.1f, 0.2f, 0.07f, 2f), ghost(1.9f, 0.1f, 0.2f, 0.13f, 1f)),
+        back = listOf(pumpkin(1.3f, 0.96f, 0.1f, true), pumpkin(2.0f, 0.96f, 0.1f, true), bat(1.0f, 0.1f, 0.18f, 0.07f, 0f), bat(2.7f, 0.1f, 0.2f, 0.07f, 2f), ghost(1.9f, 0.1f, 0.2f, 0.13f, 1f)),
     ),
     PlaceId.HEILEBERGET to Feast(
-        back = listOf(pumpkin(1.3f, 0.88f, 0.08f, true), pumpkin(2.6f, 0.9f, 0.08f, true), pumpkin(5.4f, 0.9f, 0.08f, true), lantern(1.6f, 0.4f, 0.1f, 0f)),
+        back = listOf(pumpkin(1.3f, 0.96f, 0.1f, true), pumpkin(2.6f, 0.96f, 0.1f, true), pumpkin(5.4f, 0.96f, 0.1f, true), lantern(1.6f, 0.4f, 0.1f, 0f)),
     ),
 )
 
@@ -293,15 +293,15 @@ private fun DrawScope.drawDecos(st: Stage, pen: Pen, list: List<D>) {
             K.STAR -> adventStar(c, d.s * u, pen, d.a * u)
             K.STRAND -> lightStrand(c, st.o(d.x2, d.y2), d.a * u, d.n, 0.007f * u, pen)
             K.SWAGS -> swags(st, pen, d)
-            K.EGG -> egg(c, d.s * u, pen, d.n)
+            K.EGG -> egg(c, d.s * u * 1.25f, pen, d.n)
             K.TULIP -> tulip(c, d.s * u, pen, d.n, sway = 0.03f * kotlin.math.sin(pen.t * 1.2f + d.x * 5f))
             K.BUNTING -> bunting(c, st.o(d.x2, d.y2), d.a * u, d.n, d.s * u, pen)
             K.EGGS -> eggGarland(c, st.o(d.x2, d.y2), d.a * u, d.n, d.s * u, pen)
             K.VASE -> twigVase(c, d.s * u, pen)
-            K.PUMPKIN -> pumpkin(c, d.s * u, pen, d.n == 1, 0f, pen.night)
+            K.PUMPKIN -> pumpkin(c, d.s * u * 1.25f, pen, d.n == 1, 0f, pen.night)
             K.LANTERN -> lantern(c, d.s * u, pen, d.a)
-            K.BAT -> bat(c, d.y2 * u, d.s * u, pen, d.a)
-            K.GHOST -> ghost(c, d.y2 * u, d.s * u, pen, d.a)
+            K.BAT -> bat(c, d.y2 * u, d.s * u * 1.3f, pen, d.a)
+            K.GHOST -> ghost(c, d.y2 * u, d.s * u * 1.3f, pen, d.a)
             K.WEB -> cobweb(c, d.s * u, d.a, pen)
             K.PINE -> pineLights(st, pen, d)
             K.ROOF -> roofLights(st, pen, d)
