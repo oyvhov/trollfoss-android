@@ -86,6 +86,8 @@ internal class CellarTunnel(private val c: CellarCtx) : CellarPart {
                 // The door shows the keys: a lock for each one found, all lit when the tunnel is open.
                 f.count = HouseKeys.found(c.world)
                 f.on = unlocked()
+                // A door left open by a ride that was cut short (a saved game) shuts again.
+                if (f.mode == 1 && (c.fixture(CellarIx.MINE_CART)?.timer ?: 0f) <= 0f) f.mode = 0
             }
             FixtureType.CE_MINE_CART -> ride(f, dt)
             else -> Unit
