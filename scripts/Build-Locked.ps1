@@ -32,7 +32,8 @@ if (-not $got) {
     exit 2
 }
 try {
-    $gradleArgs = @('--no-daemon', '-Pkotlin.compiler.execution.strategy=in-process', '--console=plain')
+    # One shared daemon, reused by every build (the lock makes sure only one runs at a time).
+    $gradleArgs = @('--console=plain')
     if (-not $Plain) { $gradleArgs += '-q' }
     $gradleArgs += $Tasks
     if ($Suffix) { $gradleArgs += "-PtrollfossIdSuffix=$Suffix" }

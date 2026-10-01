@@ -282,12 +282,12 @@ etasjefilene er alt ferdig). Må du endre noko i dei: gjer det minst mogleg, og 
   Ikkje push, ikkje opprett release og rør aldri `.signing/` eller `signing.properties`. Lag **aldri** ny
   signeringsnøkkel.
 - **Bygg alltid med låsen** (maskina har lite ledig minne og fleire agentar bygger samtidig; skriptet tek
-  éin sperre for heile maskina og køyrer éi bygging om gongen, utan lingrande Gradle-daemon). Frå worktreen din:
+  éin sperre for heile maskina og køyrer éi bygging om gongen med ein delt Gradle-daemon). Frå worktreen din:
   ```powershell
   powershell -NoProfile -ExecutionPolicy Bypass -File C:\topa\scripts\Build-Locked.ps1 -Tasks ':app:testDebugUnitTest',':app:lintDebug',':app:assembleDebug' -Suffix .<namn>
   ```
   Berre `-Tasks ':app:compileDebugKotlin'` er raskast for sjekk av kode. Pakkenamnet blir `app.trollfoss.<namn>`,
-  så du overskriv ingen andre. Køyr aldri `gradlew` direkte og start ingen eigne Gradle-daemonar.
+  så du overskriv ingen andre. Køyr aldri `gradlew` direkte.
 - **Emulator**: berre `emulator-5554` (telefon, `C:\Android\sdk\platform-tools\adb.exe`), og alltid med
   `Run-Locked`, som sørgjer for at éin agent om gongen har skjermen. Lag eit lite `.ps1`-skript som i **éi**
   køyring installerer, startar, ventar og tek skjermbilete, og køyr det slik:
