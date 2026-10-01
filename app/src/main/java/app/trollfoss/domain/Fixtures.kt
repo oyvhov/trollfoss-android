@@ -120,6 +120,10 @@ enum class FixtureType {
     // ---- Storhuset ground floor (HouseGround.kt) ----
 
     // ---- Storhuset upper floor (HouseUpper.kt) ----
+    UP_PORTRAIT, UP_WINDOW, UP_WINDOW_SEAT, UP_TOY_TRAIN, UP_BLOCKS, UP_DOLLHOUSE, UP_PUPPET_THEATER, UP_NIGHT_LAMP,
+    UP_POSTER, UP_MOBILE, UP_BALL_PIT, UP_CLIMBING_WALL, UP_TRAMPOLINE, UP_EASEL, UP_KARAOKE, UP_FORT,
+    UP_SHOWER, UP_BATH_MIRROR, UP_TOWELS, UP_WARDROBE, UP_VANITY, UP_JEWEL_BOX, UP_ROCKING_CHAIR,
+    UP_BIRD_FEEDER, UP_HANGING_CHAIR, UP_RAILING,
 
     // ---- Storhuset attic (HouseAttic.kt) ----
 

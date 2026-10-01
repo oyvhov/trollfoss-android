@@ -11,6 +11,7 @@ enum class Deed {
     // ---- ground floor ----
 
     // ---- upper floor ----
+    UP_TRAIN, UP_KNOCK, UP_SPLAT, UP_DRESS,
 
     // ---- attic ----
 
@@ -152,6 +153,10 @@ class TaskBook(private val world: World) {
             // ---- ground floor ----
 
             // ---- upper floor ----
+            Task("up_train", PlaceId.MANOR_UPPER, 1, FixtureType.UP_TOY_TRAIN, match = deed(Deed.UP_TRAIN)),
+            Task("up_blocks", PlaceId.MANOR_UPPER, 1, FixtureType.UP_BLOCKS, ThingType.UP_BLOCK, match = deed(Deed.UP_KNOCK)),
+            Task("up_paint", PlaceId.MANOR_UPPER, 3, FixtureType.UP_EASEL, ThingType.UP_PAINTBRUSH, match = deed(Deed.UP_SPLAT)),
+            Task("up_dress", PlaceId.MANOR_UPPER, 1, FixtureType.UP_WARDROBE, match = deed(Deed.UP_DRESS)),
 
             // ---- attic ----
 
