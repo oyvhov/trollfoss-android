@@ -1,0 +1,58 @@
+Trollfoss – Proprietary License (All Rights Reserved)
+
+Copyright (c) 2026 oyvhov. All rights reserved.
+
+This repository is public so that people can read it, install the app and report problems. It is NOT
+open source. Nothing here is released under an open-source or Creative Commons licence.
+
+1. What belongs to the author
+   All source code, drawings (all graphics are drawn in code), music and sound synthesis, texts, names
+   and characters (for example "Trollfoss", "Rumle", "Heileberget"), the logo, the banner and every
+   other file in this repository are the intellectual property of oyvhov.
+
+2. What you may do without asking
+   a) Read the source code and other files on GitHub.
+   b) Install and use the official, signed Trollfoss APK from the Releases page on your own devices
+      for personal, non-commercial use, for example with your own children.
+   c) Quote small excerpts for review, criticism, teaching or news, with a link to this repository and
+      credit, to the extent the law allows quotation.
+   d) Use the GitHub features that GitHub's Terms of Service give every user of a public repository
+      (viewing and forking on GitHub for the purpose of viewing, and proposing changes).
+
+3. What you may NOT do without written permission from the author
+   a) Copy, reproduce, republish, host, distribute, sell, rent, lend or sublicense the code, the app,
+      the APK or any part of the graphics, music, sounds, texts, names or characters.
+   b) Modify the code or the app, make derivative works, or build, sign or distribute your own versions,
+      including "re-skins", ports and rebuilt APKs.
+   c) Use the code, graphics, music, sounds, texts, names, characters, logo or the name "Trollfoss" in
+      another app, game, product, website, video, book or any commercial or public work.
+   d) Use anything in this repository to train, fine-tune or evaluate machine-learning or AI models, or
+      collect it into datasets.
+   e) Remove or hide this notice or the copyright notices.
+
+4. Permission
+   To ask for permission, open an issue in this repository or contact the author through the GitHub
+   profile github.com/oyvhov. Permission is only valid if it is written and comes from the author.
+
+5. Contributions
+   If you send a change to this repository, you give the author the right to use it in Trollfoss without
+   restriction and without payment, and you promise that you have the right to send it.
+
+6. Third-party components
+   Trollfoss uses open-source libraries (Kotlin, AndroidX and Jetpack Compose, under the Apache License
+   2.0). They stay under their own licences. This licence does not apply to them.
+
+7. No warranty
+   The software is provided "as is", without warranty of any kind. The author is not liable for any
+   damage that follows from using it, to the extent the law allows.
+
+8. Ending of permission
+   If you break these terms, the permissions in section 2 end immediately.
+
+---
+
+Kort på nynorsk (den engelske teksten over gjeld):
+Trollfoss er ikkje open kjeldekode. Du kan lese koden, installere appen og bruke han privat med barna
+dine. Du kan ikkje kopiere, endre, dele vidare, selje eller bruke kode, bilete, musikk, namn eller figurar
+i noko anna, og ikkje bruke dei til å trene KI, utan skriftleg løyve frå oyvhov. Spør gjennom ei sak
+(issue) i repoet eller via github.com/oyvhov.

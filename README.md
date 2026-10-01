@@ -76,7 +76,7 @@ Ingen reklame, sporing, kjøp eller konto. Alt blir lagra på eininga. Einaste n
 oppdateringssjekken mot GitHub, som kan slåast av. **All grafikk, musikk og lyd er laga i kode** – ingen
 opptak, ingen bilete, ingenting å lisensiere.
 
-[Meld ein feil](https://github.com/oyvhov/trollfoss-android/issues) · [Endringslogg](CHANGELOG.md) · [Designunderlag](docs/DESIGN.md)
+## Lisens\n\nTrollfoss er **ikkje open kjeldekode**. Du kan lese koden, installere appen og bruke han privat med barna dine,\nmen ikkje kopiere, endre, dele vidare eller bruke kode, bilete, musikk, namn eller figurar i noko anna utan\nskriftleg løyve. Sjå [LICENSE](LICENSE).\n\n[Meld ein feil](https://github.com/oyvhov/trollfoss-android/issues) · [Endringslogg](CHANGELOG.md) · [Designunderlag](docs/DESIGN.md)
 
 <details>
 <summary>For utviklarar</summary>
