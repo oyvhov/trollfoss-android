@@ -52,6 +52,8 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             wishes = extras.getBoolean("wishes", false),
             skip = extras.getInt("skip", 0),
             task = extras.getString("task"),
+            seasonName = extras.getString("season"),
+            festivalName = extras.getString("festival"),
         )
     }
 
