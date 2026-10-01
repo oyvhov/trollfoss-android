@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.trollfoss.BuildConfig
@@ -53,6 +54,7 @@ import app.trollfoss.ui.components.TrollDialog
 import app.trollfoss.ui.str
 import app.trollfoss.ui.theme.T
 import app.trollfoss.update.UpdateMessage
+import app.trollfoss.update.plainReleaseNotes
 import java.util.Locale
 import kotlin.random.Random
 
@@ -224,7 +226,9 @@ private fun UpdatePanel(vm: TrollfossViewModel) {
         if (release != null) {
             Text(S.updateReady(release.tag.removePrefix("v")).str(), style = MaterialTheme.typography.titleLarge, color = T.Sun)
             Text(S.updateSize(String.format(Locale.ROOT, "%.1f", release.size / (1024f * 1024f))).str(), style = MaterialTheme.typography.bodyMedium, color = T.Muted)
-            if (release.notes.isNotBlank()) Text(release.notes.take(1200), style = MaterialTheme.typography.bodyMedium, color = T.Text)
+            val notes = remember(release.notes) { plainReleaseNotes(release.notes) }
+            // Capped so a long body never pushes the download button out of sight.
+            if (notes.isNotEmpty()) Text(notes, style = MaterialTheme.typography.bodyMedium, color = T.Text, maxLines = 12, overflow = TextOverflow.Ellipsis)
         } else {
             Text(S.installedVersion(BuildConfig.VERSION_NAME).str(), style = MaterialTheme.typography.titleMedium, color = T.Text)
         }

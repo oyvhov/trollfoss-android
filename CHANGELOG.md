@@ -1,5 +1,10 @@
 # Endringslogg
 
+## 1.0.1 – under arbeid
+
+- Foreldresida viser utgivingsnotatet som rein tekst: utan bilete, HTML og Markdown-teikn, kutta mellom ord
+  og kort nok til at «Last ned oppdatering» ikkje forsvinn langt ned.
+
 ## 1.0.0 – første utgåve
 
 - 15 stader i bygda Trollfoss: Heime, Bakeriet, Frisøren, Stranda, Fossen, Trollhola, Fjellet, Garden,

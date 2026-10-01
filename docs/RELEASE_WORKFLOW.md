@@ -16,9 +16,11 @@ Same kontrakt som Komet. Publiser berre når brukaren ber om ein ny release.
 - GitHub må oppgi `digest: sha256:…` for APK-en. Appen kontrollerer storleik, hash, pakkenamn,
   minste Android-versjon, versjon og signatur før Android får spørsmål om installasjon.
 - Testutgåver skal merkast som prerelease og ikkje som «latest».
-- Appen viser utgivingsnotatet som ren tekst på foreldresida og kuttar det. Markdown (`![bilete](…)`,
-  `##` og `**fet**`) blir synleg som teikn. Skriv dei første linene som vanleg tekst, og legg bilete og
-  overskrifter lenger ned eller utelat dei.
+- Frå 1.0.1 gjer appen utgivingsnotatet om til rein tekst på foreldresida (`update/ReleaseNotes.kt`):
+  bilete, HTML og Markdown-teikn (`#`, `**`, `` ` ``) fell bort, `- ` blir `• `, og teksten blir kutta
+  mellom ord etter om lag 360 teikn eller 10 liner. Berre starten syner, så skriv det viktigaste først.
+- 1.0.0 viser notatet som rå tekst og kuttar etter 1200 teikn, også midt i ord. Så lenge nokon kan ha
+  1.0.0, skal dei første linene vere vanleg tekst; legg bilete og overskrifter lenger ned eller utelat dei.
 
 Automatisk sjekk skjer når appen kjem fram, høgst éin gong per tolv timar. «Sjekk no» på foreldresida
 går utanom ventetida. Ingenting blir lasta ned eller installert utan at ein vaksen vel det.
