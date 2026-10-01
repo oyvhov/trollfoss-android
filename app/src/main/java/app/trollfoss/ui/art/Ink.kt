@@ -38,6 +38,9 @@ class Pen(
     val night: Float = 0f,
     val weather: app.trollfoss.domain.Weather = app.trollfoss.domain.Weather.SUN,
     val rainbow: Float = 0f,
+    /** The season and the feast of the day; the art may dress the scene for them. Summer is the plain look. */
+    val season: app.trollfoss.domain.Season = app.trollfoss.domain.Season.SUMMER,
+    val festival: app.trollfoss.domain.Festival = app.trollfoss.domain.Festival.NONE,
 ) {
     val stroke: Stroke = Stroke(width = lw, cap = StrokeCap.Round, join = StrokeJoin.Round)
     val thin: Stroke = Stroke(width = lw * 0.6f, cap = StrokeCap.Round, join = StrokeJoin.Round)

@@ -26,26 +26,26 @@ import app.trollfoss.ui.theme.T
  * the keys found so far are gold, the ones still hiding are grey. Four and a half is not a thing.
  */
 @Composable
-fun HouseKeysHud(found: Int, total: Int = 5, modifier: Modifier = Modifier) {
+fun HouseKeysHud(found: Int, total: Int = 5, modifier: Modifier = Modifier, compact: Boolean = false) {
     Row(
         modifier
             .background(T.Cream, RoundedCornerShape(26.dp))
-            .border(3.dp, T.Ink, RoundedCornerShape(26.dp))
-            .padding(horizontal = 14.dp, vertical = 6.dp),
+            .border(if (compact) 2.dp else 3.dp, T.Ink, RoundedCornerShape(26.dp))
+            .padding(horizontal = if (compact) 8.dp else 14.dp, vertical = if (compact) 3.dp else 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         repeat(total) { i ->
-            if (i > 0) Spacer(Modifier.width(6.dp))
-            Key(i < found)
+            if (i > 0) Spacer(Modifier.width(if (compact) 3.dp else 6.dp))
+            Key(i < found, if (compact) 18.dp else 26.dp)
         }
     }
 }
 
 @Composable
-private fun Key(lit: Boolean) {
+private fun Key(lit: Boolean, dimension: androidx.compose.ui.unit.Dp = 26.dp) {
     val body = if (lit) Color(0xFFFFC83D) else Color(0xFFC9C4D6)
     val edge = if (lit) Color(0xFF9A6B00) else Color(0xFF8E88A3)
-    Canvas(Modifier.size(width = 26.dp, height = 26.dp)) {
+    Canvas(Modifier.size(width = dimension, height = dimension)) {
         val s = size.minDimension
         val w = s * 0.09f
         // The bow, the shaft and two teeth.

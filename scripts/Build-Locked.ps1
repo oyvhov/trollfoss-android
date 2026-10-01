@@ -16,6 +16,9 @@ param(
     [switch]$Plain
 )
 
+# With -File, a list arrives as one string ("':a',':b'" or "':a :b'"): split it on commas and spaces and drop quotes.
+$Tasks = @($Tasks | ForEach-Object { $_ -split '[,\s]+' } | ForEach-Object { $_.Trim("'", '"') } | Where-Object { $_ })
+
 $env:TEMP = 'C:\topa\.gradle-tmp'
 $env:TMP = 'C:\topa\.gradle-tmp'
 $env:GRADLE_USER_HOME = 'C:\JellyBin\.gradle-home'

@@ -121,9 +121,13 @@ fun PlayScreen(vm: TrollfossViewModel) {
             engine.draw(this, text)
         }
 
+        // The controls are small on a phone (a screen less than about 520 dp tall) and big on a tablet.
+        val compact = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp < 520
+        engine.compact = compact
+
         // In the big house: the five golden keys, top and centre.
         if (place.manor && !engine.designMode) {
-            HouseKeysHud(vm.houseKeys, modifier = Modifier.align(Alignment.TopCenter).padding(top = 18.dp))
+            HouseKeysHud(vm.houseKeys, modifier = Modifier.align(Alignment.TopCenter).padding(top = if (compact) 8.dp else 18.dp), compact = compact)
         }
 
         // Taking stairs, a lift or a slide in the big house: the new floor opens from the dark, like an eye.
@@ -138,50 +142,98 @@ fun PlayScreen(vm: TrollfossViewModel) {
             Box(Modifier.fillMaxSize().background(Color(0xFF1F1830).copy(alpha = (1f - curtain.value) * (1f - curtain.value) * 0.92f)))
         }
 
+        // The controls. On a phone (a screen less than about 520 dp tall) they are small and the less common ones
+        // sit behind one button, so the scene has the room; on a tablet they stay big and in the corners.
+        val btn = if (compact) 44.dp else 64.dp
+        val edge = if (compact) 8.dp else 16.dp
+        val gap = if (compact) 8.dp else 12.dp
+        var menuOpen by remember { mutableStateOf(false) }
+        LaunchedEffect(place, engine.designMode) { menuOpen = false }
+
         // Top left: the map and the task board, with a badge for tasks still to do.
-        Row(Modifier.align(Alignment.TopStart).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            RoundButton(S.map.str(), onClick = { vm.open(Screen.Map) }, tone = Tones.Sea, icon = Icons.Map)
+        Row(Modifier.align(Alignment.TopStart).padding(edge), horizontalArrangement = Arrangement.spacedBy(gap)) {
+            RoundButton(S.map.str(), onClick = { vm.open(Screen.Map) }, size = btn, tone = Tones.Sea, icon = Icons.Map)
             Box {
-                RoundButton(S.tasks.str(), onClick = { vm.open(Screen.Tasks) }, tone = Tones.Sun, icon = DesignIcons.Tasks)
+                RoundButton(S.tasks.str(), onClick = { vm.open(Screen.Tasks) }, size = btn, tone = Tones.Sun, icon = DesignIcons.Tasks)
                 if (vm.tasksLeft > 0) {
+                    val badge = if (compact) 20.dp else 26.dp
                     Box(
-                        Modifier.align(Alignment.TopEnd).size(26.dp).background(T.Berry, androidx.compose.foundation.shape.CircleShape).border(2.dp, T.Ink, androidx.compose.foundation.shape.CircleShape),
+                        Modifier.align(Alignment.TopEnd).size(badge).background(T.Berry, androidx.compose.foundation.shape.CircleShape).border(2.dp, T.Ink, androidx.compose.foundation.shape.CircleShape),
                         contentAlignment = Alignment.Center,
-                    ) { GameText("${vm.tasksLeft}", fontSize = 14.sp, style = MaterialTheme.typography.titleMedium, color = Color.White) }
+                    ) { GameText("${vm.tasksLeft}", fontSize = if (compact) 11.sp else 14.sp, style = MaterialTheme.typography.titleMedium, color = Color.White) }
                 }
             }
         }
 
-        // Top right: found glimt, day and night, weather and the camera (the designer panel takes their place).
-        if (!engine.designMode) Row(
-            Modifier.align(Alignment.TopEnd).padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            GlimtCounter(vm.found, Secrets.all.size, Modifier.onGloballyPositioned { coords ->
-                val b = coords.boundsInRoot()
-                engine.counterTarget = Offset(b.left + 22.dp.value * density, b.center.y)
-            })
-            RoundButton(if (vm.night) S.day.str() else S.night.str(), onClick = vm::toggleNight, tone = Tones.Night, icon = if (vm.night) Icons.Sun else Icons.Moon)
-            RoundButton(S.weather.str(), onClick = vm::cycleWeather, tone = Tones.Cream, icon = when (vm.weather) {
-                Weather.SUN -> Icons.SunCloud
-                Weather.RAIN -> Icons.Rain
-                Weather.SNOW -> Icons.Snow
-            })
-            RoundButton(S.camera.str(), onClick = {
-                scope.launch {
-                    val image = layer.toImageBitmap()
-                    engine.photoFlash()
-                    vm.savePhoto(image)
-                }
-            }, tone = Tones.Cream, tapSound = false, icon = Icons.Camera)
+        val photo = {
+            scope.launch {
+                val image = layer.toImageBitmap()
+                engine.photoFlash()
+                vm.savePhoto(image)
+            }
+            Unit
+        }
+        val weatherIcon: androidx.compose.ui.graphics.drawscope.DrawScope.() -> Unit = when (vm.weather) {
+            Weather.SUN -> Icons.SunCloud
+            Weather.RAIN -> Icons.Rain
+            Weather.SNOW -> Icons.Snow
+        }
+        val counter = Modifier.onGloballyPositioned { coords ->
+            val b = coords.boundsInRoot()
+            engine.counterTarget = Offset(b.left + (if (compact) 14.dp else 22.dp).value * density, b.center.y)
         }
 
-        // Bottom left: the figure workshop and the home designer. The bag, bottom right, is drawn by the engine.
-        if (!engine.designMode) {
-            Row(Modifier.align(Alignment.BottomStart).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (!engine.designMode && !compact) {
+            // Tablet: found glimt, day and night, weather and the camera top right; the workshop and the designer bottom left.
+            Row(
+                Modifier.align(Alignment.TopEnd).padding(edge),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                GlimtCounter(vm.found, Secrets.all.size, counter)
+                RoundButton(if (vm.night) S.day.str() else S.night.str(), onClick = vm::toggleNight, tone = Tones.Night, icon = if (vm.night) Icons.Sun else Icons.Moon)
+                RoundButton(S.weather.str(), onClick = vm::cycleWeather, tone = Tones.Cream, icon = weatherIcon)
+                RoundButton(S.camera.str(), onClick = { photo() }, tone = Tones.Cream, tapSound = false, icon = Icons.Camera)
+            }
+            Row(Modifier.align(Alignment.BottomStart).padding(edge), horizontalArrangement = Arrangement.spacedBy(gap)) {
                 RoundButton(S.workshop.str(), onClick = { vm.open(Screen.Creator(null)) }, tone = Tones.Grape, icon = Icons.Workshop)
                 RoundButton(S.designer.str(), onClick = { engine.designMode = true }, tone = Tones.Berry, icon = DesignIcons.Roller)
+            }
+        }
+        if (!engine.designMode && compact) {
+            // Phone: a small counter and one button; the rest unfolds from it.
+            Row(
+                Modifier.align(Alignment.TopEnd).padding(edge),
+                horizontalArrangement = Arrangement.spacedBy(gap),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                GlimtCounter(vm.found, Secrets.all.size, counter, compact = true)
+                RoundButton(
+                    S.more.str(), onClick = { menuOpen = !menuOpen }, size = btn, tone = if (menuOpen) Tones.Sun else Tones.Cream,
+                    icon = { menuDots(menuOpen) },
+                )
+            }
+            AnimatedVisibility(
+                visible = menuOpen,
+                enter = fadeIn() + slideInVertically { -it / 2 },
+                exit = fadeOut() + slideOutVertically { -it / 2 },
+                modifier = Modifier.align(Alignment.TopEnd).padding(top = edge + btn + 6.dp, end = edge),
+            ) {
+                val small = 40.dp
+                Row(
+                    Modifier
+                        .background(T.Cream.copy(alpha = 0.92f), RoundedCornerShape(26.dp))
+                        .border(2.dp, T.Ink, RoundedCornerShape(26.dp))
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RoundButton(if (vm.night) S.day.str() else S.night.str(), onClick = { vm.toggleNight() }, size = small, tone = Tones.Night, icon = if (vm.night) Icons.Sun else Icons.Moon)
+                    RoundButton(S.weather.str(), onClick = { vm.cycleWeather() }, size = small, tone = Tones.Cream, icon = weatherIcon)
+                    RoundButton(S.camera.str(), onClick = { menuOpen = false; photo() }, size = small, tone = Tones.Cream, tapSound = false, icon = Icons.Camera)
+                    RoundButton(S.workshop.str(), onClick = { menuOpen = false; vm.open(Screen.Creator(null)) }, size = small, tone = Tones.Grape, icon = Icons.Workshop)
+                    RoundButton(S.designer.str(), onClick = { menuOpen = false; engine.designMode = true }, size = small, tone = Tones.Berry, icon = DesignIcons.Roller)
+                }
             }
         }
         AnimatedVisibility(
@@ -206,7 +258,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
 }
 
 @Composable
-private fun GlimtCounter(found: Int, total: Int, modifier: Modifier = Modifier) {
+private fun GlimtCounter(found: Int, total: Int, modifier: Modifier = Modifier, compact: Boolean = false) {
     val bump = remember { Animatable(1f) }
     LaunchedEffect(found) {
         if (found > 0) {
@@ -220,13 +272,26 @@ private fun GlimtCounter(found: Int, total: Int, modifier: Modifier = Modifier) 
             .graphicsLayer { scaleX = bump.value; scaleY = bump.value }
             .background(T.Cream.copy(alpha = 0.94f), RoundedCornerShape(50))
             .border(2.5.dp, T.Ink, RoundedCornerShape(50))
-            .padding(start = 8.dp, end = 14.dp, top = 6.dp, bottom = 6.dp),
+            .padding(start = if (compact) 5.dp else 8.dp, end = if (compact) 9.dp else 14.dp, top = if (compact) 3.dp else 6.dp, bottom = if (compact) 3.dp else 6.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 6.dp),
     ) {
-        Canvas(Modifier.size(30.dp)) { Icons.Star(this) }
-        GameText("$found", fontSize = 22.sp, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black), color = T.Sun)
-        GameText("/ $total", fontSize = 15.sp, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black), color = Color.White)
+        Canvas(Modifier.size(if (compact) 20.dp else 30.dp)) { Icons.Star(this) }
+        GameText("$found", fontSize = if (compact) 15.sp else 22.sp, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black), color = T.Sun)
+        GameText("/ $total", fontSize = if (compact) 10.sp else 15.sp, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black), color = Color.White)
+    }
+}
+
+/** Three dots, or a cross when the menu is open. */
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.menuDots(open: Boolean) {
+    val s = size.minDimension
+    val ink = T.Ink
+    if (open) {
+        val w = s * 0.12f
+        drawLine(ink, Offset(s * 0.28f, s * 0.28f), Offset(s * 0.72f, s * 0.72f), strokeWidth = w, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+        drawLine(ink, Offset(s * 0.72f, s * 0.28f), Offset(s * 0.28f, s * 0.72f), strokeWidth = w, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+    } else {
+        for (i in 0 until 3) drawCircle(ink, s * 0.085f, Offset(s * (0.28f + 0.22f * i), s * 0.5f))
     }
 }
 

@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.trollfoss.BuildConfig
 import app.trollfoss.domain.Maalform
+import app.trollfoss.domain.SeasonChoice
 import app.trollfoss.domain.Recipes
 import app.trollfoss.domain.Secrets
 import app.trollfoss.ui.S
@@ -125,6 +126,17 @@ fun ParentScreen(vm: TrollfossViewModel) {
                             Choice(S.nynorsk.str(), settings.maalform == Maalform.NYNORSK) { vm.setMaalform(Maalform.NYNORSK) }
                             Choice(S.bokmaal.str(), settings.maalform == Maalform.BOKMAAL) { vm.setMaalform(Maalform.BOKMAAL) }
                         }
+                        Text(S.seasonTitle.str(), color = T.Muted, style = MaterialTheme.typography.titleMedium)
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Choice(S.seasonAuto.str(), settings.season == SeasonChoice.AUTO) { vm.setSeason(SeasonChoice.AUTO) }
+                            Choice(S.winter.str(), settings.season == SeasonChoice.WINTER) { vm.setSeason(SeasonChoice.WINTER) }
+                            Choice(S.spring.str(), settings.season == SeasonChoice.SPRING) { vm.setSeason(SeasonChoice.SPRING) }
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Choice(S.summer.str(), settings.season == SeasonChoice.SUMMER) { vm.setSeason(SeasonChoice.SUMMER) }
+                            Choice(S.autumn.str(), settings.season == SeasonChoice.AUTUMN) { vm.setSeason(SeasonChoice.AUTUMN) }
+                        }
+                        ToggleRow(S.festive.str(), settings.festive) { on -> vm.updateSettings { it.copy(festive = on) } }
                     }
                     Panel(S.progress.str()) {
                         Text(

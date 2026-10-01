@@ -40,6 +40,9 @@ object S {
         PlaceId.MANOR_ATTIC -> txt("Loftet")
         PlaceId.MANOR_CELLAR -> txt("Kjellaren", "Kjelleren")
         PlaceId.MANOR_GARDEN -> txt("Hagen")
+        PlaceId.MINE_YARD -> txt("Mitt hus")
+        PlaceId.MINE_GROUND -> txt("Mitt hus")
+        PlaceId.MINE_UPPER -> txt("Mitt hus, oppe", "Mitt hus, oppe")
     }
 
     val map = txt("Kart")
@@ -76,6 +79,14 @@ object S {
     val language = txt("Målform")
     val nynorsk = txt("Nynorsk")
     val bokmaal = txt("Bokmål")
+    val seasonTitle = txt("Årstid")
+    val more = txt("Meir", "Mer")
+    val seasonAuto = txt("Automatisk")
+    val winter = txt("Vinter")
+    val spring = txt("Vår")
+    val summer = txt("Sommar", "Sommer")
+    val autumn = txt("Haust", "Høst")
+    val festive = txt("Pynt til høgtider", "Pynt til høytider")
     val progress = txt("Framgang", "Fremgang")
     fun progressLine(found: Int, total: Int, recipes: Int, allRecipes: Int, figures: Int) = txt(
         "$found av $total glimt · $recipes av $allRecipes oppskrifter · $figures figurar",

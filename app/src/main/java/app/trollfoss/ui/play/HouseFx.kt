@@ -32,6 +32,8 @@ object HouseFxPlayer {
 
             in HouseFx.GARDEN until HouseFx.STORY -> GardenFx.play(s, code, arg, x, y, fixture, thing)
 
+            in HouseFx.MINE until HouseFx.MINE + 100 -> MineFx.play(s, code, arg, x, y, fixture, thing)
+
             else -> Unit
         }
     }
