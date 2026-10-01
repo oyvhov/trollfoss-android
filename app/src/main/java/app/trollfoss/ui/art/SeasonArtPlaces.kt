@@ -55,46 +55,46 @@ private val christmas: Map<PlaceId, Feast> = mapOf(
     PlaceId.HOME to Feast(
         back = listOf(
             swags(-0.3f, 4.6f, 0.04f),
-            tree(1.22f, 0.8f, 0.6f), presents(1.0f, 0.83f, 0.17f),
-            wreath(2.76f, 0.26f, 0.05f),
+            tree(1.12f, 0.8f, 0.7f), presents(1.02f, 0.93f, 0.16f),
+            wreath(0.15f, 0.28f, 0.055f), wreath(3.75f, 0.26f, 0.055f),
         ),
         front = listOf(star(0.4f, 0.34f, 0.04f, 0.08f), star(1.9f, 0.43f, 0.04f, 0.08f), star(3.25f, 0.41f, 0.04f, 0.08f)),
     ),
     PlaceId.CAFE to Feast(
         back = listOf(
-            tree(2.02f, 0.8f, 0.55f), presents(1.82f, 0.83f, 0.15f),
-            wreath(1.43f, 0.12f, 0.045f),
+            tree(2.05f, 0.8f, 0.58f), presents(2.45f, 0.9f, 0.13f),
+            wreath(0.72f, 0.27f, 0.055f), wreath(2.8f, 0.3f, 0.055f),
         ),
         front = listOf(star(2.46f, 0.38f, 0.04f, 0.08f)),
     ),
     PlaceId.SALON to Feast(
         back = listOf(
             swags(-0.3f, 3.2f, 0.04f),
-            tree(0.38f, 0.8f, 0.45f), presents(0.6f, 0.83f, 0.14f),
-            wreath(1.62f, 0.17f, 0.05f),
+            tree(1.28f, 0.8f, 0.45f), presents(1.3f, 0.93f, 0.13f),
+            wreath(1.65f, 0.27f, 0.05f),
         ),
         front = listOf(star(2.3f, 0.38f, 0.04f, 0.08f)),
     ),
     PlaceId.SHOP to Feast(
         back = listOf(
             swags(-0.3f, 3.8f, 0.07f),
-            tree(3.0f, 0.8f, 0.5f),
+            tree(1.2f, 0.8f, 0.55f),
         ),
-        front = listOf(star(0.5f, 0.24f, 0.05f, 0.14f), star(0.97f, 0.24f, 0.05f, 0.14f)),
+        front = listOf(star(0.2f, 0.28f, 0.05f, 0.18f), star(0.54f, 0.28f, 0.05f, 0.18f), star(0.84f, 0.28f, 0.05f, 0.18f)),
     ),
     PlaceId.DOCTOR to Feast(
         back = listOf(
             swags(-0.3f, 3.3f, 0.04f),
-            wreath(0.1f, 0.47f, 0.05f),
-            tree(2.2f, 0.8f, 0.4f),
+            wreath(0.1f, 0.47f, 0.06f),
+            tree(1.38f, 0.8f, 0.45f),
         ),
-        front = listOf(star(1.68f, 0.3f, 0.045f, 0.1f)),
+        front = listOf(star(1.575f, 0.23f, 0.035f, 0.06f), star(1.785f, 0.23f, 0.035f, 0.06f)),
     ),
     PlaceId.STAGE to Feast(
-        back = listOf(swags(-0.3f, 3.6f, 0.05f), tree(2.5f, 0.8f, 0.5f), presents(2.3f, 0.83f, 0.15f)),
+        back = listOf(swags(-0.3f, 3.6f, 0.05f), tree(2.5f, 0.8f, 0.5f), presents(2.28f, 0.83f, 0.13f)),
     ),
     PlaceId.LAB to Feast(
-        back = listOf(swags(-0.3f, 3.2f, 0.04f), tree(2.9f, 0.8f, 0.4f), wreath(1.0f, 0.2f, 0.05f)),
+        back = listOf(swags(-0.3f, 3.2f, 0.04f), tree(1.4f, 0.8f, 0.5f), wreath(2.3f, 0.3f, 0.05f)),
     ),
     PlaceId.SPACE to Feast(
         back = listOf(swags(-0.3f, 4.0f, 0.04f), star(1.3f, 0.2f, 0.05f, 0.18f), star(2.7f, 0.18f, 0.045f, 0.16f)),
@@ -103,26 +103,28 @@ private val christmas: Map<PlaceId, Feast> = mapOf(
         back = listOf(strand(-0.2f, 0.08f, 2.0f, 0.12f, 0.1f, 22), strand(2.0f, 0.12f, 4.1f, 0.06f, 0.1f, 22), presents(0.9f, 0.9f, 0.16f)),
     ),
     PlaceId.FOREST to Feast(
-        back = listOf(pine(1.2f, 0.82f, 0.5f), presents(1.4f, 0.86f, 0.14f)),
-        front = emptyList(),
+        back = listOf(presents(1.05f, 0.955f, 0.14f)),
+        front = listOf(pine(0.28f, 0.8f, 0.72f)),
     ),
     PlaceId.BEACH to Feast(
-        back = listOf(tree(1.5f, 0.82f, 0.4f), presents(1.7f, 0.86f, 0.14f)),
+        back = listOf(tree(1.3f, 0.8f, 0.45f), presents(1.15f, 0.955f, 0.13f)),
     ),
     PlaceId.MOUNTAIN to Feast(
-        back = listOf(tree(2.0f, 0.82f, 0.4f), presents(2.2f, 0.86f, 0.14f)),
+        back = listOf(presents(1.2f, 0.96f, 0.14f)),
+        front = listOf(pine(0.22f, 0.81f, 0.74f)),
     ),
     PlaceId.FARM to Feast(
         back = listOf(
             roof(0f, 0.38f, 0.14f, 0.2f, 0.6f, 0.08f, 1.06f, 0.2f, 1.2f, 0.38f),
-            wreath(0.6f, 0.265f, 0.055f), tree(3.0f, 0.82f, 0.4f), presents(3.2f, 0.86f, 0.14f),
+            wreath(0.6f, 0.265f, 0.055f), tree(3.05f, 0.8f, 0.5f), presents(3.15f, 0.955f, 0.13f),
         ),
     ),
     PlaceId.TIVOLI to Feast(
-        back = listOf(tree(2.95f, 0.82f, 0.5f), presents(3.15f, 0.86f, 0.15f), wreath(0.02f, 0.2f, 0.06f)),
+        back = listOf(tree(2.2f, 0.8f, 0.55f), presents(3.3f, 0.96f, 0.13f)),
     ),
     PlaceId.HEILEBERGET to Feast(
-        back = listOf(tree(1.15f, 0.82f, 0.45f), presents(1.35f, 0.86f, 0.14f)),
+        back = listOf(tree(1.7f, 0.8f, 0.55f), presents(2.1f, 0.955f, 0.13f)),
+        front = listOf(pine(3.85f, 0.77f, 0.74f)),
     ),
 )
 
@@ -266,6 +268,9 @@ internal fun DrawScope.feastFront(place: PlaceId, st: Stage, pen: Pen) {
     drawDecos(st, pen, f.front)
     if (!place.outdoor) cosyGlow(st, pen)
 }
+
+/** The places a feast has decorations for (the tests check that none is forgotten). */
+internal fun feastPlaces(f: Festival): Set<PlaceId> = feastOf(f).keys
 
 private fun feastOf(f: Festival): Map<PlaceId, Feast> = when (f) {
     Festival.CHRISTMAS -> christmas

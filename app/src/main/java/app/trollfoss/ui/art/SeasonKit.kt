@@ -36,7 +36,7 @@ import kotlin.math.sin
  */
 
 internal object SeasonPal {
-    val fresh = Color(0xFF8FDB5E)
+    val fresh = Color(0xFFA4E052)
     val dry = Color(0xFFB8A04C)
     val straw = Color(0xFFC2A867)
     val autumn = arrayOf(Color(0xFFE8742A), Color(0xFFD9A62E), Color(0xFFD2443A), Color(0xFFF0B63C), Color(0xFFC9692A))
@@ -62,7 +62,7 @@ internal val Pen.winter: Boolean get() = season == Season.WINTER
 /** Meadows, moss, fields and ferns. */
 internal fun Pen.ground(c: Color): Color = when (season) {
     Season.SUMMER -> c
-    Season.SPRING -> recolor(c, SeasonPal.fresh, 0.55f).lighten(0.04f)
+    Season.SPRING -> recolor(c, SeasonPal.fresh, 0.6f).lighten(0.06f)
     Season.AUTUMN -> recolor(c, SeasonPal.dry, 0.75f)
     Season.WINTER -> lerp(c, Pal.snow, 0.86f)
 }
@@ -244,10 +244,14 @@ internal class GroundCover(
             litter[i % 4].add(Offset(x * u, y * u))
             litter[i % 4].add(Offset(x * u + cos(a) * l, y * u + sin(a) * l * 0.5f))
         }
-        for (i in 0 until n * 3) {
-            val x = mix(x0, x1, hash01(i, salt + 11))
-            val y = mix(y0, y1, hash01(i, salt + 12))
-            flowers[(hash01(i, salt + 13) * 5f).toInt().coerceIn(0, 4)].add(Offset(x * u, y * u))
+        // Flowers grow in little clusters, each mostly one colour.
+        val clusters = max(2, n / 4)
+        for (i in 0 until n * 2) {
+            val c = (hash01(i, salt + 10) * clusters).toInt().coerceIn(0, clusters - 1)
+            val x = mix(x0, x1, hash01(c, salt + 14)) + (hash01(i, salt + 11) - 0.5f) * 0.11f
+            val y = mix(y0, y1, hash01(c, salt + 15)) + (hash01(i, salt + 12) - 0.5f) * 0.026f
+            val colour = (c + if (hash01(i, salt + 13) > 0.75f) 1 else 0) % 5
+            flowers[colour].add(Offset(x * u, y * u))
             hearts.add(Offset(x * u, y * u))
         }
         val drifts = Path()
@@ -274,7 +278,7 @@ internal class GroundCover(
                     drawPoints(g.litter[i], PointMode.Lines, SeasonPal.litter[i].atNight(n, 0.4f), strokeWidth = 0.0075f * u, cap = StrokeCap.Round)
                 }
                 Season.SPRING -> {
-                    for (i in 0 until 5) drawPoints(g.flowers[i], PointMode.Points, SeasonPal.flowers[i].atNight(n, 0.4f), strokeWidth = 0.011f * u, cap = StrokeCap.Round)
+                    for (i in 0 until 5) drawPoints(g.flowers[i], PointMode.Points, SeasonPal.flowers[i].atNight(n, 0.4f), strokeWidth = 0.0125f * u, cap = StrokeCap.Round)
                     drawPoints(g.hearts, PointMode.Points, Color(0xFFFFE680).atNight(n, 0.4f), strokeWidth = 0.0042f * u, cap = StrokeCap.Round)
                 }
                 Season.WINTER -> {
@@ -351,8 +355,8 @@ internal fun DrawScope.iceSheet(area: Path, cracks: List<Offset>, pen: Pen, alph
     if (cracks.isNotEmpty()) drawPoints(cracks, PointMode.Lines, SeasonPal.iceDeep.atNight(n, 0.4f), strokeWidth = pen.lw * 0.7f, cap = StrokeCap.Round, alpha = 0.8f)
 }
 
-/** A row of icicles hanging from the line through [xs]/[ys] (pixels), lengths in pixels. */
-internal fun DrawScope.icicles(xs: FloatArray, ys: FloatArray, lens: FloatArray, w: Float, pen: Pen) {
+/** The shape of a row of icicles hanging from the points [xs]/[ys] (pixels), each [w] wide and [lens] long. Build once per scale. */
+internal fun iciclePath(xs: FloatArray, ys: FloatArray, lens: FloatArray, w: Float): Path {
     val p = Path()
     for (i in xs.indices) {
         p.moveTo(xs[i] - w, ys[i])
@@ -360,8 +364,13 @@ internal fun DrawScope.icicles(xs: FloatArray, ys: FloatArray, lens: FloatArray,
         p.lineTo(xs[i], ys[i] + lens[i])
         p.close()
     }
-    drawPath(p, Color(0xFFE6F5FF).atNight(pen.night, 0.4f))
-    drawPath(p, Ink.line, alpha = 0.55f, style = pen.thin)
+    return p
+}
+
+/** Draws icicles made by [iciclePath]. */
+internal fun DrawScope.icicles(path: Path, pen: Pen) {
+    drawPath(path, Color(0xFFE6F5FF).atNight(pen.night, 0.4f))
+    drawPath(path, Ink.line, alpha = 0.55f, style = pen.thin)
 }
 
 /** A small snow cap on a post or a rail: a white lozenge lying on [rect]'s top edge. */

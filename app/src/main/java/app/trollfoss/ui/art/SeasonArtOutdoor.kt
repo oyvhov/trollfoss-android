@@ -49,11 +49,11 @@ internal fun DrawScope.seasonSceneryFront(place: PlaceId, st: Stage, pen: Pen) {
 private val forestCover = GroundCover(0.05f, 2.42f, 0.805f, 0.96f, 1001)
 private val forestBrook = Brook(floatArrayOf(1.95f, 0.805f, 2.1f, 0.83f, 2.2f, 0.862f, 2.38f, 0.9f, 2.52f, 0.915f, 2.62f, 0.925f))
 
-private class ForestIce(val sheet: Path, val edge: Path, val cracks: List<Offset>, val ix: FloatArray, val iy: FloatArray, val il: FloatArray)
+private class ForestIce(val sheet: Path, val edge: Path, val cracks: List<Offset>, val icicles: Path)
 
 private val forestIce = Memo { u ->
-    val sheet = Path().apply { poly(3.42f * u, 0.788f * u, 4.6f * u, 0.788f * u, 4.6f * u, 0.832f * u, 3.3f * u, 0.832f * u, 3.36f * u, 0.81f * u) }
-    val edge = Path().apply { poly(3.3f * u, 0.83f * u, 4.6f * u, 0.83f * u, 4.6f * u, 0.842f * u, 3.3f * u, 0.842f * u) }
+    val sheet = Path().apply { poly(3.34f * u, 0.788f * u, 4.6f * u, 0.788f * u, 4.6f * u, 0.832f * u, 3.24f * u, 0.832f * u, 3.3f * u, 0.81f * u) }
+    val edge = Path().apply { poly(3.24f * u, 0.83f * u, 4.6f * u, 0.83f * u, 4.6f * u, 0.842f * u, 3.24f * u, 0.842f * u) }
     val c = floatArrayOf(
         3.55f, 0.795f, 3.64f, 0.82f, 3.64f, 0.82f, 3.6f, 0.83f, 3.92f, 0.792f, 3.84f, 0.822f,
         4.12f, 0.8f, 4.26f, 0.826f, 3.7f, 0.81f, 3.96f, 0.806f, 4.38f, 0.795f, 4.34f, 0.815f,
@@ -73,22 +73,21 @@ private val forestIce = Memo { u ->
             ls.add((0.014f + 0.02f * hash01(k + i * 7, 1031)) * u)
         }
     }
-    ForestIce(sheet, edge, cracks, xs.toFloatArray(), ys.toFloatArray(), ls.toFloatArray())
+    ForestIce(sheet, edge, cracks, iciclePath(xs.toFloatArray(), ys.toFloatArray(), ls.toFloatArray(), 0.006f * u))
 }
 
 private fun DrawScope.forestSeason(st: Stage, pen: Pen) {
     forestCover.draw(this, st, pen)
     when (pen.season) {
         Season.SPRING -> forestBrook.draw(this, st, pen, 0.016f)
-        Season.AUTUMN -> mistBand(st, pen, 0.79f, 0.08f, 0.36f, 0.6f, 1011)
+        Season.AUTUMN -> mistBand(st, pen, 0.79f, 0.09f, 0.5f, 0.6f, 1011)
         Season.WINTER -> if (st.sees(2.45f, 4.6f)) {
             val g = forestIce.of(st.u)
-            val u = st.u
             inScene(st) {
                 iceSheet(g.sheet, g.cracks, pen)
                 drawPath(g.edge, SeasonPal.ice.atNight(pen.night, 0.45f), alpha = 0.8f)
                 drawPath(g.edge, Ink.line, alpha = 0.4f, style = pen.thin)
-                icicles(g.ix, g.iy, g.il, 0.006f * u, pen)
+                icicles(g.icicles, pen)
             }
         }
         Season.SUMMER -> Unit
@@ -98,7 +97,7 @@ private fun DrawScope.forestSeason(st: Stage, pen: Pen) {
 // ============================================================================================= BEACH
 
 private val beachSand = GroundCover(0.05f, 2.2f, 0.80f, 0.95f, 1002, 0.8f)
-private val beachDune = GroundCover(0.0f, 2.2f, 0.793f, 0.84f, 1003, 1.3f)
+private val beachDune = GroundCover(0.0f, 2.2f, 0.795f, 0.82f, 1003, 0.9f)
 
 private class SeaIce(val floes: Path, val shore: Path)
 
@@ -131,7 +130,7 @@ private fun DrawScope.beachSeason(st: Stage, pen: Pen) {
         Season.SPRING -> beachDune.draw(this, st, pen)
         Season.AUTUMN -> {
             beachSand.draw(this, st, pen)
-            mistBand(st, pen, 0.56f, 0.05f, 0.4f, 0.1f, 1012)
+            mistBand(st, pen, 0.57f, 0.07f, 0.6f, 0.1f, 1012)
         }
         Season.WINTER -> {
             beachSand.draw(this, st, pen)
@@ -153,13 +152,21 @@ private fun DrawScope.beachSeason(st: Stage, pen: Pen) {
 
 // =========================================================================================== MOUNTAIN
 
-private val mountainFlowers = GroundCover(0.2f, 3.7f, 0.83f, 0.955f, 1007, 0.9f)
+private val mountainPatchSpecs = floatArrayOf(0.4f, 0.9f, 0.12f, 1.25f, 0.86f, 0.1f, 2.05f, 0.93f, 0.13f, 3.0f, 0.88f, 0.12f, 3.55f, 0.93f, 0.1f, 0.15f, 0.84f, 0.07f)
+
+/** The flowers grow on the green patches where the snow has melted. */
+private val mountainFlowers: List<GroundCover> = (0 until mountainPatchSpecs.size / 3).map { i ->
+    val x = mountainPatchSpecs[i * 3]
+    val y = mountainPatchSpecs[i * 3 + 1]
+    val r = mountainPatchSpecs[i * 3 + 2]
+    GroundCover(x - r * 0.75f, x + r * 0.75f, y - 0.012f, y + 0.012f, 1007 + i, 3f)
+}
 private val mountainBrookA = Brook(floatArrayOf(0.88f, 0.792f, 0.97f, 0.84f, 0.9f, 0.9f, 1.0f, 0.965f))
 private val mountainBrookB = Brook(floatArrayOf(2.94f, 0.792f, 2.84f, 0.85f, 2.96f, 0.91f, 2.86f, 0.968f))
 
 private val mountainPatches = Memo { u ->
     val p = Path()
-    val s = floatArrayOf(0.4f, 0.9f, 0.12f, 1.25f, 0.86f, 0.1f, 2.05f, 0.93f, 0.13f, 3.0f, 0.88f, 0.12f, 3.55f, 0.93f, 0.1f, 0.15f, 0.84f, 0.07f)
+    val s = mountainPatchSpecs
     for (i in s.indices step 3) p.floorDisc(u, 0f, s[i], s[i + 1], s[i + 2], 0.05f, 16)
     p
 }
@@ -175,7 +182,7 @@ private fun DrawScope.mountainSeason(st: Stage, pen: Pen) {
                     drawPath(p, Color(0xFF8CCB62).atNight(n, 0.45f), alpha = 0.9f)
                     drawPath(p, Ink.line, alpha = 0.3f, style = pen.thin)
                 }
-                mountainFlowers.draw(this, st, pen)
+                for (c in mountainFlowers) c.draw(this, st, pen)
                 mountainBrookA.draw(this, st, pen, 0.012f)
                 mountainBrookB.draw(this, st, pen, 0.012f)
             }
@@ -219,7 +226,7 @@ private fun DrawScope.farmSeason(st: Stage, pen: Pen) {
         Season.AUTUMN -> {
             // A little pumpkin patch by the barn.
             for ((i, p) in listOf(Triple(1.04f, 0.806f, 0.03f), Triple(1.14f, 0.816f, 0.022f), Triple(1.21f, 0.802f, 0.027f)).withIndex()) {
-                if (st.sees(p.first - 0.05f, p.first + 0.05f)) pumpkin(st.o(p.first, p.second), p.third * u, pen, face = i == 0, glow = 0f, night = n)
+                if (st.sees(p.first - 0.05f, p.first + 0.05f)) pumpkin(st.o(p.first, p.second), p.third * u * 1.7f, pen, face = i == 0, glow = 0f, night = n)
             }
         }
         Season.WINTER -> {
