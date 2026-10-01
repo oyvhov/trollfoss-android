@@ -26,7 +26,7 @@ class WorldTest {
         for (place in PlaceId.entries) {
             assertEquals(Places.spec(place).fixtures.size, world.fixturesIn(place).size)
             // The floors of the big house may stand empty; the house as a whole must have people.
-            if (!place.manor) assertTrue("people in $place", world.bodiesIn(place).any { it is Person })
+            if (!place.big) assertTrue("people in $place", world.bodiesIn(place).any { it is Person })
         }
         assertTrue("people live in the big house", PlaceId.entries.filter { it.manor }.any { p -> world.bodiesIn(p).any { it is Person } })
         val names = world.people().filter { it.species == Species.FOLK }.map { it.name }
@@ -222,7 +222,11 @@ class WorldTest {
         }
         assertTrue(world.allSecretsFound())
         assertTrue(Secrets.all.size >= 60)
-        for (place in PlaceId.entries) assertTrue("at least three glimt in $place", Secrets.inPlace(place).size >= 3)
+        // Every place has at least three glimt, except the two floors of the child's own house (their glimt wait in the yard).
+        for (place in PlaceId.entries) {
+            val n = Secrets.inPlace(place).size
+            if (place == PlaceId.MINE_GROUND || place == PlaceId.MINE_UPPER) assertEquals("no glimt in $place", 0, n) else assertTrue("at least three glimt in $place", n >= 3)
+        }
     }
 
     @Test

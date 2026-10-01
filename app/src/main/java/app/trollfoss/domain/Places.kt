@@ -35,22 +35,41 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
     MANOR_CELLAR(10.0f, false, 0.90f, 0.07f),
     /** The garden around the house: greenhouse, pond, treehouse, shed and a trampoline. */
     MANOR_GARDEN(9.0f, true, 0.88f, 0.02f),
+
+    // Mitt hus, the child's own house (see [Mine]): a plot with a front yard, and two floors of five room
+    // slots that the child builds. The plot has the button on the map.
+    /** The plot and its front yard: the house seen from outside, with a garden to furnish. */
+    MINE_YARD(9.0f, true, 0.88f, 0.02f),
+    /** The ground floor: five slots of two units, the first is the hall with the stairs. */
+    MINE_GROUND(10.0f, false, 0.90f, 0.07f),
+    /** The upper floor, built later: five slots above the ground floor's. */
+    MINE_UPPER(10.0f, false, 0.90f, 0.07f),
     ;
 
     /** True for the five places that make up the big house. */
-    val manor: Boolean get() = ordinal >= MANOR_GROUND.ordinal
+    val manor: Boolean get() = this in MANOR_GROUND..MANOR_GARDEN
+
+    /** True for the three places of the child's own house. */
+    val mine: Boolean get() = ordinal >= MINE_YARD.ordinal
+
+    /** True for the places that belong to a house with floors and passages: the big house and the child's own. */
+    val big: Boolean get() = manor || mine
 
     /** True when the place has a button on the map. The other floors are reached from inside the house. */
-    val onMap: Boolean get() = !manor || this == MANOR_GROUND
+    val onMap: Boolean get() = !big || this == MANOR_GROUND || this == MINE_YARD
 
     /**
      * Fixture ids are [idBase] plus the blueprint index. The older places have room for 100 ids each
      * (blueprint furniture below [addedFrom], furniture the child adds from there to [addedMax]). A place
      * of the big house has 300: blueprint furniture up to 199, added furniture from 200 to 259.
      */
-    val idBase: Int get() = if (manor) 1500 + (ordinal - MANOR_GROUND.ordinal) * 300 else ordinal * 100
-    val addedFrom: Int get() = if (manor) 200 else 40
-    val addedMax: Int get() = if (manor) 259 else 59
+    val idBase: Int get() = when {
+        manor -> 1500 + (ordinal - MANOR_GROUND.ordinal) * 300
+        mine -> 3000 + (ordinal - MINE_YARD.ordinal) * 300
+        else -> ordinal * 100
+    }
+    val addedFrom: Int get() = if (big) 200 else 40
+    val addedMax: Int get() = if (big) 259 else 59
 
     /**
      * The floor is a band with depth («skrå-3D»): the back wall meets the floor at [back], the front edge
@@ -64,7 +83,7 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
 
         /** The place a fixture id belongs to, or null for an id that fits no place. */
         fun ofFixture(id: Int): PlaceId? =
-            entries.lastOrNull { id >= it.idBase }?.takeIf { id < it.idBase + (if (it.manor) 300 else 100) }
+            entries.lastOrNull { id >= it.idBase }?.takeIf { id < it.idBase + (if (it.big) 300 else 100) }
     }
 
     /** The blueprint index (or added slot) of a fixture id in this place. */
@@ -615,6 +634,9 @@ object Places {
             )
             // Storhuset: each floor describes itself in its own file (HouseGround.kt and so on).
             PlaceId.MANOR_GROUND, PlaceId.MANOR_UPPER, PlaceId.MANOR_ATTIC, PlaceId.MANOR_CELLAR, PlaceId.MANOR_GARDEN -> House.floor(id)!!.blueprint()
+
+            // Mitt hus: the stairs and doors only; the rooms are built by the child (see [Mine]).
+            PlaceId.MINE_YARD, PlaceId.MINE_GROUND, PlaceId.MINE_UPPER -> House.floor(id)!!.blueprint()
 
             PlaceId.HEILEBERGET -> PlaceSpec(
                 id,

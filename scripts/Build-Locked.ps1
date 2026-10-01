@@ -16,6 +16,9 @@ param(
     [switch]$Plain
 )
 
+# With -File, a list arrives as one string ("':a',':b'" or "':a :b'"): split it on commas and spaces and drop quotes.
+$Tasks = @($Tasks | ForEach-Object { $_ -split '[,\s]+' } | ForEach-Object { $_.Trim("'", '"') } | Where-Object { $_ })
+
 $env:TEMP = 'C:\topa\.gradle-tmp'
 $env:TMP = 'C:\topa\.gradle-tmp'
 $env:GRADLE_USER_HOME = 'C:\JellyBin\.gradle-home'
@@ -32,7 +35,8 @@ if (-not $got) {
     exit 2
 }
 try {
-    $gradleArgs = @('--no-daemon', '-Pkotlin.compiler.execution.strategy=in-process', '--console=plain')
+    # One shared daemon, reused by every build (the lock makes sure only one runs at a time).
+    $gradleArgs = @('--console=plain')
     if (-not $Plain) { $gradleArgs += '-q' }
     $gradleArgs += $Tasks
     if ($Suffix) { $gradleArgs += "-PtrollfossIdSuffix=$Suffix" }

@@ -25,7 +25,6 @@ object Decor {
     /** The rooms of a place, as x ranges. Home has four rooms; other places are one room. */
     fun rooms(place: PlaceId): List<ClosedFloatingPointRange<Float>> = when (place) {
         PlaceId.HOME -> listOf(0f..1.0f, 1.0f..2.45f, 2.45f..3.45f, 3.45f..place.width)
-        // The floors of the big house have several rooms each (see [Floor.rooms]).
         else -> House.rooms(place) ?: listOf(0f..place.width)
     }
 

@@ -26,6 +26,9 @@ import kotlin.math.sin
  */
 fun mapSpot(place: PlaceId): Offset = when (place) {
     PlaceId.MOUNTAIN -> Offset(0.17f, 0.25f)
+    // Mitt hus: the child's own plot (placeholder spot; the builder finds the right one).
+    PlaceId.MINE_YARD -> Offset(0.35f, 0.4f)
+    PlaceId.MINE_GROUND, PlaceId.MINE_UPPER -> Offset(0.5f, 0.5f)
     PlaceId.LAB -> Offset(0.62f, 0.25f)
     PlaceId.SPACE -> Offset(0.81f, 0.19f)
     PlaceId.TIVOLI -> Offset(0.12f, 0.54f)

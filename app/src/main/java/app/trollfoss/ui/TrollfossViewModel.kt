@@ -21,6 +21,7 @@ import app.trollfoss.audio.Sfx
 import app.trollfoss.audio.SoundFx
 import app.trollfoss.data.Settings
 import app.trollfoss.data.WorldStore
+import app.trollfoss.domain.Festival
 import app.trollfoss.domain.FixtureType
 import app.trollfoss.domain.HouseKeys
 import app.trollfoss.domain.Look
@@ -29,6 +30,9 @@ import app.trollfoss.domain.Mode
 import app.trollfoss.domain.Passage
 import app.trollfoss.domain.Person
 import app.trollfoss.domain.PlaceId
+import app.trollfoss.domain.Season
+import app.trollfoss.domain.SeasonChoice
+import app.trollfoss.domain.Seasons
 import app.trollfoss.domain.Secrets
 import app.trollfoss.domain.Sim
 import app.trollfoss.domain.Species
@@ -81,6 +85,11 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
 
     var screen by mutableStateOf<Screen>(Screen.Play)
     var place by mutableStateOf(PlaceId.HOME)
+        private set
+    /** The season and the feast showing now: the calendar's, unless the grown-ups chose otherwise. */
+    var season by mutableStateOf(Season.SUMMER)
+        private set
+    var festival by mutableStateOf(Festival.NONE)
         private set
     var night by mutableStateOf(false)
         private set
@@ -187,6 +196,9 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     private fun applySettings() {
         sfx.enabled = settings.sound
         music.enabled = settings.music
+        val today = java.time.LocalDate.now().toEpochDay()
+        season = Seasons.resolve(settings.season, today)
+        festival = if (settings.festive) Seasons.festival(today) else Festival.NONE
     }
 
     private var debugSkip = 0
@@ -197,6 +209,8 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         val start = cams[place] ?: defaultCam(place)
         return Engine(world, place, sim, this, motion, start).also {
             pendingFocus?.let { x -> it.focusOn(x); pendingFocus = null }
+            it.season = season
+            it.festival = festival
             it.skip = debugSkip
             engine = it
             radioOn = world.fixturesIn(place).any { f -> f.type == FixtureType.RADIO && f.on }
@@ -322,6 +336,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun setMaalform(m: Maalform) = updateSettings { it.copy(maalform = m) }
+    fun setSeason(s: SeasonChoice) = updateSettings { it.copy(season = s) }
 
     // ---------------------------------------------------------------------------------- photos
 
@@ -417,6 +432,8 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
                 PlaceId.MANOR_ATTIC -> MusicTheme.ATTIC
                 PlaceId.MANOR_CELLAR -> MusicTheme.CELLAR
                 PlaceId.MANOR_GARDEN -> MusicTheme.GARDEN
+                PlaceId.MINE_YARD -> MusicTheme.PARK
+                PlaceId.MINE_GROUND, PlaceId.MINE_UPPER -> MusicTheme.HOME
             }
         }
         music.play(theme)

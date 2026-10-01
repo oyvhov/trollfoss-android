@@ -244,6 +244,9 @@ class World {
     /** Progress in the big house: golden keys found, levers pulled, doors opened (see [House]). Saved. */
     val flags = linkedSetOf<String>()
 
+    /** The child's own house, built room by room (see [Mine]). Saved. */
+    val mine = MineHouse()
+
     /** Recipes made at least once. */
     val discoveries = linkedSetOf<String>()
 
