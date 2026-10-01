@@ -177,4 +177,68 @@ class AttractionsTest {
             assertEquals(3, Secrets.inPlace(place).size)
         }
     }
+
+    // ------------------------------------------------------------------ Heileberget
+
+    @Test
+    fun `the cable car takes riders up to the ledge and lets them out`() {
+        val world = WorldFactory.create(Random(51))
+        val sim = sim(world)
+        val cabin = fixture(world, PlaceId.HEILEBERGET, FixtureType.CABLE_CAR)
+        val rider = world.addPerson(Species.FOLK, Look(), 1f, PlaceId.HEILEBERGET, cabin.x, 0.8f)
+        assertTrue(sim.seat(rider, cabin, 0))
+        sim.tap(PlaceId.HEILEBERGET, cabin, 0f, -0.1f)
+        assertTrue(cabin.on)
+        step(sim, PlaceId.HEILEBERGET, 8.5f)
+        assertEquals(1, cabin.mode)
+        assertEquals(Mode.FREE, rider.mode)
+        assertEquals(Attractions.CABLE_TRAVEL, cabin.shiftX, 0.01f)
+        step(sim, PlaceId.HEILEBERGET, 2f)
+        val ledge = fixture(world, PlaceId.HEILEBERGET, FixtureType.ROCK_LEDGE)
+        assertEquals(ledge.id, rider.restOwner)
+        assertTrue(Fx.ARRIVE in events)
+        assertTrue("berg_cable" in world.unlocked)
+        // And back down again from the top station's bell.
+        val top = world.fixturesIn(PlaceId.HEILEBERGET).filter { it.type == FixtureType.CABLE_STATION }.maxByOrNull { it.x }!!
+        sim.tap(PlaceId.HEILEBERGET, top, 0f, -0.1f)
+        step(sim, PlaceId.HEILEBERGET, 8.5f)
+        assertEquals(0, cabin.mode)
+        assertEquals(0f, cabin.shiftX, 0.01f)
+    }
+
+    @Test
+    fun `the echo rock answers, and three shouts find the glimt`() {
+        val world = WorldFactory.create(Random(52))
+        val sim = sim(world)
+        val rock = fixture(world, PlaceId.HEILEBERGET, FixtureType.ECHO_ROCK)
+        repeat(3) { sim.tap(PlaceId.HEILEBERGET, rock, 0f, -0.2f) }
+        assertEquals(3, events.count { it == Fx.ECHO })
+        assertTrue("berg_echo" in world.unlocked)
+    }
+
+    @Test
+    fun `a figure on the summit raises the flag`() {
+        val world = WorldFactory.create(Random(53))
+        val sim = sim(world)
+        val flag = fixture(world, PlaceId.HEILEBERGET, FixtureType.SUMMIT_FLAG)
+        val summit = fixture(world, PlaceId.HEILEBERGET, FixtureType.SUMMIT_ROCK)
+        assertEquals(summit.id, flag.host)
+        step(sim, PlaceId.HEILEBERGET, 1f)
+        // The goat on the summit does not count; a figure does.
+        val hiker = world.addPerson(Species.FOLK, Look(), 1f, PlaceId.HEILEBERGET, summit.x - 0.2f, summit.y - summit.spec.h - 0.1f)
+        step(sim, PlaceId.HEILEBERGET, 2f)
+        assertEquals(summit.id, hiker.restOwner)
+        assertEquals(1, flag.mode)
+        assertTrue(Fx.SUMMIT in events)
+        assertTrue("berg_top" in world.unlocked)
+    }
+
+    @Test
+    fun `Heileberget is the longest place, with goats and its hikers`() {
+        val world = WorldFactory.create(Random(54))
+        assertTrue(PlaceId.entries.all { it == PlaceId.HEILEBERGET || it.width < PlaceId.HEILEBERGET.width / 2f })
+        val people = world.bodiesIn(PlaceId.HEILEBERGET).filterIsInstance<Person>()
+        assertEquals(3, people.count { it.species == Species.GOAT })
+        assertEquals(setOf("BesteSonja", "Tuva"), people.filter { it.species == Species.FOLK }.map { it.name }.toSet())
+    }
 }

@@ -107,6 +107,9 @@ enum class FixtureType {
     // Under water
     SHIPWRECK, KELP, GIANT_CLAM, CORAL, SUBMARINE, OCTOPUS,
 
+    // Heileberget: hut, cable car and stations, rock ledges, echo rock, eagle nest, summit flag
+    MOUNTAIN_HUT, CABLE_STATION, CABLE_CAR, ROCK_LEDGE, SUMMIT_ROCK, ECHO_ROCK, EAGLE_NEST, SUMMIT_FLAG,
+
     // Home designer catalogue, and tidying up
     RUG, PICTURE, AQUARIUM, BEANBAG, ARMCHAIR, BUNK_BED, TOY_BOX, DESK, FLOWER_POT, TRASH_BIN, ROBOT_VACUUM,
     ;
@@ -449,6 +452,23 @@ enum class FixtureType {
             CORAL -> FixtureSpec(0.30f, 0.22f, surfaces = listOf(SurfaceSpec(-0.1f, 0.1f, -0.22f)))
             SUBMARINE -> FixtureSpec(0.46f, 0.26f, front = true, spots = listOf(seat(-0.08f, -0.08f), seat(0.1f, -0.08f)), light = RRect(0.15f, -0.25f, 0.6f, 0f))
             OCTOPUS -> FixtureSpec(0.30f, 0.28f)
+
+            // Heileberget
+            MOUNTAIN_HUT -> FixtureSpec(
+                0.92f, 0.56f,
+                container = RRect(-0.3f, -0.36f, 0.3f, -0.02f),
+                surfaces = listOf(SurfaceSpec(-0.3f, 0.3f, -0.02f, interior = true), SurfaceSpec(-0.46f, 0.46f, -0.56f)),
+                light = RRect(-0.5f, -0.6f, 0.5f, 0.05f),
+            )
+            CABLE_STATION -> FixtureSpec(0.5f, 0.44f, surfaces = listOf(SurfaceSpec(-0.25f, 0.25f, -0.44f)), light = RRect(-0.3f, -0.5f, 0.3f, 0f))
+            // The cabin hangs from the cable; its floor is at the fixture's bottom edge. Two seats.
+            CABLE_CAR -> FixtureSpec(0.34f, 0.3f, front = true, spots = listOf(seat(-0.07f, -0.06f), seat(0.08f, -0.06f)), light = RRect(-0.3f, -0.4f, 0.3f, 0.1f))
+            // A tall rock with a flat top to stand on; the variant is the look (0 grey, 1 summit with snow).
+            ROCK_LEDGE -> FixtureSpec(1.3f, 0.3f, surfaces = listOf(SurfaceSpec(-0.6f, 0.6f, -0.3f)))
+            SUMMIT_ROCK -> FixtureSpec(1.2f, 0.5f, surfaces = listOf(SurfaceSpec(-0.5f, 0.5f, -0.5f)))
+            ECHO_ROCK -> FixtureSpec(0.5f, 0.42f, surfaces = listOf(SurfaceSpec(-0.2f, 0.2f, -0.42f)))
+            EAGLE_NEST -> FixtureSpec(0.36f, 0.2f, surfaces = listOf(SurfaceSpec(-0.12f, 0.12f, -0.12f)))
+            SUMMIT_FLAG -> FixtureSpec(0.22f, 0.22f)
 
             // Catalogue furniture. Variants are colours or motifs.
             RUG -> FixtureSpec(0.46f, 0.01f)

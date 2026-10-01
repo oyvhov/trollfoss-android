@@ -20,6 +20,8 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
     STAGE(3.2f, false, 0.90f, 0.07f),
     /** The sea floor off the beach: everything swims. */
     UNDERWATER(3.8f, true, 0.90f, 0.1f),
+    /** The great long mountain: a scene more than twice as wide as the others, to climb and explore. */
+    HEILEBERGET(9.0f, true, 0.88f, 0.02f),
     ;
 
     /**
@@ -159,7 +161,6 @@ object Places {
                 ),
                 people = listOf(
                     PersonDef(Species.FOLK, Look(skin = 2, height = 1.14f, hair = 1, hairColor = 1, top = 1, topColor = 6, bottom = 0, bottomColor = 11, shoes = 12, extra = 2), 1.3f, seat = 7 to 0, name = "Øyvind"),
-                    PersonDef(Species.FOLK, Look(skin = 5, height = 1.03f, hair = 6, hairColor = 0, eyes = 3, top = 2, topColor = 7, bottom = 2, bottomColor = 7, shoes = 8), 2.95f, y = 0.93f, hand = ThingType.CUP, handVariant = 3, name = "Tuva"),
                     PersonDef(Species.FOLK, Look(skin = 1, height = 0.78f, hair = 3, hairColor = 5, top = 1, topColor = 5, bottom = 1, bottomColor = 11, shoes = 0, extra = 1), 0.4f, seat = 2 to 0, name = "Hedda"),
                     PersonDef(Species.CAT, Look(skin = 0), 1.62f, y = 0.95f),
                 ),
@@ -370,7 +371,6 @@ object Places {
                 ),
                 people = listOf(
                     PersonDef(Species.FOLK, Look(skin = 1, height = 0.9f, hair = 5, hairColor = 3, eyes = 1, top = 5, topColor = 6, bottom = 0, bottomColor = 11, shoes = 0), 1.06f, seat = 2 to 0, hat = ThingType.BEANIE, hatVariant = 2, name = "Frida"),
-                    PersonDef(Species.FOLK, Look(skin = 2, height = 1.03f, hair = 6, hairColor = 6, eyes = 2, top = 2, topColor = 7, bottom = 2, bottomColor = 11, shoes = 12), 3.42f, hat = ThingType.BEANIE, glasses = ThingType.ROUND_GLASSES, name = "BesteSonja"),
                     PersonDef(Species.DOG, Look(skin = 1), 2.02f, y = 0.95f),
                 ),
             )
@@ -576,6 +576,51 @@ object Places {
                 people = listOf(
                     PersonDef(Species.FOLK, Look(skin = 0, height = 0.9f, hair = 8, hairColor = 5, eyes = 0, top = 3, topColor = 1, bottom = 0, bottomColor = 1, shoes = 10, extra = 1), 1.08f, y = 0.705f, glasses = ThingType.STAR_GLASSES, name = "Eilev"),
                     PersonDef(Species.DOG, Look(skin = 0), 0.54f, seat = 1 to 0, glasses = ThingType.SUNGLASSES),
+                ),
+            )
+            PlaceId.HEILEBERGET -> PlaceSpec(
+                id,
+                grounds = listOf(Ground(0f, id.width, floor)),
+                water = null,
+                fixtures = listOf(
+                    fl(FixtureType.MOUNTAIN_HUT, 0.75f, depth = -0.08f),          // 0
+                    fl(FixtureType.BENCH, 1.5f, depth = 0.02f),                   // 1
+                    fl(FixtureType.CAMPFIRE, 1.98f, depth = 0.05f),               // 2
+                    fl(FixtureType.LOG, 2.38f, depth = 0.05f),                    // 3
+                    fl(FixtureType.CABLE_STATION, 3.15f, depth = -0.08f),         // 4 bottom station
+                    fl(FixtureType.CABLE_CAR, 3.15f, depth = -0.04f),             // 5 the cabin; rides up to the ledge
+                    fl(FixtureType.ECHO_ROCK, 4.4f, depth = 0.03f),               // 6
+                    fl(FixtureType.PINE_TREE, 3.85f, depth = -0.11f),             // 7
+                    fl(FixtureType.TENT, 5.0f, depth = 0.04f),                    // 8
+                    fl(FixtureType.ROCK_LEDGE, 6.3f, depth = -0.03f),             // 9 reached by the cable car
+                    f(FixtureType.CABLE_STATION, 6.0f, 0.58f, on = 9),            // 10 top station
+                    fl(FixtureType.SUMMIT_ROCK, 8.15f, depth = -0.02f),           // 11 the summit
+                    f(FixtureType.SUMMIT_FLAG, 8.4f, 0.38f, on = 11),             // 12
+                    f(FixtureType.EAGLE_NEST, 7.8f, 0.38f, on = 11),              // 13
+                    fl(FixtureType.LAMP_POST, 2.75f, depth = -0.06f),             // 14
+                ),
+                things = listOf(
+                    t(ThingType.THERMOS, 1.55f, 0.79f, on = 1),
+                    t(ThingType.BUN, 1.42f, 0.79f, on = 1),
+                    t(ThingType.BINOCULARS, 2.4f, 0.79f, on = 3),
+                    t(ThingType.MARSHMALLOW, 2.3f, 0.79f, on = 3),
+                    t(ThingType.COCOA, 0.6f, 0.4f, on = 0),
+                    t(ThingType.EGG, 7.8f, 0.2f, 1, on = 13),
+                    t(ThingType.FEATHER, 7.45f, 0.3f, on = 11),
+                    t(ThingType.CARROT, 4.0f, 0.95f),
+                    t(ThingType.APPLE, 4.7f, 0.94f),
+                    t(ThingType.MUSHROOM, 3.55f, 0.94f),
+                    t(ThingType.FLOWER, 5.7f, 0.95f, 4),
+                    t(ThingType.FLOWER, 5.8f, 0.96f, 2),
+                    t(ThingType.ROCK, 2.95f, 0.95f),
+                    t(ThingType.GEM, 6.9f, 0.5f, 3, on = 9),
+                ),
+                people = listOf(
+                    PersonDef(Species.FOLK, Look(skin = 2, height = 1.03f, hair = 6, hairColor = 6, eyes = 2, top = 2, topColor = 7, bottom = 2, bottomColor = 11, shoes = 12), 1.5f, seat = 1 to 0, hat = ThingType.BEANIE, hatVariant = 2, glasses = ThingType.ROUND_GLASSES, name = "BesteSonja"),
+                    PersonDef(Species.FOLK, Look(skin = 5, height = 1.03f, hair = 6, hairColor = 0, eyes = 3, top = 2, topColor = 7, bottom = 2, bottomColor = 7, shoes = 8), 2.05f, y = 0.94f, hand = ThingType.THERMOS, name = "Tuva"),
+                    PersonDef(Species.GOAT, Look(skin = 0), 4.0f, y = 0.93f),
+                    PersonDef(Species.GOAT, Look(skin = 1), 6.65f, y = 0.4f),
+                    PersonDef(Species.GOAT, Look(skin = 2), 8.4f, y = 0.25f),
                 ),
             )
             PlaceId.UNDERWATER -> PlaceSpec(

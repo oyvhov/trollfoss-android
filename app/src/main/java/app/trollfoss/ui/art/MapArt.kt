@@ -38,7 +38,7 @@ fun mapSpot(place: PlaceId): Offset = when (place) {
     PlaceId.STAGE -> Offset(0.6f, 0.84f)
     PlaceId.BEACH -> Offset(0.74f, 0.83f)
     PlaceId.UNDERWATER -> Offset(0.88f, 0.84f)
-    else -> Offset(0.32f, 0.095f)
+    PlaceId.HEILEBERGET -> Offset(0.32f, 0.095f)
 }
 
 /**

@@ -261,6 +261,7 @@ class Engine(
 
         moveFurniture(dt)
         updateSky(dt)
+        updateWeather(dt)
         // Things flying home when tidied leave a trail of sparkles.
         if (motion) for (b in world.bodiesIn(place)) if (b.flyT >= 0f && random.nextFloat() < dt * 30f) {
             particles.add(Particle(PKind.SPARK, b.x, b.y - b.h / 2, 0f, 0f, 0.5f, 0.01f, T.SunTop))
@@ -1437,6 +1438,59 @@ class Engine(
                 particles.burst(PKind.HEART, elk.x, elk.y - elk.h, 8, 0.4f, 0.016f, up = 0.4f, life = 1.6f)
                 laughAround(elk.x, elk, 0.6f, 1f)
             }
+            Fx.CABLE -> {
+                s(Sfx.DING, 0.6f, 0.9f)
+                s(Sfx.CLICK, 0.7f, 0.6f)
+                pending += (time + 0.4f) to { s(Sfx.WHIRR, 0.5f, 0.55f) }
+            }
+            Fx.ARRIVE -> {
+                s(Sfx.DING, 0.85f, 1.15f)
+                s(Sfx.THUD, 0.4f, 0.8f)
+                for (o in world.bodiesIn(place)) if (o is Person && o.species == Species.FOLK && !o.held && abs(o.x - x) < 0.8f) {
+                    faces(o, Face.WOW, 0.5f, Face.GRIN, 1.4f)
+                    o.anim.hopV = 1.4f
+                }
+                particles.burst(PKind.SPARK, x, y, 10, 0.4f, 0.011f, T.SunTop)
+            }
+            Fx.ECHO -> {
+                // «HALLOOO!» The nearest figure shouts, and the mountain answers three times, softer and lower.
+                val shouter = person(param)
+                val base = (shouter?.voice ?: 1.1f) * 1.15f
+                if (shouter != null) {
+                    faces(shouter, Face.LAUGH, 1.6f, Face.GRIN, 1f)
+                    shouter.anim.talk = 1.6f
+                }
+                host.sfx(Sfx.OOH, 0.95f, base.coerceIn(0.5f, 2f))
+                host.sfx(Sfx.WHOOSH, 0.3f, 1.4f)
+                particles.burst(PKind.NOTE, x, y - 0.1f, 4, 0.35f, 0.013f, T.Grape, up = 0.1f, life = 1.2f)
+                for (k in 1..3) pending += (time + 0.62f * k) to {
+                    val r = (base * 0.93f.pow(k)).coerceIn(0.5f, 2f)
+                    host.sfx(Sfx.OOH, 0.6f / k, r)
+                    for (side in listOf(-1f, 1f)) particles.burst(PKind.SPARK, x + side * 0.35f * k, y - 0.12f - 0.03f * k, 4, 0.2f, 0.01f, T.SeaTop, up = 0.05f, life = 0.9f)
+                    // The second echo makes the goats answer.
+                    if (k == 2) for (g in world.bodiesIn(place)) if (g is Person && g.species == Species.GOAT && !g.held) {
+                        voice(g, Sfx.BAA, 0.6f)
+                        g.anim.hopV = 1.3f
+                    }
+                }
+            }
+            Fx.SCREECH -> {
+                s(Sfx.CHIRP, 0.9f, 0.5f)
+                s(Sfx.ROAR, 0.35f, 1.7f)
+                repeat(6) { particles.add(Particle(PKind.LEAF, x + (random.nextFloat() - 0.5f) * 0.12f, y, (random.nextFloat() - 0.5f) * 0.4f, -0.1f + random.nextFloat() * 0.2f, 2.4f, 0.011f, Color(0xFFE8DCC8), random.nextFloat() * 360f, (random.nextFloat() - 0.5f) * 300f)) }
+                for (o in world.bodiesIn(place)) if (o is Person && !o.held && o.anim.face != Face.SLEEP) faces(o, Face.OOH, 0.5f, Face.LAUGH, 1f)
+            }
+            Fx.SUMMIT -> {
+                s(Sfx.FANFARE, 1f)
+                pending += (time + 0.7f) to { s(Sfx.CHIME, 0.8f) }
+                particles.burst(PKind.CONFETTI, x, y, 36, 1f, 0.013f, up = 0.9f, life = 2f)
+                particles.burst(PKind.STAR, x, y + 0.05f, 12, 0.6f, 0.014f, T.Sun)
+                for (o in world.bodiesIn(place)) if (o is Person && !o.held && o.anim.face != Face.SLEEP) {
+                    o.anim.cheer = 2.4f
+                    faces(o, Face.LAUGH, 1.6f, Face.GRIN, 1.4f)
+                }
+                host.haptic()
+            }
             Fx.SETTLE -> {
                 // A little «ahh» as someone sits down, and a happy sigh when they lie down for the night.
                 s(if (param == 2) Sfx.HMM else Sfx.YUM, 0.4f, if (param == 2) 0.7f else 0.9f)
@@ -1702,9 +1756,11 @@ class Engine(
             Species.SHEEP -> Sfx.BAA
             Species.CHICKEN -> Sfx.CLUCK
             Species.HORSE -> Sfx.NEIGH
+            Species.GOAT -> Sfx.BAA
             Species.FOLK -> null
         }
         val rate = when (p.species) {
+            Species.GOAT -> 1.3f
             Species.ELK -> 1.25f
             Species.PUFFIN -> 0.75f
             Species.FOLK -> p.voice
@@ -1854,6 +1910,7 @@ class Engine(
         }
         drawVignette()
         drawWeather(weather)
+        withTransform({ translate(0f, top) }) { drawLightning() }
         drawFlights()
         drawBag(text, pen)
         if (flash > 0f) drawRect(Color.White.copy(alpha = flash * 0.85f))
@@ -2237,6 +2294,100 @@ class Engine(
             else -> 13f
         }
         return with(sprites) { stampSlow(SlowKey(b.id, 3), bounds, pen.t, hz, draw) }
+    }
+
+    // ---------------------------------------------------------------------------------- thunder and greetings
+
+    private var lightning = 0f
+    private var boltX = 0f
+    private val bolt = FloatArray(14)
+    private var nextStrike = 8f
+    private var greeted = false
+
+    /** One flash and its thunder right now (debug hook and the weather both use it). */
+    fun strike() {
+        lightning = 1f
+        boltX = cam + viewport * (0.15f + random.nextFloat() * 0.7f)
+        for (i in bolt.indices) bolt[i] = (random.nextFloat() - 0.5f) * 0.07f
+        pending += (time + 0.13f) to { lightning = 0.85f }
+        pending += (time + 0.35f + random.nextFloat() * 1.3f) to {
+            host.sfx(Sfx.RUMBLE, 0.95f, 0.6f)
+            host.sfx(Sfx.THUD, 0.6f, 0.45f)
+            shake = max(shake, 0.35f)
+            for (o in world.bodiesIn(place)) {
+                if (o !is Person || o.held || o.anim.face == Face.SLEEP) continue
+                faces(o, Face.OOH, 0.6f, Face.GRIN, 1.2f)
+                if (o.anim.pose == Pose.STAND && o.anim.hop == 0f && random.nextFloat() < 0.6f) o.anim.hopV = 1.7f
+            }
+        }
+    }
+
+    /** Rain outdoors sometimes brings lightning, and thunder a moment after it. */
+    private fun updateWeather(dt: Float) {
+        lightning = max(0f, lightning - dt * 3.2f)
+        if (!greeted) {
+            greeted = true
+            greetVisitors()
+        }
+        if (!motion || !place.outdoor || place == PlaceId.UNDERWATER || world.weather != Weather.RAIN) return
+        nextStrike -= dt
+        if (nextStrike > 0f) return
+        nextStrike = 7f + random.nextFloat() * 14f
+        lightning = 1f
+        boltX = cam + viewport * (0.15f + random.nextFloat() * 0.7f)
+        for (i in bolt.indices) bolt[i] = (random.nextFloat() - 0.5f) * 0.07f
+        // The flicker: a second flash right after the first.
+        pending += (time + 0.13f) to { lightning = 0.85f }
+        val delay = 0.35f + random.nextFloat() * 1.3f
+        pending += (time + delay) to {
+            host.sfx(Sfx.RUMBLE, 0.95f, 0.6f)
+            host.sfx(Sfx.THUD, 0.6f, 0.45f)
+            shake = max(shake, 0.35f)
+            for (o in world.bodiesIn(place)) {
+                if (o !is Person || o.held || o.anim.face == Face.SLEEP) continue
+                faces(o, Face.OOH, 0.6f, Face.GRIN, 1.2f)
+                if (o.anim.pose == Pose.STAND && o.anim.hop == 0f && random.nextFloat() < 0.6f) o.anim.hopV = 1.7f
+            }
+        }
+    }
+
+    private fun DrawScope.drawLightning() {
+        if (lightning <= 0.02f) return
+        val a = lightning
+        if (lightning > 0.55f) {
+            val path = androidx.compose.ui.graphics.Path()
+            var x = sx(boltX)
+            var y = -top
+            path.moveTo(x, y)
+            val steps = bolt.size
+            for (i in 0 until steps) {
+                x += bolt[i] * u
+                y += (heightPx + top) * 0.55f / steps
+                path.lineTo(x, y)
+            }
+            drawPath(path, Color.White.copy(alpha = 0.35f * a), style = Stroke(dp(10f), cap = StrokeCap.Round))
+            drawPath(path, Color.White.copy(alpha = a), style = Stroke(dp(3.5f), cap = StrokeCap.Round))
+        }
+        drawRect(Color(0xFFEAF2FF).copy(alpha = 0.55f * a), Offset(0f, -top), Size(size.width, size.height + top))
+    }
+
+    /** Arriving in a place: the folk in view look up and wave hello, one after another. */
+    private fun greetVisitors() {
+        var n = 0
+        for (o in world.bodiesIn(place)) {
+            if (o !is Person || o.species != Species.FOLK || o.held || o.anim.face == Face.SLEEP || !visible(o)) continue
+            val wait = 0.35f + n * 0.3f + random.nextFloat() * 0.25f
+            n++
+            pending += (time + wait) to {
+                if (!o.held && o.anim.face != Face.SLEEP) {
+                    o.anim.wave = 1.5f
+                    o.anim.face = Face.GRIN
+                    o.anim.faceTime = 1.4f
+                    if (n <= 3) voice(o, Sfx.BABBLE, 0.22f)
+                }
+            }
+            if (n >= 4) break
+        }
     }
 
     // ---------------------------------------------------------------------------------- the night sky

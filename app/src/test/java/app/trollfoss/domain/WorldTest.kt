@@ -219,7 +219,7 @@ class WorldTest {
             assertTrue(sim.collect(s.id))
         }
         assertTrue(world.allSecretsFound())
-        assertEquals(42, Secrets.all.size)
+        assertEquals(45, Secrets.all.size)
         for (place in PlaceId.entries) assertEquals("three glimt in $place", 3, Secrets.inPlace(place).size)
     }
 

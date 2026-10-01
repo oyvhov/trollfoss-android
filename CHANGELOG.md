@@ -2,8 +2,10 @@
 
 ## 1.0.0 – første utgåve
 
-- 14 stader i bygda Trollfoss: Heime, Bakeriet, Frisøren, Stranda, Fossen, Trollhola, Fjellet, Garden,
-  Romstasjonen, Tivoliet, Butikken, Legekontoret, Scena og Havbotnen – alle i skrå-3D.
+- 15 stader i bygda Trollfoss: Heime, Bakeriet, Frisøren, Stranda, Fossen, Trollhola, Fjellet, Garden,
+  Romstasjonen, Tivoliet, Butikken, Legekontoret, Scena, Havbotnen og det store, lange fjellet
+  Heileberget (taubane, ekko, ørnerede, toppflagg og fjellgeiter) – alle i skrå-3D.
+- Løynde overraskingar, tordenver med lyn og figurar som helsar når du kjem, går tur og legg seg om natta.
 - Ønskjebobler, figurar som pratar saman og dyr som tuslar rundt.
 - Humor: prompepute, bananskal, pepar-nys, bonk, kake i fjeset, hikke, rap, kiling og matstelande hund.
 - Heimedesignar: flytt møblar, møbelkatalog, 12 tapet, 9 golv og møbellager.
@@ -15,6 +17,6 @@
 - Figurverkstad med hud, høgd, frisyre, hårfarge, auge, øyre, klede, sko og namn.
 - Maskinar: omn, blender, komfyr, vedomn, bål, trollgryte, arbeidsbenk, kjøkkenhage og fiskeplass.
 - Traktor, rakett, akebakke, hoppbakke og vektløyse i romstasjonen med ekte planetar.
-- 42 løynde glimt, oppdagingsbok med oppskrifter og dagens pakke i postkassa.
+- 45 løynde glimt, oppdagingsbok med oppskrifter og dagens pakke i postkassa.
 - Dag og natt med nordlys, regn, snø og regnboge. Kamera og fotoalbum.
 - Foreldreside med lyd, musikk, målform og oppdatering frå GitHub.

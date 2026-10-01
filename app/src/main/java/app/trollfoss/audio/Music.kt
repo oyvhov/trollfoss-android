@@ -11,7 +11,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /** One loop per place, one for the map, a lullaby for the night and dance music for the radio. */
-enum class MusicTheme { MAP, HOME, CAFE, SALON, BEACH, FOREST, LAB, PARK, FARM, SPACE, RADIO, NIGHT, TIVOLI, SHOP, DOCTOR, STAGE, SEA }
+enum class MusicTheme { MAP, HOME, CAFE, SALON, BEACH, FOREST, LAB, PARK, FARM, SPACE, RADIO, NIGHT, TIVOLI, SHOP, DOCTOR, STAGE, SEA, BERG }
 
 /**
  * Composes calm, looping background music in code: chords on a soft pad, a plucked arpeggio or bell
@@ -238,6 +238,20 @@ object MusicComposer {
             bellChance = 0.5,
             padLevel = 0.24,
             seed = 89,
+        ),
+        // Wide and majestic, with a little yodel of bells: the great mountain.
+        MusicTheme.BERG to Recipe(
+            bpm = 84.0,
+            chords = listOf(intArrayOf(55, 62, 67, 71), intArrayOf(52, 59, 64, 67), intArrayOf(57, 64, 69, 72), intArrayOf(50, 57, 62, 66)),
+            bass = intArrayOf(31, 28, 33, 26),
+            arpeggio = intArrayOf(0, -1, 2, -1, 1, -1, 3, 2),
+            arpeggioShift = 12,
+            pluckDecay = 5.0,
+            arpeggioLevel = 0.15,
+            bells = intArrayOf(79, 83, 86, 88, 91),
+            bellChance = 0.35,
+            padLevel = 0.2,
+            seed = 97,
         ),
         // A lullaby for the night.
         MusicTheme.NIGHT to Recipe(

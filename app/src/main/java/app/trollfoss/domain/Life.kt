@@ -142,7 +142,7 @@ class Life(private val sim: Sim, private val random: Random) {
         return when (p.species) {
             Species.FOLK -> type.edible || type.cat == Cat.HAT || type.cat == Cat.GLASSES || type.cat == Cat.TOY
             Species.DOG, Species.CAT -> type == ThingType.BALL || type == ThingType.FISH || type == ThingType.SAUSAGE || type == ThingType.GRILLED_SAUSAGE
-            Species.BUNNY, Species.HORSE, Species.COW, Species.SHEEP, Species.ELK -> type == ThingType.CARROT || type == ThingType.APPLE
+            Species.BUNNY, Species.HORSE, Species.COW, Species.SHEEP, Species.ELK, Species.GOAT -> type == ThingType.CARROT || type == ThingType.APPLE
             Species.PUFFIN -> type == ThingType.FISH
             Species.CHICKEN -> type == ThingType.SEEDS
             Species.DRAGON -> type == ThingType.TOASTED_MARSHMALLOW || type == ThingType.GRILLED_SAUSAGE || type == ThingType.COOKIE
@@ -354,7 +354,7 @@ class Life(private val sim: Sim, private val random: Random) {
     private fun speedOf(s: Species): Float = when (s) {
         Species.CHICKEN, Species.PUFFIN -> 0.07f
         Species.COW, Species.SHEEP -> 0.05f
-        Species.HORSE, Species.DOG -> 0.11f
+        Species.HORSE, Species.DOG, Species.GOAT -> 0.11f
         else -> 0.08f
     }
 
