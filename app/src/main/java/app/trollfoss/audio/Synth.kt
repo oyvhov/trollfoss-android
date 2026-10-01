@@ -25,6 +25,8 @@ enum class Sfx {
 
     // Storhuset. Each floor adds its sounds in its own block, and their recipes in [Synth.voices] below.
     // ---- ground floor ----
+    GR_BONG, GR_CLANK, GR_CREAK, GR_TINKLE, GR_CRACKLE, GR_FLAP, GR_BELL, GR_CLINK, GR_POPCORN, GR_FILM,
+    GR_WHOOMP, GR_BLEND, GR_RATTLE, GR_TALK, GR_TADA, GR_SHUSH, GR_SLURP,
 
     // ---- upper floor ----
 
@@ -420,6 +422,87 @@ object Synth {
         )
 
         // ---- Storhuset ground floor ----
+        // The grandfather clock: a deep bell with a woody strike.
+        Sfx.GR_BONG -> listOf(
+            Tone(196.0, 0.0, 1.8, 0.62, bell, decay = 2.0),
+            Tone(392.0, 0.0, 1.3, 0.24, bell, decay = 2.8),
+            Tone(98.0, 0.0, 1.2, 0.3, soft, decay = 3.0),
+            Noise(0.0, 0.03, 0.3, 1800.0, 600.0, decay = 80.0, seed = 41),
+        )
+        // The armour: two metallic clanks.
+        Sfx.GR_CLANK -> listOf(
+            Noise(0.0, 0.08, 0.6, 3400.0, 1500.0, decay = 35.0, seed = 42),
+            Tone(880.0, 0.0, 0.22, 0.32, listOf(1.0 to 1.0, 2.76 to 0.55, 5.4 to 0.3, 8.9 to 0.12), decay = 12.0),
+            Noise(0.1, 0.07, 0.5, 4000.0, 1800.0, decay = 40.0, seed = 43),
+            Tone(1175.0, 0.1, 0.2, 0.28, listOf(1.0 to 1.0, 2.76 to 0.55, 5.4 to 0.3, 8.9 to 0.12), decay = 12.0),
+        )
+        // An old door that complains.
+        Sfx.GR_CREAK -> listOf(
+            Tone(180.0, 0.0, 0.6, 0.34, buzzy, decay = 1.2, slideTo = 270.0, vibrato = 1.2, vibratoHz = 22.0, attack = 0.05),
+            Tone(250.0, 0.5, 0.45, 0.3, buzzy, decay = 1.4, slideTo = 165.0, vibrato = 1.6, vibratoHz = 27.0, attack = 0.03),
+            Noise(0.0, 0.95, 0.1, 600.0, 950.0, swell = true, seed = 44),
+        )
+        // Crystal prisms knocking together.
+        Sfx.GR_TINKLE -> listOf(2093.0, 3136.0, 2637.0, 3951.0, 4699.0, 3520.0, 2794.0, 4186.0, 3322.0).mapIndexed { i, f ->
+            Tone(f, i * 0.05, 0.6, 0.15, decay = 5.5)
+        }
+        // Logs crackling and a low roar.
+        Sfx.GR_CRACKLE -> listOf(
+            Crackle(0.0, 0.9, 0.22, 0.55, seed = 5),
+            Noise(0.0, 0.9, 0.09, 200.0, 360.0, swell = true, seed = 45),
+        )
+        // Books flapping out of the shelf like startled birds.
+        Sfx.GR_FLAP -> (0 until 6).map { i -> Noise(i * 0.065, 0.05, 0.45, 950.0, 320.0, decay = 50.0, seed = 50 + i) }
+        // The little brass bell on the table.
+        Sfx.GR_BELL -> listOf(
+            Tone(2637.0, 0.0, 1.0, 0.45, bell, decay = 4.5),
+            Tone(3951.0, 0.0, 0.7, 0.24, bell, decay = 6.5),
+            Noise(0.0, 0.015, 0.25, 4000.0, decay = 150.0, seed = 46),
+        )
+        // Plates and glasses landing.
+        Sfx.GR_CLINK -> listOf(
+            Tone(3136.0, 0.0, 0.3, 0.3, soft, decay = 18.0),
+            Tone(4186.0, 0.03, 0.26, 0.25, soft, decay = 20.0),
+            Tone(2349.0, 0.07, 0.34, 0.28, soft, decay = 16.0),
+            Tone(3520.0, 0.12, 0.26, 0.2, soft, decay = 22.0),
+        )
+        // Corn popping in the pan.
+        Sfx.GR_POPCORN -> listOf<Voice>(Crackle(0.0, 1.5, 0.36, 0.7, seed = 7)) +
+            (0 until 9).map { i -> Tone(480.0 + i * 41.0, 0.02 + i * 0.16, 0.05, 0.3, soft, decay = 40.0, slideTo = 1000.0 + i * 20.0) }
+        // The film starts: da-da-daaa.
+        Sfx.GR_FILM -> listOf(
+            Tone(261.6, 0.0, 0.24, 0.4, brass, decay = 4.0, attack = 0.02),
+            Tone(329.6, 0.26, 0.24, 0.4, brass, decay = 4.0, attack = 0.02),
+            Tone(392.0, 0.52, 0.24, 0.4, brass, decay = 4.0, attack = 0.02),
+            Tone(523.25, 0.8, 1.2, 0.46, brass, decay = 1.8, attack = 0.02),
+            Tone(392.0, 0.8, 1.2, 0.2, bell, decay = 2.0),
+            Tone(261.6, 0.8, 1.2, 0.2, bell, decay = 2.0),
+        )
+        // A wood oven taking a breath of fire.
+        Sfx.GR_WHOOMP -> listOf(
+            Noise(0.0, 0.55, 0.6, 150.0, 720.0, swell = true, seed = 47),
+            Tone(80.0, 0.0, 0.45, 0.5, soft, decay = 6.0, slideTo = 45.0),
+        )
+        // The mixer winding up.
+        Sfx.GR_BLEND -> listOf(
+            Tone(110.0, 0.0, 1.5, 0.34, buzzy, decay = 0.3, slideTo = 320.0, vibrato = 0.5, vibratoHz = 34.0, attack = 0.1),
+            Noise(0.0, 1.5, 0.2, 800.0, 2500.0, decay = 0.3, attack = 0.1, seed = 48),
+        )
+        // The ladder rolling along its brass rail.
+        Sfx.GR_RATTLE -> listOf<Voice>(Noise(0.0, 0.7, 0.24, 300.0, 700.0, swell = true, seed = 13)) +
+            (0 until 9).map { i -> Tone(160.0 + (i % 3) * 32.0, i * 0.07, 0.05, 0.3, soft, decay = 40.0) }
+        // The talking book: a gravelly, deep mumble.
+        Sfx.GR_TALK -> syllables(7, 300.0, 11.0, 0.09, 0.035, vowelO, 0.42, seed = 31)
+        // Rolf's «ta-da».
+        Sfx.GR_TADA -> listOf(880.0, 1175.0, 1480.0).mapIndexed { i, f -> Tone(f, i * 0.1, 0.09, 0.32, buzzy, decay = 10.0) } +
+            Tone(1760.0, 0.3, 0.45, 0.4, bell, decay = 4.0)
+        // «Shhhh!»
+        Sfx.GR_SHUSH -> listOf(Noise(0.0, 0.7, 0.55, 5200.0, 4300.0, attack = 0.1, swell = true, seed = 33))
+        // A hungry plant slurping something down.
+        Sfx.GR_SLURP -> listOf(
+            Noise(0.0, 0.4, 0.45, 800.0, 2800.0, swell = true, seed = 35),
+            Tone(300.0, 0.0, 0.35, 0.3, soft, decay = 6.0, slideTo = 720.0, vibrato = 0.6, vibratoHz = 15.0),
+        )
 
         // ---- Storhuset upper floor ----
 

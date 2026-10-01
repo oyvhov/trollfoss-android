@@ -185,6 +185,16 @@ enum class ThingType(
 
     // Each floor adds its things in its own block; their art goes in the floor's art file.
     // ---- ground floor ----
+    /** A closed umbrella from the stand in the hall; the variant is its colour. */
+    GR_UMBRELLA(0.04f, 0.15f, Cat.TOOL, variants = 4),
+    /** The daily letter from the hall's postal slot. */
+    GR_LETTER(0.06f, 0.04f, Cat.TOY, variants = 4),
+    /** A map pin that jumps out of the spinning globe. */
+    GR_PIN(0.022f, 0.05f, Cat.TOOL, variants = 4),
+    /** A jar of jam from the kitchen cupboard: strawberry, blueberry, cloudberry, plum. */
+    GR_JAM(0.04f, 0.052f, Cat.FOOD, bites = 2, variants = 4),
+    /** Rolf's silver tray with a cloche. */
+    GR_TRAY(0.13f, 0.085f, Cat.TOOL),
 
     // ---- upper floor ----
 

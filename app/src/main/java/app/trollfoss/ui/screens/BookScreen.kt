@@ -147,7 +147,8 @@ private fun SecretsPage(vm: TrollfossViewModel) {
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 GameText(S.place(place).str(), fontSize = 16.sp, style = MaterialTheme.typography.titleLarge, color = Color.White)
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                // Three stars fit in a row; the floors of the big house may have more, and then they wrap.
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     for (s in secrets) {
                         val got = s.id in vm.world.found
                         Canvas(Modifier.size(36.dp)) {

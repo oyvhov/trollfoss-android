@@ -9,6 +9,7 @@ enum class Deed {
     // Storhuset: taking any way between floors, then each floor's own deeds in its block.
     PASSAGE,
     // ---- ground floor ----
+    GR_FILM, GR_TABLE, GR_FEED, GR_PIZZA, GR_GROW, GR_LEVER, GR_SPLASH,
 
     // ---- upper floor ----
 
@@ -150,6 +151,11 @@ class TaskBook(private val world: World) {
 
             // Storhuset. Each floor adds its tasks in its own block (a place of its own, a picture, a deed).
             // ---- ground floor ----
+            Task("ground_film", PlaceId.MANOR_GROUND, 1, thing = ThingType.POPCORN, icon = "star", match = deed(Deed.GR_FILM)),
+            Task("ground_table", PlaceId.MANOR_GROUND, 1, thing = ThingType.GR_TRAY, match = deed(Deed.GR_TABLE)),
+            Task("ground_sofie", PlaceId.MANOR_GROUND, 1, thing = ThingType.APPLE, icon = "burp", match = deed(Deed.GR_FEED)),
+            Task("ground_pizza", PlaceId.MANOR_GROUND, 1, thing = ThingType.PIZZA, match = deed(Deed.GR_PIZZA)),
+            Task("ground_plants", PlaceId.MANOR_GROUND, 2, thing = ThingType.WATERING_CAN, match = deed(Deed.GR_GROW)),
 
             // ---- upper floor ----
 

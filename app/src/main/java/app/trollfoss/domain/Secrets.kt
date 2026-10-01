@@ -75,9 +75,14 @@ object Secrets {
         // Storhuset. Three glimt per floor at least; each floor's builder replaces its stand-ins below
         // (an `on` or `inside` is a blueprint index in that floor).
         // ---- ground floor ----
-        Secret("ground_hall", PlaceId.MANOR_GROUND, 1.0f, 0.3f, event = true),
-        Secret("ground_library", PlaceId.MANOR_GROUND, 4.8f, 0.3f, event = true),
-        Secret("ground_kitchen", PlaceId.MANOR_GROUND, 8.8f, 0.3f, event = true),
+        // Riddar Rusten's helmet pops off, the film night starts, the red book opens the library, the cake's candles
+        // are blown out, a pizza comes from the oven and a plant in the winter garden blooms.
+        Secret("ground_hall", PlaceId.MANOR_GROUND, 1.88f, 0.70f, event = true, on = GroundIx.ARMOUR),
+        Secret("ground_living", PlaceId.MANOR_GROUND, 3.12f, 0.64f, event = true, on = GroundIx.SOFA),
+        Secret("ground_library", PlaceId.MANOR_GROUND, 5.06f, 0.64f, event = true, on = GroundIx.SECRET_SHELF),
+        Secret("ground_dining", PlaceId.MANOR_GROUND, 7.0f, 0.64f, event = true, on = GroundIx.DINING_TABLE),
+        Secret("ground_kitchen", PlaceId.MANOR_GROUND, 9.14f, 0.7f, event = true, on = GroundIx.PIZZA_OVEN),
+        Secret("ground_garden", PlaceId.MANOR_GROUND, 10.3f, 0.62f, event = true, on = GroundIx.FERN),
 
         // ---- upper floor ----
         Secret("upper_slide", PlaceId.MANOR_UPPER, 5.0f, 0.3f, event = true),

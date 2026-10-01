@@ -222,7 +222,11 @@ class WorldTest {
         }
         assertTrue(world.allSecretsFound())
         assertTrue(Secrets.all.size >= 60)
-        // Every place has at least three glimt, except the two floors of the child's own house (their glimt wait in the yard).`n        for (place in PlaceId.entries) {`n            val n = Secrets.inPlace(place).size`n            if (place == PlaceId.MINE_GROUND || place == PlaceId.MINE_UPPER) assertEquals("no glimt in $place", 0, n) else assertTrue("at least three glimt in $place", n >= 3)`n        }
+        // Every place has at least three glimt, except the two floors of the child's own house (their glimt wait in the yard).
+        for (place in PlaceId.entries) {
+            val n = Secrets.inPlace(place).size
+            if (place == PlaceId.MINE_GROUND || place == PlaceId.MINE_UPPER) assertEquals("no glimt in $place", 0, n) else assertTrue("at least three glimt in $place", n >= 3)
+        }
     }
 
     @Test
