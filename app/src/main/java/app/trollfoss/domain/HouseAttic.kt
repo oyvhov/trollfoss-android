@@ -148,7 +148,7 @@ object AtticFloor : Floor {
             w(FixtureType.AT_STAR_MAP, 5.9f, 0.5f),                            // 20
             f(FixtureType.STOOL, 6.18f, depth = 0.04f),                        // 21
             f(FixtureType.TELESCOPE, 6.55f, depth = -0.03f),                   // 22 opens the telescope screen
-            w(FixtureType.AT_WEATHER_VANE, 6.5f, 0.3f),                        // 23
+            w(FixtureType.AT_WEATHER_VANE, 6.64f, 0.62f),                      // 23 a model on the window sill
             f(FixtureType.AT_ARMILLARY, 7.05f, depth = 0.04f),                 // 24
             w(FixtureType.AT_BAROMETER, 7.3f, 0.48f),                          // 25
             w(FixtureType.AT_OWL_HOLE, 6.95f, 0.24f),                          // 26
@@ -159,8 +159,8 @@ object AtticFloor : Floor {
             f(FixtureType.AT_TREASURE_CHEST, 8.45f, depth = 0.07f),            // 30
             w(FixtureType.AT_FAMILY_TREE, 8.12f, 0.64f),                       // 31
             w(FixtureType.AT_CHANDELIER, 8.15f, 0.2f),                         // 32
-            w(FixtureType.AT_SCONCE, 7.62f, 0.5f),                             // 33
-            w(FixtureType.AT_SCONCE, 8.6f, 0.5f),                              // 34
+            w(FixtureType.AT_SCONCE, 7.8f, 0.5f),                              // 33
+            w(FixtureType.AT_SCONCE, 8.62f, 0.5f),                             // 34
         )
         val things = listOf(
             t(ThingType.TEDDY, 0.95f, 0.38f, on = AtticIds.SHELF),

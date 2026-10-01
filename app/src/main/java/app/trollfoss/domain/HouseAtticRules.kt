@@ -195,14 +195,16 @@ class HouseAtticRules(private val sim: Sim, private val random: Random) : FloorR
 
     // ------------------------------------------------------------------ seats
 
-    /** The rocking horse carries its rider along with it. */
+    /** The rocking horse carries its rider along with it: the rockers roll, so the saddle swings round their middle. */
     override fun seatPoint(f: Fixture, spot: Int): FloatArray? {
         if (f.type != FixtureType.AT_ROCKING_HORSE) return null
         val s = f.spec.spots[spot]
         val a = f.angle
         val c = cos(a)
         val n = sin(a)
-        return floatArrayOf(f.x + f.shiftX + s.dx * c - s.dy * n, f.y + f.shiftY + s.dx * n + s.dy * c)
+        val r = HORSE_RADIUS
+        val dy = s.dy + r
+        return floatArrayOf(f.x + f.shiftX + r * a + s.dx * c - dy * n, f.y + f.shiftY - r + s.dx * n + dy * c)
     }
 
     // ------------------------------------------------------------------ hiding places
@@ -615,6 +617,9 @@ class HouseAtticRules(private val sim: Sim, private val random: Random) : FloorR
         const val CONSTELLATIONS = 5
         const val PORTRAITS = 6
         const val IDLE_ROLL = 25f
+
+        /** The radius of the horse's rockers, which is also where the art turns it (see atRockingHorse). */
+        const val HORSE_RADIUS = 0.12f
 
         /** The record that gets stuck (see [AtticTunes]). */
         const val STUCK_RECORD = 4
