@@ -122,7 +122,7 @@ object House {
      * True for the places whose fixtures may be ways between places: the floors of the house, and Trollhola
      * (its end of the secret tunnel from the cellar).
      */
-    fun hasPassages(place: PlaceId): Boolean = place.manor || place == PlaceId.LAB
+    fun hasPassages(place: PlaceId): Boolean = place.big || place == PlaceId.LAB
 
     /** The passage that [f] is the way in of, or null for any other fixture. */
     fun passageAt(f: Fixture): Passage? {

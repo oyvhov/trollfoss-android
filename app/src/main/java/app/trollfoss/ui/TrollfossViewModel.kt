@@ -527,7 +527,8 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         build?.let { b ->
             mineUi.open = b == "on"
             sim.mine.setBuildMode(b == "on", PlaceId.entries.firstOrNull { it.name.equals(placeName, true) } ?: world.place)
-        }        placeName?.let { name -> PlaceId.entries.firstOrNull { it.name.equals(name, true) }?.let { travel(it) } }
+        }
+        placeName?.let { name -> PlaceId.entries.firstOrNull { it.name.equals(name, true) }?.let { travel(it) } }
         when (screenName?.lowercase()) {
             "map" -> open(Screen.Map)
             "creator" -> open(Screen.Creator(null))

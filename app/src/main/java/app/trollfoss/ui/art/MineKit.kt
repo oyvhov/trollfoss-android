@@ -176,8 +176,8 @@ internal fun DrawScope.drawMineDoor(style: Int, l: Float, t: Float, r: Float, b:
             for (k in 1 until 4) drawLine(dark, Offset(l + leafW * k / 4f, t + h * 0.04f), Offset(l + leafW * k / 4f, b - h * 0.02f), strokeWidth = pen.lw * 0.7f)
             val c = Offset(cx, t + h * 0.3f)
             val s = leafW * 0.17f
-            drawPath(heartPath(c.x, c.y, s), MineC.lit.copy(alpha = 0.55f + 0.4f * lit))
-            drawPath(heartPath(c.x, c.y, s), Ink.line, style = pen.thin)
+            drawPath(mineHeartPath(c.x, c.y, s), MineC.lit.copy(alpha = 0.55f + 0.4f * lit))
+            drawPath(mineHeartPath(c.x, c.y, s), Ink.line, style = pen.thin)
         }
         else -> {
             val mid = l + leafW * 0.5f
@@ -201,7 +201,7 @@ internal fun DrawScope.drawMineDoor(style: Int, l: Float, t: Float, r: Float, b:
     }
 }
 
-internal fun heartPath(cx: Float, cy: Float, s: Float): Path = Path().apply {
+internal fun mineHeartPath(cx: Float, cy: Float, s: Float): Path = Path().apply {
     moveTo(cx, cy + s * 0.75f)
     cubicTo(cx - s * 1.3f, cy - s * 0.05f, cx - s * 0.7f, cy - s * 1.05f, cx, cy - s * 0.45f)
     cubicTo(cx + s * 0.7f, cy - s * 1.05f, cx + s * 1.3f, cy - s * 0.05f, cx, cy + s * 0.75f)

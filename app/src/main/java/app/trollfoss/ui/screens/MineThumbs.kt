@@ -146,8 +146,8 @@ object BuildIcons {
             val roof = Path().apply { moveTo(6f * s, 46f * s); lineTo(50f * s, 8f * s); lineTo(94f * s, 46f * s); close() }
             inked(roof, Color(0xFFD2443A), pen)
             inkedRound(Rect(14f * s, 44f * s, 86f * s, 92f * s), 4f * s, Color(0xFFFFC83D), pen)
-            drawPath(app.trollfoss.ui.art.heartPath(50f * s, 64f * s, 12f * s), T.Berry)
-            drawPath(app.trollfoss.ui.art.heartPath(50f * s, 64f * s, 12f * s), Ink.line, style = pen.thin)
+            drawPath(app.trollfoss.ui.art.mineHeartPath(50f * s, 64f * s, 12f * s), T.Berry)
+            drawPath(app.trollfoss.ui.art.mineHeartPath(50f * s, 64f * s, 12f * s), Ink.line, style = pen.thin)
         }
     }
 }

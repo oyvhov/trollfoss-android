@@ -280,14 +280,14 @@ private val upStatic = Memo { u ->
 // ---------------------------------------------------------------------------------------------- the dividers
 
 /** A divider wall: how its door looks. */
-private class Opening(val d0: Float, val d1: Float, val height: Float)
+private class UpOpening(val d0: Float, val d1: Float, val height: Float)
 
 private val openings = listOf(
-    Opening(0.16f, 0.74f, 0.5f),  // landing to children's room
-    Opening(0.1f, 0.8f, 0.56f),   // children's room to playroom: a wide arch
-    Opening(0.16f, 0.74f, 0.5f),  // playroom to bathroom
-    Opening(0.16f, 0.74f, 0.5f),  // bathroom to bedroom
-    Opening(0.04f, 0.88f, 0.6f),  // bedroom to the balcony: a glass door
+    UpOpening(0.16f, 0.74f, 0.5f),  // landing to children's room
+    UpOpening(0.1f, 0.8f, 0.56f),   // children's room to playroom: a wide arch
+    UpOpening(0.16f, 0.74f, 0.5f),  // playroom to bathroom
+    UpOpening(0.16f, 0.74f, 0.5f),  // bathroom to bedroom
+    UpOpening(0.04f, 0.88f, 0.6f),  // bedroom to the balcony: a glass door
 )
 
 private val faces = listOf(Color(0xFFBFE3FA), Color(0xFFFFF1BD), Color(0xFFEFF9F7), Color(0xFFDCCFF2), Color(0xFFB8503E))
@@ -321,7 +321,7 @@ private val dividerGeo = Memo { u ->
         }
         val front = Path().apply { poly(px(0f), py(0f, h), px(0f, TH), py(0f, h), px(0f, TH), py(0f), px(0f), py(0f)) }
         val top = Path().apply { poly(px(0f), py(0f, h), px(1f), py(1f, h), px(1f, TH), py(1f, h), px(0f, TH), py(0f, h)) }
-        // The glass door at the balcony: bars across the opening.
+        // The glass door at the balcony: bars across the UpOpening.
         val bars = Path().apply {
             if (i == 4) {
                 for (k in 1..2) {

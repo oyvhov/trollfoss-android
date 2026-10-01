@@ -426,6 +426,7 @@ object Synth {
             Tone(620.0, 0.34, 0.3, 0.32, vowelO, decay = 2.0, slideTo = 760.0, attack = 0.04),
             Noise(0.72, 0.5, 0.7, 3600.0, 900.0, decay = 5.0, attack = 0.002, seed = 45),
             Tone(800.0, 0.72, 0.22, 0.35, vowelO, decay = 8.0, slideTo = 380.0, attack = 0.002),
+        )
         // ---- Mitt hus: hammer, saw, drill, crane, plank, bell, crash ----
         Sfx.MI_HAMMER -> listOf(
             Tone(190.0, 0.0, 0.1, 0.7, soft, decay = 26.0, slideTo = 120.0),

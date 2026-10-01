@@ -84,7 +84,7 @@ class SeasonPaletteTest {
     fun `every place has decorations for every feast`() {
         for (feast in listOf(Festival.CHRISTMAS, Festival.EASTER, Festival.PUMPKIN)) {
             val dressed = feastPlaces(feast)
-            for (place in PlaceId.entries.filter { !it.manor }) {
+            for (place in PlaceId.entries.filter { !it.big }) {
                 assertTrue("$place has no $feast decorations", place in dressed)
             }
         }

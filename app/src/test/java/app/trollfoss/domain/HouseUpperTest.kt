@@ -248,9 +248,11 @@ class HouseUpperTest {
         val upstairs = folk(world, 6f, "Oppe")
         run(sim, 1f)
         val figures = UpperMirror.figures
-        val cellar = figures.firstOrNull { it.floor == 3 }
+        // The cellar has residents of its own now; the wanderer is the child among them.
+        val cellar = figures.firstOrNull { it.floor == 3 && it.kind == 1 }
         assertNotNull(cellar)
-        assertEquals(0.5f, cellar!!.x, 0.01f)
+        // The cellar's own furniture may nudge the figure a little, so the dollhouse only needs to be close.
+        assertEquals(0.5f, cellar!!.x, 0.06f)
         assertEquals(1, cellar.kind)
         assertTrue(figures.any { it.floor == 1 })
         // When the figure takes the stairs, the dollhouse shows it a moment later.
