@@ -300,7 +300,7 @@ etasjefilene er alt ferdig). Må du endre noko i dei: gjer det minst mogleg, og 
   treg), `adb -s emulator-5554 exec-out screencap -p > fil.png`, og til slutt
   `adb -s emulator-5554 shell am force-stop app.trollfoss.<namn>`. Scroll i scena med
   `adb shell input swipe 1800 600 300 600 600`. Ta nokre skjermbilete per økt. Fyrste start etter ei
-  ny installasjon kan gi ein «ikkje svar»-dialog: vent og prøv att. Rør **aldri** `emulator-5558`, `5560`
+  ny installasjon kan gi ein «ikkje svar»-dialog: vent og prøv att. **Éin emulator om gongen:** start aldri ein ny (ikkje nettbrett, ikkje fleire telefonar); berre den som alt køyrer. Rør **aldri** `emulator-5558`, `5560`
   eller `5562`. Ikkje la kommandoar hengje: bruk tidsavgrensing.
 - Hald deg til dine filer. Ser du noko galt i ein delt fil, fiks det minst mogleg og skriv det i
   rapporten. Står du fast, vel det enklaste som held kvaliteten, og skriv kva du gjorde.
