@@ -40,7 +40,8 @@ class HouseAtticRules(private val sim: Sim, private val random: Random) : FloorR
     private fun firstTime() {
         if ("attic_lit" !in world.flags) {
             world.flags += "attic_lit"
-            for (f in world.fixturesIn(place)) if (f.type in LAMPS) f.on = true
+            // The stairwell glows with the light of the floor below, so the way out is never lost in the dark.
+            for (f in world.fixturesIn(place)) if (f.type in LAMPS || f.type == FixtureType.STAIRCASE) f.on = true
         }
         // A sheet or flap left up by a saved game falls back (trunks and chests stay as the child left them).
         for (f in world.fixturesIn(place)) {
@@ -575,14 +576,15 @@ class HouseAtticRules(private val sim: Sim, private val random: Random) : FloorR
         return t
     }
 
-    /** Keeps the floor from filling up: when there are more than [limit] loose things of [types], the oldest goes in a puff. */
+    /** Keeps the floor from filling up: when there are more than [limit] loose things of [types], the oldest go in a puff. */
     private fun trim(limit: Int, types: Set<ThingType>) {
         val loose = world.bodiesIn(place).filterIsInstance<Thing>()
-            .filter { it.type in types && it.mode == Mode.FREE && !it.held && it.inside < 0 && it.homePlace == null }
-        if (loose.size <= limit) return
-        val oldest = loose.minByOrNull { it.z } ?: return
-        sim.listener.onFx(Fx.POOF, oldest.x, oldest.y - oldest.h / 2, thing = oldest)
-        sim.removeThing(oldest, quiet = true)
+            .filter { it.type in types && it.mode == Mode.FREE && !it.held && it.homePlace == null }
+            .sortedBy { it.z }
+        for (t in loose.take((loose.size - limit).coerceAtLeast(0))) {
+            sim.listener.onFx(Fx.POOF, t.x, t.y - t.h / 2, thing = t)
+            sim.removeThing(t, quiet = true)
+        }
     }
 
     companion object {

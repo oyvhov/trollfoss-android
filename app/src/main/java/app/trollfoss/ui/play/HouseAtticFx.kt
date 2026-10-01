@@ -5,13 +5,9 @@ import app.trollfoss.audio.Sfx
 import app.trollfoss.domain.AtticCode
 import app.trollfoss.domain.Face
 import app.trollfoss.domain.Fixture
-import app.trollfoss.domain.Person
 import app.trollfoss.domain.Species
 import app.trollfoss.domain.Thing
-import kotlin.math.PI
-import kotlin.math.cos
 import kotlin.math.pow
-import kotlin.math.sin
 
 /**
  * Storhuset, attic floor: effects. [code] is in [app.trollfoss.domain.HouseFx].ATTIC up to the next block (100 codes),
@@ -439,15 +435,4 @@ object AtticFx {
             s.particle(Particle(PKind.NOTE, x - 0.07f, y - 0.07f, -0.06f + 0.03f * k, -0.14f, 1.8f, 0.013f, listOf(Color(0xFF8B5CF6), Color(0xFFFF9EC7), Color(0xFF2F9BFF), Color(0xFFFFC83D))[k]))
         }
     }
-
-    @Suppress("unused")
-    private fun ring(s: FxStage, x: Float, y: Float, n: Int, color: Color) {
-        for (i in 0 until n) {
-            val a = i * 2f * PI.toFloat() / n
-            s.particle(Particle(PKind.SPARK, x, y, cos(a) * 0.3f, sin(a) * 0.3f, 0.8f, 0.01f, color))
-        }
-    }
-
-    @Suppress("unused")
-    private fun person(p: Person?) = p
 }

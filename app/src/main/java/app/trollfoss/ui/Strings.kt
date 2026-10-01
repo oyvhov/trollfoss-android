@@ -143,4 +143,31 @@ object S {
     val catBottomColor = txt("Farge på underdel")
     val catShoes = txt("Sko")
     val catExtra = txt("Ekstra")
+
+    // Storhuset Loftet
+    /** The four rooms of the attic, for the home designer and for screen readers. */
+    fun atticRoom(index: Int): Txt = when (index) {
+        0 -> txt("Lageret")
+        1 -> txt("Spøkelsekroken", "Spøkelseskroken")
+        2 -> txt("Tårnet")
+        else -> txt("Det hemmelege rommet", "Det hemmelige rommet")
+    }
+
+    /** What the things of the attic are called, for screen readers and the discovery book. */
+    fun atticThing(name: String): Txt = when (name) {
+        "sture" -> txt("Sture, det snille spøkelset", "Sture, det snille spøkelset")
+        "trunk" -> txt("Drakt-kista", "Drakt-kista")
+        "horse" -> txt("Gyngehesten")
+        "gramophone" -> txt("Grammofonen")
+        "telescope" -> txt("Teleskopet")
+        "starmap" -> txt("Stjernekartet")
+        "chest" -> txt("Skattekista")
+        "globe" -> txt("Globusen")
+        "tree" -> txt("Slektstreet")
+        "key" -> txt("Den gylne nøkkelen", "Den gylne nøkkelen")
+        else -> txt(name)
+    }
+
+    /** The shout when Sture is found in his hiding place. */
+    val atticFound = txt("Fann deg!", "Fant deg!")
 }

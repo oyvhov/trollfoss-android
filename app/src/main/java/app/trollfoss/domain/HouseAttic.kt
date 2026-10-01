@@ -133,7 +133,7 @@ object AtticFloor : Floor {
             w(FixtureType.AT_LANTERN, 1.58f, 0.34f),                           // 7
             w(FixtureType.AT_ROUND_WINDOW, 2.15f, 0.46f),                      // 8
             w(FixtureType.SHELF, 1.0f, 0.46f),                                 // 9 old toys
-            w(FixtureType.AT_SPIDER, 2.88f, 0.30f, 1),                         // 10
+            w(FixtureType.AT_SPIDER, 2.88f, 0.34f, 1),                         // 10
             // ---- Spøkelsekroken (3 to 5.5)
             f(FixtureType.AT_GRANDFATHER, 3.18f, depth = -0.06f),              // 11
             f(FixtureType.AT_WING_CHAIR, 3.78f, depth = 0.02f),                // 12 Sture's chair
@@ -158,7 +158,7 @@ object AtticFloor : Floor {
             f(FixtureType.AT_GLOBE, 8.14f, depth = -0.05f),                    // 29
             f(FixtureType.AT_TREASURE_CHEST, 8.45f, depth = 0.07f),            // 30
             w(FixtureType.AT_FAMILY_TREE, 8.12f, 0.64f),                       // 31
-            w(FixtureType.AT_CHANDELIER, 8.15f, 0.2f),                         // 32
+            w(FixtureType.AT_CHANDELIER, 8.15f, 0.24f),                        // 32
             w(FixtureType.AT_SCONCE, 7.8f, 0.5f),                              // 33
             w(FixtureType.AT_SCONCE, 8.62f, 0.5f),                             // 34
         )

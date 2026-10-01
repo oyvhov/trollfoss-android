@@ -322,7 +322,7 @@ internal class AtticSture(private val sim: Sim, private val random: Random) {
             fx(AtticCode.TELL, f.x + f.shiftX, f.y - f.spec.h * 0.5f, f, arg = place.indexOf(f.id))
         }
         // He gets tired of waiting and floats out by himself, a little shyly.
-        if (hiddenFor > 100f) {
+        if (hiddenFor > 55f) {
             reveal(s, f)
             f.open = true
             f.timer = HouseAtticRules.REVEAL

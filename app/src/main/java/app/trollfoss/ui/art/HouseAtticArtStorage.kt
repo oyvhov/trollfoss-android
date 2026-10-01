@@ -453,7 +453,6 @@ internal fun DrawScope.atRockingHorse(f: Fixture, u: Float, pen: Pen) {
     }
     // Dust kicked up by a gallop.
     if (f.on && kotlin.math.abs(f.angleV) > 3f) fxPuffs(0f, -0.01f * u, pen.t, 0.012f * u, 0.05f * u, Color(0xFFE9E1D0), 0.4f, 3, 0.8f, 0.03f * u)
-    if (cos(a) < 0f) Unit
 }
 
 // ------------------------------------------------------------------------------------------- spiders

@@ -316,7 +316,6 @@ private val atticStatic = Memo { u -> AtticStatic(u) }
 internal fun DrawScope.atticBack(st: Stage, pen: Pen, styles: List<RoomStyle>) {
     val u = st.u
     val g = atticStatic.of(u)
-    val n = pen.night
     for (i in 0 until 4) {
         val a = atWallEdge(i)
         val b = atWallEdge(i + 1)
@@ -352,7 +351,6 @@ internal fun DrawScope.atticBack(st: Stage, pen: Pen, styles: List<RoomStyle>) {
     if (st.sees(1.1f, 2.4f)) sunbeam(st, g, pen)
     dustMotes(st, g, pen)
     drawBase(st, pen, Color(0xFF7A5A3E), Color(0xFF3F2C20))
-    if (n < 0f) Unit
 }
 
 /** What lies in front of everything: a few big, slow, out-of-focus specks of dust. */

@@ -457,13 +457,11 @@ internal fun DrawScope.atChandelier(f: Fixture, u: Float, pen: Pen) {
         drawOval(AtC.brass, ring.topLeft, ring.size, style = Stroke(0.012f * u))
         drawOval(AtC.brassLight, Offset(ring.left, ring.top), ring.size, style = Stroke(0.003f * u), alpha = 0.5f)
         for ((i, cxp) in listOf(-0.15f, -0.09f, -0.03f, 0.03f, 0.09f, 0.15f).withIndex()) {
-            val back = i == 1 || i == 3 || i == 4 && false
             val y = -0.07f - (if (i % 2 == 1) 0.026f else 0f) * 1f
             val bx = cxp
             val wax = Rect(p(bx - 0.0075f, y - 0.05f).x, p(0f, y - 0.05f).y, p(bx + 0.0075f, y).x, p(0f, y).y)
             inkedRound(wax, 0.003f * u, AtC.cream, pen)
             if (f.on) fxFire(wax.center.x, wax.top - 0.003f * u, 0.014f * u, 0.034f * u, t, i * 1.3f, pen) else drawLine(Ink.line, Offset(wax.center.x, wax.top), Offset(wax.center.x, wax.top - 0.007f * u), pen.lw * 0.8f, StrokeCap.Round)
-            if (back) Unit
         }
         for (k in 0 until 7) {
             val x = -0.14f + k * 0.047f

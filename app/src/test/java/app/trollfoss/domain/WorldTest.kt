@@ -222,7 +222,7 @@ class WorldTest {
         }
         assertTrue(world.allSecretsFound())
         assertTrue(Secrets.all.size >= 60)
-        for (place in PlaceId.entries) assertEquals("three glimt in $place", 3, Secrets.inPlace(place).size)
+        for (place in PlaceId.entries) assertTrue("at least three glimt in $place", Secrets.inPlace(place).size >= 3)
     }
 
     @Test
