@@ -132,7 +132,7 @@ object AtticFx {
             }
             AtticCode.TRUNK -> {
                 s.sfx(Sfx.AT_CREAK, 0.6f, 0.9f)
-                val tint = listOf(Color(0xFF3A3340), Color(0xFFBAC4D4), Color(0xFFFFC83D), Color(0xFFFFB02E), Color.White, Color(0xFF8B5CF6))[arg % 6]
+                val tint = listOf(Color(0xFFFFC83D), Color(0xFFDDE8FF), Color(0xFFFF9EC7), Color(0xFFFFB02E), Color.White, Color(0xFFB9A2F0))[arg % 6]
                 for (i in 0 until 3) s.after(0.15f + i * 0.12f) { s.sfx(Sfx.POP, 0.7f, 0.85f + 0.18f * i) }
                 s.after(0.2f) { s.sfx(Sfx.SPARKLE, 0.6f) }
                 s.burst(PKind.STAR, x, y, 10, 0.55f, 0.012f, tint, up = 0.6f)

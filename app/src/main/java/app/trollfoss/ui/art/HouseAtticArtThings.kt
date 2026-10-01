@@ -47,9 +47,8 @@ private fun DrawScope.thFlashlight(w: Float, h: Float, pen: Pen) {
     val lens = Rect(0.38f * w, -0.92f * h, 0.52f * w, -0.08f * h)
     drawOval(Color(0xFFFFF7DA), lens.topLeft, lens.size)
     drawOval(Ink.line, lens.topLeft, lens.size, style = pen.thin)
-    val g = 0.6f + 0.4f * sin(pen.t * 3f)
-    drawCircle(Color(0xFFFFF1C2).copy(alpha = 0.35f * g), 0.45f * h, o(0.5f, -0.5f))
-    thGlint(o(0.47f, -0.78f), 0.12f * h, pen.t, 2.6f, 0f)
+    drawCircle(Color(0xFFFFF1C2).copy(alpha = 0.3f), 0.45f * h, o(0.5f, -0.5f))
+    twinkle(o(0.47f, -0.78f), 0.1f * h, Color.White, 0.9f)
     inkedRound(Rect(-0.1f * w, -0.92f * h, 0.04f * w, -0.78f * h), 0.05f * h, Color(0xFFFF8A3D), pen, shade = false)
     shine(o(-0.3f, -0.62f), 0.2f * w, 0.1f * h, 0.5f)
 }
@@ -68,7 +67,6 @@ private fun DrawScope.thPirateHat(w: Float, h: Float, pen: Pen) {
     // A cream band along the brim, and a gold star badge: a friendly pirate, not a scary one.
     drawPath(thSketch(w, h) { m(-0.46f, -0.74f); q(-0.33f, -0.24f, 0f, -0.14f); q(0.33f, -0.24f, 0.46f, -0.74f) }, Color(0xFFF7F0DC), style = Stroke(pen.lw * 1.4f, cap = StrokeCap.Round))
     inked(starPath(o(0f, -0.62f), 0.17f * w, 0.075f * w), Color(0xFFFFC83D), pen, shade = false)
-    thGlint(o(0.03f, -0.66f), 0.06f * w, pen.t, 2.4f, 0f)
     drawPath(thSketch(w, h) { m(-0.15f, -0.8f); q(-0.05f, -0.92f, 0.1f, -0.9f) }, Color.White.copy(alpha = 0.3f), style = Stroke(pen.lw * 1.2f, cap = StrokeCap.Round))
 }
 
@@ -112,7 +110,7 @@ private fun DrawScope.thFlowerHat(w: Float, h: Float, pen: Pen) {
         drawPath(thSketch(w, h) { m(s * 0.24f, -0.31f); q(s * 0.42f, -0.33f, s * 0.52f, -0.44f) }, Color(0xFF3F8F6C), style = Stroke(pen.lw * 0.7f))
     }
     // Twelve yellow petals round a smiling middle.
-    val sway = sin(pen.t * 1.8f) * 0.02f
+    val sway = 0.01f
     for (k in 0 until 12) {
         val a = k * 0.5236f + sway
         val pc = Offset(c.x + cos(a) * 0.3f * h, c.y + sin(a) * 0.3f * h)
@@ -149,7 +147,7 @@ private fun DrawScope.thSheetHat(w: Float, h: Float, pen: Pen) {
         val e = o(s * 0.16f, -0.58f)
         drawCircle(Color.White, 0.13f * w, e)
         drawCircle(Ink.line, 0.13f * w, e, style = pen.stroke)
-        val wob = sin(pen.t * 4f + s) * 0.03f * w
+        val wob = s * 0.02f * w
         drawCircle(Ink.line, 0.06f * w, Offset(e.x + wob, e.y + 0.03f * w))
         drawCircle(Color.White, 0.02f * w, Offset(e.x + wob - 0.015f * w, e.y + 0.015f * w))
     }

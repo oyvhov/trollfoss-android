@@ -20,7 +20,6 @@ import kotlin.math.sin
 
 internal fun DrawScope.atStairs(f: Fixture, u: Float, pen: Pen) {
     fun q(x: Float, y: Float, z: Float) = fxQ(u, x, y, z)
-    val t = pen.t
     atShadow(u, 0.7f, 0.24f, 0.4f)
     val oak = Color(0xFFC49A62)
     // The boards around the opening, then the opening itself.
@@ -54,16 +53,15 @@ internal fun DrawScope.atStairs(f: Fixture, u: Float, pen: Pen) {
     for (z in listOf(0.1f, 0.17f)) fxPost(u, 0.33f, z, 0f, -0.12f, 0.0065f, oak.darken(0.1f), pen)
     capsule(q(0.33f, -0.14f, 0.03f), q(0.33f, -0.14f, 0.24f), 0.012f * u, rail.lighten(0.12f), pen)
     fxPost(u, 0.33f, 0.24f, 0f, -0.18f, 0.012f, rail, pen)
-    // A golden arrow bobs over the opening: «down here».
-    val bob = sin(t * 3f) * 0.012f
+    // A golden arrow over the opening: «down here». (Still, so the picture is drawn once.)
     for (k in 0..1) {
-        val c = Offset(0f, (-0.32f + bob - k * 0.035f) * u)
+        val c = Offset(0f, (-0.32f - k * 0.035f) * u)
         val v = Path().apply {
             moveTo(c.x - 0.04f * u, c.y - 0.026f * u)
             lineTo(c.x, c.y)
             lineTo(c.x + 0.04f * u, c.y - 0.026f * u)
         }
-        val a = (0.95f - k * 0.4f) * (0.75f + 0.25f * atWave(t, 3f, k * 0.8f))
+        val a = 0.95f - k * 0.4f
         drawPath(v, Ink.line, alpha = a, style = Stroke(0.02f * u + pen.lw * 2f, cap = StrokeCap.Round))
         drawPath(v, AtC.brassLight, alpha = a, style = Stroke(0.014f * u, cap = StrokeCap.Round))
     }
@@ -71,7 +69,7 @@ internal fun DrawScope.atStairs(f: Fixture, u: Float, pen: Pen) {
 
 internal fun DrawScope.atSecretDoor(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
-    val t = pen.t
+    val t = 0.7f
     val usable = f.mode == 1
     atShadow(u, 0.34f, 0.1f, 0.6f)
     fun arch(hw: Float, top: Float): Path = Path().apply {
@@ -121,11 +119,10 @@ internal fun DrawScope.atSecretDoor(f: Fixture, u: Float, pen: Pen) {
         drawCircle(Ink.line, 0.008f * u, p(0f, -0.21f))
         drawLine(Ink.line, p(0f, -0.21f), p(0f, -0.17f), 0.006f * u, StrokeCap.Round)
         shine(p(-0.018f, -0.235f), 0.012f * u, 0.006f * u, 0.9f)
-        val g = atWave(t, 2.1f)
-        if (g > 0.6f) twinkle(p(0.025f, -0.24f), 0.015f * u * g, Color.White, g)
+        twinkle(p(0.025f, -0.24f), 0.013f * u, Color.White, 0.9f)
     } else {
         // Gold light spills over the sill.
-        fxGlow(p(0f, -0.02f), 0.2f * u, AtC.warm, 0.5f + 0.2f * atWave(t, 2f))
+        fxGlow(p(0f, -0.02f), 0.2f * u, AtC.warm, 0.6f)
     }
     // Studs along the frame and a carved star at the top.
     for (x in listOf(-0.135f, 0.135f)) for (y in listOf(-0.06f, -0.16f, -0.26f)) drawCircle(AtC.gold, 0.005f * u, p(x, y))

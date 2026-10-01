@@ -29,7 +29,7 @@ internal fun DrawScope.atMapTable(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
     fun q(x: Float, y: Float, z: Float) = fxQ(u, x, y, z)
     fun mp(x: Float, z: Float) = q(x, -0.17f, z)
-    val t = pen.t
+    val t = if (f.mode >= 4) pen.t else 0f
     val wood = AtC.mahogany.lighten(0.1f)
     val mode = f.mode
     atShadow(u, 0.42f, 0.2f)
@@ -131,7 +131,7 @@ private fun chestTop(x: Float): Float = -0.115f - 0.06f * (1f - (x / 0.145f) * (
 internal fun DrawScope.atTreasureChest(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
     fun q(x: Float, y: Float, z: Float) = fxQ(u, x, y, z)
-    val t = pen.t
+    val t = if (f.open) pen.t else 0.4f
     val d = 0.14f
     val wood = Color(0xFF6B3E2E)
     atShadow(u, 0.32f, 0.15f)
@@ -311,7 +311,8 @@ internal fun DrawScope.atGlobe(f: Fixture, u: Float, pen: Pen) {
 
 internal fun DrawScope.atFamilyTree(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
-    val t = pen.t
+    val live = f.mode != 0
+    val t = if (live) pen.t else 0.5f
     val frame = Rect(p(-0.275f, -0.415f).x, p(0f, -0.415f).y, p(0.275f, -0.005f).x, p(0f, -0.005f).y)
     // A gilded frame round a painted canvas: a pale sky, a hill and a big tree.
     drawRoundRect(AtC.gold, frame.topLeft, frame.size, androidx.compose.ui.geometry.CornerRadius(0.014f * u))
@@ -362,7 +363,7 @@ internal fun DrawScope.atFamilyTree(f: Fixture, u: Float, pen: Pen) {
         val winking = f.mode == i + 1
         val pulse = if (winking) 1f + 0.12f * sin(t * 14f) else 1f
         val c = p(cx, cy)
-        scale(pulse, pulse, c) { portrait(c, 0.036f * u, i, pen, t, winking) }
+        scale(pulse, pulse, c) { portrait(c, 0.036f * u, i, pen, t, winking, live) }
         if ((f.count shr i) and 1 == 1) {
             drawPath(starPath(Offset(c.x, c.y + 0.058f * u), 0.009f * u, 0.004f * u), AtC.goldLight)
             drawPath(starPath(Offset(c.x, c.y + 0.058f * u), 0.009f * u, 0.004f * u), Ink.line, style = pen.thin)
@@ -372,7 +373,7 @@ internal fun DrawScope.atFamilyTree(f: Fixture, u: Float, pen: Pen) {
 }
 
 /** One portrait: a gold oval frame and a cartoon face; [i] picks who it is. */
-private fun DrawScope.portrait(c: Offset, r: Float, i: Int, pen: Pen, t: Float, winking: Boolean) {
+private fun DrawScope.portrait(c: Offset, r: Float, i: Int, pen: Pen, t: Float, winking: Boolean, live: Boolean) {
     val w = r
     val h = r * 1.27f
     drawOval(AtC.gold, Offset(c.x - w, c.y - h), Size(w * 2f, h * 2f))
@@ -414,7 +415,7 @@ private fun DrawScope.portrait(c: Offset, r: Float, i: Int, pen: Pen, t: Float, 
         }
         // eyes, one of them winking when tapped, and a smile
         val eyeY = if (i == 1) c.y - h * 0.12f else fc.y - w * 0.05f
-        val blink = atEvery(t, 4f + i * 0.7f, 0.12f, i * 1.3f)
+        val blink = live && atEvery(t, 4f + i * 0.7f, 0.12f, i * 1.3f)
         for ((k, s) in listOf(-1f, 1f).withIndex()) {
             val ex = c.x + s * w * 0.24f
             if ((winking && k == 1) || blink) {
@@ -437,7 +438,7 @@ private fun DrawScope.portrait(c: Offset, r: Float, i: Int, pen: Pen, t: Float, 
 
 internal fun DrawScope.atChandelier(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
-    val t = pen.t
+    val t = f.mode * 0.9f
     val pivot = p(0f, -0.55f)
     rotate(f.angle * 57.2958f, pivot) {
         // Chain up to the ceiling.
@@ -485,7 +486,7 @@ internal fun DrawScope.atChandelier(f: Fixture, u: Float, pen: Pen) {
 
 internal fun DrawScope.atSconce(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
-    val t = pen.t
+    val t = f.mode * 0.9f
     if (f.on) fxGlow(p(0f, -0.1f), 0.2f * u, AtC.warm, 0.5f + 0.1f * sin(t * 5f + f.id))
     // A little oval mirror plate that doubles the light, a curled arm, a cup and a candle.
     val plate = Rect(-0.032f * u, -0.15f * u, 0.032f * u, -0.04f * u)

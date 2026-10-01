@@ -66,17 +66,44 @@ class HouseAtticRules(private val sim: Sim, private val random: Random) : FloorR
                     fx(AtticCode.BOOKS_BACK, f.x, f.y - 0.15f, f, arg = 1)
                 }
             }
-            FixtureType.AT_OWL_HOLE -> if (f.mode == 1) {
-                f.timer -= dt
-                if (f.timer <= 0f) f.mode = 0
+            FixtureType.AT_OWL_HOLE -> {
+                if (f.mode == 1) {
+                    f.timer -= dt
+                    if (f.timer <= 0f) f.mode = 0
+                    f.anim = max(f.anim, 0.012f)
+                } else {
+                    // An idle owl blinks now and then: count 1 is «eyes shut» (a picture of its own, drawn once).
+                    f.angle -= dt
+                    if (f.angle <= 0f) {
+                        if (f.count == 1) {
+                            f.count = 0
+                            f.angle = 2.5f + random.nextFloat() * 3f
+                        } else {
+                            f.count = 1
+                            f.angle = 0.14f
+                        }
+                    }
+                }
             }
+            // Flames flicker, rings turn, a pendulum swings, paper ghosts sway, shadows dance: all as a few pictures
+            // that are drawn once and swapped (f.mode is the frame), because that costs the phone next to nothing.
+            FixtureType.AT_LANTERN, FixtureType.AT_CANDELABRA, FixtureType.AT_SCONCE -> if (f.on) flame(f, dt)
+            FixtureType.AT_ARMILLARY -> if (f.on) frames(f, dt, 12, 0.16f)
+            FixtureType.AT_GRANDFATHER -> frames(f, dt, 4, 0.5f)
+            FixtureType.AT_STRING_LIGHTS -> if (f.on) frames(f, dt, 4, 0.45f)
+            FixtureType.AT_SHADOW_THEATRE -> frames(f, dt, 12, 0.15f)
+            FixtureType.AT_SPIDER -> swingSpider(f, dt)
             FixtureType.AT_FAMILY_TREE -> if (f.mode != 0) {
                 f.timer -= dt
                 if (f.timer <= 0f) f.mode = 0
+                f.anim = max(f.anim, 0.012f)
             }
             FixtureType.AT_WEATHER_VANE -> spin(f, dt, 0.9f)
             FixtureType.AT_GLOBE -> spin(f, dt, 0.7f)
-            FixtureType.AT_CHANDELIER -> swing(f, dt)
+            FixtureType.AT_CHANDELIER -> {
+                swing(f, dt)
+                if (f.on) flame(f, dt)
+            }
             FixtureType.AT_STAR_MAP, FixtureType.AT_MAP_TABLE -> if (f.mode != 0) {
                 // A map or a chart left alone for a long while rolls itself up again.
                 f.timer += dt
@@ -115,8 +142,8 @@ class HouseAtticRules(private val sim: Sim, private val random: Random) : FloorR
         FixtureType.AT_GRAMOPHONE -> gramophone(f)
         FixtureType.AT_BOOK_TOWER -> bookTower(f)
         FixtureType.AT_SHADOW_THEATRE -> {
-            f.mode = (f.mode + 1) % SHADOW_ANIMALS
-            fx(AtticCode.SHADOWS, f.x, f.y - 0.12f, f, arg = f.mode)
+            f.count = (f.count + 1) % SHADOW_ANIMALS
+            fx(AtticCode.SHADOWS, f.x, f.y - 0.12f, f, arg = f.count)
             sture.scareNear(f.x, 1.9f)
             true
         }
@@ -129,7 +156,6 @@ class HouseAtticRules(private val sim: Sim, private val random: Random) : FloorR
         }
         FixtureType.AT_ARMILLARY -> {
             f.on = !f.on
-            f.timer = 2.5f
             fx(AtticCode.ARMILLARY, f.x, f.y - 0.18f, f, arg = if (f.on) 1 else 0)
             true
         }
@@ -556,6 +582,43 @@ class HouseAtticRules(private val sim: Sim, private val random: Random) : FloorR
             return
         }
         f.angleV += (-f.angle * 18f - f.angleV * 0.7f) * dt
+        f.angle += f.angleV * dt
+        f.anim = max(f.anim, 0.012f)
+    }
+
+    // ------------------------------------------------------------------ frames and swings
+
+    /** Steps [Fixture.mode] round [count] frames every [period] seconds: the art draws one picture per frame. */
+    private fun frames(f: Fixture, dt: Float, count: Int, period: Float) {
+        f.timer -= dt
+        if (f.timer <= 0f) {
+            f.timer = period
+            f.mode = (f.mode + 1) % count
+        }
+    }
+
+    /** A flame flickers between three pictures, in no fixed order. */
+    private fun flame(f: Fixture, dt: Float) {
+        f.timer -= dt
+        if (f.timer <= 0f) {
+            f.timer = 0.09f + random.nextFloat() * 0.1f
+            f.mode = (f.mode + 1 + random.nextInt(2)) % 3
+        }
+    }
+
+    /** Now and then a spider drops a little on her thread and swings back (drawn live, only while it moves). */
+    private fun swingSpider(f: Fixture, dt: Float) {
+        f.timer -= dt
+        if (f.timer <= 0f) {
+            f.timer = 12f + random.nextFloat() * 20f
+            f.angleV += if (random.nextBoolean()) 2.2f else -2.2f
+        }
+        if (kotlin.math.abs(f.angle) < 0.002f && kotlin.math.abs(f.angleV) < 0.02f) {
+            f.angle = 0f
+            f.angleV = 0f
+            return
+        }
+        f.angleV += (-f.angle * 14f - f.angleV * 1.1f) * dt
         f.angle += f.angleV * dt
         f.anim = max(f.anim, 0.012f)
     }

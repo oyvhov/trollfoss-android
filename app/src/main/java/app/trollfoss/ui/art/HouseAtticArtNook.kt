@@ -71,7 +71,7 @@ private val RECORD_COLORS = listOf(Color(0xFFFF8A3D), Color(0xFFFFC83D), Color(0
 internal fun DrawScope.atGramophone(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
     fun q(x: Float, y: Float, z: Float) = fxQ(u, x, y, z)
-    val t = pen.t
+    val t = if (f.on) pen.t else 0f
     val wood = Color(0xFF7A4A2E)
     val playing = f.on
     atShadow(u, 0.22f, 0.12f)
@@ -154,7 +154,7 @@ private val BOOK_COLORS = listOf(
 
 internal fun DrawScope.atBookTower(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
-    val t = pen.t
+    val t = if (f.mode == 1) pen.t else 0f
     atShadow(u, 0.16f, 0.1f)
     val shift = f.count % 7
     if (f.mode == 1) {
@@ -206,7 +206,7 @@ internal fun DrawScope.atBookTower(f: Fixture, u: Float, pen: Pen) {
 
 internal fun DrawScope.atCandelabra(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
-    val t = pen.t
+    val t = f.mode * 0.9f
     atShadow(u, 0.14f, 0.09f)
     if (f.on) fxGlow(p(0f, -0.26f), 0.28f * u, AtC.warm, 0.5f + 0.1f * sin(t * 5f))
     // Foot, stem with two knobs, and three curling arms.
@@ -244,7 +244,7 @@ internal fun DrawScope.atCandelabra(f: Fixture, u: Float, pen: Pen) {
 
 internal fun DrawScope.atStringLights(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
-    val t = pen.t
+    val t = f.mode * 0.8f
     val p0 = p(-0.32f, -0.13f)
     val p1 = p(0f, 0.04f)
     val p2 = p(0.32f, -0.13f)
@@ -299,7 +299,7 @@ private val QUILT = listOf(Color(0xFFE8A6B0), Color(0xFFE8B04A), Color(0xFF6AB7C
 internal fun DrawScope.atBlanketFort(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
     fun q(x: Float, y: Float, z: Float) = fxQ(u, x, y, z)
-    val t = pen.t
+    val t = 0.8f
     val d = 0.15f
     atShadow(u, 0.4f, 0.17f)
     // The right slope, running back, patched with squares.
@@ -371,7 +371,8 @@ internal fun DrawScope.atBlanketFort(f: Fixture, u: Float, pen: Pen) {
 
 internal fun DrawScope.atShadowTheatre(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
-    val t = pen.t
+    val t = 0f
+    val phase = f.mode * 0.5236f
     val wood = Color(0xFFB8824D)
     val screen = Rect(p(-0.115f, -0.235f).x, p(0f, -0.235f).y, p(0.115f, -0.03f).x, p(0f, -0.03f).y)
     // Frame, then the paper screen with a lamp's glow behind it.
@@ -394,12 +395,12 @@ internal fun DrawScope.atShadowTheatre(f: Fixture, u: Float, pen: Pen) {
         drawPath(arm, shadow)
         val hx = ox + 0.065f * u
         val hy = base - 0.06f * u
-        when (f.mode.mod(4)) {
+        when (f.count.mod(4)) {
             0 -> {
                 // A rabbit: round head, two ears that wiggle.
                 drawOval(shadow, Offset(hx - 0.02f * u, hy - 0.012f * u), Size(0.05f * u, 0.032f * u))
                 for ((i, a) in listOf(-8f, 10f).withIndex()) {
-                    val wig = sin(t * 3f + i * 1.5f) * 9f
+                    val wig = sin(phase + i * 1.5f) * 9f
                     rotate(a + wig, Offset(hx + 0.004f * u + i * 0.014f * u, hy - 0.006f * u)) {
                         drawOval(shadow, Offset(hx + i * 0.014f * u - 0.0035f * u, hy - 0.08f * u), Size(0.011f * u, 0.07f * u))
                     }
@@ -411,14 +412,14 @@ internal fun DrawScope.atShadowTheatre(f: Fixture, u: Float, pen: Pen) {
                 drawOval(shadow, Offset(hx - 0.025f * u, hy - 0.012f * u), Size(0.055f * u, 0.032f * u))
                 drawCircle(shadow, 0.015f * u, Offset(hx + 0.035f * u, hy - 0.016f * u))
                 drawPath(Path().apply { moveTo(hx + 0.046f * u, hy - 0.02f * u); lineTo(hx + 0.07f * u, hy - 0.012f * u); lineTo(hx + 0.046f * u, hy - 0.01f * u); close() }, shadow)
-                val flap = sin(t * 7f) * 30f
+                val flap = sin(phase * 2f) * 30f
                 rotate(-30f + flap, Offset(hx, hy - 0.005f * u)) { drawOval(shadow, Offset(hx - 0.04f * u, hy - 0.06f * u), Size(0.045f * u, 0.065f * u)) }
                 drawPath(Path().apply { moveTo(hx - 0.025f * u, hy); lineTo(hx - 0.055f * u, hy + 0.012f * u); lineTo(hx - 0.04f * u, hy + 0.02f * u); close() }, shadow)
                 drawCircle(Color(0xFFFFF3D2), 0.003f * u, Offset(hx + 0.038f * u, hy - 0.02f * u))
             }
             2 -> {
                 // A dog that barks: a snout with a jaw that opens and shuts.
-                val bark = (sin(t * 5f) + 1f) / 2f
+                val bark = (sin(phase * 2f) + 1f) / 2f
                 drawOval(shadow, Offset(hx - 0.02f * u, hy - 0.03f * u), Size(0.05f * u, 0.04f * u))
                 drawPath(Path().apply { moveTo(hx + 0.015f * u, hy - 0.025f * u); lineTo(hx + 0.075f * u, hy - 0.02f * u); lineTo(hx + 0.07f * u, hy - 0.008f * u); lineTo(hx + 0.015f * u, hy - 0.002f * u); close() }, shadow)
                 rotate(bark * 22f, Offset(hx + 0.02f * u, hy - 0.004f * u)) {
@@ -429,7 +430,7 @@ internal fun DrawScope.atShadowTheatre(f: Fixture, u: Float, pen: Pen) {
             }
             else -> {
                 // A butterfly with two big wings.
-                val flap = 0.55f + 0.45f * sin(t * 6f)
+                val flap = 0.55f + 0.45f * sin(phase * 3f)
                 val c = Offset(hx + 0.02f * u, hy - 0.03f * u)
                 drawOval(shadow, Offset(c.x - 0.004f * u, c.y - 0.03f * u), Size(0.008f * u, 0.06f * u))
                 for (s in listOf(-1f, 1f)) {
@@ -468,7 +469,7 @@ internal fun DrawScope.atShadowTheatre(f: Fixture, u: Float, pen: Pen) {
 internal fun DrawScope.atGrandfather(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
     fun q(x: Float, y: Float, z: Float) = fxQ(u, x, y, z)
-    val t = pen.t
+    val t = 0f
     val wood = Color(0xFF8A5A3A)
     atShadow(u, 0.17f, 0.1f)
     // Plinth, waist and hood as three boxes.
@@ -479,7 +480,7 @@ internal fun DrawScope.atGrandfather(f: Fixture, u: Float, pen: Pen) {
     val win = Rect(p(-0.04f, -0.31f).x, p(0f, -0.31f).y, p(0.04f, -0.12f).x, p(0f, -0.12f).y)
     drawRect(Color(0xFF3A2438), win.topLeft, win.size)
     clipPath(rectPath(win)) {
-        val sw = sin(t * 3.1f) * 0.34f
+        val sw = floatArrayOf(-0.34f, 0f, 0.34f, 0f)[f.mode.mod(4)]
         val top = p(0f, -0.3f)
         val end = Offset(top.x + sin(sw) * 0.14f * u, top.y + cos(sw) * 0.14f * u)
         drawLine(AtC.brassLight, top, end, 0.003f * u)

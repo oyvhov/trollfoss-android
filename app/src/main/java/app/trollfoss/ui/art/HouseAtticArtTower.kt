@@ -40,7 +40,7 @@ private val CONSTELLATIONS = listOf(
 
 internal fun DrawScope.atStarMap(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
-    val t = pen.t
+    val t = 0f
     val lit = f.mode.coerceIn(0, 5)
     // The chart hangs on two brass rods from a cord.
     val chart = Rect(p(-0.165f, -0.295f).x, p(0f, -0.295f).y, p(0.165f, -0.025f).x, p(0f, -0.025f).y)
@@ -130,15 +130,14 @@ internal fun DrawScope.atWeatherVane(f: Fixture, u: Float, pen: Pen) {
     }
     atDot(p(0f, -0.245f), 0.007f * u, AtC.brassDark, pen)
     // a sparkle of gilt
-    val g = atWave(pen.t, 2.4f)
-    if (g > 0.7f) twinkle(p(0.04f, -0.33f), 0.012f * u * g, Color.White, g)
+    twinkle(p(0.04f, -0.33f), 0.011f * u, Color.White, 0.9f)
 }
 
 // ------------------------------------------------------------------------------------------ armillary
 
 internal fun DrawScope.atArmillary(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
-    val t = pen.t
+    val t = f.mode * 0.5236f
     val cx = 0f
     val cy = -0.2f
     val r = 0.088f
@@ -150,7 +149,7 @@ internal fun DrawScope.atArmillary(f: Fixture, u: Float, pen: Pen) {
     capsule(p(0f, -0.105f), p(0.005f, -0.006f), 0.011f * u, AtC.brass, pen)
     drawOval(AtC.brassDark, Offset(-0.09f * u, -0.01f * u), Size(0.18f * u, 0.014f * u), alpha = 0.0f)
     // The sphere of rings: an equator, a tilted ring, and two meridians that turn slowly.
-    val spin = t * 0.6f
+    val spin = f.mode * 0.2618f
     fun ring(rx: Float, ry: Float, tilt: Float, w: Float) {
         val oval = Path().apply { addOval(Rect(p(cx, cy).x - rx * u, p(cx, cy).y - ry * u, p(cx, cy).x + rx * u, p(cx, cy).y + ry * u)) }
         rotate(tilt, p(cx, cy)) {
@@ -167,7 +166,7 @@ internal fun DrawScope.atArmillary(f: Fixture, u: Float, pen: Pen) {
     val pulse = 1f + 0.12f * sin(t * 3f)
     drawPath(starPath(p(cx, cy), 0.026f * u * pulse, 0.012f * u * pulse, t * 15f), AtC.goldLight)
     drawPath(starPath(p(cx, cy), 0.026f * u * pulse, 0.012f * u * pulse, t * 15f), Ink.line, style = pen.thin)
-    val oa = t * 1.4f
+    val oa = f.mode * 0.5236f
     val planet = Offset(p(cx, cy).x + cos(oa) * r * 0.96f * u / r * r, p(cx, cy).y + sin(oa) * r * 0.34f * u)
     atDot(planet, 0.011f * u, Color(0xFF6AA7E8), pen)
     drawCircle(Color(0xFF3BC46B), 0.005f * u, Offset(planet.x - 0.003f * u, planet.y - 0.002f * u))
@@ -179,7 +178,7 @@ internal fun DrawScope.atArmillary(f: Fixture, u: Float, pen: Pen) {
 
 internal fun DrawScope.atBarometer(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
-    val t = pen.t
+    val t = 0f
     val mode = f.mode.mod(3)
     val wood = Color(0xFF6E4630)
     inkedRound(Rect(-0.108f * u, -0.215f * u, 0.108f * u, -0.005f * u), 0.02f * u, wood, pen)
@@ -229,7 +228,7 @@ internal fun DrawScope.atBarometer(f: Fixture, u: Float, pen: Pen) {
 
 internal fun DrawScope.atOwlHole(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
-    val t = pen.t
+    val t = if (f.mode == 1) pen.t else 0f
     val c = p(0f, -0.11f)
     val r = 0.085f * u
     val out = f.mode == 1
@@ -274,7 +273,7 @@ internal fun DrawScope.atOwlHole(f: Fixture, u: Float, pen: Pen) {
             }
         }
         // The eyes: two big yellow discs with dark pupils, blinking now and then.
-        val blink = atEvery(t, 4.3f, 0.14f, f.id.toFloat())
+        val blink = if (out) atEvery(t, 4.3f, 0.14f, f.id.toFloat()) else f.count == 1
         for (s in listOf(-1f, 1f)) {
             val ec = Offset(c.x + s * 0.03f * u, c.y - (if (out) 0.03f else 0.005f) * u)
             drawCircle(Color(0xFFFFD447), 0.026f * u, ec)

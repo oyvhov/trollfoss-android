@@ -459,7 +459,7 @@ internal fun DrawScope.atRockingHorse(f: Fixture, u: Float, pen: Pen) {
 
 internal fun DrawScope.atSpider(f: Fixture, u: Float, pen: Pen) {
     val flip = f.variant == 1
-    val t = pen.t
+    val t = 0f
     scale(if (flip) -1f else 1f, 1f, Offset.Zero) {
         fun p(x: Float, y: Float) = Offset(x * u, y * u)
         // The web in the corner: rays, and curved threads between them.
@@ -488,11 +488,11 @@ internal fun DrawScope.atSpider(f: Fixture, u: Float, pen: Pen) {
         }
         // A dew drop on the web.
         drawCircle(Color(0xFFBFE6FF), 0.005f * u, p(-0.1f, -0.29f))
-        // The spider hangs on a thread and bobs.
-        val bob = sin(t * 1.6f + f.id) * 0.012f
-        val sy = -0.17f + bob
+        // The spider hangs on a thread and now and then swings a little (f.angle; the rules move it, and it is drawn live then).
+        val sy = -0.17f
         val sx = 0.04f
         drawLine(web, p(sx, -0.34f), p(sx, sy - 0.03f), pen.lw * 0.7f)
+        rotate(f.angle * (if (flip) -57.3f else 57.3f), p(sx, -0.34f)) {
         val ink = Ink.line
         val bodyCol = if (flip) Color(0xFF3F9A8F) else Color(0xFF7A4DAF)
         // The knitting grows with every tap (mode 0 to 3): a striped scarf with stitches.
@@ -561,6 +561,7 @@ internal fun DrawScope.atSpider(f: Fixture, u: Float, pen: Pen) {
                 inked(bow, Color(0xFFFF6FA8), pen, shade = false)
             }
         }
+        }
     }
 }
 
@@ -627,15 +628,14 @@ internal fun DrawScope.atCarton(f: Fixture, u: Float, pen: Pen) {
 
 internal fun DrawScope.atLantern(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
-    val t = pen.t
+    val t = f.mode * 0.9f
     val iron = Color(0xFF3A3844)
     // The chain up to the rafter.
     for (k in 0 until 4) {
         val y = -0.215f - k * 0.04f
         drawOval(iron, Offset(-0.007f * u, y * u), Size(0.014f * u, 0.032f * u), style = Stroke(0.004f * u + pen.lw))
     }
-    val sway = sin(t * 0.9f + f.id) * 0.002f * u
-    translate(sway, 0f) {
+    translate(0f, 0f) {
         if (f.on) {
             fxGlow(p(0f, -0.09f), 0.17f * u, AtC.warm, 0.5f + 0.12f * sin(t * 6f))
         }
@@ -665,7 +665,7 @@ internal fun DrawScope.atLantern(f: Fixture, u: Float, pen: Pen) {
 
 internal fun DrawScope.atRoundWindow(f: Fixture, u: Float, pen: Pen) {
     fun p(x: Float, y: Float) = Offset(x * u, y * u)
-    val t = pen.t
+    val t = 0.7f
     val n = pen.night
     val c = p(0f, -0.14f)
     val r = 0.115f * u
@@ -686,14 +686,6 @@ internal fun DrawScope.atRoundWindow(f: Fixture, u: Float, pen: Pen) {
             drawPath(cloudPath(c.x - 0.02f * u, c.y - 0.03f * u, 0.032f * u), Color.White, alpha = 1f - n)
         }
         atWindowWeather(pen, c.x - r, c.y - r, c.x + r, c.y + r, 8)
-        // A bird (or a bat, but a friendly one) flies by now and then: a small ink wing-beat.
-        if (atEvery(t, 9f, 2.5f, f.id * 1.7f)) {
-            val ph = ((t + f.id * 1.7f) % 9f) / 2.5f
-            val bx = c.x - r + ph * 2f * r
-            val flap = sin(t * 9f) * 0.008f * u
-            val wing = Path().apply { moveTo(bx - 0.012f * u, by(c, ph) - flap); quadraticTo(bx - 0.004f * u, by(c, ph) - 0.012f * u, bx, by(c, ph)); quadraticTo(bx + 0.004f * u, by(c, ph) - 0.012f * u, bx + 0.012f * u, by(c, ph) - flap) }
-            drawPath(wing, Ink.line, style = Stroke(pen.lw * 1.1f, cap = StrokeCap.Round))
-        }
         if (f.on) {
             // The pane swings in: the opening is open air, with the breeze blowing leaves.
             for (i in 0 until 3) {
@@ -721,7 +713,7 @@ internal fun DrawScope.atRoundWindow(f: Fixture, u: Float, pen: Pen) {
     inkedRound(Rect(-0.15f * u, -0.018f * u, 0.15f * u, 0f), 0.004f * u, wood.darken(0.1f), pen)
     val pot = Path().apply { moveTo(p(0.065f, -0.018f).x, p(0.065f, -0.018f).y); lineTo(p(0.12f, -0.018f).x, p(0.12f, -0.018f).y); lineTo(p(0.113f, -0.06f).x, p(0.113f, -0.06f).y); lineTo(p(0.072f, -0.06f).x, p(0.072f, -0.06f).y); close() }
     inked(pot, Color(0xFFD9774F), pen)
-    val sway = sin(t * 1.3f) * 0.004f
+    val sway = 0.003f
     drawLine(Color(0xFF3F8F6C), p(0.092f, -0.06f), p(0.092f + sway, -0.1f), 0.005f * u, StrokeCap.Round)
     for (k in 0 until 5) {
         val a = k * 1.2566f
@@ -731,4 +723,3 @@ internal fun DrawScope.atRoundWindow(f: Fixture, u: Float, pen: Pen) {
     drawLine(Color(0xFF3F8F6C), p(0.092f, -0.07f), p(0.075f, -0.085f), 0.005f * u, StrokeCap.Round)
 }
 
-private fun by(c: Offset, ph: Float): Float = c.y - 0.05f * cos(ph * 3.1415927f)
