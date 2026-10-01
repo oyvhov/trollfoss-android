@@ -90,9 +90,10 @@ object Secrets {
         Secret("attic_secret", PlaceId.MANOR_ATTIC, 8.0f, 0.3f, event = true),
 
         // ---- cellar ----
-        Secret("cellar_party", PlaceId.MANOR_CELLAR, 9.0f, 0.3f, event = true),
-        Secret("cellar_pool", PlaceId.MANOR_CELLAR, 7.0f, 0.3f, event = true),
-        Secret("cellar_tunnel", PlaceId.MANOR_CELLAR, 9.4f, 0.3f, event = true),
+        // Inside the sauna (it shows when the door is open); a tune on the jukebox with someone dancing; three knocks on the tunnel door.
+        Secret("cellar_sauna", PlaceId.MANOR_CELLAR, 4.93f, 0.7f, inside = CellarIx.SAUNA, on = CellarIx.SAUNA),
+        Secret("cellar_party", PlaceId.MANOR_CELLAR, 8.45f, 0.5f, event = true, on = CellarIx.DANCE_FLOOR),
+        Secret("cellar_tunnel", PlaceId.MANOR_CELLAR, 9.84f, 0.55f, event = true, on = CellarIx.TUNNEL_DOOR),
 
         // ---- garden ----
         Secret("garden_pond", PlaceId.MANOR_GARDEN, 5.0f, 0.3f, event = true),

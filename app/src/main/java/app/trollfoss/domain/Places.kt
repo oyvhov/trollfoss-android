@@ -362,6 +362,8 @@ object Places {
                     f(FixtureType.CRYSTAL_BALL, 2.13f, 0.77f, on = 6),   // 7
                     fl(FixtureType.BOOKCASE, 2.56f, depth = -0.09f),             // 8
                     f(FixtureType.SHELF, 1.0f, 0.46f),           // 9
+                    // The mine tunnel to the cellar of Storhuset (appended last: never reorder this list).
+                    fl(FixtureType.SECRET_DOOR, 0.2f, depth = -0.11f),           // 10
                 ),
                 things = listOf(
                     t(ThingType.FLOWER, 0.29f, 0.76f, 4, on = 0),

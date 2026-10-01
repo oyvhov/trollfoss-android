@@ -1040,7 +1040,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         f.tapTime = time
         f.anim = 1f
         val top = f.top
-        if (place.manor && house.tap(place, f, dx, dy)) return
+        if (House.hasPassages(place) && house.tap(place, f, dx, dy)) return
         if (attractions.tap(place, f, dx, dy)) return
         when (f.type) {
             FixtureType.CANDY_FLOSS_STAND, FixtureType.POPCORN_CART -> dispense(place, f, dx)

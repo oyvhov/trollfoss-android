@@ -63,7 +63,8 @@ internal fun DrawScope.drawManorFixtureBack(f: Fixture, u: Float, pen: Pen, cont
 
     PlaceId.MANOR_GARDEN -> drawGardenFixtureBack(f, u, pen, contents)
 
-    else -> false
+    // Trollhola's end of the secret tunnel, and the small pictures of furniture (task cards) that are made at home.
+    else -> drawCellarFixtureBack(f, u, pen, contents)
 }
 
 internal fun DrawScope.drawManorFixtureFront(f: Fixture, u: Float, pen: Pen): Boolean = when (f.place) {
@@ -77,7 +78,7 @@ internal fun DrawScope.drawManorFixtureFront(f: Fixture, u: Float, pen: Pen): Bo
 
     PlaceId.MANOR_GARDEN -> drawGardenFixtureFront(f, u, pen)
 
-    else -> false
+    else -> drawCellarFixtureFront(f, u, pen)
 }
 
 /** Things made for the house: the floors are asked one after the other until one draws the type. */

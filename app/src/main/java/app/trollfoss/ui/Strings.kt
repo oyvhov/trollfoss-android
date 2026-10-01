@@ -143,4 +143,23 @@ object S {
     val catBottomColor = txt("Farge på underdel")
     val catShoes = txt("Sko")
     val catExtra = txt("Ekstra")
+
+    // Storhuset Kjellaren: the child sees no words here, but the grown-up pages and screen readers know the rooms and the tunes.
+    val cellarRooms = listOf(
+        txt("Verkstaden", "Verkstedet"),
+        txt("Vaskerommet"),
+        txt("Fyrrommet"),
+        txt("Bassenget og badstua", "Bassenget og badstuen"),
+        txt("Festrommet"),
+    )
+    val cellarTunes = listOf(
+        txt("Polka"),
+        txt("Diskofunk"),
+        txt("Vals"),
+        txt("Spelledåse", "Spilledåse"),
+        txt("Marsj"),
+    )
+    val cellarTunnel = txt("Gruvetunnelen til Trollhola", "Gruvetunnelen til Trollhula")
+    val cellarSockMonster = txt("Sokkemonsteret")
+    val cellarKeyHint = txt("Sokkemonsteret har ei gylden nøkkel i magen.", "Sokkemonsteret har en gylden nøkkel i magen.")
 }

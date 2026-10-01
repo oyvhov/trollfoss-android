@@ -191,6 +191,8 @@ enum class ThingType(
     // ---- attic ----
 
     // ---- cellar ----
+    /** A sock, never one of a pair: the sock monster burps them out in odd couples. Variants are the six patterns. */
+    CE_SOCK(0.075f, 0.075f, Cat.TOY, bounce = 0.12f, variants = 6),
 
     // ---- garden ----
     ;
