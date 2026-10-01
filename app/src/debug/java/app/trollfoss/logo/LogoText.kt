@@ -27,6 +27,8 @@ import app.trollfoss.ui.art.twinkle
  * Lettering. Glyph outlines of a heavy sans are fattened and rounded until they look like toy-box letters,
  * then each letter gets its own bounce, colour, cel shading, ink outline and a block of ink underneath.
  */
+// Debug-only render tool, run on an API 36 emulator; it never ships, so the API 28 weight call is fine.
+@android.annotation.SuppressLint("NewApi")
 internal object Fonts {
     /** The heaviest sans the device has (Roboto Flex black on current Android). */
     val black: Typeface = Typeface.create(Typeface.create("sans-serif", Typeface.NORMAL), 900, false)
