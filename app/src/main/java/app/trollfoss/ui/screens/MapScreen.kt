@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -48,9 +49,10 @@ import app.trollfoss.ui.Screen
 import app.trollfoss.ui.TrollfossViewModel
 import app.trollfoss.ui.art.Ink
 import app.trollfoss.ui.art.Pen
-import app.trollfoss.ui.art.drawIslandMap
+import app.trollfoss.ui.art.drawIslandMapLive
 import app.trollfoss.ui.art.inkedRound
 import app.trollfoss.ui.art.mapSpot
+import app.trollfoss.ui.art.rememberMapLayer
 import app.trollfoss.ui.components.CloseButton
 import app.trollfoss.ui.components.GameText
 import app.trollfoss.ui.components.Icons
@@ -82,9 +84,12 @@ fun MapScreen(vm: TrollfossViewModel) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val w = maxWidth
         val h = maxHeight
-        Canvas(Modifier.fillMaxSize()) {
+        // The still scenery is drawn once into a bitmap (off the main thread); each frame draws only what moves.
+        val mapLayer = rememberMapLayer(constraints.maxWidth, constraints.maxHeight, if (vm.night) 1f else 0f, vm.weather)
+        // The map is its own layer: every frame only it is redrawn, not the labels and buttons over it.
+        Canvas(Modifier.fillMaxSize().graphicsLayer()) {
             val pen = Pen(max(1.4f, size.height * 0.0034f), t, if (vm.night) 1f else 0f, vm.weather)
-            drawIslandMap(pen, target ?: from, t)
+            drawIslandMapLive(pen, target ?: from, t, mapLayer.value)
             val yawn = (t - yawnAt) / 2.4f
             if (yawn in 0f..1f) {
                 val open = sin(yawn * Math.PI.toFloat())

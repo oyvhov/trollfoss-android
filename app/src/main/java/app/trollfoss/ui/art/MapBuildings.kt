@@ -257,13 +257,15 @@ internal class Bx(val d: DrawScope, val m: MapPen, val sc: Float, val yf: Float)
         }
     }
 
-    /** A brick chimney with smoke puffs drifting up and to the right. */
-    fun chimney(x: Float, topY: Float, w: Float = 0.085f, h: Float = 0.2f, smoke: Boolean = true) {
+    /** A brick chimney; its smoke is drawn live by [chimneySmoke]. */
+    fun chimney(x: Float, topY: Float, w: Float = 0.085f, h: Float = 0.2f) {
         box(x, topY - h, x + w, topY, Color(0xFF9C5A48))
         d.drawRect(c(Color(0xFF7A4034)), Offset(x + w * 0.6f, topY - h), Size(w * 0.4f, h))
         d.drawRect(c(Color(0xFF6E6A78)), Offset(x - w * 0.12f, topY - h - 0.02f), Size(w * 1.24f, 0.028f))
-        if (smoke) smokeAt(x + w / 2f, topY - h - 0.03f)
     }
+
+    /** The smoke of the chimney drawn by [chimney] with the same arguments (moves with time). */
+    fun chimneySmoke(x: Float, topY: Float, w: Float = 0.085f, h: Float = 0.2f) = smokeAt(x + w / 2f, topY - h - 0.03f)
 
     fun smokeAt(x: Float, y: Float, scale: Float = 1f, dark: Boolean = false) {
         for (k in 0 until 4) {
@@ -532,7 +534,7 @@ internal fun MapPen.drawCottage(d: DrawScope, c: Cottage) {
                     gable(hw, wallH, roofH, depth, c.wall, c.roof)
                     win(-0.25f, -0.26f, -0.1f, -0.13f, shutters = false, box = true)
                     door(0.08f, 0.22f, 0.2f, Color(0xFF8C5A32), steps = false)
-                    chimney(0.14f, -wallH - roofH * 0.65f, 0.07f, 0.16f, smoke = cottageSmokes(c))
+                    chimney(0.14f, -wallH - roofH * 0.65f, 0.07f, 0.16f)
                 }
                 1 -> {
                     shadowHouse(-0.45f, 0.45f, depth, wallH, roofH, false)
@@ -556,4 +558,12 @@ internal fun MapPen.drawCottage(d: DrawScope, c: Cottage) {
     }
 }
 
-private fun MapPen.cottageSmokes(c: Cottage): Boolean = c.kind == 0
+/** The moving part of a cottage: smoke from the chimney of the gabled ones. */
+internal fun MapPen.drawCottageLive(d: DrawScope, c: Cottage) {
+    if (c.kind != 0) return
+    val yf = c.y / h
+    val sc = S * c.sc
+    d.withTransform({ translate(c.x, c.y); scale(sc, sc, Offset.Zero) }) {
+        Bx(this, this@drawCottageLive, sc, yf).chimneySmoke(0.14f, -0.3f - 0.25f * 0.65f, 0.07f, 0.16f)
+    }
+}

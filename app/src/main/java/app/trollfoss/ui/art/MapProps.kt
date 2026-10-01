@@ -392,7 +392,13 @@ private fun MapPen.drawRail(d: DrawScope, g: MapGeo) = with(d) {
     drawPath(g.railPath, bed, style = Stroke(h * 0.011f, cap = StrokeCap.Butt))
     drawPath(g.railTies, nt(Color(0xFF5B4632), 0.4f), style = Stroke(h * 0.011f, cap = StrokeCap.Butt))
     drawPath(g.railPath, nt(Color(0xFFC9CFD9), 0.4f), style = Stroke(lw * 1.2f))
-    // The tunnel portal in the foot of the right mountain.
+    drawTunnelPortal(d, g)
+}
+
+/** The tunnel portal in the foot of the right mountain; drawn again over the train so it can drive in. */
+internal fun MapPen.drawTunnelPortal(d: DrawScope, g: MapGeo) = with(d) {
+    val rail = g.rail
+    val stone = nt(if (snow) Color(0xFFDDE4F0) else Color(0xFFB7A98F), 0.5f)
     val end = rail.at(1f)
     val pw = h * 0.05f
     val portal = Path().apply {
@@ -403,8 +409,6 @@ private fun MapPen.drawRail(d: DrawScope, g: MapGeo) = with(d) {
         lineTo(end.x + pw * 0.6f, end.y + h * 0.008f)
         close()
     }
-    // The train runs out of the left edge into the tunnel and comes round again.
-    drawTrain(d, g)
     drawPath(portal, stone)
     val inner = Path().apply {
         moveTo(end.x - pw * 0.4f, end.y + h * 0.008f)
@@ -420,9 +424,10 @@ private fun MapPen.drawRail(d: DrawScope, g: MapGeo) = with(d) {
     drawCircle(nt(Color(0xFFFFD56B), 0.3f), h * 0.004f, Offset(end.x, end.y - pw * 0.66f), alpha = 0.3f + 0.7f * n)
 }
 
-private fun MapPen.drawTrain(d: DrawScope, g: MapGeo) = with(d) {
+/** The steam train running out of the left edge into the tunnel and round again (live). */
+internal fun MapPen.drawTrain(d: DrawScope, g: MapGeo) = with(d) {
     val rail = g.rail
-    val cycle = 38f
+    val cycle = LiveKit.TRAIN_CYCLE
     val f = wrap(t / cycle, 1f) * 1.3f - 0.14f
     val carLen = 0.027f * w
     val cars = 4
@@ -650,7 +655,7 @@ private fun MapPen.drawCar(d: DrawScope, p: Offset, face: Float, color: Color) =
 }
 
 /** A distant hot-air balloon, a boat, birds, petals, sparkles, fireflies, drifting weather and cloud shadows. */
-internal fun MapPen.drawLife(d: DrawScope, g: MapGeo) = with(d) {
+internal fun MapPen.drawLife(d: DrawScope, g: MapGeo, kit: LiveKit) = with(d) {
     // Walkers and cars are drawn in depth order by the depth pass; see drawDepthPass.
     // Sailing boat crossing the upper arm of the fjord.
     val period = 34f
@@ -660,18 +665,15 @@ internal fun MapPen.drawLife(d: DrawScope, g: MapGeo) = with(d) {
     val by = mix(0.775f, 0.905f, pp) * h + sin(t * 1.4f) * h * 0.003f
     val dirSign = if (ph < 1f) 1f else -1f
     withTransform({ translate(bx, by); scale(dirSign, 1f, Offset.Zero) }) {
-        val k = h * 0.05f
+        val k = kit.boatK
         drawOval(Ink.line, Offset(-k * 0.6f, -k * 0.03f), Size(k * 1.2f, k * 0.12f), alpha = 0.22f)
-        val hull = Path().apply { poly(-k * 0.5f, -k * 0.18f, k * 0.5f, -k * 0.18f, k * 0.34f, 0f, -k * 0.34f, 0f) }
-        val sail = Path().apply { poly(k * 0.03f, -k * 1.0f, k * 0.44f, -k * 0.25f, k * 0.03f, -k * 0.25f) }
-        val jib = Path().apply { poly(-k * 0.03f, -k * 0.86f, -k * 0.03f, -k * 0.25f, -k * 0.38f, -k * 0.25f) }
         drawLine(Ink.line, Offset(0f, -k * 0.18f), Offset(0f, -k * 1.02f), strokeWidth = lw * 1.4f)
-        drawPath(sail, nt(Color.White, 0.4f))
-        drawPath(sail, Ink.line, style = Stroke(lw))
-        drawPath(jib, nt(Color(0xFFFFE08A), 0.4f))
-        drawPath(jib, Ink.line, style = Stroke(lw))
-        drawPath(hull, nt(Color(0xFFE2504A), 0.4f))
-        drawPath(hull, Ink.line, style = Stroke(lw * 1.2f, join = StrokeJoin.Round))
+        drawPath(kit.boatSail, nt(Color.White, 0.4f))
+        drawPath(kit.boatSail, Ink.line, style = kit.strokeThin)
+        drawPath(kit.boatJib, nt(Color(0xFFFFE08A), 0.4f))
+        drawPath(kit.boatJib, Ink.line, style = kit.strokeThin)
+        drawPath(kit.boatHull, nt(Color(0xFFE2504A), 0.4f))
+        drawPath(kit.boatHull, Ink.line, style = kit.strokeHull)
     }
     // Gulls.
     if (n < 0.75f) {
@@ -680,31 +682,26 @@ internal fun MapPen.drawLife(d: DrawScope, g: MapGeo) = with(d) {
             val a = t * (0.2f + 0.05f * i) + i * 2.1f
             val gx = (0.72f + 0.14f * i / 5f + 0.05f * cos(a)) * w
             val gy = (0.8f + 0.03f * sin(a * 1.3f) + 0.02f * i) * h
-            drawGull(Offset(gx, gy), h * 0.017f, 0.5f + 0.5f * sin(t * 4f + i), stroke, 1f - n / 0.75f)
+            gullLive(d, Offset(gx, gy), h * 0.017f, 0.5f + 0.5f * sin(t * 4f + i), stroke, 1f - n / 0.75f)
         }
         for (i in 0 until 5) {
             val sx = wrap(hash01(i, 901) * 1.2f + t * 0.006f * (1f + 0.3f * i), 1.3f) - 0.15f
             val sy = 0.1f + 0.22f * hash01(i, 902) + 0.012f * sin(t * 0.7f + i)
-            drawGull(Offset(sx * w, sy * h), h * 0.014f, 0.5f + 0.5f * sin(t * 5f + i * 2f), stroke, (1f - n / 0.75f) * 0.85f)
+            gullLive(d, Offset(sx * w, sy * h), h * 0.014f, 0.5f + 0.5f * sin(t * 5f + i * 2f), stroke, (1f - n / 0.75f) * 0.85f)
         }
     }
     // A hot-air balloon drifting far away.
     val hx = wrap(0.15f + t * 0.0035f, 1.3f) - 0.15f
     val hy = 0.135f + 0.012f * sin(t * 0.3f)
     val r = h * 0.03f
-    val c = Offset(hx * w, hy * h)
-    drawLine(Ink.line, Offset(c.x - r * 0.55f, c.y + r * 0.6f), Offset(c.x - r * 0.25f, c.y + r * 1.3f), strokeWidth = lw * 0.8f)
-    drawLine(Ink.line, Offset(c.x + r * 0.55f, c.y + r * 0.6f), Offset(c.x + r * 0.25f, c.y + r * 1.3f), strokeWidth = lw * 0.8f)
-    drawRoundRect(nt(Color(0xFFC9824A), 0.4f), Offset(c.x - r * 0.25f, c.y + r * 1.28f), Size(r * 0.5f, r * 0.34f), CornerRadius(r * 0.06f))
-    val env = Path().apply {
-        moveTo(c.x, c.y + r * 0.9f)
-        cubicTo(c.x - r * 1.25f, c.y + r * 0.3f, c.x - r * 1.05f, c.y - r * 1.05f, c.x, c.y - r * 1.05f)
-        cubicTo(c.x + r * 1.05f, c.y - r * 1.05f, c.x + r * 1.25f, c.y + r * 0.3f, c.x, c.y + r * 0.9f)
-        close()
+    translate(hx * w, hy * h) {
+        drawLine(Ink.line, Offset(-r * 0.55f, r * 0.6f), Offset(-r * 0.25f, r * 1.3f), strokeWidth = lw * 0.8f)
+        drawLine(Ink.line, Offset(r * 0.55f, r * 0.6f), Offset(r * 0.25f, r * 1.3f), strokeWidth = lw * 0.8f)
+        drawRoundRect(nt(Color(0xFFC9824A), 0.4f), Offset(-r * 0.25f, r * 1.28f), Size(r * 0.5f, r * 0.34f), CornerRadius(r * 0.06f))
+        drawPath(kit.balloonEnv, nt(Color(0xFF5AA9E6), 0.4f))
+        drawPath(kit.balloonStripe, nt(Color(0xFFFFC83D), 0.4f))
+        drawPath(kit.balloonEnv, Ink.line, style = kit.strokeThin)
     }
-    drawPath(env, nt(Color(0xFF5AA9E6), 0.4f))
-    drawPath(Path().apply { moveTo(c.x, c.y - r * 1.05f); cubicTo(c.x + r * 0.5f, c.y - r * 0.5f, c.x + r * 0.5f, c.y + r * 0.3f, c.x, c.y + r * 0.9f); cubicTo(c.x + r * 1.25f, c.y + r * 0.3f, c.x + r * 1.05f, c.y - r * 1.05f, c.x, c.y - r * 1.05f); close() }, nt(Color(0xFFFFC83D), 0.4f))
-    drawPath(env, Ink.line, style = Stroke(lw))
     // Petals and leaves on the breeze.
     if (!snow) {
         val petals = ArrayList<Offset>(14)
@@ -725,7 +722,7 @@ internal fun MapPen.drawLife(d: DrawScope, g: MapGeo) = with(d) {
         val on = if (i % 2 == 0) g.river.at(f.coerceIn(0.05f, 0.95f)) else Offset((0.6f + 0.4f * hash01(i, 922)) * w, (0.74f + 0.25f * hash01(i, 923)) * h)
         if (i % 2 == 1 && !g.inSea(on.x, on.y)) continue
         val a = max(0f, sin(t * 1.6f + i * 2.3f))
-        if (a > 0.3f) twinkle(on, h * 0.011f, Color.White, a * (1f - 0.3f * n))
+        if (a > 0.3f) twinkleLive(d, on, h * 0.011f, Color.White, a * (1f - 0.3f * n))
     }
     // Fireflies along the river and at the forest edge on dark evenings.
     val fire = ramp((n - 0.4f) / 0.4f)

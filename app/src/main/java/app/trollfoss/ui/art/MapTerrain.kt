@@ -399,13 +399,22 @@ internal class FallGeo(
 
 // ------------------------------------------------------------------------------------- the map
 
+@Volatile
 private var geoCache: MapGeo? = null
+private val geoLock = Any()
 
-/** The geometry for a map of [w] × [h] pixels, rebuilt only when the size changes (single-threaded). */
+/**
+ * The geometry for a map of [w] × [h] pixels, rebuilt only when the size changes. It may be asked for
+ * from a background thread (while the map bitmap is made) and from the main thread, so it is built under a lock.
+ */
 internal fun mapGeo(w: Float, h: Float): MapGeo {
     val c = geoCache
     if (c != null && c.w == w && c.h == h) return c
-    return MapGeo(w, h).also { geoCache = it }
+    synchronized(geoLock) {
+        val c2 = geoCache
+        if (c2 != null && c2.w == w && c2.h == h) return c2
+        return MapGeo(w, h).also { geoCache = it }
+    }
 }
 
 internal class MapGeo(val w: Float, val h: Float) {
@@ -778,8 +787,6 @@ internal class MapGeo(val w: Float, val h: Float) {
         close()
     }
     val shoreLine = shore.path()
-    val waves = Path()
-
     /** Is the point in the sea? The shore curve is a polygon together with the map's right-bottom corner. */
     fun inSea(px: Float, py: Float): Boolean {
         var inside = false
@@ -801,14 +808,43 @@ internal class MapGeo(val w: Float, val h: Float) {
         return inside
     }
 
-    init {
+    /**
+     * Little arcs of white on the fjord. The ones out in the open water drift to and fro (live, [waves]);
+     * those that the pier, its boat, the dive buoy or the shore stand in front of stay put ([wavesStill]).
+     */
+    private val wavePair: Pair<Path, Path> by lazy {
+        val drifting = Path()
+        val fixed = Path()
+        val beach = bases[PlaceId.BEACH]!!
+        val buoy = bases[PlaceId.UNDERWATER]!!
         for (i in 0 until 40) {
             val x = 0.52f + 0.5f * hash01(i, 821)
             val y = 0.72f + hash01(i, 822) * 0.27f
             if (!inSea(x * w, y * h)) continue
-            waves.moveTo((x - 0.011f) * w, y * h)
-            waves.quadraticTo(x * w, (y - 0.012f) * h, (x + 0.011f) * w, y * h)
+            // A drifting wave must stay in the water at both ends and clear of what stands in the sea.
+            val free = inSea((x - 0.02f) * w, y * h) && inSea((x + 0.02f) * w, y * h) &&
+                !(x * w > beach.x + 0.2f * S && x * w < beach.x + 1.9f * S && y * h > beach.y - 0.45f * S && y * h < beach.y + 0.6f * S) &&
+                hypot(x * w - buoy.x, y * h - buoy.y) >= 1.1f * S
+            val p = if (free) drifting else fixed
+            p.moveTo((x - 0.011f) * w, y * h)
+            p.quadraticTo(x * w, (y - 0.012f) * h, (x + 0.011f) * w, y * h)
         }
+        drifting to fixed
+    }
+    val waves: Path get() = wavePair.first
+    val wavesStill: Path get() = wavePair.second
+
+    /** The line of foam along the shore. */
+    val shoreFoam: Path by lazy {
+        val p = Path()
+        for (i in 0 until 90) {
+            val f0 = i / 90f
+            val a = shore.at(f0)
+            val b = shore.at(min(1f, f0 + 0.0075f))
+            p.moveTo(a.x, a.y)
+            p.lineTo(b.x, b.y)
+        }
+        p
     }
 
     val sandBand = Path()
@@ -903,6 +939,17 @@ internal class MapGeo(val w: Float, val h: Float) {
         6,
     )
     val trailPath: Path = trail.path()
+
+    /** A point on the cable car's cable, [s] from the top (0) to the valley station (1). */
+    fun cablePoint(s: Float): Offset = Offset(mix(cableTop.x, cableBottom.x, s), mix(cableTop.y, cableBottom.y, s) + 4f * 0.012f * h * s * (1f - s))
+
+    val cablePath: Path = Path().apply {
+        moveTo(cableTop.x, cableTop.y)
+        for (k in 1..16) {
+            val o = cablePoint(k / 16f)
+            lineTo(o.x, o.y)
+        }
+    }
     val trailDashes: Path = trail.dashes(0.010f * h, 0.007f * h)
 
     // ---- trees, houses, lamps and other little things placed on the terrain
@@ -954,13 +1001,38 @@ internal fun MapPen.drawFarWorld(d: DrawScope, g: MapGeo) = with(d) {
         if (i == 3) drawCloudBanner(this)
     }
     drawTrollFace(this)
-    drawHeileLife(this, g)
+    drawTrail(this, g)
     // On dark nights the northern lights wash the peaks in green and violet.
     val aw = ramp((n - 0.3f) / 0.55f) * (1f - 0.6f * oc)
     if (aw > 0.01f) {
         drawRect(Brush.verticalGradient(listOf(Pal.auroraGreen.copy(alpha = 0.16f * aw), Pal.auroraGreen.copy(alpha = 0f)), startY = 0f, endY = h * 0.36f), Offset.Zero, Size(w, h * 0.36f))
         drawRect(Brush.horizontalGradient(listOf(Pal.auroraViolet.copy(alpha = 0f), Pal.auroraViolet.copy(alpha = 0.12f * aw)), startX = w * 0.4f, endX = w), Offset(w * 0.4f, 0f), Size(w * 0.6f, h * 0.3f))
     }
+}
+
+/**
+ * A long banner of cloud along Heileberget's flank. It hangs in one place: it has to lie behind the cable car,
+ * the trail and the houses, so it belongs to the still scenery.
+ */
+private fun MapPen.drawCloudBanner(d: DrawScope) = with(d) {
+    val body = lerp(if (oc > 0.3f) Color(0xFFDDE3EE) else Color.White, Color(0xFF5A5496), n * 0.75f)
+    val shade = lerp(if (oc > 0.3f) Color(0xFFB4BDD0) else Color(0xFFCFE0F4), Color(0xFF3A3578), n * 0.75f)
+    val shadePath = Path()
+    val bodyPath = Path()
+    for (k in 0 until 2) {
+        val cx = wrap(0.1f + k * 0.55f, 1.5f) - 0.25f
+        val cy = (0.235f + 0.06f * k) * h
+        for (j in 0 until 6) {
+            val x = (cx + (j - 2.5f) * 0.045f) * w
+            val rw = w * (0.05f + 0.022f * hash01(j + k * 6, 961))
+            val rh = h * (0.016f + 0.01f * hash01(j + k * 6, 962))
+            val y = cy + (hash01(j + k * 6, 963) - 0.5f) * h * 0.012f
+            bodyPath.addOval(Rect(x - rw, y - rh, x + rw, y + rh))
+            shadePath.addOval(Rect(x - rw * 0.96f, y - rh * 0.5f, x + rw * 1.02f, y + rh * 1.35f))
+        }
+    }
+    drawPath(shadePath, shade, alpha = 0.45f)
+    drawPath(bodyPath, body, alpha = 0.55f)
 }
 
 /** The great rock face, scree slopes and the summit flag of Heileberget. */
@@ -980,36 +1052,6 @@ private fun MapPen.drawHeileExtras(d: DrawScope, g: MapGeo) = with(d) {
     val top = Offset(0.47f * w, 0.012f * h)
     drawLine(Ink.line, top, Offset(top.x, top.y - h * 0.03f), strokeWidth = lw * 1.6f, cap = StrokeCap.Round)
     drawLine(Ink.line, Offset(top.x - h * 0.009f, top.y - h * 0.021f), Offset(top.x + h * 0.009f, top.y - h * 0.021f), strokeWidth = lw * 1.6f, cap = StrokeCap.Round)
-    val fl = Path().apply {
-        moveTo(top.x, top.y - h * 0.03f)
-        lineTo(top.x + h * 0.022f + sin(t * 4f) * h * 0.002f, top.y - h * 0.024f)
-        lineTo(top.x, top.y - h * 0.017f)
-        close()
-    }
-    drawPath(fl, nt(Color(0xFFE94F4F), 0.3f))
-    drawPath(fl, Ink.line, style = Stroke(lw * 0.8f))
-}
-
-/** A long banner of cloud drifting slowly along Heileberget's flank. */
-private fun MapPen.drawCloudBanner(d: DrawScope) = with(d) {
-    val body = lerp(if (oc > 0.3f) Color(0xFFDDE3EE) else Color.White, Color(0xFF5A5496), n * 0.75f)
-    val shade = lerp(if (oc > 0.3f) Color(0xFFB4BDD0) else Color(0xFFCFE0F4), Color(0xFF3A3578), n * 0.75f)
-    val shadePath = Path()
-    val bodyPath = Path()
-    for (k in 0 until 2) {
-        val cx = wrap(0.1f + k * 0.55f + t * 0.0045f, 1.5f) - 0.25f
-        val cy = (0.235f + 0.06f * k + 0.008f * sin(t * 0.3f + k)) * h
-        for (j in 0 until 6) {
-            val x = (cx + (j - 2.5f) * 0.045f) * w
-            val rw = w * (0.05f + 0.022f * hash01(j + k * 6, 961))
-            val rh = h * (0.016f + 0.01f * hash01(j + k * 6, 962))
-            val y = cy + (hash01(j + k * 6, 963) - 0.5f) * h * 0.012f
-            bodyPath.addOval(Rect(x - rw, y - rh, x + rw, y + rh))
-            shadePath.addOval(Rect(x - rw * 0.96f, y - rh * 0.5f, x + rw * 1.02f, y + rh * 1.35f))
-        }
-    }
-    drawPath(shadePath, shade, alpha = 0.45f)
-    drawPath(bodyPath, body, alpha = 0.55f)
 }
 
 private fun MapPen.drawSlopePines(d: DrawScope, g: MapGeo, i: Int) {
@@ -1028,11 +1070,10 @@ private fun MapPen.drawTrollFace(d: DrawScope) = with(d) {
     val sz = h * 0.07f
     val rock = nt(Color(0xFF9DA8C4), 0.5f)
     val line = rock.darken(0.5f)
-    val blink = if (wrap(t, 6.5f) < 0.18f) 0.15f else 1f
     for (side in intArrayOf(-1, 1)) {
         val e = Offset(c.x + side * sz * 0.34f, c.y - sz * 0.18f)
         drawArc(line, 200f, 140f, false, Offset(e.x - sz * 0.22f, e.y - sz * 0.3f), Size(sz * 0.44f, sz * 0.3f), alpha = 0.4f, style = Stroke(lw * 1.3f, cap = StrokeCap.Round))
-        drawOval(Color(0xFF3B3346), Offset(e.x - sz * 0.06f, e.y - sz * 0.06f * blink), Size(sz * 0.12f, sz * 0.12f * blink), alpha = 0.5f)
+        drawOval(Color(0xFF3B3346), Offset(e.x - sz * 0.06f, e.y - sz * 0.06f), Size(sz * 0.12f, sz * 0.12f), alpha = 0.5f)
     }
     val nose = Path().apply {
         moveTo(c.x - sz * 0.08f, c.y - sz * 0.12f)
@@ -1059,24 +1100,6 @@ private fun MapPen.drawWaterfall(d: DrawScope, g: MapGeo) = with(d) {
     drawPath(f.stream, nt(Color(0xFFA8DDF5), 0.4f), style = Stroke(0.011f * h, cap = StrokeCap.Round))
     // The falling water.
     drawPath(f.water, Brush.verticalGradient(listOf(nt(Color(0xFFB9E8FB), 0.3f), nt(Color(0xFFEFFAFF), 0.25f)), startY = f.top, endY = f.bottom))
-    val white = ArrayList<Offset>(60)
-    val blue = ArrayList<Offset>(60)
-    for (i in 0 until 14) {
-        val u = -0.88f + 1.76f * (i + 0.5f) / 14f
-        val speed = 0.5f + 0.3f * hash01(i, 61)
-        for (k in 0 until 3) {
-            val y0 = f.top + wrap(t * speed * 0.6f + hash01(i * 3 + k, 62), 1f) * (f.bottom - f.top + 0.08f * h) - 0.04f * h
-            val ya = max(y0, f.top)
-            val yb = min(y0 + (0.03f + 0.04f * hash01(i * 3 + k, 63)) * h, f.bottom)
-            if (yb <= ya) continue
-            fun hw(y: Float) = mix(f.tw, f.bw, ((y - f.top) / (f.bottom - f.top)).coerceIn(0f, 1f)) * 0.5f
-            val list = if ((i + k) % 2 == 0) white else blue
-            list.add(Offset(f.cx + u * hw(ya), ya))
-            list.add(Offset(f.cx + u * hw(yb), yb))
-        }
-    }
-    drawPoints(white, PointMode.Lines, Color.White, strokeWidth = lw * 1.5f, cap = StrokeCap.Round, alpha = 0.9f)
-    drawPoints(blue, PointMode.Lines, nt(Color(0xFF78C4E8), 0.3f), strokeWidth = lw * 2.2f, cap = StrokeCap.Round, alpha = 0.6f)
     // Left half in light, right half a little shaded.
     val shadeHalf = Path().apply {
         moveTo(f.cx + f.tw * 0.05f, f.top)
@@ -1092,14 +1115,6 @@ private fun MapPen.drawWaterfall(d: DrawScope, g: MapGeo) = with(d) {
     drawPath(f.lip, Ink.line, alpha = 0.6f, style = Stroke(lw))
     // A second, thin fall beside the cave.
     drawPath(f.veil, Brush.verticalGradient(listOf(nt(Color(0xFFBFE9FA), 0.3f), nt(Color(0xFFF2FBFF), 0.25f)), startY = f.veilTop, endY = f.veilBottom), alpha = 0.92f)
-    val vs = ArrayList<Offset>(10)
-    for (i in 0 until 5) {
-        val x = f.veilX + (i - 2) * 0.0035f * w
-        val y0 = f.veilTop + wrap(t * 0.5f + hash01(i, 91), 1f) * (f.veilBottom - f.veilTop) * 0.8f
-        vs.add(Offset(x, y0))
-        vs.add(Offset(x, y0 + 0.025f * h))
-    }
-    drawPoints(vs, PointMode.Lines, Color.White, strokeWidth = lw * 1.3f, cap = StrokeCap.Round, alpha = 0.9f)
 }
 
 /** The valley floor, foothills, hills and the terraced farm hill. */
@@ -1161,13 +1176,6 @@ internal fun MapPen.drawWaters(d: DrawScope, g: MapGeo) = with(d) {
     val lit = nt(if (snow) Color(0xFFB9D9F3) else Color(0xFF52B6E2), 0.5f)
     drawPath(g.riverWater, deep)
     translate(h * 0.0035f, h * 0.0035f) { drawPath(g.riverLit, lit) }
-    val flow = ArrayList<Offset>(80)
-    for (i in 0 until 40) {
-        val f0 = wrap(i / 40f + t * 0.035f, 1f)
-        flow.add(g.river.at(f0))
-        flow.add(g.river.at(min(1f, f0 + 0.018f)))
-    }
-    drawPoints(flow, PointMode.Lines, Color.White, strokeWidth = lw * 1.3f, cap = StrokeCap.Round, alpha = 0.6f * (1f - 0.4f * n))
     drawPath(g.rapids, Color.White, alpha = 0.85f, style = Stroke(lw * 1.5f, cap = StrokeCap.Round))
     drawPath(g.bankStones, nt(Color(0xFF8C8FA3), 0.5f))
     drawPath(g.bankStonesLit, nt(Color(0xFFB5B8C8), 0.5f))
@@ -1181,18 +1189,6 @@ internal fun MapPen.drawWaters(d: DrawScope, g: MapGeo) = with(d) {
     drawOval(nt(Color(0xFF1FA6C0), 0.5f), p.topLeft, p.size)
     drawOval(nt(Color(0xFF6CDCDD), 0.5f), Offset(p.left + p.width * 0.08f, p.top + p.height * 0.06f), Size(p.width * 0.8f, p.height * 0.6f), alpha = 0.85f)
     drawOval(nt(Color(0xFFB8F2EC), 0.5f), Offset(p.left + p.width * 0.26f, p.top + p.height * 0.1f), Size(p.width * 0.4f, p.height * 0.3f), alpha = 0.6f)
-    for (k in 0 until 3) {
-        val ph = wrap(t * 0.35f + k / 3f, 1f)
-        val rw = p.width * (0.25f + 0.35f * ph)
-        drawOval(Color.White, Offset(g.fall.cx - rw, p.top + p.height * 0.35f - rw * 0.12f), Size(rw * 2f, rw * 0.36f), alpha = 0.55f * (1f - ph), style = Stroke(lw))
-    }
-    // Foam where the water lands.
-    for (i in 0 until 9) {
-        val fxx = g.fall.cx - g.fall.bw * 0.5f + g.fall.bw * i / 8f
-        val r = h * (0.009f + 0.004f * sin(t * 3f + i * 1.7f))
-        drawCircle(Color.White, r, Offset(fxx, p.top + p.height * 0.18f + 0.003f * h * (i % 2)))
-        drawCircle(nt(Color(0xFFD9F5FF), 0.3f), r * 0.55f, Offset(fxx + r * 0.3f, p.top + p.height * 0.2f))
-    }
     val ringStroke = Stroke(lw * 1.2f, cap = StrokeCap.Round)
     drawArc(Color.White, 10f, 160f, false, Offset(p.left + p.width * 0.05f, p.top + p.height * 0.12f), Size(p.width * 0.9f, p.height * 0.78f), alpha = 0.75f, style = ringStroke)
     // Rocks around the pool.
@@ -1206,15 +1202,7 @@ internal fun MapPen.drawWaters(d: DrawScope, g: MapGeo) = with(d) {
     }
     drawPath(rocks, nt(Color(0xFF8C8FA3), 0.5f))
     drawPath(rocks, Ink.line, alpha = 0.6f, style = Stroke(lw * 0.7f))
-    // Mist rising and, on sunny days, a small rainbow in the spray.
-    for (i in 0 until 5) {
-        val ph = wrap(t * 0.14f + i / 5f, 1f)
-        val mx = g.fall.cx + (hash01(i, 441) - 0.5f) * p.width * 0.6f - ph * 0.02f * w
-        val my = p.top + p.height * 0.1f - ph * h * 0.1f
-        drawCircle(Color.White, h * (0.022f + ph * 0.03f), Offset(mx, my), alpha = 0.3f * sin(ph * 3.1416f) * (1f - 0.35f * n))
-    }
-    val spray = 0.6f * (1f - n) * (1f - oc) + 0.4f * pen.rainbow
-    if (spray > 0.03f) drawRainbow(Offset(g.fall.cx + 0.02f * w, p.top + p.height * 0.45f), h * 0.1f, h * 0.0065f, spray.coerceAtMost(0.75f))
+    // (The little rainbow in the spray is drawn live, over the mist.)
     if (n > 0f) drawCircle(Color(0xFFBFE6FF), h * 0.05f, Offset(g.fall.cx, p.top + p.height * 0.1f), alpha = 0.16f * n)
 
     // ---- the fjord
@@ -1229,20 +1217,13 @@ internal fun MapPen.drawWaters(d: DrawScope, g: MapGeo) = with(d) {
         drawPath(g.shoreLine, nt(Color(0xFF9BE8EC), 0.6f), alpha = 0.6f, style = Stroke(h * 0.022f, cap = StrokeCap.Round, join = StrokeJoin.Round))
         // A deeper swirl of colour out in the middle of the fjord.
         for (k in 0 until 3) {
-            val ph = wrap(t * 0.02f + k / 3f, 1f)
+            val ph = k / 3f
             drawOval(deepSea.darken(0.1f), Offset((0.62f + 0.3f * ph) * w, (0.95f - 0.02f * k) * h), Size(0.2f * w, 0.04f * h), alpha = 0.22f)
         }
-        // Waves: little arcs that drift.
-        translate(sin(t * 0.25f) * w * 0.006f, 0f) {
-            drawPath(g.waves, Color.White, alpha = 0.65f * (1f - 0.4f * n), style = Stroke(lw * 1.1f, cap = StrokeCap.Round))
-        }
-        val foam = ArrayList<Offset>(180)
-        for (i in 0 until 90) {
-            val f0 = wrap(i / 90f + t * 0.002f, 1f)
-            foam.add(g.shore.at(f0))
-            foam.add(g.shore.at(min(1f, f0 + 0.0075f)))
-        }
-        drawPoints(foam, PointMode.Lines, Color.White, strokeWidth = lw * 2.2f, cap = StrokeCap.Round, alpha = 0.9f * (1f - 0.35f * n))
+        // Waves behind the pier and the buoy stay put; the others drift (live).
+        drawPath(g.wavesStill, Color.White, alpha = 0.65f * (1f - 0.4f * n), style = Stroke(lw * 1.1f, cap = StrokeCap.Round))
+        // The foam line along the shore.
+        drawPath(g.shoreFoam, Color.White, alpha = 0.9f * (1f - 0.35f * n), style = Stroke(lw * 2.2f, cap = StrokeCap.Round))
     }
     drawPath(g.shoreLine, Ink.line, alpha = 0.55f, style = Stroke(lw * 1.1f, cap = StrokeCap.Round, join = StrokeJoin.Round))
     // Cliff walls where the farm hill meets the water.
