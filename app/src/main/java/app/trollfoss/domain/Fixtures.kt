@@ -118,6 +118,12 @@ enum class FixtureType {
 
     // Each floor adds its own types below, in its own block. The spec of each goes in the floor's file (see [Floor.specOf]).
     // ---- Storhuset ground floor (HouseGround.kt) ----
+    GR_CLOCK, GR_COAT_RACK, GR_UMBRELLA_STAND, GR_WINDOW, GR_ARMOUR, GR_CHANDELIER, GR_POST_SLOT, GR_PORTRAIT,
+    GR_FIREPLACE, GR_WINGCHAIR, GR_SOFA, GR_COFFEE_TABLE, GR_POPCORN_BOWL, GR_GLOBE, GR_TV, GR_AQUARIUM, GR_FLOOR_LAMP,
+    GR_BOOKSHELF, GR_LADDER, GR_DESK, GR_LECTERN, GR_BUST,
+    GR_DINING_TABLE, GR_CHAIR_ROW, GR_DINING_CHAIR, GR_BELL, GR_CAKE, GR_CANDELABRA, GR_SIDEBOARD,
+    GR_RANGE, GR_SINK, GR_MIXER, GR_PIZZA_OVEN, GR_FRIDGE, GR_JAM_CABINET, GR_ISLAND, GR_STOOLS,
+    GR_PLANT, GR_FOUNTAIN, GR_SOFIE, GR_HAMMOCK,
 
     // ---- Storhuset upper floor (HouseUpper.kt) ----
 

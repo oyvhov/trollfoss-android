@@ -253,16 +253,17 @@ object MusicComposer {
             padLevel = 0.2,
             seed = 97,
         ),
-        // Stately and warm, a little waltz: the big house.
+        // Stately and warm, a harpsichord-like pluck over a wide pad with a few chimes: the big house. The chords
+        // walk a little round the circle (Cmaj7, Em7, Fmaj7, G7) so the house always sounds like it is going somewhere.
         MusicTheme.MANOR to Recipe(
-            bpm = 76.0,
-            chords = listOf(intArrayOf(60, 64, 67, 71), intArrayOf(57, 60, 64, 67), intArrayOf(62, 65, 69, 72), intArrayOf(55, 59, 62, 65)),
-            bass = intArrayOf(36, 33, 38, 31),
-            arpeggio = intArrayOf(0, 2, 1, 3, 0, 3, 2, 1),
-            pluckDecay = 4.0,
+            bpm = 72.0,
+            chords = listOf(intArrayOf(60, 64, 67, 71), intArrayOf(52, 59, 64, 67), intArrayOf(53, 60, 64, 69), intArrayOf(55, 59, 62, 65)),
+            bass = intArrayOf(36, 40, 41, 43),
+            arpeggio = intArrayOf(0, 2, 1, 3, 2, -1, 3, 1),
+            pluckDecay = 3.4,
             arpeggioLevel = 0.15,
-            bells = intArrayOf(76, 79, 81, 84, 88),
-            bellChance = 0.25,
+            bells = intArrayOf(76, 79, 83, 84, 88),
+            bellChance = 0.28,
             padLevel = 0.15,
             seed = 101,
         ),

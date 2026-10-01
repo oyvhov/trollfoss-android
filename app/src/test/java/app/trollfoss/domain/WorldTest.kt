@@ -222,7 +222,11 @@ class WorldTest {
         }
         assertTrue(world.allSecretsFound())
         assertTrue(Secrets.all.size >= 60)
-        for (place in PlaceId.entries) assertEquals("three glimt in $place", 3, Secrets.inPlace(place).size)
+        for (place in PlaceId.entries) {
+            // Three glimt in each place of the village; the floors of the big house have at least three.
+            if (place.manor) assertTrue("at least three glimt in $place", Secrets.inPlace(place).size >= 3)
+            else assertEquals("three glimt in $place", 3, Secrets.inPlace(place).size)
+        }
     }
 
     @Test

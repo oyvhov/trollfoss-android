@@ -150,4 +150,31 @@ object S {
     val catBottomColor = txt("Farge på underdel")
     val catShoes = txt("Sko")
     val catExtra = txt("Ekstra")
+
+    // Storhuset Storstova
+    /** The six rooms of the ground floor, left to right (for the room name that floats in, and for accessibility). */
+    fun groundRoom(index: Int): Txt = when (index) {
+        0 -> txt("Hallen", "Hallen")
+        1 -> txt("Stova", "Stuen")
+        2 -> txt("Biblioteket", "Biblioteket")
+        3 -> txt("Spisestova", "Spisestuen")
+        4 -> txt("Kjøkenet", "Kjøkkenet")
+        else -> txt("Vinterhagen", "Vinterhagen")
+    }
+
+    /** What the golden key of the ground floor is called when it is shown. */
+    val groundKey = txt("Den gylne nøkkelen frå Storstova", "Den gylne nøkkelen fra Storstua")
+
+    /** The names of the things that Storstova brings, for accessibility labels. */
+    fun groundThing(name: String): Txt = when (name) {
+        "GR_UMBRELLA" -> txt("Paraply")
+        "GR_LETTER" -> txt("Brev")
+        "GR_PIN" -> txt("Kartnål", "Kartnål")
+        "GR_JAM" -> txt("Syltetøy", "Syltetøy")
+        "GR_TRAY" -> txt("Serveringsbrett", "Serveringsbrett")
+        else -> txt(name)
+    }
+
+    /** What Rolf, the robot butler, is called. */
+    val rolf = txt("Rolf")
 }
