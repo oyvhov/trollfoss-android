@@ -263,7 +263,6 @@ internal fun DrawScope.upCanopyBed(f: Fixture, u: Float, pen: Pen) {
     // The bed itself, as in the rest of the house.
     fxBed(f, u, pen)
     // The canopy: a frame, a soft pink cloth over it, a scalloped valance along the front and the right side, and stars.
-    val tl = q(-0.215f, top, 0f)
     fxBox(u, -0.215f, top - 0.012f, 0.215f, top + 0.012f, d + 0.02f, Color(0xFFF7B6CF), pen, rad = 0.006f, z = -0.01f, top = Color(0xFFFFD6E6), side = Color(0xFFD98BAA))
     val cloth = fxFlat(u, -0.215f, 0.215f, top - 0.012f, -0.01f, d + 0.01f, 0.006f)
     clipPath(cloth) {
@@ -273,7 +272,6 @@ internal fun DrawScope.upCanopyBed(f: Fixture, u: Float, pen: Pen) {
         }
     }
     drawPath(cloth, Ink.line, style = pen.thin)
-    if (tl.x > 1e9f) Unit
 }
 
 /** The front of the four-poster: the duvet, the front posts, the tied-back curtains, a scalloped valance and fairy lights. */

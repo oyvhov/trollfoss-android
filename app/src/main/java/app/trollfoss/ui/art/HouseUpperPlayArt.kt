@@ -182,16 +182,6 @@ internal fun DrawScope.upTrampoline(f: Fixture, u: Float, pen: Pen) {
     // A ring and a star painted on the mat.
     drawPath(fxDisc2(c.x, c.y + dip, 0.08f * u, 0.058f * u), Color(0xFF5568B0), style = Stroke(pen.lw * 1.2f))
     drawPath(starPath(Offset(c.x, c.y + dip), 0.026f * u, 0.011f * u), UpC.yellow)
-    // The front of the rim in padding.
-    val rimFront = Path().apply {
-        val a = fxRim(c.x, c.y, 0.205f * u, -PI.toFloat() * 0.9f)
-        moveTo(a.x, a.y)
-        for (k in 0..24) {
-            val ang = -PI.toFloat() * 0.9f + k * (PI.toFloat() * -0.0f)
-            if (ang > 0f) Unit
-        }
-    }
-    if (rimFront.isEmpty) Unit
 }
 
 // ---------------------------------------------------------------------------------------------- the easel
@@ -243,11 +233,8 @@ internal fun DrawScope.upEasel(f: Fixture, u: Float, pen: Pen) {
         drawRect(c, Offset(pc.x - 0.011f * u, pc.y - 0.026f * u), Size(0.022f * u, 0.008f * u))
         drawRect(Ink.line, Offset(pc.x - 0.011f * u, pc.y - 0.026f * u), Size(0.022f * u, 0.008f * u), style = pen.thin)
     }
-    // A paint-spotted cloth hanging from the top of the easel.
-    val cl = Path().apply { poly(-0.045f * u, -0.4f * u, 0.045f * u, -0.4f * u, 0.05f * u, -0.3f * u, -0.05f * u, -0.3f * u) }
-    if (f.count % 13 > 3) Unit
+    // The top bar of the easel.
     capsule(p(-0.055f, -0.4f), p(0.055f, -0.4f), 0.01f * u, UpC.walnut, pen)
-    if (cl.isEmpty) Unit
 }
 
 // ---------------------------------------------------------------------------------------------- karaoke
@@ -258,7 +245,6 @@ internal fun DrawScope.upKaraoke(f: Fixture, u: Float, pen: Pen) {
     fun q(x: Float, y: Float, z: Float) = fxQ(u, x, y, z)
     val t = pen.t
     val on = f.on
-    val n = pen.night
     upShadow(u, 0.7f, 0.2f)
     val d = 0.2f
     // The wall behind: a dark backdrop with stars, so the screen and lights stand out.
@@ -346,5 +332,4 @@ internal fun DrawScope.upKaraoke(f: Fixture, u: Float, pen: Pen) {
             drawCircle(if (on) col.lighten(0.5f) else Color(0xFF8A8AA0), 0.008f * u, Offset(lc.x, lc.y + 0.032f * u))
         }
     }
-    if (n < 0f) Unit
 }

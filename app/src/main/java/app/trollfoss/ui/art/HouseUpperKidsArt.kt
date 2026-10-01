@@ -1074,11 +1074,9 @@ internal fun DrawScope.upFort(f: Fixture, u: Float, pen: Pen) {
     fxFace(side, Color(0xFFE9A06A), pen)
     clipPath(side) {
         for (k in 0 until 6) for (j in 0 until 4) {
-            val cc = lerp(Color(0xFFF2B27A), Color(0xFFE08A5A), 0.5f)
             val col = listOf(Color(0xFFFFD27A), Color(0xFFF08CB8), Color(0xFF8FD9C0), Color(0xFFB9A2F0))[(k + j) % 4]
             val a = q(hw * (1f - j / 4f), -0.3f * j / 4f, d * k / 6f)
             drawCircle(col.copy(alpha = 0.5f), 0.013f * u, a)
-            if (cc.alpha < 0f) Unit
         }
     }
     // The front: a triangle of blanket with a door in it.
@@ -1109,8 +1107,6 @@ internal fun DrawScope.upFort(f: Fixture, u: Float, pen: Pen) {
             fxGlow(a, 0.03f * u, col, 0.7f * lit)
             drawCircle(col.lighten(0.2f), 0.005f * u, a)
         }
-        val shade = Path().apply { poly(-hw * 0.78f * u, -0.012f * u, -0.28f * 0f, -0.0f, hw * 0.78f * u, -0.012f * u) }
-        if (shade.isEmpty) Unit
     }
     drawPath(front, if (open) Color.Transparent else Color(0xFFF2B27A))
     if (!open) {
