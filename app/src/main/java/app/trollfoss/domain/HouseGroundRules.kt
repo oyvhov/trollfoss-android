@@ -80,8 +80,9 @@ class GroundRules(private val sim: Sim, private val random: Random) : FloorRules
             it.type == FixtureType.GR_DESK || it.type == FixtureType.GR_FIREPLACE
     }
 
+    /** Dusk lights every lamp and the fire; dawn puts the lamps out but lets the fire burn (it is a cosy house). */
     private fun setLamps(on: Boolean) {
-        for (l in lamps()) l.on = on
+        for (l in lamps()) if (on || l.type != FixtureType.GR_FIREPLACE) l.on = on
     }
 
     private fun nearestPerson(x: Float, depth: Float, reach: Float): Person? =
@@ -927,6 +928,7 @@ class GroundRules(private val sim: Sim, private val random: Random) : FloorRules
         started = true
         lastNight = world.night
         setLamps(world.night)
+        fixture(GroundIx.FIREPLACE)?.let { it.on = true }
         fixture(GroundIx.TV)?.let { if (it.count == 1) it.count = 0 }
         fixture(GroundIx.CAKE)?.let { if (it.count == 0 && it.mode == 0) it.on = true }
         fixture(GroundIx.SECRET_SHELF)?.let { if ("manor_bookshelf" in world.flags) it.mode = 1 }

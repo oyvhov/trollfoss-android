@@ -203,7 +203,7 @@ internal fun DrawScope.grLift(f: Fixture, u: Float, pen: Pen) {
         if (k == 0 || k == 4) drawCircle(GrC.green, r * 0.07f, Offset(c.x + cos(a) * r * 0.5f, c.y + sin(a) * r * 0.5f))
     }
     // The needle rests at the ground floor, jumps when the lift is called and wobbles a little in between.
-    val needle = PI.toFloat() * (1.06f + 0.5f * open + 0.02f * sin(pen.t * 1.7f))
+    val needle = PI.toFloat() * (1.06f + 0.5f * open)
     drawLine(Ink.line, c, Offset(c.x + cos(needle) * r * 0.7f, c.y + sin(needle) * r * 0.7f), pen.lw * 1.6f, StrokeCap.Round)
     drawLine(GrC.burgundy, c, Offset(c.x + cos(needle) * r * 0.7f, c.y + sin(needle) * r * 0.7f), pen.lw * 0.8f, StrokeCap.Round)
     grKnob(c, 0.008f * u, pen)
@@ -211,7 +211,7 @@ internal fun DrawScope.grLift(f: Fixture, u: Float, pen: Pen) {
     for (k in 0..1) {
         val b = p(0.15f, -0.15f - k * 0.05f)
         inkedCircle(b, 0.008f * u, GrC.brass, pen, shade = false)
-        drawCircle(if (k == 0) GrC.warmLight.copy(alpha = 0.5f + 0.4f * sin(pen.t * 2f)) else Color(0x00FFFFFF), 0.004f * u, b)
+        if (k == 0) drawCircle(GrC.warmLight.copy(alpha = 0.8f), 0.004f * u, b)
     }
 }
 
@@ -406,7 +406,7 @@ internal fun DrawScope.grCoatRack(f: Fixture, u: Float, pen: Pen) {
     for (i in 0 until 5) {
         val px = -0.108f + i * 0.054f
         val (type, variant) = hats[(f.count + i) % hats.size]
-        val sway = sin(pen.t * 0.9f + i * 1.3f) * 0.002f * u
+        val sway = 0f // (still: a swaying hat would redraw the whole rack ten times a second)
         // The peg, and the hat on it (drawn by the very same art as the loose hat).
         val peg = p(px, -0.14f)
         drawLine(Ink.line, peg, Offset(peg.x, peg.y + 0.02f * u), pen.lw * 3f, StrokeCap.Round)
@@ -571,7 +571,7 @@ private fun DrawScope.grTallWindow(f: Fixture, u: Float, pen: Pen) {
     inkedRound(Rect(-(w + 0.03f) * u, -0.01f * u, (w + 0.03f) * u, 0.012f * u), 0.004f * u, GrC.walnutLight, pen, shade = false)
     // Heavy curtains of green velvet, open at the sides or drawn across the glass.
     val vel = if (f.place == app.trollfoss.domain.PlaceId.MANOR_GROUND) Color(0xFF2E6A4A) else Color(0xFF2E6A4A)
-    val sway = sin(pen.t * 0.5f + f.id) * 0.002f * u
+    val sway = 0f
     for (s in 0..1) {
         val dir = if (s == 0) -1f else 1f
         val inner = if (closed) 0.0f else w * 0.62f
@@ -613,7 +613,7 @@ internal fun DrawScope.grArmour(f: Fixture, u: Float, pen: Pen) {
     // A hiccup makes him jump; a clank makes him tremble.
     val jump = if (action == 3) max(0f, sin(min(1f, t / 0.5f) * PI.toFloat())) * 0.014f else 0f
     val shake = if (action == 1) sin(pen.t * 50f) * 2.4f * min(1f, t / 0.7f) else 0f
-    val breath = sin(pen.t * 1.6f) * 0.0015f
+    val breath = 0f
     // The plinth.
     inkedRound(Rect(-0.065f * u, -0.03f * u, 0.065f * u, 0f), 0.004f * u, GrC.stoneDark, pen)
     inkedRound(Rect(-0.055f * u, -0.045f * u, 0.055f * u, -0.028f * u), 0.003f * u, GrC.stone, pen)

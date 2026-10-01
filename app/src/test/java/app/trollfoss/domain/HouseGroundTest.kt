@@ -228,6 +228,7 @@ class HouseGroundTest {
         val world = newWorld()
         val sim = sim(world)
         val fire = fx(world, GroundIx.FIREPLACE)
+        fire.on = false
         tap(sim, world, GroundIx.FIREPLACE, 0f, -0.1f)
         assertTrue(fire.on)
         assertTrue(heard(GroundCode.FIRE, 1))

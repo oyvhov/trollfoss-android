@@ -380,12 +380,13 @@ object GroundFloor : Floor {
                 t(ThingType.BOOK, 5.68f, fl - 0.16f, 3, host = GroundIx.DESK),
                 t(ThingType.PEPPER, 6.68f, fl - 0.13f, host = GroundIx.DINING_TABLE),
                 // The kitchen island: fruit, and dough for pizza
-                t(ThingType.APPLE, 8.80f, fl - 0.20f, host = GroundIx.ISLAND),
-                t(ThingType.APPLE, 8.88f, fl - 0.20f, host = GroundIx.ISLAND),
-                t(ThingType.STRAWBERRY, 8.96f, fl - 0.20f, host = GroundIx.ISLAND),
-                t(ThingType.DOUGH, 9.10f, fl - 0.20f, host = GroundIx.ISLAND),
-                t(ThingType.DOUGH, 9.20f, fl - 0.20f, host = GroundIx.ISLAND),
-                t(ThingType.BROWN_CHEESE, 9.27f, fl - 0.20f, host = GroundIx.ISLAND),
+                // (they are dropped from just above the top, and settle onto it)
+                t(ThingType.BROWN_CHEESE, 8.87f, fl - 0.25f, host = GroundIx.ISLAND),
+                t(ThingType.APPLE, 8.95f, fl - 0.25f, host = GroundIx.ISLAND),
+                t(ThingType.APPLE, 9.02f, fl - 0.25f, host = GroundIx.ISLAND),
+                t(ThingType.STRAWBERRY, 9.08f, fl - 0.25f, host = GroundIx.ISLAND),
+                t(ThingType.DOUGH, 9.16f, fl - 0.25f, host = GroundIx.ISLAND),
+                t(ThingType.DOUGH, 9.25f, fl - 0.25f, host = GroundIx.ISLAND),
                 // On the floor, for Rolf to tidy and the cat to chase
                 t(ThingType.BALL, 1.60f, 0.955f),
                 t(ThingType.TOY_CAR, 2.95f, 0.965f, 1),

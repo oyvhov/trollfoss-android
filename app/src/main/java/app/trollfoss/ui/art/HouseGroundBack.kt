@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.PointMode
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.lerp
 import app.trollfoss.domain.PlaceId
@@ -676,7 +677,9 @@ private fun DrawScope.grDiningWindow(st: Stage, pen: Pen) {
     drawPath(arch, lerp(Color(0xFF8FD0F2), Color(0xFF1C2358), night))
     drawPath(arch, Brush.verticalGradient(listOf(Color.Transparent, lerp(Color(0xFFE6F6FF), Color(0xFF3B3A82), night)), startY = top * u, endY = bottom * u))
     // Hills and trees far off.
-    drawOval(lerp(Color(0xFF7FC27A), Color(0xFF254A4A), night), Offset(st.x(x0 - 0.1f), (bottom - 0.07f) * u), Size((x1 - x0 + 0.2f) * u, 0.2f * u))
+    clipPath(arch) {
+        drawOval(lerp(Color(0xFF7FC27A), Color(0xFF254A4A), night), Offset(st.x(x0 - 0.1f), (bottom - 0.07f) * u), Size((x1 - x0 + 0.2f) * u, 0.2f * u))
+    }
     drawPath(arch, Ink.line, style = pen.stroke)
     // Frame bars.
     val cx = st.x((x0 + x1) / 2f)
