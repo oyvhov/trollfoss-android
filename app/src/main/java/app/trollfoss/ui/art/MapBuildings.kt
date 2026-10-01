@@ -197,12 +197,15 @@ internal class Bx(val d: DrawScope, val m: MapPen, val sc: Float, val yf: Float)
         if (snow) fill(rp, Color(0xFFF4F8FF), 0.82f)
     }
 
-    /** A window with frame, cross bars and a glass that warms up at night; optionally shutters and a flower box. */
-    fun win(x0: Float, y0: Float, x1: Float, y1: Float, shutters: Boolean = false, box: Boolean = false, frame: Color = Color(0xFFFFFFFF), round: Boolean = false) {
+    /**
+     * A window with frame, cross bars and a glass that warms up at night; optionally shutters and a flower box.
+     * With [warm] false the glass stays cold at night: the live layer lights it (see MapManor.kt).
+     */
+    fun win(x0: Float, y0: Float, x1: Float, y1: Float, shutters: Boolean = false, box: Boolean = false, frame: Color = Color(0xFFFFFFFF), round: Boolean = false, warm: Boolean = true) {
         val gx = (x0 + x1) / 2f
         val gy = (y0 + y1) / 2f
-        glow(gx, gy, (x1 - x0) * 1.4f)
-        val glass = lerp(c(Color(0xFF9CCDE6)), Color(0xFFFFD76B), lit)
+        if (warm) glow(gx, gy, (x1 - x0) * 1.4f)
+        val glass = lerp(c(Color(0xFF9CCDE6)), Color(0xFFFFD76B), if (warm) lit else 0f)
         if (round) {
             d.drawCircle(glass, (x1 - x0) / 2f, Offset(gx, gy))
             d.drawCircle(c(frame), (x1 - x0) / 2f, Offset(gx, gy), style = Stroke(lw * 2.2f))
@@ -403,6 +406,7 @@ private fun plotOf(p: PlaceId): Plot? = when (p.name) {
     "HEILEBERGET" -> Plot(0.8f, 0.2f, 4)
     "FARM" -> Plot(1.95f, 0.4f, 0)
     "BEACH" -> Plot(1.6f, 0.34f, 5)
+    "MANOR_GROUND" -> Plot(1.6f, 0.8f, 0)
     else -> null
 }
 

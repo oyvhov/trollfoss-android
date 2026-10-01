@@ -220,6 +220,7 @@ internal fun MapPen.drawLive(d: DrawScope, g: MapGeo, kit: LiveKit, highlight: P
     if (wrap(t / LiveKit.TRAIN_CYCLE, 1f) * 1.3f - 0.14f > 0.85f) drawTunnelPortal(d, g)
     for (c in g.scatter.cottages) drawCottageLive(d, c)
     for (p in PlaceId.entries.filter { it.onMap }) drawLandmarkLive(d, g, p, p == highlight)
+    drawTunnelLive(d, g)
     drawMovers(d, g, 0f, h)
     drawHeileLife(d, g)
     drawCabins(d, g)
@@ -419,7 +420,8 @@ private fun MapPen.drawHighlight(d: DrawScope, g: MapGeo, hl: PlaceId?) = with(d
         return@with
     }
     val b = g.bases[hl]!!
-    val sc = S * depthScale(b.y / h)
+    // Storhuset has a wide estate: its ring is wider.
+    val sc = S * depthScale(b.y / h) * (if (hl == PlaceId.MANOR_GROUND) 1.4f else 1f)
     // Only the front half of the ring is drawn: it passes in front of the building, never across it.
     drawArc(Pal.sun, 0f, 180f, true, Offset(b.x - sc * 1.6f, b.y - sc * 0.26f), Size(sc * 3.2f, sc * 0.58f), alpha = 0.12f + 0.07f * pulse)
     drawArc(Pal.sun, 0f, 180f, true, Offset(b.x - sc * 1.3f, b.y - sc * 0.2f), Size(sc * 2.6f, sc * 0.46f), alpha = 0.24f + 0.1f * pulse)

@@ -1,0 +1,104 @@
+package app.trollfoss.ui
+
+import app.trollfoss.domain.PlaceId
+import app.trollfoss.ui.art.MANOR_SCALE
+import app.trollfoss.ui.art.manorGate
+import app.trollfoss.ui.art.manorUnit
+import app.trollfoss.ui.art.mapLabel
+import app.trollfoss.ui.art.mapSpot
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import kotlin.math.max
+
+/**
+ * The map's places must keep their words (and the buttons in the corners) clear of each other on every
+ * landscape screen: the phone at 2400 × 1080 px (2.625 dp per px) and the tablet at 1920 × 1200 px (1.5).
+ * The word sits about 46 dp under the spot, a line of about 34 dp.
+ */
+class MapSpotTest {
+    private class Screen(val name: String, val wPx: Int, val hPx: Int, val density: Float) {
+        val w get() = wPx / density
+        val h get() = hPx / density
+    }
+
+    private class Box(val l: Float, val t: Float, val r: Float, val b: Float) {
+        fun overlaps(o: Box, gap: Float = 0f) = l < o.r + gap && r > o.l - gap && t < o.b + gap && b > o.t - gap
+    }
+
+    private val screens = listOf(Screen("phone", 2400, 1080, 2.625f), Screen("tablet", 1920, 1200, 1.5f), Screen("wide phone", 2400, 1080, 2.2f))
+    private val places = PlaceId.entries.filter { it.onMap }
+
+    private fun word(place: PlaceId, s: Screen): Box {
+        val spot = mapSpot(place)
+        val label = mapLabel(place)
+        val chars = max(label.nn.length, label.nb.length)
+        val half = (chars * 10.5f + 6f) / 2f
+        val cx = spot.x * s.w
+        val cy = spot.y * s.h + 46f
+        return Box(cx - half, cy - 17f, cx + half, cy + 17f)
+    }
+
+    private fun corners(s: Screen) = listOf(
+        Box(16f, 16f, 76f, 76f), // close
+        Box(s.w - 68f, 16f, s.w - 16f, 68f), // parents
+        Box(16f, s.h - 96f, 156f, s.h - 16f), // book and workshop
+    )
+
+    @Test
+    fun storhusetIsOnTheMapWithItsOwnName() {
+        assertTrue(PlaceId.MANOR_GROUND in places)
+        assertEquals(1, places.count { it.manor })
+        assertEquals("Storhuset", mapLabel(PlaceId.MANOR_GROUND).nn)
+        assertEquals("Storhuset", mapLabel(PlaceId.MANOR_GROUND).nb)
+    }
+
+    @Test
+    fun wordsDoNotCollide() {
+        for (s in screens) {
+            for (i in places.indices) for (j in i + 1 until places.size) {
+                val a = word(places[i], s)
+                val b = word(places[j], s)
+                assertFalse("${places[i]} and ${places[j]} collide on the ${s.name}", a.overlaps(b, 2f))
+            }
+        }
+    }
+
+    @Test
+    fun wordsAndSpotsStayClearOfTheCornerButtons() {
+        for (s in screens) for (p in places) {
+            val w = word(p, s)
+            for (c in corners(s)) assertFalse("$p touches a corner button on the ${s.name}", w.overlaps(c, 4f))
+            val spot = mapSpot(p)
+            assertTrue("$p is inside the map", spot.x in 0.04f..0.96f && spot.y in 0.05f..0.9f)
+        }
+    }
+
+    @Test
+    fun spotsAreFarEnoughApartForTheirTouchAreas() {
+        // Two places may never share a spot, and the big house keeps clear of the neighbours that carry buttons too.
+        for (i in places.indices) for (j in i + 1 until places.size) {
+            val a = mapSpot(places[i])
+            val b = mapSpot(places[j])
+            val dx = kotlin.math.abs(a.x - b.x)
+            val dy = kotlin.math.abs(a.y - b.y)
+            assertTrue("${places[i]} and ${places[j]} are on top of each other", dx > 0.05f || dy > 0.12f)
+        }
+    }
+
+    @Test
+    fun theGateOfStorhusetIsInsideItsLandAndLeftOfTheHouse() {
+        for (s in screens) {
+            val w = s.wPx.toFloat()
+            val h = s.hPx.toFloat()
+            val gate = manorGate(w, h)
+            val spot = mapSpot(PlaceId.MANOR_GROUND)
+            val u = manorUnit(w, h)
+            assertTrue(gate.x < spot.x * w)
+            assertTrue(gate.x > spot.x * w - 2.5f * u)
+            assertTrue(gate.y > (spot.y + 0.045f) * h)
+            assertTrue(u < 0.15f * h * MANOR_SCALE * 1.05f)
+        }
+    }
+}

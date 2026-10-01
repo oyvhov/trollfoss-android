@@ -29,12 +29,15 @@ import kotlin.math.sqrt
 
 internal fun MapPen.depthScale(yFrac: Float) = 0.84f + 0.22f * ((yFrac - 0.25f) / 0.6f).coerceIn(0f, 1f)
 
+/** Storhuset, the big house, is drawn a little smaller than the unit (its estate is wide); the others at full size. */
+internal fun landmarkScale(place: PlaceId): Float = if (place == PlaceId.MANOR_GROUND) MANOR_SCALE else 1f
+
 /** Draws the still part of the landmark of [place]: everything that does not move, at its base. */
 internal fun MapPen.drawLandmark(d: DrawScope, g: MapGeo, place: PlaceId) {
     val b = g.bases[place]!!
     val yf = b.y / h
     if (place == PlaceId.SPACE) return
-    val sc = S * depthScale(yf)
+    val sc = S * depthScale(yf) * landmarkScale(place)
     d.withTransform({
         translate(b.x, b.y)
         scale(sc, sc, Offset.Zero)
@@ -54,6 +57,7 @@ internal fun MapPen.drawLandmark(d: DrawScope, g: MapGeo, place: PlaceId) {
                 "MOUNTAIN" -> fjellet()
                 "FARM" -> farm()
                 "BEACH" -> beach()
+                "MANOR_GROUND" -> manor()
                 "UNDERWATER" -> dive()
                 else -> heileberget((g.cableTop.x - b.x) / sc, (g.cableTop.y - b.y) / sc)
             }
@@ -69,7 +73,7 @@ internal fun MapPen.drawLandmarkLive(d: DrawScope, g: MapGeo, place: PlaceId, hl
     }
     val b = g.bases[place]!!
     val yf = b.y / h
-    val sc = S * depthScale(yf)
+    val sc = S * depthScale(yf) * landmarkScale(place)
     d.withTransform({
         translate(b.x, b.y)
         scale(sc, sc, Offset.Zero)
@@ -89,6 +93,7 @@ internal fun MapPen.drawLandmarkLive(d: DrawScope, g: MapGeo, place: PlaceId, hl
                 "BEACH" -> beachLive()
                 "UNDERWATER" -> diveLive()
                 "HEILEBERGET" -> heilebergetLive((g.cableTop.x - b.x) / sc, (g.cableTop.y - b.y) / sc)
+                "MANOR_GROUND" -> manorLive()
                 else -> Unit
             }
         }

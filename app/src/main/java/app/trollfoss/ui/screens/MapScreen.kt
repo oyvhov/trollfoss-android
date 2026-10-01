@@ -43,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.trollfoss.audio.Sfx
+import app.trollfoss.domain.HouseKeys
 import app.trollfoss.domain.PlaceId
 import app.trollfoss.ui.S
 import app.trollfoss.ui.Screen
@@ -51,6 +52,7 @@ import app.trollfoss.ui.art.Ink
 import app.trollfoss.ui.art.Pen
 import app.trollfoss.ui.art.drawIslandMapLive
 import app.trollfoss.ui.art.inkedRound
+import app.trollfoss.ui.art.mapLabel
 import app.trollfoss.ui.art.mapSpot
 import app.trollfoss.ui.art.rememberMapLayer
 import app.trollfoss.ui.components.CloseButton
@@ -85,7 +87,9 @@ fun MapScreen(vm: TrollfossViewModel) {
         val w = maxWidth
         val h = maxHeight
         // The still scenery is drawn once into a bitmap (off the main thread); each frame draws only what moves.
-        val mapLayer = rememberMapLayer(constraints.maxWidth, constraints.maxHeight, if (vm.night) 1f else 0f, vm.weather)
+        // The secret path from the cellar of Storhuset to Trollhola shows once all five golden keys are found.
+        val tunnel = remember(vm.generation, vm.houseKeys) { HouseKeys.TUNNEL in vm.world.flags }
+        val mapLayer = rememberMapLayer(constraints.maxWidth, constraints.maxHeight, if (vm.night) 1f else 0f, vm.weather, tunnel = tunnel)
         // The map is its own layer: every frame only it is redrawn, not the labels and buttons over it.
         Canvas(Modifier.fillMaxSize().graphicsLayer()) {
             val pen = Pen(max(1.4f, size.height * 0.0034f), t, if (vm.night) 1f else 0f, vm.weather)
@@ -134,9 +138,10 @@ fun MapScreen(vm: TrollfossViewModel) {
                     vm.sim.egg("mountain")
                 },
         )
-        for (place in PlaceId.entries.filter { it.onMap }) {
+        // Storhuset (the widest place) goes first, so the other places stay on top where their touch areas meet.
+        for (place in PlaceId.entries.filter { it.onMap }.sortedBy { if (it == PlaceId.MANOR_GROUND) 0 else 1 }) {
             val spot = mapSpot(place)
-            val label = S.place(place).str()
+            val label = mapLabel(place).str()
             Column(
                 Modifier
                     .offset(x = w * spot.x - 70.dp, y = h * spot.y - 52.dp)

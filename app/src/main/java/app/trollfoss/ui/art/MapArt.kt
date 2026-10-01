@@ -14,6 +14,8 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.drawscope.clipPath
 import app.trollfoss.domain.PlaceId
+import app.trollfoss.domain.Txt
+import app.trollfoss.ui.S
 import app.trollfoss.domain.Weather
 import kotlin.math.min
 import kotlin.math.sin
@@ -27,7 +29,7 @@ import kotlin.math.sin
 fun mapSpot(place: PlaceId): Offset = when (place) {
     PlaceId.MOUNTAIN -> Offset(0.17f, 0.25f)
     PlaceId.LAB -> Offset(0.62f, 0.25f)
-    PlaceId.SPACE -> Offset(0.81f, 0.19f)
+    PlaceId.SPACE -> Offset(0.85f, 0.19f)
     PlaceId.TIVOLI -> Offset(0.12f, 0.54f)
     PlaceId.SHOP -> Offset(0.26f, 0.55f)
     PlaceId.FOREST -> Offset(0.4f, 0.53f)
@@ -40,8 +42,9 @@ fun mapSpot(place: PlaceId): Offset = when (place) {
     PlaceId.BEACH -> Offset(0.74f, 0.83f)
     PlaceId.UNDERWATER -> Offset(0.88f, 0.84f)
     PlaceId.HEILEBERGET -> Offset(0.32f, 0.095f)
-    // Storhuset, the big house: only the ground floor is on the map (the others are inside the house).
-    PlaceId.MANOR_GROUND -> Offset(0.75f, 0.37f)
+    // Storhuset, the big house on its hill right of the waterfall: only the ground floor is on the map (the
+    // others are inside the house). The estate is wide: its lane runs left to the cave road, the secret path too.
+    PlaceId.MANOR_GROUND -> Offset(0.76f, 0.355f)
     PlaceId.MANOR_UPPER, PlaceId.MANOR_ATTIC, PlaceId.MANOR_CELLAR, PlaceId.MANOR_GARDEN -> Offset(0.5f, 0.5f)
 }
 
@@ -53,15 +56,15 @@ fun mapSpot(place: PlaceId): Offset = when (place) {
  *
  * This draws everything every frame, which is slow. The map screen caches the still scenery in bitmaps
  * ([rememberMapLayer]) and draws only the moving parts per frame ([drawIslandMapLive]); this entry is
- * for tests and tools, and as a fallback.
+ * for tests and tools, and as a fallback. [tunnel] shows the secret path from the cellar of Storhuset to Trollhola.
  */
-fun DrawScope.drawIslandMap(pen: Pen, highlight: PlaceId?, t: Float) {
+fun DrawScope.drawIslandMap(pen: Pen, highlight: PlaceId?, t: Float, tunnel: Boolean = false) {
     val g = mapGeo(size.width, size.height)
     val kit = liveKitFor(g, pen.lw, pen.night, pen.weather, pen.rainbow)
-    val live = MapPen(size.width, size.height, pen, t)
+    val live = MapPen(size.width, size.height, pen, t, tunnel)
     drawMapSky(this, g.w, g.h, pen.lw, pen.night, pen.weather, pen.rainbow)
     live.drawLiveSky(this, kit)
-    drawMapFront(this, g, pen.lw, pen.night, pen.weather, pen.rainbow)
+    drawMapFront(this, g, pen.lw, pen.night, pen.weather, pen.rainbow, tunnel)
     live.drawLive(this, g, kit, highlight)
 }
 
@@ -75,19 +78,21 @@ internal fun drawMapSky(d: DrawScope, w: Float, h: Float, lw: Float, night: Floa
  * The scenery that never moves, from the mountains to the vignette. The sky is left empty (transparent)
  * where nothing covers it, so the clouds and the northern lights can pass behind the mountains.
  */
-internal fun drawMapFront(d: DrawScope, g: MapGeo, lw: Float, night: Float, weather: Weather, rainbow: Float) {
-    val m = MapPen(g.w, g.h, Pen(lw, 0f, night, weather, rainbow), 0f)
+internal fun drawMapFront(d: DrawScope, g: MapGeo, lw: Float, night: Float, weather: Weather, rainbow: Float, tunnel: Boolean = false) {
+    val m = MapPen(g.w, g.h, Pen(lw, 0f, night, weather, rainbow), 0f, tunnel)
     m.drawFarWorld(d, g)
     m.drawGround(d, g)
     m.drawWaters(d, g)
     m.drawInfra(d, g)
     m.drawDepthPassStill(d, g)
     m.drawCableStatic(d, g)
+    // The secret path is a magic hint laid over the whole scene: it must not hide behind the tower or the trees.
+    if (tunnel) m.drawTunnelPath(d, g)
     m.drawFinish(d)
 }
 
 /** Everything the map needs for one frame. */
-internal class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float) {
+internal class MapPen(val w: Float, val h: Float, val pen: Pen, val t: Float, val tunnel: Boolean = false) {
     val n = pen.night
     val snow = pen.weather == Weather.SNOW
     val rain = pen.weather == Weather.RAIN
@@ -178,3 +183,9 @@ internal fun DrawScope.drawMapPlaceholder(night: Float, weather: Weather) {
     val g1 = lerp(if (weather == Weather.SNOW) Color(0xFFDDE7F5) else Color(0xFF63AE50), Color(0xFF231E5C), night * 0.5f)
     drawRect(Brush.verticalGradient(listOf(g0, g1), startY = h * 0.42f, endY = h), Offset(0f, h * 0.42f), Size(size.width, h * 0.58f))
 }
+
+/** On the map the big house is called Storhuset (inside it, the ground floor is the Storstova). */
+private val STORHUSET = Txt("Storhuset")
+
+/** The word under a place on the map. */
+internal fun mapLabel(place: PlaceId): Txt = if (place == PlaceId.MANOR_GROUND) STORHUSET else S.place(place)
