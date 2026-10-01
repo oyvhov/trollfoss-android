@@ -99,6 +99,15 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
         return true
     }
 
+    /** The panel asks to tear a room down: the app asks the child first. */
+    fun askDemolish(place: PlaceId, slot: Int): Boolean {
+        if (!Mine.canDemolish(house, place, slot)) return false
+        house.askDemolish = slot
+        house.askPlace = place
+        touch()
+        return true
+    }
+
     fun cancelDemolish() {
         house.askDemolish = -1
         touch()

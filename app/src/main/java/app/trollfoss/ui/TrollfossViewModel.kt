@@ -80,6 +80,9 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         private set
 
     val sfx = SoundFx(application)
+
+    /** The builder panel of Mitt hus (see docs/BYGG.md): open or not, and which tab. */
+    val mineUi = app.trollfoss.ui.screens.MineUi()
     private val music = MusicPlayer(application.cacheDir)
     val updater = AppUpdater(application, viewModelScope)
 
@@ -134,11 +137,23 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     init {
         val saved = store.load()
         world = saved?.world ?: WorldFactory.create()
+        // A brand-new world starts on the empty plot of Mitt hus, with the builder panel open (an old save is left as it is).
+        if (saved == null) startOnPlot()
         settings = saved?.settings ?: Settings()
         sim = Sim(world)
         wireTasks()
         syncFromWorld()
         applySettings()
+    }
+
+    /** A new world begins on the plot: the family comes along, and the builder panel is open. */
+    private fun startOnPlot() {
+        world.place = PlaceId.MINE_YARD
+        for ((i, name) in listOf("Hedda", "Øyvind").withIndex()) {
+            val p = world.people().firstOrNull { it.name == name } ?: continue
+            app.trollfoss.domain.House.moveTo(world, p, PlaceId.MINE_YARD, 3.35f + i * 0.4f, 0.9f - i * 0.03f)
+        }
+        mineUi.open = true
     }
 
     private fun syncFromWorld() {
@@ -207,6 +222,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     fun engineFor(place: PlaceId, motion: Boolean): Engine {
         engine?.let { cams[it.place] = it.cam }
         val start = cams[place] ?: defaultCam(place)
+        app.trollfoss.ui.art.MineView.house = world.mine
         return Engine(world, place, sim, this, motion, start).also {
             pendingFocus?.let { x -> it.focusOn(x); pendingFocus = null }
             it.season = season
@@ -225,6 +241,8 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         PlaceId.MOUNTAIN -> 0.6f
         PlaceId.FARM -> 0.1f
         PlaceId.MANOR_GROUND, PlaceId.MANOR_UPPER -> 0.4f
+        PlaceId.MINE_YARD -> 1.0f
+        PlaceId.MINE_GROUND, PlaceId.MINE_UPPER -> 0f
         else -> 0.3f
     }
 
@@ -243,6 +261,9 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun travel(to: PlaceId) {
         engine?.let { cams[it.place] = it.cam }
+        // Whatever the builder is busy with is finished before the child goes; a housewarming ends when they leave the house.
+        sim.mine.finishJob()
+        if (!to.mine) sim.mine.endParty()
         world.place = to
         place = to
         screen = Screen.Play
@@ -382,7 +403,19 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+    /** Bumps with every change of Mitt hus; the panel and its buttons follow it. */
+    var mineVersion by mutableIntStateOf(0)
+        private set
+    private var partyMusic = false
+
     override fun changed() {
+        mineVersion = world.mine.version
+        mineUi.version = mineVersion
+        val party = world.mine.party != null
+        if (party != partyMusic) {
+            partyMusic = party
+            updateMusic()
+        }
         houseKeys = HouseKeys.found(world)
         scheduleSave()
     }
@@ -410,7 +443,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     private fun updateMusic() {
         val theme = when {
             screen == Screen.Map -> MusicTheme.MAP
-            radioOn && screen == Screen.Play -> MusicTheme.RADIO
+            (radioOn || partyMusic) && screen == Screen.Play -> MusicTheme.RADIO
             night && place != PlaceId.SPACE && place != PlaceId.UNDERWATER && place != PlaceId.STAGE -> MusicTheme.NIGHT
             else -> when (place) {
                 PlaceId.HOME -> MusicTheme.HOME
@@ -462,6 +495,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun onBackground() {
         engine?.cancel()
+        sim.mine.leave()
         music.pause()
         saveJob?.cancel()
         val json = WorldStore.encode(world, settings).toString()
@@ -474,7 +508,16 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     /** Debug builds only: jump straight to a place or screen for screenshots. */
-    fun debug(placeName: String?, screenName: String?, nightOn: String?, weatherName: String?, secrets: Int, wishes: Boolean = false, skip: Int = 0, task: String? = null) {
+    fun debug(placeName: String?, screenName: String?, nightOn: String?, weatherName: String?, secrets: Int, wishes: Boolean = false, skip: Int = 0, task: String? = null, mine: String? = null, shape: Int = 0, build: String? = null) {
+        // Mitt hus: `--es mine demo|demo2` fills the house, `--ei shape 0..3` picks the template, `--es build on|off` opens or closes the builder.
+        mine?.let { m ->
+            if (m.startsWith("demo")) app.trollfoss.domain.MineDemo.fill(sim, if (m == "demo2") 2 else 1, shape)
+            world.mine.version++
+        }
+        build?.let { b ->
+            mineUi.open = b == "on"
+            sim.mine.setBuildMode(b == "on", PlaceId.entries.firstOrNull { it.name.equals(placeName, true) } ?: world.place)
+        }
         placeName?.let { name -> PlaceId.entries.firstOrNull { it.name.equals(name, true) }?.let { travel(it) } }
         when (screenName?.lowercase()) {
             "map" -> open(Screen.Map)

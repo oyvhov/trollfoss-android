@@ -18,6 +18,9 @@ enum class Sfx {
     // Silly ones: humour is half the game.
     BURP, HICCUP, PRRT, SNEEZE, SLIP, BONK, TICKLE, SPLAT,
 
+    // Mitt hus (MineFx.kt): building sounds.
+    MI_HAMMER, MI_SAW, MI_DRILL, MI_PLING, MI_CRANE, MI_PLANK, MI_DINGDONG, MI_CRASH,
+
     // Storhuset. Each floor adds its sounds in its own block, and their recipes in [Synth.voices] below.
     // ---- ground floor ----
 
@@ -331,6 +334,52 @@ object Synth {
         Sfx.RUMBLE -> listOf(
             Noise(0.0, 1.2, 0.6, 120.0, 320.0, swell = true, seed = 9),
             Tone(55.0, 0.0, 1.2, 0.5, buzzy, decay = 0.6, slideTo = 72.0, vibrato = 2.0, vibratoHz = 12.0, attack = 0.2),
+        )
+
+        // ---- Mitt hus: hammer, saw, drill, crane, plank, bell, crash ----
+        Sfx.MI_HAMMER -> listOf(
+            Tone(190.0, 0.0, 0.1, 0.7, soft, decay = 26.0, slideTo = 120.0),
+            Tone(880.0, 0.0, 0.035, 0.28, soft, decay = 80.0),
+            Noise(0.0, 0.03, 0.4, 1900.0, 700.0, decay = 90.0, seed = 31),
+        )
+        Sfx.MI_SAW -> listOf(
+            Noise(0.0, 0.2, 0.5, 900.0, 2600.0, swell = true, seed = 32),
+            Noise(0.22, 0.2, 0.5, 2600.0, 900.0, swell = true, seed = 33),
+            Tone(330.0, 0.0, 0.42, 0.1, buzzy, decay = 2.0, vibrato = 0.5, vibratoHz = 32.0, attack = 0.03),
+        )
+        Sfx.MI_DRILL -> listOf(
+            Tone(240.0, 0.0, 0.55, 0.38, buzzy, decay = 1.2, slideTo = 360.0, vibrato = 0.5, vibratoHz = 42.0, attack = 0.04),
+            Noise(0.0, 0.55, 0.2, 2200.0, 3200.0, decay = 1.2, seed = 34),
+        )
+        Sfx.MI_PLING -> listOf(
+            Tone(1318.5, 0.0, 0.7, 0.45, bell, decay = 4.0),
+            Tone(1975.5, 0.06, 0.8, 0.34, bell, decay = 4.0),
+            Tone(2637.0, 0.12, 0.9, 0.24, bell, decay = 4.5),
+        )
+        Sfx.MI_CRANE -> listOf(
+            Tone(110.0, 0.0, 0.12, 0.5, soft, decay = 18.0),
+            Tone(2200.0, 0.0, 0.02, 0.3, soft, decay = 120.0), Tone(2000.0, 0.09, 0.02, 0.28, soft, decay = 120.0), Tone(2200.0, 0.18, 0.02, 0.28, soft, decay = 120.0),
+            Tone(95.0, 0.05, 0.38, 0.2, buzzy, decay = 2.0, slideTo = 130.0, vibrato = 0.4, vibratoHz = 22.0, attack = 0.05),
+        )
+        Sfx.MI_PLANK -> listOf(
+            Tone(150.0, 0.0, 0.16, 0.7, soft, decay = 20.0, slideTo = 90.0),
+            Tone(420.0, 0.02, 0.06, 0.25, pluck, decay = 30.0),
+            Noise(0.0, 0.1, 0.4, 1300.0, 300.0, decay = 30.0, seed = 35),
+        )
+        Sfx.MI_DINGDONG -> listOf(
+            Tone(784.0, 0.0, 0.9, 0.5, bell, decay = 3.0),
+            Tone(1568.0, 0.0, 0.6, 0.15, bell, decay = 4.0),
+            Tone(622.3, 0.45, 1.1, 0.5, bell, decay = 2.8),
+            Tone(1244.6, 0.45, 0.7, 0.15, bell, decay = 4.0),
+        )
+        Sfx.MI_CRASH -> listOf(
+            Noise(0.0, 0.08, 0.8, 2400.0, 600.0, decay = 40.0, seed = 36),
+            Tone(300.0, 0.0, 0.07, 0.4, pluck, decay = 30.0),
+            Noise(0.1, 0.07, 0.7, 2000.0, 500.0, decay = 40.0, seed = 37),
+            Tone(380.0, 0.1, 0.06, 0.35, pluck, decay = 30.0),
+            Noise(0.2, 0.06, 0.6, 2600.0, 700.0, decay = 40.0, seed = 38),
+            Noise(0.3, 0.05, 0.5, 3000.0, 900.0, decay = 40.0, seed = 39),
+            Tone(260.0, 0.3, 0.06, 0.3, pluck, decay = 30.0),
         )
 
         // ---- Storhuset ground floor ----

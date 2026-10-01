@@ -791,6 +791,12 @@ class Engine(
                     particles.burst(PKind.SPARK, f.x, f.y - f.spec.h / 2, 8, 0.4f, 0.011f)
                     // Folk nearby are impressed.
                     for (o in world.bodiesIn(place)) if (o is Person && abs(o.x - f.x) < 0.6f && !o.held) { o.anim.face = Face.WOW; o.anim.faceTime = 0.8f }
+                } else if (f == null && place.mine && sim.mine.longPress(place, p.x, p.y)) {
+                    // Mitt hus: a long press on a built room asks whether to tear it down.
+                    g.moved = true
+                    host.sfx(Sfx.PICK, 0.7f, 0.7f)
+                    host.haptic()
+                    host.changed()
                 }
             }
         }
@@ -1197,6 +1203,11 @@ class Engine(
         // A fixture? Front-most first, wall fixtures last.
         fixtureAt(p)?.let { f ->
             sim.tap(place, f, p.x - (f.x + f.shiftX), p.y - (f.y + f.shiftY))
+            host.changed()
+            return
+        }
+        // Mitt hus: a tap on an empty slot or the shed (build mode), before the plain sparkle.
+        if (place.mine && sim.mine.tapScene(place, p.x, p.y)) {
             host.changed()
             return
         }
