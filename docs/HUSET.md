@@ -254,6 +254,11 @@ overraskande oppførsel. Dei fleste ting skal kunne gripast, kastast og gjevast 
 Kvar delt fil har ein blokk per etasje, skilt av ei tom linje (`// ---- ground floor ----` osv.). Legg
 innhaldet **berre i din blokk**, så flettar git utan konflikt.
 
+**Namneregel:** alle nye enum-namn (`FixtureType`, `ThingType`, `Sfx`, `Deed`) får ein etasjeprefiks, så to
+agentar aldri lagar same namn: Storstova `GR_`, Andre høgda `UP_`, Loftet `AT_`, Kjellaren `CE_`, Hagen `GA_`
+(døme: `GR_CHANDELIER`, `UP_BALL_PIT`). Glimt-id-ar har same prefiksmønster (`ground_`, `upper_` …). Dei
+delte vegtypane (`STAIRCASE`, `LIFT`, `SLIDE` …) og `GOLDEN_KEY` har ingen prefiks.
+
 | Fil | Anker |
 | --- | --- |
 | `domain/Fixtures.kt` (`enum FixtureType`) | `// ---- Storhuset ... (HouseXxx.kt) ----` (nye møbeltypar; spesen går i `Floor.specOf`) |
