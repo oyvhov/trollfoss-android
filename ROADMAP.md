@@ -14,6 +14,8 @@ og går så i djupna med historier og sesongar før det kjem fleire stader.
       kontrollar på mobil, 73 glimt.
 - [x] **1.2.0** (2026-10-01): nettbrett-oversikt og sidepanel, Vagstaddalen, breiare kart, samanhengande leik
       (drivhus, kjøken, verkstad).
+- [x] **1.2.1** (2026-10-01): årstider og høgtidspynt på kartet, finare kartbygningar, møbelmeny og lager,
+      dokkehussnitt over romma, møblar som glir på plass, jamnare bilete og Android 16-tilpassing.
 
 ## 1.2.1 – Finare hus, levande kart og lettare møblering
 

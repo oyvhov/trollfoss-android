@@ -1,6 +1,13 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
-> **RELEASE 1.2.1 KLARGJORT (2026-10-01, Codex):** Brukaren bad om commit, oppdatert README på GitHub og ny release.
+> **RELEASE 1.2.1 PUBLISERT (2026-10-01, Codex):** https://github.com/oyvhov/trollfoss-android/releases/tag/v1.2.1
+> er offentleg, stabil og nyaste utgåve. Taggen peikar på `90e6cd694b2af31abd10d35f56a9b0cba102e977`.
+> Éin universal APK, 2 959 830 byte, med den opphavlege Trollfoss-signaturen.
+> APK SHA-256: `1883c556efbf226a7cede5adb38cd5b32df34389985d070f3744e47c4202de01`.
+> 350 einingstestar, `lintRelease`, `assembleRelease` og `assembleDebug` via byggjelåsen er grøne.
+> Begge GitHub CI-køyringane (main og tag) er grøne. Alle fire kladdfilene er hash- og storleikskontrollerte.
+> Offentleg release-liste og latest er kontrollerte utan token; nedlasta APK har lik hash og rett signatur.
+> Brukaren bad om commit, oppdatert README på GitHub og ny release; alt er utført.
 > Versjon 1.2.1 / kode 4. README har no gjeldande stadnamn, 18 reisemål, 24 stader og 76 glimt,
 > oppdaterte funksjonar og retta lisensformatering. Utgivingsnotat: `docs/release-v1.2.1.md`.
 > Release-arkiv: `dist/release-v1.2.1/`.
@@ -8,6 +15,8 @@
 > `Failed to setup partition, hr=80070005`; ingen eining kom opp. Ingen emulatordata vart endra.
 > Mobil-/nettbrettkontrollane av same spelendringar frå førre økt er dokumenterte nedanfor.
 > Oppdatering gjennom appen og kontroll på ekte maskinvare er framleis ikkje utførte.
+
+Resten av dokumentet er historikk frå tidlegare økter; statusen over er gjeldande.
 
 > **NYAST – 1.2.1 UNDER ARBEID (2026-10-01 kveld, Claude Fable 5.1):** lokalt på `main`, **ikkje committa**,
 > ikkje pusha, inga utgåve. Brukaren vil at fokuset alltid er betre UI og oppleving for barna. Planen står i
