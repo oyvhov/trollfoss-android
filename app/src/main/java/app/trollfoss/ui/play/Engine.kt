@@ -252,8 +252,12 @@ class Engine(
     private fun units(px: Float) = px / u
     private fun toScene(p: Offset) = Offset(p.x / u + cam, (p.y - top) / u)
 
-    private val bagRadius get() = dp(38f)
-    private val bagCenter get() = Offset(widthPx - dp(20f) - bagRadius, heightPx - dp(20f) - bagRadius)
+    /** True on a phone: the buttons are small, and so is the bag, to leave the room to the scene. */
+    var compact = false
+
+    private val bagRadius get() = dp(if (compact) 26f else 38f)
+    private val bagMargin get() = dp(if (compact) 8f else 20f)
+    private val bagCenter get() = Offset(widthPx - bagMargin - bagRadius, heightPx - bagMargin - bagRadius)
 
     // ---------------------------------------------------------------------------------- update
 
@@ -1012,16 +1016,17 @@ class Engine(
     }
 
     private fun trayRect(): Rect {
-        val right = bagCenter.x - bagRadius - dp(14f)
-        val left = dp(104f)
-        val bottom = heightPx - dp(16f)
-        return Rect(left, bottom - dp(92f), max(left + dp(92f), right), bottom)
+        val right = bagCenter.x - bagRadius - dp(if (compact) 8f else 14f)
+        val left = dp(if (compact) 12f else 104f)
+        val bottom = heightPx - dp(if (compact) 8f else 16f)
+        val height = dp(if (compact) 66f else 92f)
+        return Rect(left, bottom - height, max(left + height, right), bottom)
     }
 
     private fun traySlot(): Float {
         val r = trayRect()
         val n = max(1, world.bag().size)
-        return min(dp(88f), (r.width - dp(12f)) / n)
+        return min(dp(if (compact) 64f else 88f), (r.width - dp(12f)) / n)
     }
 
     private fun trayHit(at: Offset): Body? {
@@ -2845,7 +2850,7 @@ class Engine(
             bag.forEachIndexed { i, b ->
                 val cx = tray.left + dp(6f) + slot * (i + 0.5f)
                 val base = tray.bottom - dp(14f)
-                val box = min(slot - dp(10f), dp(66f))
+                val box = min(slot - dp(10f), dp(if (compact) 48f else 66f))
                 translate(cx, base) {
                     when (b) {
                         is Thing -> {

@@ -88,6 +88,7 @@ internal fun DrawScope.drawManorThing(type: ThingType, variant: Int, used: Int, 
     if (drawAtticThing(type, variant, used, w, h, pen, cook)) return
     if (drawCellarThing(type, variant, used, w, h, pen, cook)) return
     if (drawGardenThing(type, variant, used, w, h, pen, cook)) return
+    if (drawMineThing(type, variant, used, w, h, pen, cook)) return
     // Nobody knows this thing yet: a plain round marker, so it can still be found and picked up.
     drawCircle(Color(0xFFFFC83D), minOf(w, h) * 0.45f, Offset(0f, -h / 2f))
     drawCircle(Ink.line, minOf(w, h) * 0.45f, Offset(0f, -h / 2f), style = pen.thin)

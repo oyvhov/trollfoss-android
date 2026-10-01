@@ -40,6 +40,9 @@ object S {
         PlaceId.MANOR_ATTIC -> txt("Loftet")
         PlaceId.MANOR_CELLAR -> txt("Kjellaren", "Kjelleren")
         PlaceId.MANOR_GARDEN -> txt("Hagen")
+        PlaceId.MINE_YARD -> txt("Mitt hus")
+        PlaceId.MINE_GROUND -> txt("Mitt hus")
+        PlaceId.MINE_UPPER -> txt("Mitt hus, oppe", "Mitt hus, oppe")
     }
 
     val map = txt("Kart")
@@ -77,6 +80,7 @@ object S {
     val nynorsk = txt("Nynorsk")
     val bokmaal = txt("Bokmål")
     val seasonTitle = txt("Årstid")
+    val more = txt("Meir", "Mer")
     val seasonAuto = txt("Automatisk")
     val winter = txt("Vinter")
     val spring = txt("Vår")

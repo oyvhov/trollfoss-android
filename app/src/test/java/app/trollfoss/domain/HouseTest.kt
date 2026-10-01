@@ -52,7 +52,8 @@ class HouseTest {
             for (i in 1 until rooms.size) assertEquals(rooms[i - 1].endInclusive, rooms[i].start, 0.001f)
             assertEquals(place == PlaceId.MANOR_GROUND, place.onMap)
         }
-        assertTrue(PlaceId.entries.filter { !it.manor }.all { it.onMap })
+        assertTrue(PlaceId.entries.filter { !it.big }.all { it.onMap })
+        assertEquals(listOf(PlaceId.MANOR_GROUND, PlaceId.MINE_YARD), PlaceId.entries.filter { it.big && it.onMap })
     }
 
     @Test

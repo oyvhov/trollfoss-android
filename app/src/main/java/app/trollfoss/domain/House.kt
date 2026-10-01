@@ -109,15 +109,15 @@ object HouseKeys {
 }
 
 object House {
-    val floors: List<Floor> by lazy { listOf(GroundFloor, UpperFloor, AtticFloor, CellarFloor, GardenFloor) }
+    val floors: List<Floor> by lazy { listOf(GroundFloor, UpperFloor, AtticFloor, CellarFloor, GardenFloor, MineYardFloor, MineGroundFloor, MineUpperFloor) }
 
-    fun floor(place: PlaceId): Floor? = if (place.manor) floors.firstOrNull { it.place == place } else null
+    fun floor(place: PlaceId): Floor? = if (place.big) floors.firstOrNull { it.place == place } else null
 
     val passages: List<Passage> by lazy { floors.flatMap { it.passages } }
 
     /** The passage that [f] is the way in of, or null for any other fixture. */
     fun passageAt(f: Fixture): Passage? {
-        if (!f.place.manor) return null
+        if (!f.place.big) return null
         return passages.firstOrNull { it.place == f.place && f.place.idBase + it.fixture == f.id }
     }
 
