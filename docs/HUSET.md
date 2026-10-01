@@ -276,20 +276,27 @@ etasjefilene er alt ferdig). Må du endre noko i dei: gjer det minst mogleg, og 
   `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`). Flett `main` inn i branchen din av og til.
   Ikkje push, ikkje opprett release og rør aldri `.signing/` eller `signing.properties`. Lag **aldri** ny
   signeringsnøkkel.
-- Bygg og test (PowerShell, frå worktreen din):
+- **Bygg alltid med låsen** (maskina har lite ledig minne og fleire agentar bygger samtidig; skriptet tek
+  éin sperre for heile maskina og køyrer éi bygging om gongen, utan lingrande Gradle-daemon). Frå worktreen din:
   ```powershell
-  $env:TEMP='C:\topa\.gradle-tmp'; $env:TMP='C:\topa\.gradle-tmp'; $env:GRADLE_USER_HOME='C:\JellyBin\.gradle-home'
-  .\gradlew.bat --no-daemon -Pkotlin.compiler.execution.strategy=in-process :app:testDebugUnitTest :app:lintDebug :app:assembleDebug "-PtrollfossIdSuffix=.<namn>"
+  powershell -NoProfile -ExecutionPolicy Bypass -File C:\topa\scripts\Build-Locked.ps1 -Tasks ':app:testDebugUnitTest',':app:lintDebug',':app:assembleDebug' -Suffix .<namn>
   ```
-  Maskina har lite ledig minne, og fleire agentar bygger samtidig: **ikkje køyr to bygg på same tid sjølv**, og
-  bruk alltid `--no-daemon`. Pakkenamnet blir `app.trollfoss.<namn>`, så du overskriv ingen andre.
-- Emulator: berre `emulator-5554` (telefon, `C:\Android\sdk\platform-tools\adb.exe`). Installer med
-  `adb -s emulator-5554 install -r app\build\outputs\apk\debug\app-debug.apk` og start med
-  `adb shell am start -f 0x20000000 -n app.trollfoss.<namn>/app.trollfoss.MainActivity --es place manor_ground --es night off --es weather SUN`
-  (stadnamn `manor_ground|manor_upper|manor_attic|manor_cellar|manor_garden`). Skjermbilete:
-  `adb -s emulator-5554 exec-out screencap -p > fil.png`. Vent 15–25 s etter start (første ramme er treg).
-  Rør **aldri** `emulator-5558`, `5560` eller `5562`. Ikkje la kommandoar hengje: bruk tidsavgrensing.
-  Scroll i scena med `adb shell input swipe 1800 600 300 600 600`.
+  Berre `-Tasks ':app:compileDebugKotlin'` er raskast for sjekk av kode. Pakkenamnet blir `app.trollfoss.<namn>`,
+  så du overskriv ingen andre. Køyr aldri `gradlew` direkte og start ingen eigne Gradle-daemonar.
+- **Emulator**: berre `emulator-5554` (telefon, `C:\Android\sdk\platform-tools\adb.exe`), og alltid med
+  `Run-Locked`, som sørgjer for at éin agent om gongen har skjermen. Lag eit lite `.ps1`-skript som i **éi**
+  køyring installerer, startar, ventar og tek skjermbilete, og køyr det slik:
+  ```powershell
+  powershell -NoProfile -ExecutionPolicy Bypass -File C:\topa\scripts\Run-Locked.ps1 -Name emulator -Command "& C:\trollfoss-wt\<namn>\shot.ps1"
+  ```
+  I skriptet: `adb -s emulator-5554 install -r app\build\outputs\apk\debug\app-debug.apk`, så
+  `adb -s emulator-5554 shell am start -f 0x20000000 -n app.trollfoss.<namn>/app.trollfoss.MainActivity --es place manor_ground --es night off --es weather SUN`
+  (stadnamn `manor_ground|manor_upper|manor_attic|manor_cellar|manor_garden`), vent 15–25 s (første ramme er
+  treg), `adb -s emulator-5554 exec-out screencap -p > fil.png`, og til slutt
+  `adb -s emulator-5554 shell am force-stop app.trollfoss.<namn>`. Scroll i scena med
+  `adb shell input swipe 1800 600 300 600 600`. Ta nokre skjermbilete per økt. Fyrste start etter ei
+  ny installasjon kan gi ein «ikkje svar»-dialog: vent og prøv att. Rør **aldri** `emulator-5558`, `5560`
+  eller `5562`. Ikkje la kommandoar hengje: bruk tidsavgrensing.
 - Hald deg til dine filer. Ser du noko galt i ein delt fil, fiks det minst mogleg og skriv det i
   rapporten. Står du fast, vel det enklaste som held kvaliteten, og skriv kva du gjorde.
 - Når du er ferdig: rapportér (kort) **kva som er laga**, **kva som mangler**, **avvik frå kontrakten**,
