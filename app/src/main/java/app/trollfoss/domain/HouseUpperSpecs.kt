@@ -22,7 +22,7 @@ internal object UpperSpecs {
         )
 
         // Children's room
-        FixtureType.UP_TOY_TRAIN -> FixtureSpec(0.80f, 0.12f, spots = listOf(seat(0f, -0.05f), seat(0f, -0.05f)))
+        FixtureType.UP_TOY_TRAIN -> FixtureSpec(0.80f, 0.12f, front = true, spots = listOf(seat(0f, -0.05f), seat(0f, -0.05f)))
         FixtureType.UP_BLOCKS -> FixtureSpec(
             0.14f, 0.30f,
             // The top of a standing tower can carry a teddy; a fallen one is a heap.
