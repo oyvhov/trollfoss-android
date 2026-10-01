@@ -219,7 +219,7 @@ internal fun MapPen.drawLive(d: DrawScope, g: MapGeo, kit: LiveKit, highlight: P
     // The train only goes into the tunnel for a little while of each lap.
     if (wrap(t / LiveKit.TRAIN_CYCLE, 1f) * 1.3f - 0.14f > 0.85f) drawTunnelPortal(d, g)
     for (c in g.scatter.cottages) drawCottageLive(d, c)
-    for (p in PlaceId.entries) drawLandmarkLive(d, g, p, p == highlight)
+    for (p in PlaceId.entries.filter { it.onMap }) drawLandmarkLive(d, g, p, p == highlight)
     drawMovers(d, g, 0f, h)
     drawHeileLife(d, g)
     drawCabins(d, g)

@@ -34,7 +34,7 @@ class DesignerTest {
         val sim = sim(world)
         val beanbag = sim.designer.add(PlaceId.HOME, FixtureType.BEANBAG, 1, 1.5f, 0.9f)
         assertNotNull(beanbag)
-        assertTrue(beanbag!!.id % 100 >= Decor.FIRST_ADDED)
+        assertTrue(beanbag!!.place.indexOf(beanbag.id) >= beanbag.place.addedFrom)
         assertTrue(Fx.PLACE in events)
         assertTrue(sim.designer.store(PlaceId.HOME, beanbag))
         assertNull(world.fixtures[beanbag.id])

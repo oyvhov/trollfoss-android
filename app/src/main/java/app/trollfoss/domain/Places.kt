@@ -22,7 +22,35 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
     UNDERWATER(3.8f, true, 0.90f, 0.1f),
     /** The great long mountain: a scene more than twice as wide as the others, to climb and explore. */
     HEILEBERGET(9.0f, true, 0.88f, 0.02f),
+
+    // Storhuset, the big house: four floors and a garden. Each floor is a place of its own, joined by
+    // stairs, a lift, slides and hatches (see [House]). Only the ground floor has a button on the map.
+    /** Ground floor: hall, living room, library, dining room, kitchen and winter garden. */
+    MANOR_GROUND(12.0f, false, 0.90f, 0.07f),
+    /** Upper floor: landing, two children's rooms, playroom, bathroom, bedroom and balcony. */
+    MANOR_UPPER(12.0f, false, 0.90f, 0.07f),
+    /** The attic: trunks, a friendly ghost, the telescope tower and a secret room. */
+    MANOR_ATTIC(9.0f, false, 0.90f, 0.07f),
+    /** The cellar: workshop, laundry, boiler room, pool and sauna, party room and a tunnel. */
+    MANOR_CELLAR(10.0f, false, 0.90f, 0.07f),
+    /** The garden around the house: greenhouse, pond, treehouse, shed and a trampoline. */
+    MANOR_GARDEN(9.0f, true, 0.88f, 0.02f),
     ;
+
+    /** True for the five places that make up the big house. */
+    val manor: Boolean get() = ordinal >= MANOR_GROUND.ordinal
+
+    /** True when the place has a button on the map. The other floors are reached from inside the house. */
+    val onMap: Boolean get() = !manor || this == MANOR_GROUND
+
+    /**
+     * Fixture ids are [idBase] plus the blueprint index. The older places have room for 100 ids each
+     * (blueprint furniture below [addedFrom], furniture the child adds from there to [addedMax]). A place
+     * of the big house has 300: blueprint furniture up to 199, added furniture from 200 to 259.
+     */
+    val idBase: Int get() = if (manor) 1500 + (ordinal - MANOR_GROUND.ordinal) * 300 else ordinal * 100
+    val addedFrom: Int get() = if (manor) 200 else 40
+    val addedMax: Int get() = if (manor) 259 else 59
 
     /**
      * The floor is a band with depth («skrå-3D»): the back wall meets the floor at [back], the front edge
@@ -33,7 +61,14 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
 
     companion object {
         const val FRONT = 0.97f
+
+        /** The place a fixture id belongs to, or null for an id that fits no place. */
+        fun ofFixture(id: Int): PlaceId? =
+            entries.lastOrNull { id >= it.idBase }?.takeIf { id < it.idBase + (if (it.manor) 300 else 100) }
     }
+
+    /** The blueprint index (or added slot) of a fixture id in this place. */
+    fun indexOf(id: Int): Int = id - idBase
 }
 
 /** A stretch of ground. Places with water have a sea or pond bed lower than the land. */
@@ -578,6 +613,9 @@ object Places {
                     PersonDef(Species.DOG, Look(skin = 0), 0.54f, seat = 1 to 0, glasses = ThingType.SUNGLASSES),
                 ),
             )
+            // Storhuset: each floor describes itself in its own file (HouseGround.kt and so on).
+            PlaceId.MANOR_GROUND, PlaceId.MANOR_UPPER, PlaceId.MANOR_ATTIC, PlaceId.MANOR_CELLAR, PlaceId.MANOR_GARDEN -> House.floor(id)!!.blueprint()
+
             PlaceId.HEILEBERGET -> PlaceSpec(
                 id,
                 grounds = listOf(Ground(0f, id.width, floor)),

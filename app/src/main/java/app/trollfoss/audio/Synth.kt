@@ -17,6 +17,17 @@ enum class Sfx {
 
     // Silly ones: humour is half the game.
     BURP, HICCUP, PRRT, SNEEZE, SLIP, BONK, TICKLE, SPLAT,
+
+    // Storhuset. Each floor adds its sounds in its own block, and their recipes in [Synth.voices] below.
+    // ---- ground floor ----
+
+    // ---- upper floor ----
+
+    // ---- attic ----
+
+    // ---- cellar ----
+
+    // ---- garden ----
 }
 
 /**
@@ -321,6 +332,16 @@ object Synth {
             Noise(0.0, 1.2, 0.6, 120.0, 320.0, swell = true, seed = 9),
             Tone(55.0, 0.0, 1.2, 0.5, buzzy, decay = 0.6, slideTo = 72.0, vibrato = 2.0, vibratoHz = 12.0, attack = 0.2),
         )
+
+        // ---- Storhuset ground floor ----
+
+        // ---- Storhuset upper floor ----
+
+        // ---- Storhuset attic ----
+
+        // ---- Storhuset cellar ----
+
+        // ---- Storhuset garden ----
     }
 
     fun render(sfx: Sfx): FloatArray {

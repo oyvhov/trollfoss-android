@@ -19,6 +19,10 @@ enum class Species(val height: Float, val widthRatio: Float) {
     CHICKEN(0.1f, 0.8f),
     HORSE(0.23f, 0.85f),
     GOAT(0.15f, 0.9f),
+
+    // Storhuset's own: the friendly ghost, who floats, and the robot butler.
+    GHOST(0.24f, 0.62f),
+    ROBOT(0.27f, 0.6f),
     ;
 
     val pet: Boolean get() = this != FOLK

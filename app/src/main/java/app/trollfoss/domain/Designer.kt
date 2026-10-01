@@ -19,9 +19,9 @@ class Designer(private val sim: Sim, private val random: Random) {
 
     /** Adds a piece of furniture from the catalogue or the store at ([x], [y]). Returns null when the place is full. */
     fun add(place: PlaceId, type: FixtureType, variant: Int, x: Float, y: Float): Fixture? {
-        val used = world.fixturesIn(place).map { it.id - place.ordinal * 100 }.toSet()
-        val slot = (Decor.FIRST_ADDED..Decor.MAX_ADDED).firstOrNull { it !in used } ?: return null
-        val f = Fixture(place.ordinal * 100 + slot, place, type, x, y, variant, y)
+        val used = world.fixturesIn(place).map { place.indexOf(it.id) }.toSet()
+        val slot = (place.addedFrom..place.addedMax).firstOrNull { it !in used } ?: return null
+        val f = Fixture(place.idBase + slot, place, type, x, y, variant, y)
         world.fixtures[f.id] = f
         val spot = sim.clampFixture(place, f, x, y)
         f.x = spot[0]
@@ -40,8 +40,10 @@ class Designer(private val sim: Sim, private val random: Random) {
      */
     fun canStore(place: PlaceId, f: Fixture): Boolean {
         if (!sim.movable(f)) return false
-        if (f.type == FixtureType.MAILBOX || f.type == FixtureType.CHEST && place == PlaceId.HOME && f.id == place.ordinal * 100) return false
-        val index = f.id - place.ordinal * 100
+        if (f.type == FixtureType.MAILBOX || f.type == FixtureType.CHEST && place == PlaceId.HOME && f.id == place.idBase) return false
+        // The doors, stairs and other ways between floors stay where they are.
+        if (House.passageAt(f) != null) return false
+        val index = place.indexOf(f.id)
         return Secrets.inPlace(place).none { s -> s.id !in world.found && (s.on == index || s.inside == index) }
     }
 

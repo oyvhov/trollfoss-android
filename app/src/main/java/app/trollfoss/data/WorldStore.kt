@@ -99,7 +99,7 @@ class WorldStore(private val file: File) {
             })
             // Furniture the child added from the catalogue, and blueprint furniture put away in the store.
             put("added", JSONArray().apply {
-                world.fixtures.values.filter { it.id % 100 >= Decor.FIRST_ADDED }.forEach { f ->
+                world.fixtures.values.filter { it.place.indexOf(it.id) >= it.place.addedFrom }.forEach { f ->
                     put(JSONObject().apply {
                         put("id", f.id)
                         put("place", f.place.name)
@@ -219,7 +219,7 @@ class WorldStore(private val file: File) {
                     val type = enumOrNull<FixtureType>(o.optString("type")) ?: continue
                     val y = o.optDouble("y", place.floor.toDouble()).toFloat()
                     val f = Fixture(o.optInt("id", -1), place, type, o.optDouble("x", 1.0).toFloat(), y, o.optInt("variant", 0), o.optDouble("depth", y.toDouble()).toFloat())
-                    if (f.id % 100 in Decor.FIRST_ADDED..Decor.MAX_ADDED && f.id / 100 == place.ordinal) world.fixtures[f.id] = f
+                    if (PlaceId.ofFixture(f.id) == place && place.indexOf(f.id) in place.addedFrom..place.addedMax) world.fixtures[f.id] = f
                 }
             }
             json.optJSONObject("styles")?.let { styles ->

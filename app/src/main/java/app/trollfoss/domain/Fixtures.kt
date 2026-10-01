@@ -112,6 +112,20 @@ enum class FixtureType {
 
     // Home designer catalogue, and tidying up
     RUG, PICTURE, AQUARIUM, BEANBAG, ARMCHAIR, BUNK_BED, TOY_BOX, DESK, FLOWER_POT, TRASH_BIN, ROBOT_VACUUM,
+
+    // Storhuset, the big house. Ways between floors (shared; specs in [House]):
+    STAIRCASE, LIFT, SLIDE, FIRE_POLE, HATCH, LADDER, SECRET_DOOR, DOOR, DUMBWAITER,
+
+    // Each floor adds its own types below, in its own block. The spec of each goes in the floor's file (see [Floor.specOf]).
+    // ---- Storhuset ground floor (HouseGround.kt) ----
+
+    // ---- Storhuset upper floor (HouseUpper.kt) ----
+
+    // ---- Storhuset attic (HouseAttic.kt) ----
+
+    // ---- Storhuset cellar (HouseCellar.kt) ----
+
+    // ---- Storhuset garden (HouseGarden.kt) ----
     ;
 
     val spec: FixtureSpec get() = specs.getValue(this)
@@ -493,6 +507,9 @@ enum class FixtureType {
             FLOWER_POT -> FixtureSpec(0.09f, 0.14f)
             TRASH_BIN -> FixtureSpec(0.10f, 0.14f, machine = Machine.TRASH, dropZone = RRect(-0.07f, -0.26f, 0.07f, -0.1f))
             ROBOT_VACUUM -> FixtureSpec(0.10f, 0.03f)
+
+            // The big house: its floors know their own furniture. A type nobody knows yet is a plain box.
+            else -> House.specOf(type) ?: FixtureSpec(0.3f, 0.3f)
         }
     }
 }

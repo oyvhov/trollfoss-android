@@ -25,6 +25,7 @@ import app.trollfoss.domain.FixtureType
 import app.trollfoss.domain.Look
 import app.trollfoss.domain.Maalform
 import app.trollfoss.domain.Mode
+import app.trollfoss.domain.Passage
 import app.trollfoss.domain.Person
 import app.trollfoss.domain.PlaceId
 import app.trollfoss.domain.Secrets
@@ -190,6 +191,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         engine?.let { cams[it.place] = it.cam }
         val start = cams[place] ?: defaultCam(place)
         return Engine(world, place, sim, this, motion, start).also {
+            pendingFocus?.let { x -> it.focusOn(x); pendingFocus = null }
             it.skip = debugSkip
             engine = it
             radioOn = world.fixturesIn(place).any { f -> f.type == FixtureType.RADIO && f.on }
@@ -203,10 +205,22 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         PlaceId.FOREST -> 0.8f
         PlaceId.MOUNTAIN -> 0.6f
         PlaceId.FARM -> 0.1f
+        PlaceId.MANOR_GROUND, PlaceId.MANOR_UPPER -> 0.4f
         else -> 0.3f
     }
 
     // ---------------------------------------------------------------------------------- navigation
+
+    /** Bumps with every passage taken, so the play screen can play its curtain. */
+    var passageStamp by mutableIntStateOf(0)
+        private set
+    private var pendingFocus: Float? = null
+
+    override fun passage(passage: Passage, arrivalX: Float) {
+        pendingFocus = arrivalX
+        travel(passage.to)
+        passageStamp++
+    }
 
     fun travel(to: PlaceId) {
         engine?.let { cams[it.place] = it.cam }
@@ -391,6 +405,10 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
                 PlaceId.STAGE -> MusicTheme.STAGE
                 PlaceId.UNDERWATER -> MusicTheme.SEA
                 PlaceId.HEILEBERGET -> MusicTheme.BERG
+                PlaceId.MANOR_GROUND, PlaceId.MANOR_UPPER -> MusicTheme.MANOR
+                PlaceId.MANOR_ATTIC -> MusicTheme.ATTIC
+                PlaceId.MANOR_CELLAR -> MusicTheme.CELLAR
+                PlaceId.MANOR_GARDEN -> MusicTheme.GARDEN
             }
         }
         music.play(theme)

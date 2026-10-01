@@ -17,9 +17,7 @@ object Decor {
     const val WALLS = 12
     const val FLOORS = 9
 
-    /** Added furniture gets ids from here up within its place (blueprint furniture uses 0 until this). */
-    const val FIRST_ADDED = 40
-    const val MAX_ADDED = 59
+    /** Added furniture gets ids from [PlaceId.addedFrom] up to [PlaceId.addedMax] (blueprint furniture uses the ids below). */
 
     /** Places whose walls and floors can be changed. */
     fun decoratable(place: PlaceId): Boolean = !place.outdoor && place != PlaceId.LAB && place != PlaceId.SPACE

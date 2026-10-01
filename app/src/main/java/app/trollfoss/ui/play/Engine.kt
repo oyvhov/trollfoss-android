@@ -40,6 +40,7 @@ import app.trollfoss.domain.Give
 import app.trollfoss.domain.Jokes
 import app.trollfoss.domain.Mode
 import app.trollfoss.domain.Part
+import app.trollfoss.domain.Passage
 import app.trollfoss.domain.Person
 import app.trollfoss.domain.PlaceId
 import app.trollfoss.domain.Pose
@@ -93,6 +94,9 @@ interface EngineHost {
 
     /** An Easter egg was found for the first time. */
     fun egg(id: String)
+
+    /** Someone took a passage of the big house; the view moves to the arrival at [arrivalX]. */
+    fun passage(passage: Passage, arrivalX: Float)
 }
 
 /**
@@ -213,7 +217,21 @@ class Engine(
         widthPx = max(1f, width)
         heightPx = max(1f, height)
         this.density = density
+        focus?.let { cam = it - viewport / 2f; focus = null }
         clampCam()
+    }
+
+    /** The scene x to centre the camera on once the size is known (arriving by stairs, slide or lift). */
+    private var focus: Float? = null
+
+    /** Centres the camera on [x]; applied at once if the size is known, otherwise at the first layout. */
+    fun focusOn(x: Float) {
+        if (widthPx > 1f) {
+            cam = x - viewport / 2f
+            clampCam()
+        } else {
+            focus = x
+        }
     }
 
     private fun clampCam() {
@@ -1239,6 +1257,25 @@ class Engine(
 
     override fun onDiscovery(key: String) = host.discovered(key)
 
+    override fun onPassage(passage: Passage, arrivalX: Float, riders: Int) = host.passage(passage, arrivalX)
+
+    /** What the house's effect players may use: sound, particles, timers and faces. */
+    private val stage = object : FxStage {
+        override val world: World get() = this@Engine.world
+        override val place: PlaceId get() = this@Engine.place
+        override val time: Float get() = this@Engine.time
+        override val random: Random get() = this@Engine.random
+        override fun sfx(effect: Sfx, volume: Float, rate: Float) = host.sfx(effect, volume, rate)
+        override fun after(seconds: Float, block: () -> Unit) { pending += (this@Engine.time + seconds) to block }
+        override fun burst(kind: PKind, x: Float, y: Float, n: Int, speed: Float, size: Float, color: Color?, up: Float, life: Float) = particles.burst(kind, x, y, n, speed, size, color, up, life)
+        override fun particle(p: Particle) = particles.add(p)
+        override fun faces(p: Person, first: Face, firstTime: Float, then: Face, thenTime: Float) = this@Engine.faces(p, first, firstTime, then, thenTime)
+        override fun voice(p: Person, sfx: Sfx, volume: Float, own: Boolean) = this@Engine.voice(p, sfx, volume, own)
+        override fun laughAround(x: Float, except: Person?, delay: Float, reach: Float) = this@Engine.laughAround(x, except, delay, reach)
+        override fun person(id: Int): Person? = this@Engine.person(id)
+        override fun haptic() = host.haptic()
+    }
+
     override fun onFx(fx: Fx, x: Float, y: Float, fixture: Fixture?, thing: Thing?, param: Int) {
         fun s(sfx: Sfx, v: Float = 0.8f, r: Float = 1f) = host.sfx(sfx, v, r)
         when (fx) {
@@ -1491,6 +1528,7 @@ class Engine(
                 }
                 host.haptic()
             }
+            Fx.HOUSE -> HouseFxPlayer.play(stage, param, x, y, fixture, thing)
             Fx.SETTLE -> {
                 // A little «ahh» as someone sits down, and a happy sigh when they lie down for the night.
                 s(if (param == 2) Sfx.HMM else Sfx.YUM, 0.4f, if (param == 2) 0.7f else 0.9f)
@@ -1758,12 +1796,17 @@ class Engine(
             Species.HORSE -> Sfx.NEIGH
             Species.GOAT -> Sfx.BAA
             Species.FOLK -> null
+            // The ghost says «oooh» in its own voice; the robot beeps.
+            Species.GHOST -> Sfx.OOH
+            Species.ROBOT -> Sfx.BEEP
         }
         val rate = when (p.species) {
             Species.GOAT -> 1.3f
             Species.ELK -> 1.25f
             Species.PUFFIN -> 0.75f
             Species.FOLK -> p.voice
+            Species.GHOST -> p.voice * 0.7f
+            Species.ROBOT -> p.voice.coerceIn(0.7f, 1.1f)
             else -> p.voice.coerceIn(0.85f, 1.2f)
         }
         // Silly voices: a balloon in the hand is helium, shrunk figures squeak and giants rumble.
@@ -1878,7 +1921,7 @@ class Engine(
 
     private fun glimtKey(s: Secret): Float {
         val index = if (s.on >= 0) s.on else s.inside
-        if (index >= 0) world.fixtures[s.place.ordinal * 100 + index]?.let { return fixtureKey(it) + 0.0002f }
+        if (index >= 0) world.fixtures[s.place.idBase + index]?.let { return fixtureKey(it) + 0.0002f }
         return if (s.y >= place.back) s.y else -5f
     }
 

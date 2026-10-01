@@ -140,7 +140,9 @@ class Life(private val sim: Sim, private val random: Random) {
     private fun wants(p: Person, type: ThingType): Boolean {
         if (type.potion || type == ThingType.DOUGH || type == ThingType.EGG || type == ThingType.GIFT) return false
         return when (p.species) {
-            Species.FOLK -> type.edible || type.cat == Cat.HAT || type.cat == Cat.GLASSES || type.cat == Cat.TOY
+            Species.FOLK, Species.GHOST -> type.edible || type.cat == Cat.HAT || type.cat == Cat.GLASSES || type.cat == Cat.TOY
+            // The robot butler likes tools and things to tidy; it has no stomach.
+            Species.ROBOT -> type.cat == Cat.TOOL || type.cat == Cat.HAT || type.cat == Cat.TOY
             Species.DOG, Species.CAT -> type == ThingType.BALL || type == ThingType.FISH || type == ThingType.SAUSAGE || type == ThingType.GRILLED_SAUSAGE
             Species.BUNNY, Species.HORSE, Species.COW, Species.SHEEP, Species.ELK, Species.GOAT -> type == ThingType.CARROT || type == ThingType.APPLE
             Species.PUFFIN -> type == ThingType.FISH

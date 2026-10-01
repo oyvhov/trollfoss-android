@@ -134,7 +134,7 @@ fun MapScreen(vm: TrollfossViewModel) {
                     vm.sim.egg("mountain")
                 },
         )
-        for (place in PlaceId.entries) {
+        for (place in PlaceId.entries.filter { it.onMap }) {
             val spot = mapSpot(place)
             val label = S.place(place).str()
             Column(

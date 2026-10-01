@@ -71,6 +71,33 @@ object Secrets {
         Secret("berg_cable", PlaceId.HEILEBERGET, 6.05f, 0.34f, event = true, on = 10),
         Secret("berg_echo", PlaceId.HEILEBERGET, 4.4f, 0.4f, event = true, on = 6),
         Secret("berg_top", PlaceId.HEILEBERGET, 8.4f, 0.13f, event = true, on = 12),
+
+        // Storhuset. Three glimt per floor at least; each floor's builder replaces its stand-ins below
+        // (an `on` or `inside` is a blueprint index in that floor).
+        // ---- ground floor ----
+        Secret("ground_hall", PlaceId.MANOR_GROUND, 1.0f, 0.3f, event = true),
+        Secret("ground_library", PlaceId.MANOR_GROUND, 4.8f, 0.3f, event = true),
+        Secret("ground_kitchen", PlaceId.MANOR_GROUND, 8.8f, 0.3f, event = true),
+
+        // ---- upper floor ----
+        Secret("upper_slide", PlaceId.MANOR_UPPER, 5.0f, 0.3f, event = true),
+        Secret("upper_bath", PlaceId.MANOR_UPPER, 7.4f, 0.3f, event = true),
+        Secret("upper_balcony", PlaceId.MANOR_UPPER, 11.2f, 0.3f, event = true),
+
+        // ---- attic ----
+        Secret("attic_ghost", PlaceId.MANOR_ATTIC, 4.0f, 0.3f, event = true),
+        Secret("attic_tower", PlaceId.MANOR_ATTIC, 6.4f, 0.3f, event = true),
+        Secret("attic_secret", PlaceId.MANOR_ATTIC, 8.0f, 0.3f, event = true),
+
+        // ---- cellar ----
+        Secret("cellar_party", PlaceId.MANOR_CELLAR, 9.0f, 0.3f, event = true),
+        Secret("cellar_pool", PlaceId.MANOR_CELLAR, 7.0f, 0.3f, event = true),
+        Secret("cellar_tunnel", PlaceId.MANOR_CELLAR, 9.4f, 0.3f, event = true),
+
+        // ---- garden ----
+        Secret("garden_pond", PlaceId.MANOR_GARDEN, 5.0f, 0.3f, event = true),
+        Secret("garden_tree", PlaceId.MANOR_GARDEN, 7.4f, 0.3f, event = true),
+        Secret("garden_greenhouse", PlaceId.MANOR_GARDEN, 3.5f, 0.3f, event = true),
     )
 
     fun byId(id: String): Secret? = all.firstOrNull { it.id == id }

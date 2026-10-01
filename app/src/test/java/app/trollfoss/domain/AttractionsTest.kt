@@ -236,7 +236,7 @@ class AttractionsTest {
     @Test
     fun `Heileberget is the longest place, with goats and its hikers`() {
         val world = WorldFactory.create(Random(54))
-        assertTrue(PlaceId.entries.all { it == PlaceId.HEILEBERGET || it.width < PlaceId.HEILEBERGET.width / 2f })
+        assertTrue(PlaceId.entries.all { it == PlaceId.HEILEBERGET || it.manor || it.width < PlaceId.HEILEBERGET.width / 2f })
         val people = world.bodiesIn(PlaceId.HEILEBERGET).filterIsInstance<Person>()
         assertEquals(3, people.count { it.species == Species.GOAT })
         assertEquals(setOf("BesteSonja", "Tuva"), people.filter { it.species == Species.FOLK }.map { it.name }.toSet())

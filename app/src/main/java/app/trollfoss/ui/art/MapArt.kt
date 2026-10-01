@@ -40,6 +40,9 @@ fun mapSpot(place: PlaceId): Offset = when (place) {
     PlaceId.BEACH -> Offset(0.74f, 0.83f)
     PlaceId.UNDERWATER -> Offset(0.88f, 0.84f)
     PlaceId.HEILEBERGET -> Offset(0.32f, 0.095f)
+    // Storhuset, the big house: only the ground floor is on the map (the others are inside the house).
+    PlaceId.MANOR_GROUND -> Offset(0.75f, 0.37f)
+    PlaceId.MANOR_UPPER, PlaceId.MANOR_ATTIC, PlaceId.MANOR_CELLAR, PlaceId.MANOR_GARDEN -> Offset(0.5f, 0.5f)
 }
 
 /**

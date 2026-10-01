@@ -121,6 +121,18 @@ fun PlayScreen(vm: TrollfossViewModel) {
             engine.draw(this, text)
         }
 
+        // Taking stairs, a lift or a slide in the big house: the new floor opens from the dark, like an eye.
+        val curtain = remember { androidx.compose.animation.core.Animatable(1f) }
+        LaunchedEffect(vm.passageStamp) {
+            if (vm.passageStamp > 0) {
+                curtain.snapTo(0f)
+                curtain.animateTo(1f, androidx.compose.animation.core.tween(560))
+            }
+        }
+        if (curtain.value < 1f) {
+            Box(Modifier.fillMaxSize().background(Color(0xFF1F1830).copy(alpha = (1f - curtain.value) * (1f - curtain.value) * 0.92f)))
+        }
+
         // Top left: the map and the task board, with a badge for tasks still to do.
         Row(Modifier.align(Alignment.TopStart).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             RoundButton(S.map.str(), onClick = { vm.open(Screen.Map) }, tone = Tones.Sea, icon = Icons.Map)

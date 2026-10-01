@@ -31,6 +31,7 @@ fun DrawScope.drawPlaceBack(place: PlaceId, cam: Float, u: Float, pen: Pen, styl
         PlaceId.DOCTOR -> doctorBack(st, pen, styles)
         PlaceId.STAGE -> stageBack(st, pen, styles)
         PlaceId.UNDERWATER -> underwaterBack(st, pen)
+        PlaceId.MANOR_GROUND, PlaceId.MANOR_UPPER, PlaceId.MANOR_ATTIC, PlaceId.MANOR_CELLAR, PlaceId.MANOR_GARDEN -> manorBack(place, st, pen, styles)
     }
 }
 
@@ -45,6 +46,7 @@ fun DrawScope.drawPlaceFront(place: PlaceId, cam: Float, u: Float, pen: Pen) {
         PlaceId.FARM -> farmFront(st, pen)
         PlaceId.TIVOLI -> tivoliFront(st, pen)
         PlaceId.UNDERWATER -> underwaterFront(st, pen)
+        PlaceId.MANOR_GROUND, PlaceId.MANOR_UPPER, PlaceId.MANOR_ATTIC, PlaceId.MANOR_CELLAR, PlaceId.MANOR_GARDEN -> manorFront(place, st, pen)
         else -> Unit
     }
 }

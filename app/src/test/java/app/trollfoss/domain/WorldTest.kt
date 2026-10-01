@@ -25,8 +25,10 @@ class WorldTest {
         val world = WorldFactory.create(Random(1))
         for (place in PlaceId.entries) {
             assertEquals(Places.spec(place).fixtures.size, world.fixturesIn(place).size)
-            assertTrue("people in $place", world.bodiesIn(place).any { it is Person })
+            // The floors of the big house may stand empty; the house as a whole must have people.
+            if (!place.manor) assertTrue("people in $place", world.bodiesIn(place).any { it is Person })
         }
+        assertTrue("people live in the big house", PlaceId.entries.filter { it.manor }.any { p -> world.bodiesIn(p).any { it is Person } })
         val names = world.people().filter { it.species == Species.FOLK }.map { it.name }
         assertTrue(names.none { it.isBlank() })
         assertEquals(names.size, names.toSet().size)
@@ -219,7 +221,7 @@ class WorldTest {
             assertTrue(sim.collect(s.id))
         }
         assertTrue(world.allSecretsFound())
-        assertEquals(45, Secrets.all.size)
+        assertTrue(Secrets.all.size >= 60)
         for (place in PlaceId.entries) assertEquals("three glimt in $place", 3, Secrets.inPlace(place).size)
     }
 

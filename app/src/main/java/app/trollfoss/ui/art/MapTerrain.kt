@@ -894,13 +894,13 @@ internal class MapGeo(val w: Float, val h: Float) {
     }
 
     // ---- the road and rail network, bridges and the landmarks' ground (see MapProps.kt)
-    val bases: Map<PlaceId, Offset> = PlaceId.entries.associateWith { Offset(mapSpot(it).x * w, (mapSpot(it).y + 0.045f) * h) }
+    val bases: Map<PlaceId, Offset> = PlaceId.entries.filter { it.onMap }.associateWith { Offset(mapSpot(it).x * w, (mapSpot(it).y + 0.045f) * h) }
     val roads: List<Poly> = buildRoads(w, h)
     val roadPaths: List<Path> = roads.map { it.path() }
     val roadDashes: List<Path> = roads.map { it.dashes(0.007f * h, 0.02f * h) }
-    val plotOrder: List<PlaceId> = PlaceId.entries.sortedBy { bases[it]!!.y }
-    val plots: Map<PlaceId, PlotGeo> by lazy { PlaceId.entries.mapNotNull { p -> buildPlot(this, p)?.let { p to it } }.toMap() }
-    val doorPaths: List<Path> = PlaceId.entries.mapNotNull { p ->
+    val plotOrder: List<PlaceId> = PlaceId.entries.filter { it.onMap }.sortedBy { bases[it]!!.y }
+    val plots: Map<PlaceId, PlotGeo> by lazy { PlaceId.entries.filter { it.onMap }.mapNotNull { p -> buildPlot(this, p)?.let { p to it } }.toMap() }
+    val doorPaths: List<Path> = PlaceId.entries.filter { it.onMap }.mapNotNull { p ->
         if (p == PlaceId.SPACE || p == PlaceId.UNDERWATER || p == PlaceId.MOUNTAIN || p == PlaceId.LAB || p.name == "HEILEBERGET") return@mapNotNull null
         val b = bases[p]!!
         var best = Float.MAX_VALUE

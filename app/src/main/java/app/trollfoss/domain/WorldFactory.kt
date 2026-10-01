@@ -4,7 +4,7 @@ import kotlin.random.Random
 
 /** Builds a fresh island from the blueprints in [Places]. */
 object WorldFactory {
-    fun fixtureId(place: PlaceId, index: Int): Int = place.ordinal * 100 + index
+    fun fixtureId(place: PlaceId, index: Int): Int = place.idBase + index
 
     /** The fixtures of every place, in their starting state. Saves apply their own state on top. */
     fun addFixtures(world: World) {
@@ -25,7 +25,7 @@ object WorldFactory {
 
     /** True when the child has moved [f] away from where the blueprint puts it. */
     fun moved(f: Fixture): Boolean {
-        val index = f.id - f.place.ordinal * 100
+        val index = f.place.indexOf(f.id)
         val def = Places.spec(f.place).fixtures.getOrNull(index) ?: return false
         return kotlin.math.abs(f.x - def.x) > 0.0005f || kotlin.math.abs(f.y - def.y) > 0.0005f
     }

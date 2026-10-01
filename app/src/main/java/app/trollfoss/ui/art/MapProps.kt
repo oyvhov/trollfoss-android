@@ -128,7 +128,7 @@ internal fun buildScatter(g: MapGeo): Scatter {
     // ---- keep-out zones around the landmarks and the waterfall
     val sU = min(h * 0.15f, w * 0.0825f)
     val keeps = ArrayList<Keep>()
-    for (p in PlaceId.entries) {
+    for (p in PlaceId.entries.filter { it.onMap }) {
         val b = g.bases[p]!!
         val rx = sU * when (p) {
             PlaceId.TIVOLI -> 1.9f
@@ -316,7 +316,7 @@ internal fun MapPen.drawTreeBand(d: DrawScope, b: TreeBand) = with(d) {
 internal fun MapPen.drawInfra(d: DrawScope, g: MapGeo) = with(d) {
     for (p in g.plotOrder) drawPlot(d, g, p)
     // A soft dark pool under each place's label so the white lettering reads on any ground.
-    for (p in PlaceId.entries) {
+    for (p in PlaceId.entries.filter { it.onMap }) {
         val s = mapSpot(p)
         val c = Offset(s.x * w, (s.y + 0.115f) * h)
         drawOval(Ink.line, Offset(c.x - w * 0.07f, c.y - h * 0.032f), Size(w * 0.14f, h * 0.064f), alpha = 0.06f)

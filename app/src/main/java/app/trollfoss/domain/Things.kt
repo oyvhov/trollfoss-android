@@ -178,6 +178,17 @@ enum class ThingType(
     /** Hot cocoa in a steel flask; three sips. */
     THERMOS(0.035f, 0.085f, Cat.DRINK, bites = 3),
     DIVING_MASK(0.14f, 0.07f, Cat.GLASSES),
+
+    // Storhuset. Each floor adds its things in its own block; their art goes in the floor's art file.
+    // ---- ground floor ----
+
+    // ---- upper floor ----
+
+    // ---- attic ----
+
+    // ---- cellar ----
+
+    // ---- garden ----
     ;
 
     /** Head width of a grown-up figure; hats and glasses are drawn at this size and scaled to fit a head. */

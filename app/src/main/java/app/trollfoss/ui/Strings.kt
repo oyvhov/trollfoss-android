@@ -35,6 +35,11 @@ object S {
         PlaceId.STAGE -> txt("Scena", "Scenen")
         PlaceId.UNDERWATER -> txt("Havbotnen", "Havbunnen")
         PlaceId.HEILEBERGET -> txt("Heileberget")
+        PlaceId.MANOR_GROUND -> txt("Storstova")
+        PlaceId.MANOR_UPPER -> txt("Andre høgda", "Andre etasje")
+        PlaceId.MANOR_ATTIC -> txt("Loftet")
+        PlaceId.MANOR_CELLAR -> txt("Kjellaren", "Kjelleren")
+        PlaceId.MANOR_GARDEN -> txt("Hagen")
     }
 
     val map = txt("Kart")

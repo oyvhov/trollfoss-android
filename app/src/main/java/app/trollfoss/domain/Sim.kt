@@ -42,6 +42,9 @@ enum class Fx {
 
     // Easter eggs.
     QUAKE, KING, DUCK, STARRAIN, JIG,
+
+    // Storhuset: one event for the whole house; the code is in the param (see [HouseFx]).
+    HOUSE,
 }
 
 interface SimListener {
@@ -57,6 +60,9 @@ interface SimListener {
 
     /** An Easter egg was found for the first time. */
     fun onEgg(id: String) {}
+
+    /** Someone used a passage of the big house; the view follows to the arrival at [arrivalX]. */
+    fun onPassage(passage: Passage, arrivalX: Float, riders: Int) {}
 }
 
 /** What happened when a thing was given to a figure. */
@@ -197,6 +203,9 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     /** Rides, games, instruments and machines of the newer places. */
     val attractions = Attractions(this, random)
 
+    /** The rules of Storhuset: its floors, and the passages between them. */
+    val house = HouseRules(this, random)
+
     /** Furniture catalogue, store, wallpaper and tidying up. */
     val designer = Designer(this, random)
     private var pools: List<Pool> = emptyList()
@@ -327,6 +336,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     fun step(place: PlaceId, dt: Float) {
         here = place
         time += dt
+        if (place.manor) house.tick(place, dt)
         pools = pools(place)
         floating = zeroG(place)
         val fixtures = world.fixturesIn(place)
@@ -655,6 +665,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     // ------------------------------------------------------------------ seats
 
     fun seatPoint(f: Fixture, spot: Int): FloatArray {
+        if (f.place.manor) house.seatPoint(f, spot)?.let { return it }
         attractions.seatPoint(f, spot)?.let { return it }
         val s = f.spec.spots[spot]
         var x = f.x + s.dx + f.shiftX
@@ -749,6 +760,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     private fun stepFixture(place: PlaceId, f: Fixture, dt: Float) {
         f.anim = max(0f, f.anim - dt * 2.5f)
         if (time - f.tapTime > 3.5f) f.taps = 0
+        if (place.manor) house.step(place, f, dt)
         when (f.type) {
             FixtureType.BOAT -> f.bob = sin(time * 1.7f + f.id) * 0.007f
             FixtureType.PINE_TREE -> {
@@ -1028,6 +1040,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         f.tapTime = time
         f.anim = 1f
         val top = f.top
+        if (place.manor && house.tap(place, f, dx, dy)) return
         if (attractions.tap(place, f, dx, dy)) return
         when (f.type) {
             FixtureType.CANDY_FLOSS_STAND, FixtureType.POPCORN_CART -> dispense(place, f, dx)
@@ -1427,6 +1440,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
      * A thing dropped over a machine. Returns true when the machine took it; otherwise it falls as usual.
      */
     fun dropInto(place: PlaceId, f: Fixture, t: Thing): Boolean {
+        if (place.manor && house.drop(place, f, t)) return true
         when (f.type) {
             FixtureType.BLENDER -> {
                 if (f.on || world.inMachine(f).size >= 3) return false
@@ -1714,7 +1728,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     /** Where a glimt is now: glimt on furniture follow the furniture when the child moves it. */
     fun secretAt(s: Secret): FloatArray {
         if (s.on < 0) return floatArrayOf(s.x, s.y)
-        val f = world.fixtures[s.place.ordinal * 100 + s.on] ?: return floatArrayOf(s.x, s.y)
+        val f = world.fixtures[s.place.idBase + s.on] ?: return floatArrayOf(s.x, s.y)
         val def = Places.spec(s.place).fixtures[s.on]
         return floatArrayOf(s.x + f.x - def.x, s.y + f.y - def.y)
     }
