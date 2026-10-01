@@ -477,7 +477,7 @@ private fun DrawScope.drawRoof(
                     while (x < r - k * 0.02f) {
                         val f = (x - l) / (r - l)
                         val yy = (topY + k * 0.012f) + (ridgeL.y - (topY + k * 0.012f)) * (0.35f + 0.5f * ((n * 7) % 5) / 5f)
-                        drawCircle(if (n % 3 == 0) Color(0xFFFFE680) else Color(0xFF8BD06A), k * 0.012f, Offset(x + (ridgeL.x - l) * (yy - topY) / (ridgeL.y - topY).coerceAtMost(-1f) * 0.0f, yy))
+                        drawCircle(if (n % 3 == 0) Color(0xFFFFE680) else Color(0xFF8BD06A), k * 0.012f, Offset(x, yy))
                         x += k * 0.09f
                         n++
                     }
@@ -540,7 +540,7 @@ private fun DrawScope.drawRoof(
     // The chimney and the flag stand on the first stretch.
     if (firstRun) {
         if (h.chimney && h.shape != 2) {
-            val cx = xl + (xr - xl).coerceAtMost(Mine.FACADE_MW * k * 3f) * 0.7f / 1f * 0f + Mine.FACADE_MW * k * 0.78f + rx
+            val cx = xl + Mine.FACADE_MW * k * 0.78f + rx
             val flat = h.roof.mod(4) == 3
             val baseY = if (flat) topY + dys * 0.55f - k * 0.04f else topY + ry + k * 0.045f
             val cw = k * 0.095f

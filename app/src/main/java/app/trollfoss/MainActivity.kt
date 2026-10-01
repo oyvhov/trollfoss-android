@@ -55,6 +55,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             mine = extras.getString("mine"),
             shape = extras.getInt("shape", 0),
             build = extras.getString("build"),
+            cam = extras.getFloat("cam", Float.NaN),
         )
     }
 

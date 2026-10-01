@@ -30,6 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -68,10 +70,10 @@ fun BuildPanel(vm: TrollfossViewModel, engine: Engine, place: PlaceId, compact: 
     val width = if (compact) 224.dp else 262.dp
     val scope = rememberCoroutineScope()
 
-    fun focusSlot(slot: Int) {
+    fun focusX(x: Float) {
         scope.launch {
             val from = engine.cam + engine.viewport / 2f
-            val to = slot * Mine.SLOT_W + 1.1f
+            val to = x
             Animatable(from).animateTo(to, tween(420)) { engine.focusOn(value) }
         }
     }
@@ -103,7 +105,7 @@ fun BuildPanel(vm: TrollfossViewModel, engine: Engine, place: PlaceId, compact: 
                         for (col in 0 until 2) {
                             val i = row * 2 + col
                             Tile(size = tile, desc = SM.template(i).str(), onClick = {
-                                if (sim.mine.layFoundation(i)) vm.changed()
+                                if (sim.mine.layFoundation(i)) { focusX(Mine.FACADE_X0 + 0.7f); vm.changed() }
                             }) {
                                 CachedThumb("mine:tpl:$i", tile - 8.dp) { drawTemplateThumb(i) }
                             }
@@ -127,8 +129,8 @@ fun BuildPanel(vm: TrollfossViewModel, engine: Engine, place: PlaceId, compact: 
             }
             Box(Modifier.fillMaxWidth().weight(1f)) {
                 when (tab) {
-                    BuildTab.ROOMS -> RoomsTab(vm, engine, place, tile, ::focusSlot)
-                    BuildTab.FLOOR -> FloorTab(vm, tile)
+                    BuildTab.ROOMS -> RoomsTab(vm, engine, place, tile) { slot -> focusX(slot * Mine.SLOT_W + 1.1f) }
+                    BuildTab.FLOOR -> FloorTab(vm, place, tile)
                     BuildTab.LOOK -> LookTab(vm, tile, compact)
                     BuildTab.PARTY -> PartyTab(vm, engine)
                 }
@@ -147,6 +149,7 @@ private fun Tile(size: Dp, desc: String = "", chosen: Boolean = false, enabled: 
     Box(
         Modifier
             .size(size)
+            .semantics { if (desc.isNotEmpty()) contentDescription = desc }
             .alpha(if (enabled) 1f else 0.45f)
             .clip(RoundedCornerShape(18.dp))
             .background(if (chosen) T.SunTop else Color.White)
@@ -221,7 +224,7 @@ private fun RoomsTab(vm: TrollfossViewModel, engine: Engine, place: PlaceId, til
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         for (k in row) {
                             Tile(size = tile, desc = SM.kind(k).str(), enabled = !vm.sim.mine.busy, onClick = {
-                                if (sim.mine.buildRoom(place, selected, k)) vm.changed()
+                                if (sim.mine.buildRoom(place, selected, k)) { focusSlot(selected); vm.changed() }
                             }) {
                                 CachedThumb("mine:kind:${k.name}", tile - 8.dp) { drawKindThumb(k) }
                             }
@@ -237,7 +240,7 @@ private fun RoomsTab(vm: TrollfossViewModel, engine: Engine, place: PlaceId, til
 // ------------------------------------------------------------------------------------------------ floor
 
 @Composable
-private fun FloorTab(vm: TrollfossViewModel, tile: Dp) {
+private fun FloorTab(vm: TrollfossViewModel, place: PlaceId, tile: Dp) {
     val h = vm.world.mine
     val can = Mine.canBuildUpper(h)
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)) {
@@ -246,7 +249,11 @@ private fun FloorTab(vm: TrollfossViewModel, tile: Dp) {
             h.upperBuilt -> IconCanvas(Icons.Check, Modifier.size(56.dp))
             else -> {
                 RoundButton(
-                    SM.floor.str(), onClick = { if (vm.sim.mine.buildUpper()) vm.changed() },
+                    SM.buildHouse.str(), onClick = {
+                        // The crane works in the yard: the child is taken there to watch.
+                        if (place != PlaceId.MINE_YARD) vm.travel(PlaceId.MINE_YARD)
+                        if (vm.sim.mine.buildUpper()) vm.changed()
+                    },
                     size = 92.dp, tone = if (can) Tones.Mint else Tones.Cream, enabled = can && !vm.sim.mine.busy, icon = BuildIcons.Crane,
                 )
                 // Two rooms are needed first: two little houses that fill up.

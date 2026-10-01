@@ -100,9 +100,9 @@ object Secrets {
         Secret("garden_greenhouse", PlaceId.MANOR_GARDEN, 3.5f, 0.3f, event = true),
 
         // Mitt hus: three glimt in the yard, brought out by building (the builder replaces the positions).
-        Secret("mine_start", PlaceId.MINE_YARD, 1.6f, 0.45f, event = true),
-        Secret("mine_second_floor", PlaceId.MINE_YARD, 7.6f, 0.3f, event = true),
-        Secret("mine_housewarming", PlaceId.MINE_YARD, 3.0f, 0.62f, event = true),
+        Secret("mine_start", PlaceId.MINE_YARD, 1.75f, 0.7f, event = true),
+        Secret("mine_second_floor", PlaceId.MINE_YARD, 3.1f, 0.12f, event = true),
+        Secret("mine_housewarming", PlaceId.MINE_YARD, 6.4f, 0.68f, event = true),
     )
 
     fun byId(id: String): Secret? = all.firstOrNull { it.id == id }

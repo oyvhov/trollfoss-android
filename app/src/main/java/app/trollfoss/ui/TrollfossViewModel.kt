@@ -339,6 +339,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun resetWorld() {
         world = WorldFactory.create()
+        startOnPlot()
         sim = Sim(world)
         wireTasks()
         cams.clear()
@@ -508,7 +509,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     /** Debug builds only: jump straight to a place or screen for screenshots. */
-    fun debug(placeName: String?, screenName: String?, nightOn: String?, weatherName: String?, secrets: Int, wishes: Boolean = false, skip: Int = 0, task: String? = null, mine: String? = null, shape: Int = 0, build: String? = null) {
+    fun debug(placeName: String?, screenName: String?, nightOn: String?, weatherName: String?, secrets: Int, wishes: Boolean = false, skip: Int = 0, task: String? = null, mine: String? = null, shape: Int = 0, build: String? = null, cam: Float = Float.NaN) {
         // Mitt hus: `--es mine demo|demo2` fills the house, `--ei shape 0..3` picks the template, `--es build on|off` opens or closes the builder.
         mine?.let { m ->
             if (m.startsWith("demo")) app.trollfoss.domain.MineDemo.fill(sim, if (m == "demo2") 2 else 1, shape)
@@ -545,6 +546,10 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         engine?.skip = skip
         // Everyone in the place wishes for something right away.
         if (wishes) world.people().filter { it.place == place }.forEach { it.anim.nextWish = 0.2f + it.id % 5 * 0.4f }
+        if (!cam.isNaN()) {
+            pendingFocus = cam
+            engine?.focusOn(cam)
+        }
         splash = false
     }
 

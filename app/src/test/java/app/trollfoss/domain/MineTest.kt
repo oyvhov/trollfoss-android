@@ -443,4 +443,43 @@ class MineTest {
             assertEquals(place, PlaceId.ofFixture(place.idBase + place.addedMax))
         }
     }
+
+    @Test
+    fun `a point of the picture belongs to the slot its wall or floor stands in`() {
+        // The back wall is shifted right by its depth; the floor by its height.
+        assertEquals(0, Mine.slotAtScene(1.5f, 0.4f))
+        assertEquals(1, Mine.slotAtScene(2.5f + Mine.WALL_SHIFT, 0.4f))
+        assertEquals(1, Mine.slotAtScene(2.1f, 0.97f))
+        assertEquals(4, Mine.slotAtScene(9.9f, 0.9f))
+        assertEquals(0, Mine.slotAtScene(-0.3f, 0.9f))
+    }
+
+    @Test
+    fun `clamping keeps pieces inside standing rooms and leaves the yard alone`() {
+        val h = MineHouse()
+        h.started = true
+        h.ground[2] = RoomKind.KITCHEN.ordinal + 1
+        // The hall (slot 0) and slot 2 stand; slot 1 is air.
+        assertEquals(1.0f, Mine.clampX(h, PlaceId.MINE_GROUND, 1.0f, 0.1f), 0.001f)
+        val fromAir = Mine.clampX(h, PlaceId.MINE_GROUND, 3.0f, 0.1f)
+        assertTrue("moved out of the air: $fromAir", fromAir < 2.0f || fromAir >= 4.0f)
+        assertEquals(7.5f, Mine.clampX(h, PlaceId.MINE_YARD, 7.5f, 0.1f), 0.001f)
+        // A wide piece is kept off the walls.
+        val wide = Mine.clampX(h, PlaceId.MINE_GROUND, 4.05f, 0.25f)
+        assertTrue(wide >= 4.0f + 0.25f)
+    }
+
+    @Test
+    fun `a demolished room can be built again with other furniture and the old furniture is still in the store`() {
+        val (world, sim) = started()
+        build(sim, 2, RoomKind.WORKSHOP)
+        assertTrue(sim.mine.demolish(PlaceId.MINE_GROUND, 2))
+        val stored = world.storage.size
+        build(sim, 2, RoomKind.GREENHOUSE)
+        assertEquals(stored, world.storage.size)
+        // Pieces can be brought back from the store into the new room.
+        val back = sim.designer.unstore(PlaceId.MINE_GROUND, 0, 5.0f, 0.9f)
+        assertNotNull(back)
+        assertEquals(stored - 1, world.storage.size)
+    }
 }
