@@ -92,10 +92,10 @@ internal fun DrawScope.rolf(look: Look, pose: Pose, a: PersonAnim, h: Float, pen
     if (pose == Pose.FLOAT) {
         for (side in SIDES) {
             val fx = side * 0.106f
-            val len = 0.09f + 0.035f * sin(t * 26f + side * 2f)
+            val len = 0.12f + 0.045f * sin(t * 26f + side * 2f)
             val flame = Path().apply {
-                moveTo((fx - 0.042f) * h, -0.02f * h)
-                quadraticTo(fx * h, (-0.02f + len * 1.7f) * h, (fx + 0.042f) * h, -0.02f * h)
+                moveTo((fx - 0.05f) * h, -0.02f * h)
+                quadraticTo(fx * h, (-0.02f + len * 1.7f) * h, (fx + 0.05f) * h, -0.02f * h)
                 close()
             }
             drawPath(flame, Color(0xFFFFA63D))
@@ -181,9 +181,14 @@ internal fun DrawScope.rolf(look: Look, pose: Pose, a: PersonAnim, h: Float, pen
         inkedCircle(shoulderR, 0.046f * h, shell.darken(0.12f), pen)
         // A napkin over his left arm, as a butler should.
         if (bow < 0.5f && pose != Pose.HELD && pose != Pose.FLOAT && pose != Pose.SWIM && !dancing) {
-            val c = Offset((shoulderL.x + handL.x) / 2f, (shoulderL.y + handL.y) / 2f - 0.01f * h)
-            val napkin = roundedPoly(0.01f * h, c.x - 0.05f * h, c.y - 0.03f * h, c.x + 0.05f * h, c.y - 0.03f * h, c.x + 0.045f * h, c.y + 0.045f * h, c.x - 0.045f * h, c.y + 0.045f * h)
-            inked(napkin, Color.White, pen, shade = false)
+            // Draped over the forearm: wider than the arm, with two folds hanging down on either side.
+            val c = Offset(shoulderL.x + (handL.x - shoulderL.x) * 0.55f, shoulderL.y + (handL.y - shoulderL.y) * 0.55f)
+            val along = (kotlin.math.atan2(handL.y - shoulderL.y, handL.x - shoulderL.x) * 180f / PI.toFloat()) - 90f
+            rotate(along, pivot = c) {
+                val napkin = roundedPoly(0.012f * h, c.x - 0.056f * h, c.y - 0.034f * h, c.x + 0.056f * h, c.y - 0.034f * h, c.x + 0.05f * h, c.y + 0.04f * h, c.x - 0.05f * h, c.y + 0.04f * h)
+                inked(napkin, Color.White, pen)
+                drawLine(Ink.line.copy(alpha = 0.3f), Offset(c.x - 0.02f * h, c.y - 0.03f * h), Offset(c.x - 0.022f * h, c.y + 0.034f * h), strokeWidth = pen.lw * 0.5f)
+            }
         }
     }
 

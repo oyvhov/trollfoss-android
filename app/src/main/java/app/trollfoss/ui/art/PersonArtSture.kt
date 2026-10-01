@@ -166,10 +166,8 @@ internal fun DrawScope.sture(look: Look, pose: Pose, a: PersonAnim, h: Float, pe
             handL = o(-0.40f, -0.52f + sin(a.dance) * 0.18f)
             handR = o(0.40f, -0.52f - sin(a.dance) * 0.18f)
         }
-        holding -> {
-            handL = o(-0.12f, -0.37f)
-            handR = o(0.12f, -0.37f)
-        }
+        // Held things ride on his right arm, a little out from his tummy so they never hide his face.
+        holding -> handR = o(0.27f, -0.36f)
         a.wave > 0f -> handR = o(0.405f + sin(t * 14f) * 0.03f, -0.7f)
         face == Face.OOH || face == Face.WOW -> {
             handL = o(-0.42f, -0.62f)
@@ -189,7 +187,7 @@ internal fun DrawScope.sture(look: Look, pose: Pose, a: PersonAnim, h: Float, pe
 }
 
 /** His sheet: a dome on top, a bell below, and a hem of five scallops that ripples by itself. */
-private fun sheetPath(h: Float, t: Float, flutter: Float): Path {
+internal fun sheetPath(h: Float, t: Float, flutter: Float): Path {
     val hem = -0.2f
     val joint = FloatArray(6)
     for (j in 0..5) joint[j] = hem + sin(t * 2.1f + j * 1.25f) * 0.01f * flutter

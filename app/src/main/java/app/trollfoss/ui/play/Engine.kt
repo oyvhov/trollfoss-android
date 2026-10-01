@@ -61,6 +61,7 @@ import app.trollfoss.ui.art.Ink
 import app.trollfoss.ui.art.Pen
 import app.trollfoss.ui.art.drawFixtureBack
 import app.trollfoss.ui.art.drawFixtureFront
+import app.trollfoss.ui.art.drawHouseXray
 import app.trollfoss.ui.art.drawPerson
 import app.trollfoss.ui.art.drawPlaceBack
 import app.trollfoss.ui.art.drawPlaceFront
@@ -2166,6 +2167,8 @@ class Engine(
      * wiggling a little because being X-rayed tickles.
      */
     private fun DrawScope.drawSkeleton(p: Person, pen: Pen) {
+        // Rolf has gears and a rubber duck inside, Sture a tiny giggling ghost.
+        if (p.species == Species.ROBOT || p.species == Species.GHOST) return drawHouseXray(p.species, p.h * u, pen, time)
         val h = p.h * u
         val bone = Color(0xFFF4FFF8)
         val glow = Color(0xFF7CFFB2).copy(alpha = 0.35f)

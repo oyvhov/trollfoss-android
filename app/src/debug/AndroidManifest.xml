@@ -16,6 +16,7 @@
         <activity
             android:name="app.trollfoss.FigurarSheetActivity"
             android:exported="true"
+            android:screenOrientation="landscape"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|density|keyboardHidden|uiMode"
             android:resizeableActivity="true" />
     </application>

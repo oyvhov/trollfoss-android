@@ -45,12 +45,12 @@ object Anatomy {
         Part.HEAD to floatArrayOf(0f, -0.725f),
     )
 
-    /** Sture the ghost: a round head on a sheet, floating; his little arms hold things in front of his tummy. */
+    /** Sture the ghost: a round head on a sheet, floating; he holds things up on his right arm, beside his tummy. */
     private val ghost = mapOf(
         Part.HAT to floatArrayOf(0f, -0.965f),
         Part.GLASSES to floatArrayOf(0f, -0.70f),
         Part.MOUTH to floatArrayOf(0f, -0.595f),
-        Part.HAND to floatArrayOf(0f, -0.36f),
+        Part.HAND to floatArrayOf(0.27f, -0.38f),
         Part.BODY to floatArrayOf(0f, -0.45f),
         Part.HAIR to floatArrayOf(0f, -0.93f),
         Part.HEAD to floatArrayOf(0f, -0.70f),

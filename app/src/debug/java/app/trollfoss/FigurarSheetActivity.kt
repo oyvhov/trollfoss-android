@@ -31,6 +31,7 @@ import app.trollfoss.domain.Slot
 import app.trollfoss.domain.Species
 import app.trollfoss.domain.ThingType
 import app.trollfoss.ui.art.Pen
+import app.trollfoss.ui.art.drawHouseXray
 import app.trollfoss.ui.art.drawPerson
 import app.trollfoss.ui.art.drawThing
 import app.trollfoss.ui.art.groundShadow
@@ -76,11 +77,12 @@ private class Cell(
     val glasses: ThingType? = null,
     val hand: ThingType? = null,
     val time: Float? = null,
+    val xray: Boolean = false,
     val tweak: PersonAnim.() -> Unit = {},
 )
 
 private fun DrawScope.sheet(page: String, t: Float, dark: Boolean) {
-    val wall = if (dark) Color(0xFF2B2744) else Color(0xFFF1E4CB)
+    val wall = if (dark || page == "xray") Color(0xFF1B3A38) else Color(0xFFF1E4CB)
     val floor = if (dark) Color(0xFF45352F) else Color(0xFFC98A55)
     drawRect(wall)
     val rows: List<List<Cell>> = when (page) {
@@ -117,6 +119,7 @@ private fun DrawScope.sheet(page: String, t: Float, dark: Boolean) {
             listOf(7.4f, 8.0f, 8.6f, 9.0f, 9.4f, 10.0f).map { Cell(s, time = it) }
         }
         "big" -> listOf(listOf(Cell(Species.ROBOT, hand = ThingType.APPLE), Cell(Species.GHOST, hand = ThingType.APPLE)))
+        "xray" -> listOf(listOf(Cell(Species.ROBOT, xray = true, time = 1.0f), Cell(Species.ROBOT, xray = true, time = 1.4f), Cell(Species.GHOST, xray = true, time = 1.0f), Cell(Species.GHOST, xray = true, time = 1.3f)))
         "small" -> listOf(listOf(Cell(Species.ROBOT), Cell(Species.GHOST)))
         else -> listOf(listOf(Cell(Species.ROBOT)))
     }
@@ -139,7 +142,7 @@ private fun DrawScope.sheet(page: String, t: Float, dark: Boolean) {
 
 /** The "small" page: the same figures at the real sizes of the game, 40 to 90 dp, on light and dark. */
 private fun DrawScope.smallRow(row: List<Cell>, t: Float) {
-    val sizes = listOf(40f, 50f, 60f, 90f, 140f)
+    val sizes = listOf(40f, 50f, 60f, 90f)
     val backs = listOf(Color(0xFFF1E4CB), Color(0xFF2B2744), Color(0xFFC98A55), Color(0xFF7FB4E8))
     val bandH = size.height / backs.size
     var y = 0f
@@ -183,7 +186,7 @@ private fun DrawScope.figure(cell: Cell, cx: Float, base: Float, hp: Float, t: F
     }
     val holding = cell.hand != null
     translate(cx, oy) {
-        drawPerson(cell.species, cell.look, cell.pose, a, hp, pen, holding, seed = 0.3f)
+        if (cell.xray) drawHouseXray(cell.species, hp, pen, t) else drawPerson(cell.species, cell.look, cell.pose, a, hp, pen, holding, seed = 0.3f)
         person.x = 0f
         person.y = 0f
         for (type in listOfNotNull(cell.hat, cell.glasses, cell.hand)) drawWorn(person, type, u, pen)
