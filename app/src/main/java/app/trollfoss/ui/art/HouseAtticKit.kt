@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import kotlin.math.hypot
@@ -129,3 +130,32 @@ internal fun atWave(t: Float, speed: Float, phase: Float = 0f): Float = (sin(t *
 
 /** A rectangle's four corners as a closed path. */
 internal fun rectPath(r: Rect): Path = Path().apply { addRect(r) }
+
+/**
+ * Rain or snow outside a window: streaks and flakes that run down the glass of the rectangle ([x0], [y0]) to
+ * ([x1], [y1]) (scene pixels), when the weather calls for it. Cheap: a dozen short lines or dots.
+ */
+internal fun DrawScope.atWindowWeather(pen: Pen, x0: Float, y0: Float, x1: Float, y1: Float, n: Int = 14) {
+    when (pen.weather) {
+        app.trollfoss.domain.Weather.RAIN -> {
+            val pts = ArrayList<Offset>(n * 2)
+            for (i in 0 until n) {
+                val ph = ((pen.t * (0.7f + 0.5f * hash01(i, 301)) + hash01(i, 302)) % 1f)
+                val x = x0 + hash01(i, 303) * (x1 - x0)
+                val y = y0 + ph * (y1 - y0)
+                pts.add(Offset(x, y))
+                pts.add(Offset(x - (x1 - x0) * 0.02f, y + (y1 - y0) * 0.07f))
+            }
+            drawPoints(pts, androidx.compose.ui.graphics.PointMode.Lines, Color(0xFFCFE8FF), strokeWidth = pen.lw * 0.9f, cap = StrokeCap.Round, alpha = 0.7f)
+        }
+        app.trollfoss.domain.Weather.SNOW -> {
+            val pts = ArrayList<Offset>(n)
+            for (i in 0 until n) {
+                val ph = ((pen.t * (0.12f + 0.1f * hash01(i, 301)) + hash01(i, 302)) % 1f)
+                pts.add(Offset(x0 + (hash01(i, 303) + 0.04f * sin(pen.t + i)) * (x1 - x0), y0 + ph * (y1 - y0)))
+            }
+            drawPoints(pts, androidx.compose.ui.graphics.PointMode.Points, Color.White, strokeWidth = (x1 - x0) * 0.012f, cap = StrokeCap.Round, alpha = 0.9f)
+        }
+        else -> Unit
+    }
+}

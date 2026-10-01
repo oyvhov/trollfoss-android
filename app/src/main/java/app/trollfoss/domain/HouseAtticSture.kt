@@ -181,7 +181,7 @@ internal class AtticSture(private val sim: Sim, private val random: Random) {
     private fun chase(s: Person, dt: Float) {
         val target = world.bodies[chasing] as? Person
         chaseFor += dt
-        if (target == null || target.place != place || target.held || target.mode != Mode.FREE || chaseFor > 8f) {
+        if (target == null || target.place != place || target.held || target.mode != Mode.FREE || chaseFor > 12f) {
             stopChase(s)
             return
         }
@@ -203,10 +203,18 @@ internal class AtticSture(private val sim: Sim, private val random: Random) {
             stopChase(s)
             return
         }
-        // Life walks him there: he only has to be told where.
-        s.anim.still = Life.SETTLE_SECONDS
-        s.anim.walkTo = (target.x + if (s.x < target.x) -0.2f else 0.2f).coerceIn(0.15f, place.width - 0.15f)
-        s.anim.walkGround = sim.groundOf(place, target)
+        // He glides there: a ghost is quicker than a stroll. (Life would only let him amble.)
+        val dir = if (target.x > s.x) 1f else -1f
+        val goal = target.x - dir * 0.2f
+        s.anim.walkTo = Float.NaN
+        if (abs(goal - s.x) > 0.04f && s.resting && s.restOwner == -1) {
+            s.x += dir * minOf(abs(goal - s.x), GLIDE * dt)
+            s.anim.facing = dir
+            val g = sim.groundOf(place, target)
+            sim.groundOf(place, s)
+            s.ground += (g - s.ground) * minOf(1f, dt * 1.5f)
+            s.y = s.ground
+        }
     }
 
     private fun stopChase(s: Person) {
@@ -401,6 +409,8 @@ internal class AtticSture(private val sim: Sim, private val random: Random) {
 
     private companion object {
         const val NAME = "Sture"
+        /** How fast he glides to someone he wants to tickle, in scene units a second. */
+        const val GLIDE = 0.4f
         const val ACT_NOTHING = 0
         const val ACT_HIDE = 1
         const val ACT_SNEEZE = 2

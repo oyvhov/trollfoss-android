@@ -86,6 +86,16 @@ class HouseAtticTest {
     }
 
     @Test
+    fun `every effect code of the attic is its own and stays in the attic's block`() {
+        val values = AtticCode::class.java.declaredFields
+            .filter { java.lang.reflect.Modifier.isStatic(it.modifiers) && it.type == Int::class.javaPrimitiveType && it.name == it.name.uppercase() }
+            .map { it.getInt(null) }
+        assertTrue(values.size >= 40)
+        assertEquals("no two codes are the same", values.size, values.toSet().size)
+        for (v in values) assertTrue("code $v is in the attic's block", v in HouseFx.ATTIC until HouseFx.CELLAR)
+    }
+
+    @Test
     fun `sture lives in the attic with a cat`() {
         val world = newWorld()
         val s = sture(world)

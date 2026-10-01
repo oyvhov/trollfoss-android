@@ -685,6 +685,7 @@ internal fun DrawScope.atRoundWindow(f: Fixture, u: Float, pen: Pen) {
         } else {
             drawPath(cloudPath(c.x - 0.02f * u, c.y - 0.03f * u, 0.032f * u), Color.White, alpha = 1f - n)
         }
+        atWindowWeather(pen, c.x - r, c.y - r, c.x + r, c.y + r, 8)
         // A bird (or a bat, but a friendly one) flies by now and then: a small ink wing-beat.
         if (atEvery(t, 9f, 2.5f, f.id * 1.7f)) {
             val ph = ((t + f.id * 1.7f) % 9f) / 2.5f

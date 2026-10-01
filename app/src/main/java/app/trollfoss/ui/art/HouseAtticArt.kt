@@ -596,6 +596,7 @@ private fun DrawScope.towerWindow(st: Stage, g: AtticStatic, pen: Pen) {
             }
             drawPath(g.hills, lerp(Color(0xFF5E9A6E), Color(0xFF14183A), n))
             drawPath(g.pines, lerp(Color(0xFF2E6B4C), Color(0xFF0B0F2A), n))
+            atWindowWeather(pen, (AT_TOWER_X - 0.42f) * u, 0.07f * u, (AT_TOWER_X + 0.42f) * u, 0.62f * u, 22)
             if (n > 0.25f) drawPoints(g.villageLights, PointMode.Points, Color(0xFFFFD66B), strokeWidth = 0.007f * u, cap = StrokeCap.Round, alpha = ramp((n - 0.25f) / 0.5f))
         }
         // Dome ribs, a brass ring at the top, and the window's frame with its cross bars.
