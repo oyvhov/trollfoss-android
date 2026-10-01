@@ -348,8 +348,8 @@ object GroundFloor : Floor {
             f(FixtureType.GR_PIZZA_OVEN, 9.14f, depth = -0.085f),            // 48
             f(FixtureType.GR_FRIDGE, 9.64f, depth = -0.085f),                // 49
             w(FixtureType.GR_JAM_CABINET, 8.62f, 0.40f),                     // 50
-            f(FixtureType.GR_ISLAND, 9.00f, depth = 0.05f),                  // 51
-            f(FixtureType.GR_STOOLS, 9.00f, depth = -0.01f),                 // 52
+            f(FixtureType.GR_ISLAND, 9.00f, depth = -0.01f),                 // 51
+            f(FixtureType.GR_STOOLS, 9.00f, depth = 0.07f),                  // 52 in front of the island
 
             // Winter garden
             f(FixtureType.GR_PLANT, 10.30f, 0, depth = -0.07f),              // 53 fern

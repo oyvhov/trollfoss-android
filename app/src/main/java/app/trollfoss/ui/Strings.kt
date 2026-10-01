@@ -165,15 +165,12 @@ object S {
     /** What the golden key of the ground floor is called when it is shown. */
     val groundKey = txt("Den gylne nøkkelen frå Storstova", "Den gylne nøkkelen fra Storstua")
 
-    /** The names of the things that Storstova brings, for accessibility labels. */
-    fun groundThing(name: String): Txt = when (name) {
-        "GR_UMBRELLA" -> txt("Paraply")
-        "GR_LETTER" -> txt("Brev")
-        "GR_PIN" -> txt("Kartnål", "Kartnål")
-        "GR_JAM" -> txt("Syltetøy", "Syltetøy")
-        "GR_TRAY" -> txt("Serveringsbrett", "Serveringsbrett")
-        else -> txt(name)
-    }
+    /** The things Storstova brings, for accessibility labels (the picture is what the child sees). */
+    val groundUmbrella = txt("Paraply")
+    val groundLetter = txt("Brev")
+    val groundPin = txt("Kartnål")
+    val groundJam = txt("Syltetøy")
+    val groundTray = txt("Serveringsbrett")
 
     /** What Rolf, the robot butler, is called. */
     val rolf = txt("Rolf")
