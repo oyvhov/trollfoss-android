@@ -193,6 +193,10 @@ enum class ThingType(
     // ---- cellar ----
 
     // ---- garden ----
+    /** A garden vegetable from the greenhouse. Variant: 0 pumpkin, 1 tomato, 2 pea pod. */
+    GA_VEGGIE(0.075f, 0.07f, Cat.FOOD, bites = 3, buoyant = true, variants = 3),
+    /** What comes out of a bucket turned over in the sandbox. Pretend food: it is kind to taste it. */
+    GA_SAND_CAKE(0.07f, 0.05f, Cat.FOOD, bites = 2),
     ;
 
     /** Head width of a grown-up figure; hats and glasses are drawn at this size and scaled to fit a head. */

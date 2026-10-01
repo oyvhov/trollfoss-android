@@ -244,7 +244,11 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         return list
     }
 
-    fun poolAt(x: Float, y: Float): Pool? = pools.firstOrNull { x in it.x1..it.x2 && y > it.line - 0.001f && y <= it.bottom + 0.02f }
+    /**
+     * The pool that covers a point just below its waterline. A body must be strictly below the line: one a hair
+     * above it still falls through the line, and that crossing is what makes the splash.
+     */
+    fun poolAt(x: Float, y: Float): Pool? = pools.firstOrNull { x in it.x1..it.x2 && y > it.line && y <= it.bottom + 0.02f }
 
     private fun below(list: List<Surface>, x: Float, y: Float): Surface? =
         list.filter { x >= it.x1 && x <= it.x2 && it.y >= y - 0.001f }.minByOrNull { it.y }

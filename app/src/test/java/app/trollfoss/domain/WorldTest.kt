@@ -222,7 +222,11 @@ class WorldTest {
         }
         assertTrue(world.allSecretsFound())
         assertTrue(Secrets.all.size >= 60)
-        for (place in PlaceId.entries) assertEquals("three glimt in $place", 3, Secrets.inPlace(place).size)
+        // The older places have exactly three; the floors of the big house have at least three.
+        for (place in PlaceId.entries) {
+            val n = Secrets.inPlace(place).size
+            if (place.manor) assertTrue("at least three glimt in $place", n >= 3) else assertEquals("three glimt in $place", 3, n)
+        }
     }
 
     @Test

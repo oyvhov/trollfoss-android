@@ -28,6 +28,7 @@ enum class Sfx {
     // ---- cellar ----
 
     // ---- garden ----
+    GA_CROAK, GA_CREAK, GA_WINK, GA_GROW, GA_SPRAY, GA_DIG,
 }
 
 /**
@@ -342,6 +343,39 @@ object Synth {
         // ---- Storhuset cellar ----
 
         // ---- Storhuset garden ----
+        // A frog's «ribbit»: a low buzz that bends up, then a shorter one that sags. Played at a pentatonic rate per frog.
+        Sfx.GA_CROAK -> listOf(
+            Tone(300.0, 0.0, 0.11, 0.55, buzzy, decay = 9.0, slideTo = 420.0, vibrato = 1.5, vibratoHz = 40.0, attack = 0.008),
+            Tone(360.0, 0.13, 0.17, 0.55, buzzy, decay = 6.0, slideTo = 250.0, vibrato = 1.2, vibratoHz = 38.0, attack = 0.006),
+            Noise(0.0, 0.05, 0.12, 900.0, 500.0, decay = 40.0, seed = 31),
+        )
+        // Rope, planks and hinges that complain a little: the swing, the ladder and the gate.
+        Sfx.GA_CREAK -> listOf(
+            Tone(180.0, 0.0, 0.45, 0.3, buzzy, decay = 2.5, slideTo = 260.0, vibrato = 2.5, vibratoHz = 26.0, attack = 0.03),
+            Noise(0.0, 0.45, 0.14, 500.0, 900.0, swell = true, seed = 33),
+        )
+        // A gnome's wink: two bright plucks and a twinkle.
+        Sfx.GA_WINK -> listOf(
+            Tone(1760.0, 0.0, 0.1, 0.4, pluck, decay = 14.0),
+            Tone(2349.0, 0.09, 0.28, 0.4, bell, decay = 7.0),
+            Tone(3520.0, 0.12, 0.2, 0.15, soft, decay = 12.0),
+        )
+        // A plant shooting up: a rising whistle that ends in two bell notes.
+        Sfx.GA_GROW -> listOf(
+            Tone(300.0, 0.0, 0.25, 0.4, soft, decay = 4.0, slideTo = 900.0),
+            Tone(900.0, 0.2, 0.2, 0.35, bell, decay = 8.0),
+            Tone(1350.0, 0.28, 0.35, 0.3, bell, decay = 6.0),
+            Noise(0.0, 0.3, 0.1, 1200.0, 3000.0, swell = true, seed = 35),
+        )
+        // The sprinkler: tsch-tsch-tsch.
+        Sfx.GA_SPRAY -> (0 until 5).map { i -> Noise(i * 0.13, 0.12, 0.35, 5200.0, 3400.0, decay = 14.0, seed = 40 + i) } +
+            Noise(0.0, 0.7, 0.12, 6500.0, 5800.0, swell = true, seed = 47)
+        // A spade in the sand.
+        Sfx.GA_DIG -> listOf(
+            Noise(0.0, 0.12, 0.5, 1500.0, 500.0, decay = 22.0, seed = 51),
+            Noise(0.1, 0.1, 0.4, 1200.0, 450.0, decay = 24.0, seed = 52),
+            Tone(140.0, 0.0, 0.08, 0.25, soft, decay = 30.0, slideTo = 90.0),
+        )
     }
 
     fun render(sfx: Sfx): FloatArray {
