@@ -96,8 +96,8 @@ internal fun MapPen.drawCableCar(d: DrawScope, g: MapGeo) = with(d) {
 internal fun MapPen.drawHeileLife(d: DrawScope, g: MapGeo) = with(d) {
     // The trail itself: a thin switchback path with little posts.
     val tr = g.trailPath
-    drawPath(tr, Ink.line, alpha = 0.4f, style = Stroke(lw * 3.2f, cap = StrokeCap.Round, join = StrokeJoin.Round))
-    drawPath(tr, nt(if (snow) Color.White else Color(0xFFEBD6A2), 0.5f), style = Stroke(lw * 1.9f, cap = StrokeCap.Round, join = StrokeJoin.Round, pathEffect = PathEffect.dashPathEffect(floatArrayOf(h * 0.012f, h * 0.006f))))
+    drawPath(tr, Ink.line, alpha = 0.3f, style = Stroke(lw * 2.2f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+    drawPath(g.trailDashes, nt(if (snow) Color.White else Color(0xFFF1E2B8), 0.5f), style = Stroke(lw * 1.2f, cap = StrokeCap.Round))
     // Three climbers walking up and down, roped as a pair or alone.
     for (k in 0 until 3) {
         val raw = t * 0.0075f * (if (k == 1) -1f else 1f) + k * 0.31f

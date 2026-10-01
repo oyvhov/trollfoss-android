@@ -114,7 +114,7 @@ private fun TreeBand.plant(x: Float, y: Float, size: Float, kind: Int, salt: Int
             shade.addPath(crownPath(x, cy, r, r * 0.92f, salt))
             lit.addPath(crownPath(x - r * 0.14f, cy - r * 0.16f, r * 0.88f, r * 0.8f, salt + 1))
             hi.addOval(Rect(x - r * 0.62f, cy - r * 0.68f, x - r * 0.12f, cy - r * 0.34f))
-            if (kind == 3 && hash01(salt, 77) < 0.5f) fruit.add(Offset(x + r * 0.3f, cy + r * 0.1f))
+            if (kind == 3 && hash01(salt, 77) < 0.14f) fruit.add(Offset(x + r * 0.3f, cy + r * 0.1f))
         }
     }
 }
@@ -237,7 +237,7 @@ internal fun buildScatter(g: MapGeo): Scatter {
     val walls = listOf(Color(0xFFF5E3B5), Color(0xFFFFF6EE), Color(0xFFB9DAF0), Color(0xFFC84A3C), Color(0xFFE3A08A), Color(0xFFD9E8B8))
     val roofs = listOf(Color(0xFF55505E), Color(0xFFA6453A), Color(0xFF4F6E8C), Color(0xFF6E5A4A))
     var ci = 0
-    val plan = listOf(0 to 0.1f, 1 to 0.3f, 1 to 0.66f, 2 to 0.07f, 2 to 0.43f, 3 to 0.42f, 4 to 0.4f, 4 to 0.72f, 5 to 0.3f, 6 to 0.55f, 0 to 0.94f, 0 to 0.26f, 5 to 0.6f)
+    val plan = listOf(0 to 0.06f, 0 to 0.17f, 0 to 0.3f, 0 to 0.52f, 0 to 0.7f, 0 to 0.93f, 1 to 0.3f, 1 to 0.5f, 1 to 0.7f, 2 to 0.07f, 2 to 0.2f, 2 to 0.43f, 3 to 0.35f, 3 to 0.6f, 4 to 0.4f, 4 to 0.72f, 5 to 0.25f, 5 to 0.5f, 6 to 0.55f, 6 to 0.3f)
     for ((ri, f0) in plan) {
         val r = g.roads[ri]
         for (attempt in 0 until 6) {
@@ -249,10 +249,11 @@ internal fun buildScatter(g: MapGeo): Scatter {
             val x = c.x - d.y * off * side
             val y = c.y + d.x * off * side
             if (x < 0.02f * w || x > 0.97f * w) continue
-            if (blocked(x, y, 0.035f * h)) continue
-            if (wet(x, y, 0.03f * h)) continue
-            if (g.rail.dist(x, y) < 0.04f * h) continue
-            if (cottages.any { hypot(it.x - x, it.y - y) < 0.09f * h }) continue
+            if (blocked(x, y, 0.012f * h)) continue
+            if (wet(x, y, 0.02f * h)) continue
+            if (g.rail.dist(x, y) < 0.03f * h) continue
+            if (onRoad(x, y, 0.014f * h)) continue
+            if (cottages.any { hypot(it.x - x, it.y - y) < 0.075f * h }) continue
             if (x > 0.72f * w && y in 0.45f * h..0.7f * h) continue
             val kk = depthK(y / h)
             cottages.add(Cottage(x, y, (0.46f + 0.1f * hash01(ci, 802)) * kk, walls[(ci * 5 + 2) % walls.size], roofs[(ci * 3 + 1) % roofs.size], ci % 3))
@@ -346,9 +347,7 @@ private fun MapPen.drawRoads(d: DrawScope, g: MapGeo) = with(d) {
         val wdt = if (i == 0) rw * 1.15f else rw
         drawPath(r, body, style = Stroke(wdt, cap = StrokeCap.Round, join = StrokeJoin.Round))
     }
-    for (r in g.roadPaths) {
-        drawPath(r, edge, alpha = 0.45f, style = Stroke(lw * 1.1f, cap = StrokeCap.Round, pathEffect = PathEffect.dashPathEffect(floatArrayOf(h * 0.007f, h * 0.02f))))
-    }
+    for (r in g.roadDashes) drawPath(r, edge, alpha = 0.45f, style = Stroke(lw * 1.1f, cap = StrokeCap.Round))
     for (r in g.doorPaths) {
         drawPath(r, edge, style = Stroke(rw * 0.72f + lw * 2f, cap = StrokeCap.Round))
         drawPath(r, body, style = Stroke(rw * 0.72f, cap = StrokeCap.Round))
@@ -391,7 +390,7 @@ private fun MapPen.drawRail(d: DrawScope, g: MapGeo) = with(d) {
     // Track: ballast, two rails and sleepers.
     val bed = nt(if (snow) Color(0xFFCBD3E2) else Color(0xFF8E8372), 0.5f)
     drawPath(g.railPath, bed, style = Stroke(h * 0.011f, cap = StrokeCap.Butt))
-    drawPath(g.railPath, nt(Color(0xFF5B4632), 0.4f), style = Stroke(h * 0.011f, cap = StrokeCap.Butt, pathEffect = PathEffect.dashPathEffect(floatArrayOf(h * 0.0022f, h * 0.0062f))))
+    drawPath(g.railTies, nt(Color(0xFF5B4632), 0.4f), style = Stroke(h * 0.011f, cap = StrokeCap.Butt))
     drawPath(g.railPath, nt(Color(0xFFC9CFD9), 0.4f), style = Stroke(lw * 1.2f))
     // The tunnel portal in the foot of the right mountain.
     val end = rail.at(1f)

@@ -108,6 +108,21 @@ internal class Poly(val x: FloatArray, val y: FloatArray) {
     }
 }
 
+/** The line chopped into dashes of length [on] with gaps of [off], as one cached path. */
+internal fun Poly.dashes(on: Float, off: Float): Path {
+    val p = Path()
+    var d = 0f
+    val total = len
+    while (d < total) {
+        val a = at(d / total)
+        val b = at(min(d + on, total) / total)
+        p.moveTo(a.x, a.y)
+        p.lineTo(b.x, b.y)
+        d += on + off
+    }
+    return p
+}
+
 /** A Catmull-Rom curve through control points given as fractions of the map (x, y pairs). */
 internal fun smoothPoly(w: Float, h: Float, pts: FloatArray, sub: Int = 8): Poly {
     val n = pts.size / 2
@@ -193,8 +208,8 @@ internal class Mount(
     }
 }
 
-/** All the shapes of a group of mountains, so they are drawn with a handful of calls. */
-internal class MtnBatch(val cLit: Color, val cShade: Color, val cFacet: Color, val cSnow: Color, val cSnowShade: Color) {
+/** The shapes of one mountain. */
+internal class MtnPart {
     val body = Path()
     val shade = Path()
     val facet = Path()
@@ -202,11 +217,25 @@ internal class MtnBatch(val cLit: Color, val cShade: Color, val cFacet: Color, v
     val snowShade = Path()
     val ridge = Path()
     val strata = Path()
+}
+
+/** A group of mountains that share colours, each with its own parts so they overlap properly. */
+internal class MtnBatch(val cLit: Color, val cShade: Color, val cFacet: Color, val cSnow: Color, val cSnowShade: Color) {
+    val parts = ArrayList<MtnPart>()
     val mounts = ArrayList<Mount>()
 }
 
 internal fun MtnBatch.add(m: Mount, w: Float, h: Float) {
     mounts.add(m)
+    val part = MtnPart()
+    parts.add(part)
+    val body = part.body
+    val shade = part.shade
+    val facet = part.facet
+    val snow = part.snow
+    val snowShade = part.snowShade
+    val ridge = part.ridge
+    val strata = part.strata
     val steps = 14
     body.moveTo(m.sil(0f, true, w, h).x, m.sil(0f, true, w, h).y)
     ridge.moveTo(m.sil(0f, true, w, h).x, m.sil(0f, true, w, h).y)
@@ -387,7 +416,7 @@ internal class MapGeo(val w: Float, val h: Float) {
     val far1 = MtnBatch(Color(0xFFD0DDF0), Color(0xFFBCCBE6), Color(0xFFC6D4EB), Color(0xFFF8FAFF), Color(0xFFE0E9F8))
     val far2 = MtnBatch(Color(0xFFB9C9E4), Color(0xFF9FB3D6), Color(0xFFADBEDD), Color(0xFFF3F7FF), Color(0xFFD4DFF2))
     val heileBack = MtnBatch(Color(0xFFA9B6D2), Color(0xFF8391B4), Color(0xFF9BA9C7), Color(0xFFF4F8FF), Color(0xFFCFDAF0))
-    val heile = MtnBatch(Color(0xFF96A3C2), Color(0xFF66749A), Color(0xFF8694B5), Color(0xFFF7FAFF), Color(0xFFC3D0EA))
+    val heile = MtnBatch(Color(0xFF9AA6C4), Color(0xFF5C6A92), Color(0xFF8795B6), Color(0xFFF7FAFF), Color(0xFFB4C4E6))
     val massC = MtnBatch(Color(0xFF9DAAC6), Color(0xFF71809F), Color(0xFF8E9CBA), Color(0xFFF6F9FF), Color(0xFFC8D5EE))
     val massA = MtnBatch(Color(0xFFA4B0CA), Color(0xFF7987A8), Color(0xFF96A3C0), Color(0xFFF8FAFF), Color(0xFFCFDAF0))
     val massD = MtnBatch(Color(0xFFA0ACC7), Color(0xFF7685A6), Color(0xFF93A0BD), Color(0xFFF6F9FF), Color(0xFFCBD7EE))
@@ -403,23 +432,20 @@ internal class MapGeo(val w: Float, val h: Float) {
         heileBack.add(Mount(0.34f, 0.08f, 0.18f, 0.5f, 0.47f, 0.27f, 0.0f, 22), w, h)
         heileBack.add(Mount(0.62f, 0.075f, 0.42f, 0.8f, 0.47f, 0.28f, 0.06f, 23), w, h)
         heileBack.add(Mount(0.99f, 0.17f, 0.8f, 1.15f, 0.47f, 0.3f, 0.0f, 24), w, h)
-        heile.add(Mount(0.065f, 0.15f, -0.1f, 0.25f, 0.47f, 0.27f, 0.06f, 31), w, h)
-        heile.add(Mount(0.91f, 0.125f, 0.72f, 1.12f, 0.47f, 0.29f, -0.05f, 35), w, h)
-        heile.add(Mount(0.69f, 0.06f, 0.46f, 0.92f, 0.47f, 0.27f, 0.04f, 34), w, h)
-        heile.add(Mount(0.235f, 0.07f, 0.04f, 0.44f, 0.47f, 0.26f, -0.04f, 32), w, h)
-        heile.add(Mount(0.145f, 0.1f, 0.09f, 0.2f, 0.47f, 0.3f, 0.0f, 36), w, h)
-        heile.add(Mount(0.39f, 0.045f, 0.33f, 0.45f, 0.47f, 0.3f, 0.0f, 37), w, h)
-        heile.add(Mount(0.795f, 0.085f, 0.73f, 0.865f, 0.47f, 0.3f, 0.0f, 38), w, h)
-        heile.add(Mount(0.47f, 0.012f, 0.2f, 0.8f, 0.47f, 0.3f, 0.03f, 33), w, h)
+        heile.add(Mount(0.065f, 0.15f, -0.1f, 0.25f, 0.47f, 0.24f, 0.06f, 31), w, h)
+        heile.add(Mount(0.91f, 0.125f, 0.72f, 1.12f, 0.47f, 0.25f, -0.05f, 35), w, h)
+        heile.add(Mount(0.69f, 0.06f, 0.46f, 0.92f, 0.47f, 0.2f, 0.04f, 34), w, h)
+        heile.add(Mount(0.235f, 0.07f, 0.04f, 0.44f, 0.47f, 0.2f, -0.04f, 32), w, h)
+        heile.add(Mount(0.14f, 0.105f, 0.03f, 0.26f, 0.47f, 0.3f, 0.0f, 36), w, h)
+        heile.add(Mount(0.385f, 0.05f, 0.27f, 0.49f, 0.47f, 0.3f, 0.0f, 37), w, h)
+        heile.add(Mount(0.795f, 0.09f, 0.68f, 0.91f, 0.47f, 0.3f, 0.0f, 38), w, h)
+        heile.add(Mount(0.47f, 0.012f, 0.2f, 0.8f, 0.47f, 0.22f, 0.03f, 33), w, h)
         massC.add(Mount(0.68f, 0.17f, 0.44f, 0.9f, 0.46f, 0.27f, 0.02f, 12), w, h)
         massA.add(Mount(0.17f, 0.2f, -0.02f, 0.33f, 0.46f, 0.3f, 0.05f, 13), w, h)
         massD.add(Mount(0.96f, 0.26f, 0.84f, 1.1f, 0.46f, 0.36f, 0.0f, 14), w, h)
     }
 
-    // Heileberget's glacier, rock face and scree slopes.
-    val glacier = Path()
-    val glacierShade = Path()
-    val crevasses = Path()
+    // Heileberget's rock face and scree slopes.
     val rockFace = Path()
     val rockFaceShade = Path()
     val rockStrata = Path()
@@ -433,14 +459,6 @@ internal class MapGeo(val w: Float, val h: Float) {
             for (i in 0 until p.size / 2) if (i == 0) target.moveTo(p[i * 2] * w, p[i * 2 + 1] * h) else target.lineTo(p[i * 2] * w, p[i * 2 + 1] * h)
             target.close()
         }
-        poly(glacier, 0.655f, 0.1f, 0.7f, 0.085f, 0.735f, 0.11f, 0.73f, 0.15f, 0.745f, 0.19f, 0.73f, 0.235f, 0.71f, 0.262f, 0.694f, 0.235f, 0.688f, 0.19f, 0.672f, 0.15f, 0.66f, 0.125f)
-        poly(glacierShade, 0.705f, 0.088f, 0.735f, 0.11f, 0.73f, 0.15f, 0.745f, 0.19f, 0.73f, 0.235f, 0.71f, 0.262f, 0.704f, 0.22f, 0.71f, 0.16f, 0.698f, 0.115f)
-        for (i in 0 until 7) {
-            val y = 0.12f + 0.022f * i
-            val x0 = 0.672f + 0.004f * hash01(i, 11) + 0.004f * i
-            crevasses.moveTo(x0 * w, y * h)
-            crevasses.quadraticTo((x0 + 0.03f) * w, (y + 0.012f + 0.006f * hash01(i, 12)) * h, (x0 + 0.055f - 0.002f * i) * w, y * h)
-        }
         poly(rockFace, 0.262f, 0.128f, 0.28f, 0.088f, 0.304f, 0.062f, 0.335f, 0.052f, 0.362f, 0.075f, 0.369f, 0.112f, 0.356f, 0.152f, 0.328f, 0.172f, 0.292f, 0.166f)
         poly(rockFaceShade, 0.322f, 0.056f, 0.335f, 0.052f, 0.362f, 0.075f, 0.369f, 0.112f, 0.356f, 0.152f, 0.328f, 0.172f, 0.322f, 0.11f)
         for (i in 0 until 8) {
@@ -453,7 +471,7 @@ internal class MapGeo(val w: Float, val h: Float) {
             poly(snowLedges, x, y + 0.004f, x + 0.02f, y - 0.004f, x + 0.044f, y + 0.002f, x + 0.04f, y + 0.009f, x + 0.016f, y + 0.011f)
         }
         // Scree: grey fans of loose rock under the steep faces, with a scatter of stones.
-        val fans = floatArrayOf(0.565f, 0.318f, 0.045f, 0.83f, 0.322f, 0.06f, 0.075f, 0.31f, 0.05f, 0.36f, 0.355f, 0.03f, 0.43f, 0.385f, 0.02f)
+        val fans = floatArrayOf(0.565f, 0.318f, 0.04f, 0.83f, 0.33f, 0.035f, 0.075f, 0.31f, 0.04f, 0.36f, 0.355f, 0.025f, 0.43f, 0.385f, 0.02f)
         for (i in 0 until fans.size / 3) {
             val ax = fans[i * 3]
             val ay = fans[i * 3 + 1]
@@ -843,7 +861,9 @@ internal class MapGeo(val w: Float, val h: Float) {
     val bases: Map<PlaceId, Offset> = PlaceId.entries.associateWith { Offset(mapSpot(it).x * w, (mapSpot(it).y + 0.045f) * h) }
     val roads: List<Poly> = buildRoads(w, h)
     val roadPaths: List<Path> = roads.map { it.path() }
+    val roadDashes: List<Path> = roads.map { it.dashes(0.007f * h, 0.02f * h) }
     val plotOrder: List<PlaceId> = PlaceId.entries.sortedBy { bases[it]!!.y }
+    val plots: Map<PlaceId, PlotGeo> by lazy { PlaceId.entries.mapNotNull { p -> buildPlot(this, p)?.let { p to it } }.toMap() }
     val doorPaths: List<Path> = PlaceId.entries.mapNotNull { p ->
         if (p == PlaceId.SPACE || p == PlaceId.UNDERWATER || p == PlaceId.MOUNTAIN || p == PlaceId.LAB || p.name == "HEILEBERGET") return@mapNotNull null
         val b = bases[p]!!
@@ -865,6 +885,7 @@ internal class MapGeo(val w: Float, val h: Float) {
         }
     }
     val railPath: Path by lazy { rail.path() }
+    val railTies: Path by lazy { rail.dashes(0.0022f * h, 0.0062f * h) }
     val rail: Poly = smoothPoly(
         w, h,
         floatArrayOf(-0.04f, 0.5f, 0.06f, 0.478f, 0.2f, 0.47f, 0.34f, 0.478f, 0.485f, 0.482f, 0.6f, 0.476f, 0.72f, 0.468f, 0.82f, 0.448f, 0.9f, 0.43f, 0.96f, 0.414f),
@@ -882,6 +903,7 @@ internal class MapGeo(val w: Float, val h: Float) {
         6,
     )
     val trailPath: Path = trail.path()
+    val trailDashes: Path = trail.dashes(0.010f * h, 0.007f * h)
 
     // ---- trees, houses, lamps and other little things placed on the terrain
     val scatter: Scatter = buildScatter(this)
@@ -912,13 +934,15 @@ internal fun MapPen.drawFarWorld(d: DrawScope, g: MapGeo) = with(d) {
         val k = if (i < 2) 0.65f else 0.5f
         val lit = nt(b.cLit, k)
         val sh = nt(b.cShade, k)
-        drawPath(b.body, lit)
-        drawPath(b.facet, nt(b.cFacet, k))
-        drawPath(b.shade, sh)
-        drawPath(b.strata, sh.darken(0.22f), alpha = 0.55f, style = Stroke(lw * 1.1f, cap = StrokeCap.Round))
-        drawPath(b.snow, nt(b.cSnow, 0.5f))
-        drawPath(b.snowShade, nt(b.cSnowShade, 0.5f))
-        drawPath(b.ridge, Ink.line, alpha = if (i < 2) 0.25f else if (i == 2) 0.45f else 0.85f, style = Stroke(lw * if (i < 3) 0.9f else 1.5f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+        for (part in b.parts) {
+            drawPath(part.body, lit)
+            drawPath(part.facet, nt(b.cFacet, k))
+            drawPath(part.shade, sh)
+            drawPath(part.strata, sh.darken(0.22f), alpha = 0.55f, style = Stroke(lw * 1.1f, cap = StrokeCap.Round))
+            drawPath(part.snow, nt(b.cSnow, 0.5f))
+            drawPath(part.snowShade, nt(b.cSnowShade, 0.5f))
+            drawPath(part.ridge, Ink.line, alpha = if (i < 2) 0.25f else if (i == 2) 0.45f else 0.85f, style = Stroke(lw * if (i < 3) 0.9f else 1.5f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+        }
         // Each step nearer is less hazy: the far ranges fade into the sky and the valley mist.
         val mist = when (i) { 0 -> 0.42f; 1 -> 0.3f; 2 -> 0.2f; else -> 0f }
         if (mist > 0f) drawRect(Brush.verticalGradient(listOf(haze.copy(alpha = mist * 0.35f), haze.copy(alpha = mist)), startY = 0f, endY = h * 0.47f), Offset(0f, 0f), Size(w, h * 0.47f))
@@ -931,15 +955,16 @@ internal fun MapPen.drawFarWorld(d: DrawScope, g: MapGeo) = with(d) {
     }
     drawTrollFace(this)
     drawHeileLife(this, g)
+    // On dark nights the northern lights wash the peaks in green and violet.
+    val aw = ramp((n - 0.3f) / 0.55f) * (1f - 0.6f * oc)
+    if (aw > 0.01f) {
+        drawRect(Brush.verticalGradient(listOf(Pal.auroraGreen.copy(alpha = 0.16f * aw), Pal.auroraGreen.copy(alpha = 0f)), startY = 0f, endY = h * 0.36f), Offset.Zero, Size(w, h * 0.36f))
+        drawRect(Brush.horizontalGradient(listOf(Pal.auroraViolet.copy(alpha = 0f), Pal.auroraViolet.copy(alpha = 0.12f * aw)), startX = w * 0.4f, endX = w), Offset(w * 0.4f, 0f), Size(w * 0.6f, h * 0.3f))
+    }
 }
 
-/** The glacier tongue, the great rock face, scree slopes and the summit flag of Heileberget. */
+/** The great rock face, scree slopes and the summit flag of Heileberget. */
 private fun MapPen.drawHeileExtras(d: DrawScope, g: MapGeo) = with(d) {
-    // Glacier: a tongue of blue-white ice with crevasses.
-    drawPath(g.glacier, nt(Color(0xFFE2F1FF), 0.45f))
-    drawPath(g.glacierShade, nt(Color(0xFFB4D0EE), 0.45f))
-    drawPath(g.crevasses, nt(Color(0xFF7FA6D4), 0.45f), alpha = 0.8f, style = Stroke(lw * 1.1f, cap = StrokeCap.Round))
-    drawPath(g.glacier, Ink.line, alpha = 0.55f, style = Stroke(lw, join = StrokeJoin.Round))
     // The big rock face behind the hut.
     drawPath(g.rockFace, nt(Color(0xFF6A769A), 0.5f))
     drawPath(g.rockFaceShade, nt(Color(0xFF4A5478), 0.5f))
@@ -983,8 +1008,8 @@ private fun MapPen.drawCloudBanner(d: DrawScope) = with(d) {
             shadePath.addOval(Rect(x - rw * 0.96f, y - rh * 0.5f, x + rw * 1.02f, y + rh * 1.35f))
         }
     }
-    drawPath(shadePath, shade, alpha = 0.75f)
-    drawPath(bodyPath, body, alpha = 0.78f)
+    drawPath(shadePath, shade, alpha = 0.45f)
+    drawPath(bodyPath, body, alpha = 0.55f)
 }
 
 private fun MapPen.drawSlopePines(d: DrawScope, g: MapGeo, i: Int) {
@@ -1034,23 +1059,24 @@ private fun MapPen.drawWaterfall(d: DrawScope, g: MapGeo) = with(d) {
     drawPath(f.stream, nt(Color(0xFFA8DDF5), 0.4f), style = Stroke(0.011f * h, cap = StrokeCap.Round))
     // The falling water.
     drawPath(f.water, Brush.verticalGradient(listOf(nt(Color(0xFFB9E8FB), 0.3f), nt(Color(0xFFEFFAFF), 0.25f)), startY = f.top, endY = f.bottom))
-    clipPath(f.water) {
-        val white = ArrayList<Offset>(40)
-        val blue = ArrayList<Offset>(40)
-        for (i in 0 until 14) {
-            val x = f.cx - f.bw * 0.46f + f.bw * 0.92f * (i + 0.5f) / 14f
-            val speed = 0.5f + 0.3f * hash01(i, 61)
-            for (k in 0 until 3) {
-                val y0 = f.top + wrap(t * speed * 0.6f + hash01(i * 3 + k, 62), 1f) * (f.bottom - f.top + 0.08f * h) - 0.04f * h
-                val len = (0.03f + 0.04f * hash01(i * 3 + k, 63)) * h
-                val list = if ((i + k) % 2 == 0) white else blue
-                list.add(Offset(x, y0))
-                list.add(Offset(x, y0 + len))
-            }
+    val white = ArrayList<Offset>(60)
+    val blue = ArrayList<Offset>(60)
+    for (i in 0 until 14) {
+        val u = -0.88f + 1.76f * (i + 0.5f) / 14f
+        val speed = 0.5f + 0.3f * hash01(i, 61)
+        for (k in 0 until 3) {
+            val y0 = f.top + wrap(t * speed * 0.6f + hash01(i * 3 + k, 62), 1f) * (f.bottom - f.top + 0.08f * h) - 0.04f * h
+            val ya = max(y0, f.top)
+            val yb = min(y0 + (0.03f + 0.04f * hash01(i * 3 + k, 63)) * h, f.bottom)
+            if (yb <= ya) continue
+            fun hw(y: Float) = mix(f.tw, f.bw, ((y - f.top) / (f.bottom - f.top)).coerceIn(0f, 1f)) * 0.5f
+            val list = if ((i + k) % 2 == 0) white else blue
+            list.add(Offset(f.cx + u * hw(ya), ya))
+            list.add(Offset(f.cx + u * hw(yb), yb))
         }
-        drawPoints(white, PointMode.Lines, Color.White, strokeWidth = lw * 1.5f, cap = StrokeCap.Round, alpha = 0.9f)
-        drawPoints(blue, PointMode.Lines, nt(Color(0xFF78C4E8), 0.3f), strokeWidth = lw * 2.2f, cap = StrokeCap.Round, alpha = 0.6f)
     }
+    drawPoints(white, PointMode.Lines, Color.White, strokeWidth = lw * 1.5f, cap = StrokeCap.Round, alpha = 0.9f)
+    drawPoints(blue, PointMode.Lines, nt(Color(0xFF78C4E8), 0.3f), strokeWidth = lw * 2.2f, cap = StrokeCap.Round, alpha = 0.6f)
     // Left half in light, right half a little shaded.
     val shadeHalf = Path().apply {
         moveTo(f.cx + f.tw * 0.05f, f.top)
@@ -1089,8 +1115,8 @@ internal fun MapPen.drawGround(d: DrawScope, g: MapGeo) = with(d) {
         drawPoints(g.daisiesA, PointMode.Points, nt(Color(0xFFFFFFF0), 0.4f), strokeWidth = h * 0.005f, cap = StrokeCap.Round)
         drawPoints(g.daisiesB, PointMode.Points, nt(Color(0xFFFFD85A), 0.4f), strokeWidth = h * 0.004f, cap = StrokeCap.Round)
     }
-    for (hill in g.hills) drawHill(hill)
-    drawFarmHill(g)
+    for (hill in g.hills) drawHill(this, hill)
+    drawFarmHill(this, g)
 }
 
 private fun MapPen.hillColors(tone: Int): Pair<Color, Color> = when (tone) {
@@ -1135,12 +1161,13 @@ internal fun MapPen.drawWaters(d: DrawScope, g: MapGeo) = with(d) {
     val lit = nt(if (snow) Color(0xFFB9D9F3) else Color(0xFF52B6E2), 0.5f)
     drawPath(g.riverWater, deep)
     translate(h * 0.0035f, h * 0.0035f) { drawPath(g.riverLit, lit) }
-    clipPath(g.riverWater) {
-        drawPath(
-            g.riverLine, Color.White, alpha = 0.6f * (1f - 0.4f * n),
-            style = Stroke(lw * 1.3f, cap = StrokeCap.Round, pathEffect = PathEffect.dashPathEffect(floatArrayOf(h * 0.022f, h * 0.05f), -t * h * 0.05f)),
-        )
+    val flow = ArrayList<Offset>(80)
+    for (i in 0 until 40) {
+        val f0 = wrap(i / 40f + t * 0.035f, 1f)
+        flow.add(g.river.at(f0))
+        flow.add(g.river.at(min(1f, f0 + 0.018f)))
     }
+    drawPoints(flow, PointMode.Lines, Color.White, strokeWidth = lw * 1.3f, cap = StrokeCap.Round, alpha = 0.6f * (1f - 0.4f * n))
     drawPath(g.rapids, Color.White, alpha = 0.85f, style = Stroke(lw * 1.5f, cap = StrokeCap.Round))
     drawPath(g.bankStones, nt(Color(0xFF8C8FA3), 0.5f))
     drawPath(g.bankStonesLit, nt(Color(0xFFB5B8C8), 0.5f))
@@ -1209,10 +1236,13 @@ internal fun MapPen.drawWaters(d: DrawScope, g: MapGeo) = with(d) {
         translate(sin(t * 0.25f) * w * 0.006f, 0f) {
             drawPath(g.waves, Color.White, alpha = 0.65f * (1f - 0.4f * n), style = Stroke(lw * 1.1f, cap = StrokeCap.Round))
         }
-        drawPath(
-            g.shoreLine, Color.White, alpha = 0.9f * (1f - 0.35f * n),
-            style = Stroke(lw * 2.2f, cap = StrokeCap.Round, pathEffect = PathEffect.dashPathEffect(floatArrayOf(h * 0.03f, h * 0.022f), -t * h * 0.012f)),
-        )
+        val foam = ArrayList<Offset>(180)
+        for (i in 0 until 90) {
+            val f0 = wrap(i / 90f + t * 0.002f, 1f)
+            foam.add(g.shore.at(f0))
+            foam.add(g.shore.at(min(1f, f0 + 0.0075f)))
+        }
+        drawPoints(foam, PointMode.Lines, Color.White, strokeWidth = lw * 2.2f, cap = StrokeCap.Round, alpha = 0.9f * (1f - 0.35f * n))
     }
     drawPath(g.shoreLine, Ink.line, alpha = 0.55f, style = Stroke(lw * 1.1f, cap = StrokeCap.Round, join = StrokeJoin.Round))
     // Cliff walls where the farm hill meets the water.

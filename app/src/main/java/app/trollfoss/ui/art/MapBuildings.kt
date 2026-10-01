@@ -404,16 +404,24 @@ private fun plotOf(p: PlaceId): Plot? = when (p.name) {
     else -> null
 }
 
-/** The piece of ground each place stands on: a dug-in terrace with a retaining wall, paving or lawn. */
-internal fun MapPen.drawPlot(d: DrawScope, g: MapGeo, place: PlaceId) = with(d) {
-    val pl = plotOf(place) ?: return@with
+/** The cached shapes of one place's ground. */
+internal class PlotGeo(
+    val top: Path, val wall: Path, val joints: List<Offset>, val shade: Path, val paving: Path?, val dots: List<Offset>,
+    val kind: Int,
+) {
+    val ledge: Boolean get() = kind == 2 || kind == 4
+}
+
+internal fun buildPlot(g: MapGeo, place: PlaceId): PlotGeo? {
+    val pl = plotOf(place) ?: return null
     val b = g.bases[place]!!
     val cx = b.x
-    val cy = b.y + 0.004f * h
-    val rx = pl.rx * S
-    val ry = pl.ry * S * 0.5f
+    val cy = b.y + 0.004f * g.h
+    val rx = pl.rx * g.S
+    val ry = pl.ry * g.S * 0.5f
     val n = 22
-    fun wob(a: Float) = 1f + 0.05f * sin(a * 3f + place.ordinal) + 0.03f * sin(a * 5f + place.ordinal * 2f)
+    val ledgeK = if (pl.kind == 2 || pl.kind == 4) 2.6f else 1f
+    fun wob(a: Float) = 1f + ledgeK * (0.05f * sin(a * 3f + place.ordinal) + 0.03f * sin(a * 5f + place.ordinal * 2f) + 0.025f * sin(a * 9f + place.ordinal))
     val top = Path()
     for (i in 0 until n) {
         val a = i * 6.2831855f / n
@@ -421,10 +429,10 @@ internal fun MapPen.drawPlot(d: DrawScope, g: MapGeo, place: PlaceId) = with(d) 
         if (i == 0) top.moveTo(o.x, o.y) else top.lineTo(o.x, o.y)
     }
     top.close()
-    // The retaining wall along the lower half: earth or stone, with joints.
-    val wallH = 0.02f * h
+    // The retaining wall along the lower half, with joints.
+    val wallH = (if (pl.kind == 2 || pl.kind == 4) 0f else 0.02f) * g.h
     val wall = Path()
-    val wallJoints = ArrayList<Offset>()
+    val joints = ArrayList<Offset>()
     for (i in 0..12) {
         val a = 0.05f + 3.04f * i / 12f
         val o = Offset(cx + rx * wob(a) * cos(a), cy + ry * wob(a) * sin(a))
@@ -435,26 +443,12 @@ internal fun MapPen.drawPlot(d: DrawScope, g: MapGeo, place: PlaceId) = with(d) 
         val o = Offset(cx + rx * wob(a) * cos(a), cy + ry * wob(a) * sin(a) + wallH)
         wall.lineTo(o.x, o.y)
         if (i in 1..11 && i % 2 == 0) {
-            wallJoints.add(Offset(o.x, o.y))
-            wallJoints.add(Offset(o.x, o.y - wallH))
+            joints.add(Offset(o.x, o.y))
+            joints.add(Offset(o.x, o.y - wallH))
         }
     }
     wall.close()
-    val stone = pl.kind == 1 || pl.kind == 2
-    val wallC = nt(if (snow) Color(0xFFB8C4DA) else if (stone) Color(0xFF9A8F80) else Color(0xFF8C6A45), 0.5f)
-    drawPath(wall, wallC)
-    drawPoints(wallJoints, PointMode.Lines, wallC.darken(0.3f), strokeWidth = lw * 0.9f)
-    drawPath(wall, Ink.line, alpha = 0.6f, style = Stroke(lw * 0.9f, join = StrokeJoin.Round))
-    val fillC = when (pl.kind) {
-        1 -> if (snow) Color(0xFFF1F4FB) else Color(0xFFDCD2BE)
-        2 -> if (snow) Color(0xFFE6EBF5) else Color(0xFF9E9CAA)
-        3 -> if (snow) Color(0xFFE8EFF7) else Color(0xFF6DA155)
-        4 -> Color(0xFFF7FAFF)
-        5 -> Color(0xFFF3DFA8)
-        else -> if (snow) Color(0xFFF1F6FC) else Color(0xFFA3D46C)
-    }
-    drawPath(top, nt(fillC, 0.5f))
-    // Shading toward the lower right, and a lit rim on the upper left.
+    // Shading toward the lower right.
     val shade = Path()
     for (i in 0..10) {
         val a = -0.5f + 2.7f * i / 10f
@@ -467,28 +461,53 @@ internal fun MapPen.drawPlot(d: DrawScope, g: MapGeo, place: PlaceId) = with(d) 
         shade.lineTo(o.x, o.y)
     }
     shade.close()
-    drawPath(shade, nt(fillC, 0.5f).darken(0.1f), alpha = 0.6f)
+    var paving: Path? = null
+    val dots = ArrayList<Offset>()
     if (pl.kind == 1) {
-        // Paving joints in rows, following the ellipse.
-        val joints = Path()
+        val pv = Path()
         for (r in 1..2) {
             val f = r / 3f
-            joints.moveTo(cx - rx * 0.97f * sqrt1(1f - f * f), cy - ry * f)
-            joints.lineTo(cx + rx * 0.97f * sqrt1(1f - f * f), cy - ry * f)
-            joints.moveTo(cx - rx * 0.97f * sqrt1(1f - f * f), cy + ry * f)
-            joints.lineTo(cx + rx * 0.97f * sqrt1(1f - f * f), cy + ry * f)
+            val half = rx * 0.97f * sqrt1(1f - f * f)
+            pv.moveTo(cx - half, cy - ry * f)
+            pv.lineTo(cx + half, cy - ry * f)
+            pv.moveTo(cx - half, cy + ry * f)
+            pv.lineTo(cx + half, cy + ry * f)
         }
-        drawPath(joints, nt(Color(0xFFB3A791), 0.5f), alpha = 0.7f, style = Stroke(lw * 0.8f))
+        paving = pv
     } else if (pl.kind == 0 || pl.kind == 3) {
         for (k in 0 until 14) {
             val a = hash01(k, 71 + place.ordinal) * 6.28f
             val rr = 0.3f + 0.6f * hash01(k, 72 + place.ordinal)
-            val px = cx + rx * rr * cos(a)
-            val py = cy + ry * rr * sin(a)
-            drawCircle(nt(if (pl.kind == 3) Color(0xFF3F7F47) else Color(0xFFFFF3B0), 0.4f), h * 0.0035f, Offset(px, py), alpha = 0.8f)
+            dots.add(Offset(cx + rx * rr * cos(a), cy + ry * rr * sin(a)))
         }
     }
-    drawPath(top, Ink.line, alpha = 0.5f, style = Stroke(lw * 0.9f, join = StrokeJoin.Round))
+    return PlotGeo(top, wall, joints, shade, paving, dots, pl.kind)
+}
+
+/** The piece of ground each place stands on: a dug-in terrace with a retaining wall, paving or lawn. */
+internal fun MapPen.drawPlot(d: DrawScope, g: MapGeo, place: PlaceId) = with(d) {
+    val pg = g.plots[place] ?: return@with
+    val kind = pg.kind
+    val stone = kind == 1 || kind == 2
+    if (!pg.ledge) {
+        val wallC = nt(if (snow) Color(0xFFB8C4DA) else if (stone) Color(0xFF9A8F80) else Color(0xFF8C6A45), 0.5f)
+        drawPath(pg.wall, wallC)
+        drawPoints(pg.joints, PointMode.Lines, wallC.darken(0.3f), strokeWidth = lw * 0.9f)
+        drawPath(pg.wall, Ink.line, alpha = 0.6f, style = Stroke(lw * 0.9f, join = StrokeJoin.Round))
+    }
+    val fillC = when (kind) {
+        1 -> if (snow) Color(0xFFF1F4FB) else Color(0xFFDCD2BE)
+        2 -> if (snow) Color(0xFFE6EBF5) else Color(0xFF9E9CAA)
+        3 -> if (snow) Color(0xFFE8EFF7) else Color(0xFF6DA155)
+        4 -> Color(0xFFF7FAFF)
+        5 -> Color(0xFFF3DFA8)
+        else -> if (snow) Color(0xFFF1F6FC) else Color(0xFFA3D46C)
+    }
+    drawPath(pg.top, nt(fillC, 0.5f))
+    drawPath(pg.shade, nt(fillC, 0.5f).darken(0.1f), alpha = 0.6f)
+    pg.paving?.let { drawPath(it, nt(Color(0xFFB3A791), 0.5f), alpha = 0.7f, style = Stroke(lw * 0.8f)) }
+    if (pg.dots.isNotEmpty()) drawPoints(pg.dots, PointMode.Points, nt(if (kind == 3) Color(0xFF3F7F47) else Color(0xFFFFF3B0), 0.4f), strokeWidth = h * 0.007f, cap = StrokeCap.Round, alpha = 0.8f)
+    if (!pg.ledge) drawPath(pg.top, Ink.line, alpha = 0.5f, style = Stroke(lw * 0.9f, join = StrokeJoin.Round))
 }
 
 private fun sqrt1(v: Float): Float = kotlin.math.sqrt(max(0f, v))
@@ -499,7 +518,7 @@ private fun sqrt1(v: Float): Float = kotlin.math.sqrt(max(0f, v))
 internal fun MapPen.drawCottage(d: DrawScope, c: Cottage) {
     val yf = c.y / h
     val sc = S * c.sc
-    withTransform({ translate(c.x, c.y); scale(sc, sc, Offset.Zero) }) {
+    d.withTransform({ translate(c.x, c.y); scale(sc, sc, Offset.Zero) }) {
         val b = Bx(this, this@drawCottage, sc, yf)
         with(b) {
             val hw = 0.36f

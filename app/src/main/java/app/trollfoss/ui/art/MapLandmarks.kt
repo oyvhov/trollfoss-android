@@ -41,8 +41,10 @@ internal fun MapPen.drawLandmark(d: DrawScope, g: MapGeo, place: PlaceId, hl: Bo
     val sc = S * k
     if (hl) {
         val pulse = 0.5f + 0.5f * sin(t * 3.4f)
-        d.drawOval(Pal.sun, Offset(b.x - sc * 1.5f, b.y - sc * 0.22f), Size(sc * 3f, sc * 0.5f), alpha = 0.22f + 0.12f * pulse)
-        d.drawOval(Pal.sun, Offset(b.x - sc * 1.25f - pulse * sc * 0.08f, b.y - sc * 0.17f), Size(sc * 2.5f + pulse * sc * 0.16f, sc * 0.4f), alpha = 0.8f, style = Stroke(lw * 2.2f))
+        d.drawOval(Pal.sun, Offset(b.x - sc * 1.6f, b.y - sc * 0.26f), Size(sc * 3.2f, sc * 0.58f), alpha = 0.18f + 0.1f * pulse)
+        d.drawOval(Pal.sun, Offset(b.x - sc * 1.3f, b.y - sc * 0.2f), Size(sc * 2.6f, sc * 0.46f), alpha = 0.38f + 0.15f * pulse)
+        d.drawOval(Color.White, Offset(b.x - sc * 1.3f - pulse * sc * 0.1f, b.y - sc * 0.2f - pulse * sc * 0.02f), Size(sc * 2.6f + pulse * sc * 0.2f, sc * 0.46f + pulse * sc * 0.04f), alpha = 0.9f, style = Stroke(lw * 3.4f))
+        d.drawOval(Pal.sun, Offset(b.x - sc * 1.3f - pulse * sc * 0.1f, b.y - sc * 0.2f - pulse * sc * 0.02f), Size(sc * 2.6f + pulse * sc * 0.2f, sc * 0.46f + pulse * sc * 0.04f), alpha = 1f, style = Stroke(lw * 1.8f))
     }
     val lift = if (hl) abs(sin(t * 3.4f)) * 0.014f * h else 0f
     d.withTransform({
@@ -353,9 +355,9 @@ private fun Bx.salon() {
     // Flowers, a topiary and a bench.
     pot(-0.1f, 0.0f, Color(0xFFFF6B8A))
     pot(0.36f, 0.0f, Color(0xFFFFC83D))
-    line(0.68f, 0.06f, 0.68f, -0.16f, Color(0xFF7A5134), 2.6f)
-    disc(0.68f, -0.28f, 0.12f, Color(0xFF5DB04F), 1.1f)
-    d.drawOval(Ink.line, Offset(0.58f, 0.03f), Size(0.2f, 0.05f), alpha = 0.18f)
+    line(0.98f, 0.06f, 0.98f, -0.16f, Color(0xFF7A5134), 2.6f)
+    disc(0.98f, -0.28f, 0.12f, Color(0xFF5DB04F), 1.1f)
+    d.drawOval(Ink.line, Offset(0.88f, 0.03f), Size(0.2f, 0.05f), alpha = 0.18f)
     bench(-0.84f, 0.16f)
     val beds = ArrayList<Offset>()
     for (k in 0 until 5) beds.add(Offset(-0.3f + k * 0.14f, 0.2f))
@@ -742,8 +744,9 @@ private fun Bx.camp() {
     line(fx + 0.11f, fy + 0.01f, fx - 0.1f, fy - 0.045f, Color(0xFF7A4B2E), 3.4f)
     glow(fx, fy - 0.1f, 0.4f, Color(0xFFFFB84D), 0.3f)
     d.drawCircle(Color(0xFFFFB84D), 0.26f, Offset(fx, fy - 0.1f), alpha = 0.1f)
-    for ((k, sp) in listOf(0.085f to 0f, 0.06f to 1.7f, 0.05f to 3.1f).withIndex()) {
-        val fl = 1f + 0.18f * sin(t * 11f + sp)
+    for ((k, pr) in listOf(0.085f to 0f, 0.06f to 1.7f, 0.05f to 3.1f).withIndex()) {
+        val sp = pr.first * 0.5f
+        val fl = 1f + 0.18f * sin(t * 11f + pr.second)
         val ox = (k - 1) * 0.045f
         val p = Path().apply {
             moveTo(fx + ox - sp * 0.6f, fy - 0.02f)
@@ -842,9 +845,9 @@ private fun Bx.cave() {
     fill(mouth, Color(0xFF1E1730))
     d.drawCircle(Color(0xFF6FF2FF), 0.3f, Offset(0f, -0.15f), alpha = 0.12f * pulse)
     d.drawCircle(Color(0xFFB58CFF), 0.17f, Offset(0f, -0.15f), alpha = 0.22f * pulse)
-    for (k in 0 until 6) {
-        val x = -0.2f + k * 0.08f
-        val ht = 0.06f + 0.05f * ((k * 7) % 3) / 2f
+    for (k in 0 until 4) {
+        val x = -0.16f + k * 0.107f
+        val ht = 0.035f + 0.03f * ((k * 7) % 3) / 2f
         fill(path(x - 0.028f, -0.5f + 0.02f * sin(k * 1.4f), x + 0.028f, -0.5f + 0.02f * sin(k * 1.4f), x, -0.5f + ht), Color(0xFF5E5A7C))
     }
     ink(mouth, 1.3f)
@@ -1204,12 +1207,12 @@ private fun Bx.dive() {
 private fun MapPen.drawSpace(d: DrawScope, g: MapGeo, hl: Boolean) {
     val spot = mapSpot(PlaceId.SPACE)
     val c0 = Offset(spot.x * w, spot.y * h)
-    val r = S * 0.62f
+    val r = S * 0.5f
     val lift = if (hl) abs(sin(t * 3.4f)) * 0.014f * h else 0f
     val c = Offset(c0.x, c0.y - lift)
     // The balloon above holding it up.
-    val bc = Offset(c.x + r * 0.15f, c.y - r * 2.15f)
-    val br = r * 0.55f
+    val bc = Offset(c.x + r * 0.15f, c.y - r * 1.95f)
+    val br = r * 0.5f
     d.drawLine(Ink.line, Offset(bc.x - br * 0.5f, bc.y + br * 0.9f), Offset(c.x - r * 0.15f, c.y - r * 0.95f), strokeWidth = lw * 0.9f)
     d.drawLine(Ink.line, Offset(bc.x + br * 0.5f, bc.y + br * 0.9f), Offset(c.x + r * 0.35f, c.y - r * 0.92f), strokeWidth = lw * 0.9f)
     val env = Path().apply {
@@ -1269,6 +1272,6 @@ private fun MapPen.drawSpace(d: DrawScope, g: MapGeo, hl: Boolean) {
     for (k in 1..7) {
         val a = ang * 2f - k * 0.3f
         val q = Offset(c.x + cos(a) * r * 1.22f, c.y + sin(a) * r * 0.7f)
-        twinkle(q, r * (0.12f - k * 0.012f), Color(0xFFFFF3B0), (1f - k / 8f) * (0.4f + 0.6f * (0.5f + 0.5f * sin(t * 5f + k * 1.3f))))
+        d.twinkle(q, r * (0.12f - k * 0.012f), Color(0xFFFFF3B0), (1f - k / 8f) * (0.4f + 0.6f * (0.5f + 0.5f * sin(t * 5f + k * 1.3f))))
     }
 }
