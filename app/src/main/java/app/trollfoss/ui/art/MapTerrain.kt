@@ -644,6 +644,8 @@ internal class MapGeo(val w: Float, val h: Float) {
         buildHill(w, h, 0.215f, 0.735f, 0.065f, 0.038f, 8, false, 1),
         buildHill(w, h, 0.68f, 0.745f, 0.08f, 0.045f, 9, false, 0),
         buildHill(w, h, 0.36f, 0.68f, 0.05f, 0.03f, 10, false, 1),
+        // The broad hill Storhuset stands on, right of the waterfall (the estate's terrace sits on top of it).
+        buildHill(w, h, mapSpot(PlaceId.MANOR_GROUND).x, mapSpot(PlaceId.MANOR_GROUND).y + 0.039f, 0.145f, 0.085f, 11, false, 1),
     ).sortedBy { it.cy }
 
     // ---- the farm hill with terraced fields
@@ -901,7 +903,7 @@ internal class MapGeo(val w: Float, val h: Float) {
     val plotOrder: List<PlaceId> = PlaceId.entries.filter { it.onMap }.sortedBy { bases[it]!!.y }
     val plots: Map<PlaceId, PlotGeo> by lazy { PlaceId.entries.filter { it.onMap }.mapNotNull { p -> buildPlot(this, p)?.let { p to it } }.toMap() }
     val doorPaths: List<Path> = PlaceId.entries.filter { it.onMap }.mapNotNull { p ->
-        if (p == PlaceId.SPACE || p == PlaceId.UNDERWATER || p == PlaceId.MOUNTAIN || p == PlaceId.LAB || p.name == "HEILEBERGET") return@mapNotNull null
+        if (p == PlaceId.SPACE || p == PlaceId.UNDERWATER || p == PlaceId.MOUNTAIN || p == PlaceId.LAB || p == PlaceId.MANOR_GROUND || p.name == "HEILEBERGET") return@mapNotNull null
         val b = bases[p]!!
         var best = Float.MAX_VALUE
         var bo = Offset.Zero
@@ -951,6 +953,9 @@ internal class MapGeo(val w: Float, val h: Float) {
         }
     }
     val trailDashes: Path = trail.dashes(0.010f * h, 0.007f * h)
+
+    /** The secret path from the cellar of Storhuset to the troll cave; drawn only when all five golden keys are found. */
+    val tunnel: TunnelGeo by lazy { buildTunnel(this) }
 
     // ---- trees, houses, lamps and other little things placed on the terrain
     val scatter: Scatter = buildScatter(this)

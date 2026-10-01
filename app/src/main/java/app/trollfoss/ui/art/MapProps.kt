@@ -37,24 +37,28 @@ internal const val NBANDS = 26
 
 // ------------------------------------------------------------------------------------- roads
 
-internal fun buildRoads(w: Float, h: Float): List<Poly> = listOf(
-    // 0: the main road through the valley, west to east.
-    floatArrayOf(-0.04f, 0.655f, 0.05f, 0.632f, 0.12f, 0.624f, 0.2f, 0.634f, 0.26f, 0.63f, 0.33f, 0.626f, 0.4f, 0.614f, 0.45f, 0.624f, 0.488f, 0.618f, 0.53f, 0.624f, 0.6f, 0.637f, 0.68f, 0.632f, 0.76f, 0.617f, 0.86f, 0.61f, 0.95f, 0.622f, 1.04f, 0.642f),
-    // 1: south from the shop to the salon.
-    floatArrayOf(0.272f, 0.63f, 0.283f, 0.7f, 0.298f, 0.77f, 0.316f, 0.835f, 0.325f, 0.896f),
-    // 2: the southern street by the water, west to the pier.
-    floatArrayOf(0.2f, 0.88f, 0.3f, 0.903f, 0.38f, 0.912f, 0.46f, 0.902f, 0.53f, 0.896f, 0.6f, 0.912f, 0.68f, 0.924f, 0.74f, 0.912f, 0.8f, 0.9f),
-    // 3: from the bakery to the concert house.
-    floatArrayOf(0.665f, 0.634f, 0.655f, 0.72f, 0.632f, 0.8f, 0.612f, 0.914f),
-    // 4: from the bakery to the beach.
-    floatArrayOf(0.7f, 0.634f, 0.72f, 0.72f, 0.735f, 0.8f, 0.742f, 0.912f),
-    // 5: the mountain road, winding up to the cabin.
-    floatArrayOf(0.218f, 0.634f, 0.22f, 0.57f, 0.205f, 0.51f, 0.198f, 0.455f, 0.212f, 0.405f, 0.225f, 0.365f, 0.205f, 0.33f, 0.19f, 0.302f),
-    // 6: the path up to the troll cave.
-    floatArrayOf(0.606f, 0.637f, 0.612f, 0.57f, 0.62f, 0.51f, 0.624f, 0.45f, 0.612f, 0.4f, 0.598f, 0.36f, 0.61f, 0.33f, 0.618f, 0.312f),
-    // 7: the farm track, down to the fjord cliffs.
-    floatArrayOf(0.86f, 0.61f, 0.883f, 0.655f, 0.9f, 0.69f),
-).map { smoothPoly(w, h, it, 7) }
+internal fun buildRoads(w: Float, h: Float): List<Poly> {
+    val roads = listOf(
+        // 0: the main road through the valley, west to east.
+        floatArrayOf(-0.04f, 0.655f, 0.05f, 0.632f, 0.12f, 0.624f, 0.2f, 0.634f, 0.26f, 0.63f, 0.33f, 0.626f, 0.4f, 0.614f, 0.45f, 0.624f, 0.488f, 0.618f, 0.53f, 0.624f, 0.6f, 0.637f, 0.68f, 0.632f, 0.76f, 0.617f, 0.86f, 0.61f, 0.95f, 0.622f, 1.04f, 0.642f),
+        // 1: south from the shop to the salon.
+        floatArrayOf(0.272f, 0.63f, 0.283f, 0.7f, 0.298f, 0.77f, 0.316f, 0.835f, 0.325f, 0.896f),
+        // 2: the southern street by the water, west to the pier.
+        floatArrayOf(0.2f, 0.88f, 0.3f, 0.903f, 0.38f, 0.912f, 0.46f, 0.902f, 0.53f, 0.896f, 0.6f, 0.912f, 0.68f, 0.924f, 0.74f, 0.912f, 0.8f, 0.9f),
+        // 3: from the bakery to the concert house.
+        floatArrayOf(0.665f, 0.634f, 0.655f, 0.72f, 0.632f, 0.8f, 0.612f, 0.914f),
+        // 4: from the bakery to the beach.
+        floatArrayOf(0.7f, 0.634f, 0.72f, 0.72f, 0.735f, 0.8f, 0.742f, 0.912f),
+        // 5: the mountain road, winding up to the cabin.
+        floatArrayOf(0.218f, 0.634f, 0.22f, 0.57f, 0.205f, 0.51f, 0.198f, 0.455f, 0.212f, 0.405f, 0.225f, 0.365f, 0.205f, 0.33f, 0.19f, 0.302f),
+        // 6: the path up to the troll cave.
+        floatArrayOf(0.606f, 0.637f, 0.612f, 0.57f, 0.62f, 0.51f, 0.624f, 0.45f, 0.612f, 0.4f, 0.598f, 0.36f, 0.61f, 0.33f, 0.618f, 0.312f),
+        // 7: the farm track, down to the fjord cliffs.
+        floatArrayOf(0.86f, 0.61f, 0.883f, 0.655f, 0.9f, 0.69f),
+    ).map { smoothPoly(w, h, it, 7) }
+    // 8: the lane from the gate of Storhuset to the troll cave road.
+    return roads + manorLane(w, h, roads[6])
+}
 
 // ------------------------------------------------------------------------------------- trees
 
@@ -135,9 +139,10 @@ internal fun buildScatter(g: MapGeo): Scatter {
             PlaceId.FARM -> 1.55f
             PlaceId.BEACH -> 1.4f
             PlaceId.MOUNTAIN, PlaceId.LAB -> 1.3f
+            PlaceId.MANOR_GROUND -> 2.3f
             else -> 1.15f
         }
-        val ry = h * if (p == PlaceId.TIVOLI) 0.19f else 0.13f
+        val ry = h * if (p == PlaceId.TIVOLI) 0.19f else if (p == PlaceId.MANOR_GROUND) 0.2f else 0.13f
         keeps.add(Keep(b.x, b.y - ry * 0.55f, rx, ry))
         keeps.add(Keep(b.x, b.y + 0.02f * h, rx, 0.05f * h))
     }
@@ -267,7 +272,7 @@ internal fun buildScatter(g: MapGeo): Scatter {
     val poles = Path()
     val heads = ArrayList<Offset>()
     for ((ri, r) in g.roads.withIndex()) {
-        if (ri == 7) continue
+        if (ri == 7 || ri == 8) continue
         var f = 0.07f + 0.02f * ri
         while (f < 0.95f) {
             val c = r.at(f)

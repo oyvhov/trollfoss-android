@@ -12,17 +12,18 @@ import kotlin.math.roundToInt
 
 /**
  * The cached still layer of the map for a map of [widthPx] × [heightPx] pixels. It is made on a
- * background thread, only when the size, the [night] or the [weather] really change, and until it is
+ * background thread, only when the size, the [night], the [weather] or the secret [tunnel] path of Storhuset
+ * (shown once all five golden keys are found) really change, and until it is
  * ready the state is null (or the previous layer, which [drawIslandMapLive] stops using if it no longer fits).
  */
 @Composable
-fun rememberMapLayer(widthPx: Int, heightPx: Int, night: Float, weather: Weather, rainbow: Float = 0f): State<MapLayer?> {
+fun rememberMapLayer(widthPx: Int, heightPx: Int, night: Float, weather: Weather, rainbow: Float = 0f, tunnel: Boolean = false): State<MapLayer?> {
     val state = remember { mutableStateOf<MapLayer?>(null) }
     val nightStep = (night * 20f).roundToInt()
     val rainbowStep = (rainbow * 10f).roundToInt()
-    LaunchedEffect(widthPx, heightPx, nightStep, weather, rainbowStep) {
+    LaunchedEffect(widthPx, heightPx, nightStep, weather, rainbowStep, tunnel) {
         if (widthPx > 0 && heightPx > 0) {
-            state.value = withContext(Dispatchers.Default) { buildMapLayer(widthPx, heightPx, nightStep / 20f, weather, rainbowStep / 10f) }
+            state.value = withContext(Dispatchers.Default) { buildMapLayer(widthPx, heightPx, nightStep / 20f, weather, rainbowStep / 10f, tunnel) }
         }
     }
     return state
