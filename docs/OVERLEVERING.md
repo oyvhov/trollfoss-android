@@ -1,13 +1,40 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
-> **RELEASE 1.5.0 KLARGJORT (2026-10-02, Codex):** Brukaren bad «Release» etter arbeidet nedanfor.
-> Versjon 1.5.0 / kode 8 samlar faste spelarar, lokal fleirspelar, møbeldraging, flytta møbelkunst og
-> trygg pakking/henting av figurar. Release-notat i `docs/release-v1.5.0.md`.
-> Eksisterande 1.4.1 / kode 7 står på emulatoren for prøve av oppdateringa gjennom appen.
+> **UTGÅVE 1.5.0 PUBLISERT (2026-10-02, Codex):** Brukaren bad «Release» etter arbeidet nedanfor.
+> https://github.com/oyvhov/trollfoss-android/releases/tag/v1.5.0 er offentleg, stabil og nyaste utgåve.
+> Kjelde/tagg: `499574312c9260a67777ef5ebf378d40f7aee30a`. Versjon 1.5.0 / kode 8.
+> Faste spelarar, lokal fleirspelar, møbeldraging, flytta møbelkunst og trygg pakking/henting av
+> figurar er med. Release-notat: `docs/release-v1.5.0.md`. Nivåplanen er framleis berre ein plan.
+> 399 einingstestar grøne; dei 10 Android-testane frå funksjonskontrollen er grøne.
+> `testDebugUnitTest`, `lintRelease` (0 feil / 20 åtvaringar) og `assembleRelease` er grøne gjennom
+> byggelåsen. GitHub «Bygg og test» er grøn på `main` (37037222481) og taggen (37037222530).
+> Universal APK: 3 025 366 byte; SHA-256
+> `67d81f436c52ad2817ad9c98c9ee4a24590a3a60a2dd05196f1c9f94bea9f5ef`.
+> Pakke `app.trollfoss`, minste Android 26, ikkje-debuggable og opphavleg signatur er stadfesta.
+> Arkiv `dist/release-v1.5.0/`: APK, R8-mapping, `SHA256SUMS.txt`, `SOURCE_COMMIT.txt`.
+> Kladden og den offentlege releasen har éin APK og tre tekstfiler, alle med kontrollert storleik og
+> GitHub-digest. Taggen og SOURCE_COMMIT peikar på same kjelde. Ingen vedlegg er erstatta etter publisering.
+> Release-lista og latest-endepunkt er prøvde utan token. Separat offentleg nedlasting har same
+> SHA-256/signatur som arkivet. Den offentlege lista vart synleg etter kort publiseringspropagering.
+> **Ekte oppdatering:** den eksisterande signerte 1.4.1 / kode 7 vart oppdatert gjennom Kart →
+> For vaksne → gongestykke → Sjekk no → Last ned oppdatering → Installer oppdatering → Android Update.
+> Play Protect viste sitt vanlege skanningsspørsmål; «Install without scanning» gav «App installed».
+> Installert versjon er 1.5.0 / kode 8. APK-en trekt ut av den installerte appen har same hash som
+> den publiserte fila. Ingen avinstallering, nullstilling eller utskifting av produksjonsverda.
+> Fyrste opning viser spelarvalet. «Vel seinare» går til Kartet, og neste vanlege kaldstart opnar Kartet.
+> Fjellet, synlege ting, 0/76 glimt, tre oppdrag og gamle namn/utsjånad/klede er bevarte i UI-kontrollen.
+> Ingen spelar eller ny figur vart vald/lagra i den private verda. Ny spelarvals-flagging er lagra.
+> Signert utgåve er visuelt prøvd på mobil 2400 × 1080 / 420 dpi og nettbrett 1920 × 1200 / 240 dpi:
+> spelarval, kartretur/kaldstart, venner med pakkeknapp og møbelpanel med dragehint. Ingen privat
+> møblering/husbygging er endra. Funksjonsprøva i isolert pakke er dokumentert nedanfor.
 > Før oppstart vart begge stoppade userdata-diskar kopierte til det ignorerte
-> `.gradle-tmp/release-1.5.0-original/emulator-disk/` (om lag 6,4 GB). Ingen verdsfil er nullstilt.
-> Endeleg publiserings- og oppdateringskontroll blir dokumentert etter release.
-> «Lokalt/ikkje utgjeve»-status nedanfor skildrar arbeidet før denne release-førespurnaden.
+> `.gradle-tmp/release-1.5.0-original/emulator-disk/` (om lag 6,4 GB). Produksjons-JSON er ikkje direkte
+> lesen på denne Play Store-emulatoren; lagringskompatibilitet er i tillegg dekt av einingstestar.
+> Ingen Trollfoss-krasj i krasjbufferen. Fjellet står att valt; fysisk 1080 × 2400 / 420 dpi og rotasjon
+> 1/1 er tilbakeførte. Installasjonsløyvet er framleis `allow`, emulatoren er stoppa, og produksjonsappen
+> står att oppdatert til 1.5.0. Opphavleg debug-app/verdsfil er urørt. Bilete i
+> `screenshots/release-v1.5.0/` og prøveskript er Git-ignorerte; ingen private data er publiserte.
+> «Lokalt/ikkje utgjeve»-status nedanfor er historikk frå før denne publiseringa.
 
 > **NYAST – FASTE SPELARAR, MØBELDRAGING OG TA BORT FIGURAR (2026-10-02, Codex, lokalt):**
 > Arbeidet ligg ukommittert på `main`, etter publisert 1.4.1. Ingen versjonsendring, release, push

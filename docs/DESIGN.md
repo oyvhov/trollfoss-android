@@ -1,6 +1,6 @@
 # Trollfoss – designunderlag
 
-Tillegg 2026-10-02 (lokalt, etter 1.4.1): barnet vel éin eller fleire faste spelarfigurar ved start
+Tillegg 2026-10-02 (utgåve 1.5.0): barnet vel éin eller fleire faste spelarfigurar ved start
 eller seinare med «Spelarar». Dei er dei same figurane overalt, med lagra utsjånad, klede og det dei
 held eller har på hovudet. Spelarane kjem med på kartreiser og gjennom passasjar; dei vandrar ikkje
 vekk til andre etasjar på eiga hand. To eller fleire barn leikar på same skjerm med kvar sin figur
