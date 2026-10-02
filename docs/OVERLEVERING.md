@@ -1,6 +1,8 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
-> **UTGÅVE 1.4.0 KLARGJORD (2026-10-02, Codex):** Brukaren bad om ny release.
+> **UTGÅVE 1.4.0 PUBLISERT (2026-10-02, Codex):** Brukaren bad om ny release.
+> https://github.com/oyvhov/trollfoss-android/releases/tag/v1.4.0 er offentleg, stabil og nyaste utgåve.
+> Taggen peikar på `e39707e6af6f70c9e215917964e3bf6a734dbb24`.
 > Versjon 1.4.0 / kode 6 samlar figurverkstad, sengballong, personleik, lager og køyretøy nedanfor.
 > 383 einingstestar er grøne (0 feil/0 hoppa over), `lintRelease` har 0 feil og 18 åtvaringar,
 > og `assembleRelease` er grøn gjennom byggjelåsen. Arkiv: `dist/release-v1.4.0/`.
@@ -8,7 +10,23 @@
 > `8e3494131eed06787f4dae7f2c9eef1ea6699ab54600e0718f64eb8b1f0852da`.
 > Pakke `app.trollfoss`, minste Android 26, ikkje-debuggable og opphavleg signatur er stadfesta.
 > Tidlegare «ikkje utgjeve»-statusar nedanfor er historikk frå før denne releaseførespurnaden.
-> Publisering, offentleg nedlasting, CI og oppdatering gjennom appen blir stadfesta etter utgjeving.
+> Kladden hadde nøyaktig éin APK og tre tekstfiler, med stadfesta storleik/digest for alle fire.
+> Offentleg API er kontrollert utan token; separat offentleg nedlasting har same hash/signatur.
+> GitHub «Bygg og test» er grøn for både `main` (36992451246) og taggen (36992450979).
+> **Ekte oppdatering:** den installerte, signerte 1.3.0 / kode 5 vart oppdatert gjennom
+> Kart → For vaksne → gongestykket → Sjekk no → Last ned → Installer → Android Update.
+> Play Protect viste vanleg spørsmål om skanning; «Install without scanning» gav «App installed».
+> Appen vart opna att som 1.4.0 / kode 6; den installerte APK-en har same hash som releasefila.
+> Fjellet, synlege ting, 0/76 glimt, tre oppdrag og figurane/namna var bevarte i skjermkontrollen.
+> Ingen nullstilling, avinstallering eller utskifting av den private verdsfila vart gjort.
+> Før oppdateringa vart emulatoren stoppa og begge userdata-diskfilene kopierte til det ignorerte
+> `.gradle-tmp/release-1.4.0-original/emulator-disk/`. Play Store-systemet tillèt ikkje adb root;
+> den private JSON-fila vart derfor ikkje lesen direkte. Lagringskompatibilitet er òg dekt av testar.
+> Signert release er visuelt prøvd i mobil 2400 × 1080 / 420 dpi og nettbrett 1920 × 1200 / 240 dpi:
+> figurverkstad, hårglidebrytar, nye frisyrer og augefargar. Førehandsvisingsfiguren vart ikkje lagra.
+> Bilete ligg Git-ignorert i `screenshots/release-v1.4.0/`; ingen private bilete/data er publiserte.
+> Ingen Trollfoss-krasj i krasjloggen. Storleik/dpi og rotasjon er tilbakeførte, installasjonsløyvet
+> er som før (`allow`), og emulatoren er avslutta. Produksjonsappen står att oppdatert til 1.4.0.
 
 > **NYAST – FIGURVERKSTAD, SENGBALLONG OG MEIR PERSONLEIK (2026-10-02, Codex, lokalt og ikkje utgjeve):**
 > Dette kjem i tillegg til lager/køyretøy-endringane nedanfor. Alt ligg ukommittert på `main`;
