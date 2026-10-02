@@ -1,5 +1,14 @@
 # Endringslogg
 
+## Under arbeid – Leik og eventyr
+
+- Leikekort for pute/bamse, laken, bok og lykt med fleire handlingar, og synlege reaksjonar frå venner i nærleiken.
+- Laken og pute kan bli ei putehytte; planke og to dekk blir ei trillevogn. Delane blir bevarte og kjem tilbake i sekken når leika blir teken frå kvarandre.
+- Vogna har to handtak for samarbeid, og valfri hjelp når barnet spelar åleine. Passasjerar og last blir med.
+- Tre frivillige eventyr viser neste steg i rommet, stad, framgang og gåve. Framgangen og den eine belønninga blir lagra.
+- Husbygging får større romval og førehandsvising før barnet byggjer.
+- Plan for alle 25 prioriterte løft: `docs/MAGISK_LEIK.md`. Første runde omfattar dei seks første; nivå og seinare rundar står i planen.
+
 ## 1.5.0 – Spelarar og møbeldraging
 
 - Vel éin, to eller fleire spelarar ved fyrste start eller frå Kartet og romma. Same figur, utsjånad, klede og ting følgjer med mellom stader, gjennom trappene og ved rombyte inne i huset, og spelarvalet blir lagra.

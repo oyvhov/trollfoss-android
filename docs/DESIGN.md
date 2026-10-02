@@ -1,5 +1,11 @@
 # Trollfoss – designunderlag
 
+Arbeid etter 1.5.0: «Leik og eventyr» samlar to byggjeoppskrifter og tre frivillige bileteventyr.
+Pute, bamse, laken, bok og lykt får fleire bruksval. Venner i nærleiken reagerer på leik og
+overraskingar. Putehytte og trillevogn bevarer dei opphavlege delane; pakking gir dei tilbake i sekken.
+Vogna har to handtak og valfri hjelp for éin finger. Eventyrframgang og gåver blir lagra med verda.
+Dette er første runde av [dei 25 prioriterte løfta](MAGISK_LEIK.md), før det nye nivåsystemet.
+
 Tillegg 2026-10-02 (utgåve 1.5.0): barnet vel éin eller fleire faste spelarfigurar ved start
 eller seinare med «Spelarar». Dei er dei same figurane overalt, med lagra utsjånad, klede og det dei
 held eller har på hovudet. Spelarane kjem med på kartreiser og gjennom passasjar; dei vandrar ikkje

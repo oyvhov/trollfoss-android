@@ -10,6 +10,11 @@ Låst andre etasje opnar etasjesteget, og ein usupportert plass oppe fører til 
 Vidare opplevingsplan med førehandsvising, nye leiker og husforteljing står i
 [PROGRESJON.md](PROGRESJON.md#10-husbygging-som-barnet-finn-fram-i).
 
+Arbeid etter 1.5.0: romoversikta får høgare treffområde, og eit romkort vel først ei førehandsvising.
+Barnet byggjer med ein eigen hammar. Førehandsvisinga går til toppen av panelet og gir rommet plass
+også på mobil. Eksisterande byggjeanimasjon, lagring og trygg riving blir brukte vidare.
+Sjå [MAGISK_LEIK.md](MAGISK_LEIK.md) for dei 25 prioriterte løfta.
+
 Les `docs/AI_INSTRUCTIONS.md`, `docs/ART_GUIDE.md`, `docs/DESIGN.md` og **`docs/HUSET.md`** (reglane for yting,
 stil, ankerpunkt, namneprefiks, arbeidsmåte og bygging med lås gjeld òg her). Storhuset (`MANOR_*`) er eit ferdig
 stort hus å utforske; Mitt hus (`MINE_*`) er det barnet byggjer sjølv.

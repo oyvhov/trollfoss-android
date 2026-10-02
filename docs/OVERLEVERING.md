@@ -1,5 +1,38 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – MAGISK LEIK, FØRSTE RUNDE (2026-10-02, Codex):** Etter dei 25 prioriterte ideane
+> bad brukaren «GO!». Dei seks første tiltaka er implementerte på `codex/magic-play`.
+> Kjelde: `2a38289b1470c951fec86c0eb658f297df797e85`; førre hovudendring `3086d86`.
+> Dei resterande 19, rekkjefølgje, ferdigkrav og kopling til nivåplanen står i `docs/MAGISK_LEIK.md`.
+> Versjon er framleis 1.5.0 / kode 8. Ingen ny APK-release eller signeringsendring i denne runden.
+> Pute, bamse, laken, bok og lykt har fleire faktiske handlingar gjennom «Leik og eventyr».
+> Venner i nærleiken reagerer på leik og overraskingar; haldne og sovande figurar blir respekterte.
+> Laken + pute blir ei putehytte, planke + to dekk ei trillevogn. Same del-ID-ar blir lagra i leika.
+> Ta frå kvarandre eller legg leika på lager frigjer passasjerar/last og gir delane tilbake i sekken.
+> Leikepakkane hentar berre sine eigne delar. Andre møbleringar og heldne/brukte ting blir bevarte.
+> Vogna har to separate handtak med finger-eigarskap, og valfri hjelp for éin finger. Avbrot slepper grep.
+> Tre frivillige eventyr har bilete, neste handling, stad, framgang og ei gåve som berre blir gitt éin gong.
+> Påminninga i rommet følgjer eventyrsteget. Lagra kit, samansetjingar og eventyr blir validerte ved opning.
+> Husbygging har større romval og førehandsvising før hammartrykket. Mobilførehandsvisinga er avgrensa
+> slik at heile hammaren og «Bygg dette rommet» er synlege over «Ferdig». Begge språk er med.
+> **Kontroll:** 414 einingstestar og 13 Android-testar grøne på siste kode. `testDebugUnitTest`,
+> `assembleDebug`, `assembleDebugAndroidTest` og `lintDebug` grøne gjennom byggelåsen (0 lint-feil / 29 åtvaringar).
+> GitHub «Bygg og test» er grøn på siste kjelde `2a38289` (37050050046), og på `3086d86` (37046982619).
+> Isolert prøvepakke `app.trollfoss.magic`; same emulator i mobil 2400 × 1080 / 420 dpi og nettbrett
+> 1920 × 1200 / 240 dpi. Faktisk draging laga hytta og vogna. Figur vart sett i hytta, lykt-handling
+> fullførte Stjernenatt, og gåva/framgangen vart lagra. Hytta overlevde omstart og pakking gav dei same
+> delane 360/361 tilbake som BAG. To spelar-ID-ar 25/45 stod ved lag. Vogna flytta med hjelparknappen.
+> Kjøken på nettbrett og stove på mobil vart bygde etter førehandsvising; siste mobilknapp/tekst er synleg.
+> Android-kontrollen dekkjer to grep samtidig, separat slepp/avbrot og ny møbelkunst i alle 24 stader.
+> Éin emulator-ANR ved formatbyte kl. 20:37 viste native `HardwareRenderer.setStopped` i hovudtråden.
+> Rein omstart gav fungerande vognkontroll; etterfølgjande mobilprøver og Android-kontroll hadde ingen
+> ny ANR eller Trollfoss-krasj. Sporet ligg ignorert i `.gradle-tmp/magic-anr.txt` for eventuell oppfølging.
+> Prøvepakkane `.magic`/`.magic.test` er avinstallerte; fysisk 1080 × 2400 / 420 dpi og rotasjon 1/1
+> er tilbakeførte. Emulatoren starta for prøva er stoppa. Produksjonsapp 1.5.0 og original debug-app
+> står att; deira verdsfiler er urørte. Bilete i `screenshots/magic/` og prøveskript er Git-ignorerte.
+> Neste arbeidsrunde er opplåsingsvegvisar, nye nivåleiker og trygg angrehandling, slik planen seier.
+> Barnetest, fletting til `main` og ny publisering står att som eigne steg.
+
 > **UTGÅVE 1.5.0 PUBLISERT (2026-10-02, Codex):** Brukaren bad «Release» etter arbeidet nedanfor.
 > https://github.com/oyvhov/trollfoss-android/releases/tag/v1.5.0 er offentleg, stabil og nyaste utgåve.
 > Kjelde/tagg: `499574312c9260a67777ef5ebf378d40f7aee30a`. Versjon 1.5.0 / kode 8.

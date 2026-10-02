@@ -1,6 +1,6 @@
 # Dei 25 prioriterte løfta for Trollfoss
 
-Dato: 2026-10-02. Brukaren valde dei 25 beste ideane og bad «GO!». Første arbeidsrunde byggjer dei seks første, slik tilrådinga var. Resten er ein utviklingsplan. Dette dokumentet inneber ikkje at ein ny APK er publisert.
+Dato: 2026-10-02. Brukaren valde dei 25 beste ideane og bad «GO!». Dei seks første er implementerte og teknisk prøvde i første arbeidsrunde, slik tilrådinga var. Resten er ein utviklingsplan. Dette dokumentet inneber ikkje at ein ny APK er publisert.
 
 ## Kva vi vil få til
 
@@ -18,6 +18,8 @@ Frileik kjem først. Eventyr er frivillige forslag, utan tidsfrist. Ingen samarb
 6. **Samarbeid for to barn.** Vogna har to handtak: eitt til kvar finger/barn. To grep gir felles rørsle, og slepp av eitt grep tek ikkje over den andre sitt. «Hjelp meg å dra» gjer same aktivitet mogleg med éin finger. Valde spelarfigurar og klede følgjer framleis barnet overalt. Samarbeid får inga nedteljing eller vinnar/tapar.
 
 Ferdig tyder fungerande leik, lagring, nynorsk/bokmål og kontroll i både mobil- og nettbrettformat. Ein kodeendring åleine er ikkje nok. Barnetest og ny publisering er eigne steg; vi påstår ikkje at dei har skjedd før dei er gjennomførte.
+
+**Kontrollert i første runde:** 414 einingstestar og 13 Android-kontrollar er grøne. Mobil og nettbrett er prøvde med faktisk draging, bruk av hytta, eventyrfullføring, omstart, tilbakeføring av delane, vognhjelp og husbygging. Detaljert overlevering står i [OVERLEVERING.md](OVERLEVERING.md).
 
 ## Neste rundar: rekkjefølgje og ferdigkrav
 
