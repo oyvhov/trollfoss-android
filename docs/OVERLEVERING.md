@@ -1,5 +1,37 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **UTGÅVE 1.4.1 PUBLISERT (2026-10-02, Codex):** Brukaren bad «Publiser» etter rettingane nedanfor.
+> https://github.com/oyvhov/trollfoss-android/releases/tag/v1.4.1 er offentleg, stabil og nyaste utgåve.
+> Kjelde/tagg: `a968d4a9be22832cf5bed3e3dab3d46f2b570cbb`. Versjon 1.4.1 / kode 7.
+> Husoversikt, kartretur/oppstart, uavhengig hårlengd/fylde, lagra papirkorg og tydeleg sekk er med.
+> Nivåa og dei 44 belønningane i `docs/PROGRESJON.md` er framleis ein utviklingsplan.
+> 393 einingstestar er grøne, `lintRelease` 0 feil/18 åtvaringar og `assembleRelease` grønt gjennom låsen.
+> GitHub «Bygg og test» er grøn på både `main` (37009652958) og taggen (37009653610).
+> Universal APK: 3 008 982 byte; SHA-256
+> `5b61915d6e809cf316bcecf19434f33cb981990277c722b59462100fe99cc0ec`.
+> Pakke `app.trollfoss`, minste Android 26, ikkje-debuggable og opphavleg signatur er stadfesta.
+> Arkiv `dist/release-v1.4.1/`: APK, R8-mapping, `SHA256SUMS.txt`, `SOURCE_COMMIT.txt`.
+> Kladden hadde éin APK og tre tekstfiler; alle fire storleikar/hashar vart kontrollerte mot GitHub.
+> Offentleg release-liste og latest-endepunkt er prøvde utan token. Separat offentleg nedlasting
+> har same SHA-256/signatur. Taggen og SOURCE_COMMIT peikar på same kjelde.
+> **Ekte oppdatering:** signert 1.4.0 / kode 6 vart oppdatert gjennom Kart → For vaksne → gongestykke →
+> Sjekk no → Last ned oppdatering → Installer oppdatering → Android Update. Play Protect viste det
+> vanlege skanningsspørsmålet; «Install without scanning» gav «App installed». Installert versjon er
+> 1.4.1 / kode 7, og den trekte base-APK-en har same hash som den publiserte fila.
+> Appen opna Kartet. Fjellet, synlege ting, 0/76 glimt, tre oppdrag og namn/klede på figurane er bevarte
+> i før-/etter-kontrollen. Ingen nullstilling, avinstallering eller utskifting av den private verdsfila.
+> Før oppdateringa vart begge stoppade userdata-diskar kopierte til det ignorerte
+> `.gradle-tmp/release-1.4.1-original/emulator-disk/` (om lag 6,4 GB). Produksjons-JSON er ikkje direkte
+> lesen på denne Play Store-emulatoren; gammal lagring/papirkorg er i tillegg dekt av einingstestar.
+> Signert utgåve er visuelt prøvd på mobil 2400 × 1080 / 420 dpi og nettbrett 1920 × 1200 / 240 dpi:
+> kartoppstart, figurverkstad, kort/langt/fyldig hår, grunnmurval utan bygging og papirkorg.
+> Ingen førehandsvisingsfigur er lagra. Det private huset vart ikkje bygd/endra i releaseprøva.
+> Bilete i `screenshots/release-v1.4.1/` er Git-ignorerte; ingen private data er publiserte.
+> Ingen Trollfoss-krasj i krasjbufferen. Fjellet er vald att; storleik/dpi og rotasjon er tilbakeførte
+> til fysisk 1080 × 2400 / 420 dpi og 1/1. Installasjonsløyvet er som før (`allow`), emulatoren er
+> stoppa, og produksjonsappen står att oppdatert til 1.4.1. Opphavleg debug-app/verdsfil er urørt.
+> Tidlegare «lokalt/ikkje utgjeve»-status nedanfor er historikk frå før denne publiseringa.
+
 > **NYAST – KARTRETUR, HÅR, PAPIRKORG OG HUSOVERSIKT (2026-10-02, Codex, lokalt):**
 > Nye tilbakemeldingar etter publisert 1.4.0. Arbeidet ligg ukommittert på `main`; ingen ny release,
 > versjonsendring, push eller signeringsendring. Produksjonsappen og den opphavlege debug-verda er urørte.
