@@ -1,4 +1,27 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
+> **NYAST – PUBLISERT 1.6.0 (2026-10-02, Codex):** Brukaren bad «Publiser».
+> Begge magirundane er fletta til main og publiserte som stabil, nyaste GitHub-release:
+> https://github.com/oyvhov/trollfoss-android/releases/tag/v1.6.0
+> Kjelde/tag: `e55e9be60c58531ded8402ca39c81bd46ab8a22b`, versjon 1.6.0 / kode 9.
+> Éin universal APK, 3 074 518 byte. SHA-256:
+> `addffa2a277cd5da0af471d089a5b4952c01ddb57e579eb465fec062e46d8a5f`.
+> Same opphavlege sertifikat, app.trollfoss, min Android 26, ikkje debuggable. Mapping, hash og
+> SOURCE_COMMIT er vedlagde. Offentleg release-liste og nedlasta APK er kontrollerte utan token.
+> Release-bygg/test/lint er grøne: 442 einingstestar, 0 lint-feil / 21 åtvaringar. Dei 18 Android-testane
+> var grøne på kjelda før versjonsauken. GitHub main (37064858594) og tag (37065446570) grøne.
+> Ekte oppdatering gjennom foreldresida: publisert 1.5.0 / kode 8 → 1.6.0 / kode 9, utan avinstallering.
+> Nedlasting, verifisering, løyve frå Android og Update fungerte på ei eiga ny Release160-prøveeining.
+> Hedda og Alva vart valde i 1.5.0 og var framleis spelarar etter oppdateringa. Appen opna Kartet.
+> Mobil 2400 × 1080 / 420 dpi og nettbrett 1920 × 1200 / 240 dpi er kontrollerte: Kart, spelarval,
+> oppdragsbok, gåvekatalog og nye møbelbilete. Lukking av boka frå Kart gjekk tilbake til Kart.
+> Den eldre Tunet_Ascii-prøveeininga (456 MB ledig) fekk STORAGE ved nedlasting, også etter omstart
+> og rydding av cache. Årsaka er ikkje stadfesta; ny prøveeining hadde ikkje feilen. Ingen privat verd
+> vart lesen eller tømd. Tunet_Ascii er framleis på 1.5.0; diskbackup før prøva finst Git-ignorert i
+> `.gradle-tmp/release-1.6.0-original/`. Skjermmål/rotasjon vart tilbakeførte før ho vart stoppa.
+> Release160 hadde ingen Trollfoss-krasj eller ANR; skjermmål vart nullstilte og emulatoren stoppa.
+> Det står framleis att 15 av 25 løft og nivå 4–10. Barnetest og dyre-/hjelpeplassering er framleis
+> oppfølging som skildra nedanfor; ikkje påstå at alle 25 eller alle ti nivå er ferdige.
+
 
 > **NYAST – MAGISK LEIK, ANDRE RUNDE (2026-10-02, Codex):** Brukaren bad «Go go».
 > Tiltaka 7, 10, 18 og 21 og dei første åtte nivåleikene er implementerte på `codex/magic-play`.
