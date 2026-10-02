@@ -269,7 +269,8 @@ private fun RoomsTab(vm: TrollfossViewModel, engine: Engine, place: PlaceId, til
             selected >= 0 && Mine.canBuild(h, place, selected) -> {
                 preview?.let { k ->
                     GameText(SM.previewRoom.str(), fontSize = 14.sp, color = T.Ink)
-                    CachedThumb("mine:preview:${k.name}", if (tile < 100.dp) 112.dp else 200.dp) { drawKindThumb(k) }
+                    // Keep the whole hammer and its caption above the footer on a landscape phone.
+                    CachedThumb("mine:preview:${k.name}", if (tile < 100.dp) 80.dp else 200.dp) { drawKindThumb(k) }
                     GameText(SM.kind(k).str(), fontSize = 18.sp, color = T.Ink)
                     RoundButton(SM.buildThisRoom.str(), onClick = {
                         if (sim.mine.buildRoom(place, selected, k)) { focusSlot(selected); vm.changed() }
