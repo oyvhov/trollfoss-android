@@ -22,6 +22,7 @@ class WorkshopSheetActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowCompat.getInsetsController(window, window.decorView).hide(WindowInsetsCompat.Type.systemBars())
         val page = intent.getStringExtra("page") ?: "hair"
+        val group = intent.getIntExtra("group", 0).coerceIn(0, 2)
         val people = WorldFactory.create().people().filter { it.species == Species.FOLK }
         setContent {
             Canvas(Modifier.fillMaxSize()) {
@@ -33,6 +34,9 @@ class WorkshopSheetActivity : ComponentActivity() {
                     val x = (i % cols + 0.5f) * cw; val y = (i / cols + 0.87f) * ch
                     val pose = if (page == "poses") Pose.entries[i % Pose.entries.size] else Pose.STAND
                     val look = when (page) {
+                        "length", "volume" -> Look(hair = group * 6 + i % 6,
+                            hairSize = if (page == "volume") listOf(0.8f, 1f, 1.5f)[i / 6] else 1f,
+                            hairLength = if (page == "length") listOf(0.65f, 1f, 1.6f)[i / 6] else 1f)
                         "folk" -> people[i].look
                         "poses" -> Look(hair = 9 + i % 9, hairSize = 1.5f, hairLength = 1.6f, eyeColor = i % Palette.eyes.size, eyeSize = 1.25f, face = i % Styles.FACES, top = i % Styles.TOPS, topColor = i % Palette.cloth.size, pattern = i % Styles.PATTERNS)
                         else -> Look(hair = i, hairSize = if (i % 3 == 0) 1.5f else 1f, hairLength = if (i % 2 == 0) 1.6f else 0.65f, eyeColor = i % Palette.eyes.size, face = i % Styles.FACES, top = i % Styles.TOPS, topColor = i % Palette.cloth.size, pattern = i % Styles.PATTERNS, extra = i % Styles.EXTRAS)

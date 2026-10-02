@@ -9,6 +9,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -77,13 +79,14 @@ import app.trollfoss.ui.str
 import kotlin.math.max
 import kotlin.math.min
 
-private enum class DesignTab { FURNITURE, WALL, FLOOR, STORE, TIDY }
+private enum class DesignTab { FURNITURE, WALL, FLOOR, STORE, TIDY, TRASH }
 
 /**
  * The home designer's panel along the bottom of the screen: furniture from the catalogue, wallpaper and
  * floors for the room in the middle of the screen, the store (drag furniture onto the panel to put it
  * away) and the broom that tidies the whole place. Everything is pictures; nothing needs reading.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> Unit, modifier: Modifier = Modifier) {
     var tab by remember(place) { mutableIntStateOf(DesignTab.FURNITURE.ordinal) }
@@ -95,6 +98,7 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
     val tabs = DesignTab.entries.filter { (it != DesignTab.WALL && it != DesignTab.FLOOR) || Decor.decoratable(place) }
     // The store as a list of its own for every change: the grid below only redraws when it is handed a new list.
     val stored = remember(version, world.storage.size) { world.storage.toList() }
+    val discarded = remember(version, world.discardedStorage.size) { world.discardedStorage.toList() }
     val stickers = world.stickers.size
     val thumbSide = if (compact) 88.dp else 112.dp
     // Furniture dropped on the panel flies into the box: open the box, so the child sees where it went.
@@ -119,15 +123,15 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             // The heading names the open tab, so the pictures below get the room a second heading would take.
-            GameText(when (DesignTab.entries[tab]) { DesignTab.FURNITURE -> SM.furnish; DesignTab.WALL -> SM.wallpaper; DesignTab.FLOOR -> SM.flooring; DesignTab.STORE -> SM.storage; DesignTab.TIDY -> SM.tidy }.str(), fontSize = 20.sp, color = T.Ink)
+            GameText(when (DesignTab.entries[tab]) { DesignTab.FURNITURE -> SM.furnish; DesignTab.WALL -> SM.wallpaper; DesignTab.FLOOR -> SM.flooring; DesignTab.STORE -> SM.storage; DesignTab.TIDY -> SM.tidy; DesignTab.TRASH -> SM.trash }.str(), fontSize = 20.sp, color = T.Ink)
             CloseButton(onClose, size = if (compact) 40.dp else 48.dp)
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+        FlowRow(maxItemsInEachRow = 3, horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             for (t in tabs) {
                 val on = t.ordinal == tab
                 Box {
                 RoundButton(
-                    description = when (t) { DesignTab.FURNITURE -> SM.furnish; DesignTab.WALL -> SM.wallpaper; DesignTab.FLOOR -> SM.flooring; DesignTab.STORE -> SM.storage; DesignTab.TIDY -> SM.tidy }.str(),
+                    description = when (t) { DesignTab.FURNITURE -> SM.furnish; DesignTab.WALL -> SM.wallpaper; DesignTab.FLOOR -> SM.flooring; DesignTab.STORE -> SM.storage; DesignTab.TIDY -> SM.tidy; DesignTab.TRASH -> SM.trash }.str(),
                     onClick = { tab = t.ordinal },
                     size = if (on) 46.dp else 40.dp,
                     tone = if (on) Tones.Sun else Tones.Cream,
@@ -137,6 +141,7 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                         DesignTab.FLOOR -> DesignIcons.Floor
                         DesignTab.STORE -> DesignIcons.Box
                         DesignTab.TIDY -> DesignIcons.Broom
+                        DesignTab.TRASH -> DesignIcons.Bin
                     },
                 )
                 // How many pieces wait in the box, ready to come along to another house.
@@ -218,6 +223,19 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                 }
                 DesignTab.TIDY -> {
                     RoundButton(SM.tidy.str(), onClick = { engine.tidy() }, modifier = Modifier.align(Alignment.Center), size = 120.dp, tone = Tones.Sun, icon = DesignIcons.Broom)
+                }
+                DesignTab.TRASH -> {
+                    if (discarded.isEmpty()) GameText(SM.emptyTrash.str(), fontSize = 16.sp, color = T.Ink)
+                    else LazyVerticalGrid(GridCells.Fixed(2), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        itemsIndexed(discarded) { index, removed ->
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Tile(look = TileLook.SOFT, onClick = { engine.restoreStorage(index) }) {
+                                    FurnitureThumb(removed.second.type, removed.second.variant, place, false)
+                                }
+                                RoundButton(SM.restoreStored.str(), onClick = { engine.restoreStorage(index) }, size = 40.dp, tone = Tones.Mint, icon = DesignIcons.Undo)
+                            }
+                        }
+                    }
                 }
             }
         }

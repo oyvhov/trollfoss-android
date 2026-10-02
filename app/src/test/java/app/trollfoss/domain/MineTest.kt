@@ -348,8 +348,8 @@ class MineTest {
         build(sim, 1, RoomKind.LIVING)
         sim.mine.setBuildMode(true, PlaceId.MINE_GROUND)
         assertTrue(world.mine.buildMode)
-        // The nearest free slot is picked at once.
-        assertEquals(2, world.mine.selected)
+        // Keep the finished room selected so the child can see and play in it.
+        assertEquals(1, world.mine.selected)
         // A tap on the picture of slot 4 (the wall is shifted right by its depth) picks it.
         assertTrue(sim.mine.tapScene(PlaceId.MINE_GROUND, 8.6f, 0.4f))
         assertEquals(4, world.mine.selected)

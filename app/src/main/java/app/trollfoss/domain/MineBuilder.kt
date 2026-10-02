@@ -38,13 +38,15 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
     fun setBuildMode(on: Boolean, place: PlaceId = world.place) {
         val h = house
         h.buildMode = on
-        if (on && place.mine && place != PlaceId.MINE_YARD && (h.selectedPlace != place || h.selected !in 1 until Mine.SLOTS || !pickable(place, h.selected))) {
+        if (on && place.mine && place != PlaceId.MINE_YARD && (h.selectedPlace != place || h.selected !in 0 until Mine.SLOTS || !pickable(place, h.selected))) {
             selectNext(place, 1f)
         }
         touch()
     }
 
-    private fun pickable(place: PlaceId, slot: Int): Boolean = Mine.canBuild(house, place, slot) || (slot != 0 && house.kind(place, slot) != null)
+    private fun pickable(place: PlaceId, slot: Int): Boolean =
+        (place == PlaceId.MINE_GROUND || place == PlaceId.MINE_UPPER) && slot in 0 until Mine.SLOTS &&
+            (Mine.canBuild(house, place, slot) || (slot == 0 && house.standing(place, 0)) || house.kind(place, slot) != null)
 
     /** Picks the free slot of [place] nearest to scene x [near], or nothing. */
     fun selectNext(place: PlaceId, near: Float) {
@@ -281,7 +283,7 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
             JobKind.ROOM -> {
                 fx(MineEvent.ROOM_DONE, job.room?.ordinal ?: 0, slotCenter(job), 0.6f)
                 sim.tasks.record(Deed.MI_ROOM, PlaceId.MINE_YARD)
-                selectNext(job.place, slotCenter(job))
+                select(job.place, job.slot)
             }
             JobKind.UPPER -> {
                 fx(MineEvent.UPPER_DONE, 0, yardDoorX(), 0.4f)

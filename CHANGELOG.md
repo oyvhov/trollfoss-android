@@ -1,5 +1,14 @@
 # Endringslogg
 
+## 1.4.1 – Tryggare lager og betre husbygging
+
+- Appen startar på Kartet. Når ein lukkar ei bok eller ein meny, kjem ein tilbake til skjermen ein opna henne frå, også etter at ein har lagra ein figur.
+- Hårlengd endrar hårtuppar, lokkar, fletter og halar. Hårstorleik endrar fylde rundt hovudet med faste røter, framfor å skalere heile frisyren.
+- Ting fjerna frå Lager blir lagra i ei papirkorg. «Hent tilbake» verkar også etter omstart og bevarer typen og varianten.
+- Den tomme reisesekken forklarer at ein skal dra ein ting til sekken, og knappen viser når sekken er open.
+- Mitt hus får oversikt over begge etasjane, markering av valt rom, og snarvegar for å leike og byggje vidare.
+- Utviklingsplan for ti nivå, 36 nye interaktive leiker og åtte historiegåver: `docs/PROGRESJON.md`. Nivåa og dei nye leikene er ikkje implementerte.
+
 ## 1.4.0 – Figurar, reise og meir leik
 
 - Nytt uttrykk for personane og ein større figurverkstad: 18 frisyrer, 14 hårfargar, 12 augefargar, åtte augetypar, ansiktsform, nase, smil, fregner, øyrepynt og fleire klede og mønster. Glidebrytarar endrar hårstorleik, hårlengd, augestorleik, avstand mellom auga og høgd, med førehandsvising medan ein dreg.

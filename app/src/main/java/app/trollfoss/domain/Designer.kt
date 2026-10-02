@@ -14,10 +14,10 @@ import kotlin.random.Random
 class Designer(private val sim: Sim, private val random: Random) {
     private val world get() = sim.world
     private val listener get() = sim.listener
-    private val discarded = ArrayList<Pair<Int, Stored>>()
+    private val discarded get() = world.discardedStorage
     val canUndoDiscard: Boolean get() = discarded.isNotEmpty()
 
-    /** Remove one stored piece. Undo remains available across travel while the app is open. */
+    /** Move one stored piece into the saved recycling box. */
     fun discard(index: Int): Boolean {
         if (index !in world.storage.indices) return false
         discarded += index to world.storage.removeAt(index)
@@ -25,8 +25,12 @@ class Designer(private val sim: Sim, private val random: Random) {
     }
 
     fun undoDiscard(): Boolean {
-        if (discarded.isEmpty()) return false
-        val (index, item) = discarded.removeAt(discarded.lastIndex)
+        return restoreDiscarded(discarded.lastIndex)
+    }
+
+    fun restoreDiscarded(trashIndex: Int): Boolean {
+        if (trashIndex !in discarded.indices) return false
+        val (index, item) = discarded.removeAt(trashIndex)
         world.storage.add(index.coerceIn(0, world.storage.size), item)
         return true
     }

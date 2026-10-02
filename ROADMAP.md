@@ -3,6 +3,11 @@
 Oppdatert 2026-10-02. Detaljert status og kontrollar står i `docs/OVERLEVERING.md`, utgjevne endringar i
 `CHANGELOG.md`.
 
+Ny plan etter tilbakemeldingane om nivå, opplåsingar og husbygging:
+[Nivå, oppdagingar og nye leiker](docs/PROGRESJON.md). Han føreslår ti nivå frå eksisterande
+klistremerke, 36 interaktive leiker og åtte historiegåver. Neste gåve og konkrete biletoppdrag skal
+vise barnet kva det kan gjere vidare. Sjå fasane A–D og husbygginga i planen; dette er framtidig arbeid.
+
 **Retning:** verda er stor nok for no. Dei neste utgåvene gjer det som finst solid og sett på ekte einingar,
 og går så i djupna med historier og sesongar før det kjem fleire stader.
 

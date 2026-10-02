@@ -53,17 +53,6 @@ import java.io.File
 import java.time.LocalDate
 import java.util.EnumMap
 
-/** Where the child is. The play screen is home; the others open over it. */
-sealed interface Screen {
-    object Play : Screen
-    object Map : Screen
-    class Creator(val editId: Int?) : Screen
-    object Book : Screen
-    object Tasks : Screen
-    object ParentGate : Screen
-    object Parent : Screen
-}
-
 /**
  * Holds the village, saves it, plays sound and music, and connects the engine to the screens. One
  * instance lives for the whole app.
@@ -86,7 +75,9 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     private val music = MusicPlayer(application.cacheDir)
     val updater = AppUpdater(application, viewModelScope)
 
-    var screen by mutableStateOf<Screen>(Screen.Play)
+    private val navigation = ScreenHistory()
+    var screen by mutableStateOf<Screen>(navigation.current)
+        private set
     var place by mutableStateOf(PlaceId.HOME)
         private set
     /** The season and the feast showing now: the calendar's, unless the grown-ups chose otherwise. */
@@ -270,21 +261,24 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         if (!to.mine) sim.mine.endParty()
         world.place = to
         place = to
-        screen = Screen.Play
+        screen = navigation.arrive(Screen.Play)
         sfx(Sfx.WHOOSH, 0.7f)
         scheduleSave()
     }
 
+    fun travelMineRoom(to: PlaceId, slot: Int) {
+        if (to != PlaceId.MINE_GROUND && to != PlaceId.MINE_UPPER) return
+        pendingFocus = slot.coerceIn(0, app.trollfoss.domain.Mine.SLOTS - 1) * app.trollfoss.domain.Mine.SLOT_W + 1f
+        travel(to)
+    }
+
     fun open(target: Screen) {
-        screen = target
+        screen = navigation.open(target)
         updateMusic()
     }
 
     fun back() {
-        screen = when (screen) {
-            Screen.Parent, Screen.ParentGate -> Screen.Map
-            else -> Screen.Play
-        }
+        screen = navigation.back()
         updateMusic()
     }
 
@@ -327,7 +321,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
             p.vy = -0.5f
         }
         sfx(Sfx.FANFARE, 0.7f)
-        screen = Screen.Play
+        screen = navigation.back()
         updateMusic()
         scheduleSave()
     }
@@ -350,7 +344,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         engine = null
         syncFromWorld()
         generation++
-        screen = Screen.Play
+        screen = navigation.arrive(Screen.Play)
         scheduleSave(immediate = true)
     }
 

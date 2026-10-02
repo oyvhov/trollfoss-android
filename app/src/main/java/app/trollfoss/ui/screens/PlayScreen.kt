@@ -32,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
+import app.trollfoss.domain.PlaceId
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -75,6 +76,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
     val motion = LocalMotion.current
     val place = vm.place
     val engine = remember(place, vm.generation, vm.season, vm.festival) { vm.engineFor(place, motion) }
+    engine.emptyBagHint = S.emptyBagHint.str()
     val tick = remember { mutableLongStateOf(0L) }
     val text = rememberTextMeasurer()
     val density = LocalDensity.current.density
@@ -121,6 +123,15 @@ fun PlayScreen(vm: TrollfossViewModel) {
     var menuOpen by remember { mutableStateOf(false) }
     var friendsOpen by remember { mutableStateOf(false) }
     val builderOpen = place.mine && mineUi.open && !engine.designMode && vm.world.mine.job == null
+    val selectedBuildRoom = remember(mineVersion, place) {
+        vm.world.mine.let { if (it.selectedPlace == place) it.selected else -1 }
+    }
+    LaunchedEffect(builderOpen, selectedBuildRoom, place) {
+        if (builderOpen && selectedBuildRoom >= 0 && place != PlaceId.MINE_YARD) {
+            withFrameNanos { }
+            engine.selectRoom(selectedBuildRoom)
+        }
+    }
     val panelWidth = when {
         engine.designMode -> playPanelWidth(compact, designer = true)
         builderOpen -> playPanelWidth(compact, designer = false)

@@ -4,6 +4,12 @@ Som i Toca World startar ein med å **bygge eit hus**. I Trollfoss er det «Mitt
 barnet legg grunnmur, byggjer rom for rom, set på ein etasje til, kler huset ute, og møblerer det. Huset blir
 barnet sitt, og heile bygda står rundt. Dette er verdsbygginga: eit hus først, seinare meir.
 
+Tillegg 2026-10-02 (lokalt, ikkje utgjeve): byggjepanelet viser begge etasjane med romikon og markerer
+valt rom. Eit ferdig rom blir verande valt; barnet kan velje «Leik i rommet» eller «Bygg neste rom».
+Låst andre etasje opnar etasjesteget, og ein usupportert plass oppe fører til plassen under.
+Vidare opplevingsplan med førehandsvising, nye leiker og husforteljing står i
+[PROGRESJON.md](PROGRESJON.md#10-husbygging-som-barnet-finn-fram-i).
+
 Les `docs/AI_INSTRUCTIONS.md`, `docs/ART_GUIDE.md`, `docs/DESIGN.md` og **`docs/HUSET.md`** (reglane for yting,
 stil, ankerpunkt, namneprefiks, arbeidsmåte og bygging med lås gjeld òg her). Storhuset (`MANOR_*`) er eit ferdig
 stort hus å utforske; Mitt hus (`MINE_*`) er det barnet byggjer sjølv.

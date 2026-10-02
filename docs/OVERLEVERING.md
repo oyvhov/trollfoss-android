@@ -1,5 +1,34 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – KARTRETUR, HÅR, PAPIRKORG OG HUSOVERSIKT (2026-10-02, Codex, lokalt):**
+> Nye tilbakemeldingar etter publisert 1.4.0. Arbeidet ligg ukommittert på `main`; ingen ny release,
+> versjonsendring, push eller signeringsendring. Produksjonsappen og den opphavlege debug-verda er urørte.
+> Appen startar på Kartet; ein meny/bok/figurverkstad går tilbake til skjermen som opna han.
+> `ScreenHistory` har testar for oppstart, begge opphav, nøsting, foreldreport og reise.
+> Håret er teikna i hovudkoordinatar med faste tinningar og hårfeste: uavhengig lengd og fylde for alle
+> 18 frisyrer. `HairFit` testar uavhengige dimensjonar. Debug-kontaktark viser min/normal/maks.
+> Lagerfjerning flyttar til `world.discardedStorage`, lagra i verdsfil og valvis gjenoppretting i
+> Papirkorg. Gamle lagringar har tom papirkorg; allereie permanent sletta ting kan ikkje rekonstruerast.
+> Ekte UI-prøve: jukeboks variant 2 fjerna, appen omstarta, henta tilbake; JSON stadfesta type/variant.
+> Reisesekken har lesbar tom-tekst og grøn open-knapp. Eple er drege inn og stadfesta lagra i sekken.
+> Mitt hus: kompakte faner, oversikt over begge etasjane, markeringsfarge, romnamn/byggjeplass,
+> kamerahopp ved val/opning, behald ferdig rom valt, synlege «Leik i rommet»/«Bygg neste rom».
+> Låst etasje opnar etasjesteget; usupportert plass oppe går til plassen som må byggjast nede.
+> Ny plan `docs/PROGRESJON.md`: ti nivå frå eksisterande klistremerke, 36 aktive nivåleiker og åtte
+> historiegåver, konkrete biletoppdrag/hint, trygg lagring og fasa gjennomføring. Desse er planlagde,
+> ikkje implementerte. Vidare husbygging: faktisk førehandsvising, leikedemonstrering og husforteljing.
+> Testpakke `app.trollfoss.haarfix` isolerer prøvene frå dei private verdane. Bilete i
+> `screenshots/haarfix/` er ignorerte. Sluttbygg gjennom låsen er grønt: 393 einingstestar,
+> 0 feil/0 hoppa over, `lintDebug` 0 feil/27 åtvaringar og `assembleDebug` grønt.
+> Mobil 2400 × 1080 / 420 dpi: faktisk rombygging, ferdig-rom-val, synlege bygg/leik-knappar,
+> rom-/etasjehopp, entréval, kartretur frå bok/figurverkstad/foreldreport, Android tilbake,
+> kald oppstart og figurlagring. Nettbrett 1920 × 1200 / 240 dpi: bygg andre etasje, bygg rom oppe,
+> vel neste rom og gå rett til leik. Hårark min/normal/maks og sitjande/liggjande figurar er sette i
+> begge format. Papirkorg og reisesekk er prøvde med faktisk omstart; eplet vart henta ut att.
+> Ingen testapp-krasj i krasjbufferen. Testpakken er avinstallert; produksjon/opphavleg debug er
+> urørte. Storleik/dpi er tilbakeførte til fysisk 1080 × 2400 / 420 dpi, rotasjon 1/1,
+> og emulatoren som vart starta for prøva, er stoppa. Ingen utgjeving av desse endringane.
+
 > **UTGÅVE 1.4.0 PUBLISERT (2026-10-02, Codex):** Brukaren bad om ny release.
 > https://github.com/oyvhov/trollfoss-android/releases/tag/v1.4.0 er offentleg, stabil og nyaste utgåve.
 > Taggen peikar på `e39707e6af6f70c9e215917964e3bf6a734dbb24`.

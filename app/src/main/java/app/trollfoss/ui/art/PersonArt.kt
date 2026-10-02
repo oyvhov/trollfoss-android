@@ -310,10 +310,7 @@ private fun DrawScope.rosette(center: Offset, r: Float, color: Color) {
 private fun DrawScope.backHair(look: Look, hair: Color, h: Float, pen: Pen) {
     val c = Offset(0f, -0.70f * h)
     val r = 0.238f * h
-    withTransform({ scale(look.hairSize, look.hairSize, c) }) {
-        if (look.hair >= 9) newHair(look.hair, true, hair, argb(Palette.cloth[look.accent]), c, r, pen, look.hairLength)
-        else withTransform({ scale(1f, look.hairLength, Offset(c.x, c.y - r * 0.8f)) }) { hairBack(look.hair, hair, c, r, pen, h) }
-    }
+    folkHair(look, true, hair, c, r, pen)
 }
 
 private fun DrawScope.head(look: Look, a: PersonAnim, pose: Pose, h: Float, pen: Pen, t: Float, skin: Color, hair: Color, sleeping: Boolean) {
@@ -422,10 +419,7 @@ private fun DrawScope.head(look: Look, a: PersonAnim, pose: Pose, h: Float, pen:
             inkedOval(Rect(if (side < 0) -0.085f * h else 0.005f * h, -0.625f * h, if (side < 0) -0.005f * h else 0.085f * h, -0.585f * h), hair, pen)
         }
     }
-    withTransform({ scale(look.hairSize, look.hairSize, c) }) {
-        if (look.hair >= 9) newHair(look.hair, false, hair, argb(Palette.cloth[look.accent]), c, r, pen, look.hairLength)
-        else hairFront(look.hair, hair, c, r, pen, h, t)
-    }
+    folkHair(look, false, hair, c, r, pen)
 }
 
 private fun DrawScope.eyes(look: Look, a: PersonAnim, h: Float, pen: Pen, t: Float, skin: Color, hair: Color, sleeping: Boolean) {
@@ -574,138 +568,6 @@ private fun DrawScope.mouth(a: PersonAnim, h: Float, pen: Pen, t: Float) {
         }
     }
 }
-
-private fun DrawScope.hairBack(style: Int, color: Color, c: Offset, r: Float, pen: Pen, h: Float) {
-    fun o(x: Float, y: Float) = Offset(x * h, y * h)
-    when (style) {
-        3 -> {
-            val puffs = Path()
-            for (i in 0..12) {
-                val ang = Math.toRadians(150.0 + i * 20.0)
-                val p = Offset(c.x + (r * 1.05f * cos(ang)).toFloat(), c.y + (r * 1.05f * sin(ang)).toFloat())
-                puffs.addOval(Rect(p.x - r * 0.26f, p.y - r * 0.26f, p.x + r * 0.26f, p.y + r * 0.26f))
-            }
-            drawPath(puffs, Ink.line, style = Stroke(pen.lw * 2f))
-            drawPath(puffs, color)
-        }
-        4 -> {
-            val back = Path().apply {
-                moveTo(c.x - r * 1.12f, c.y)
-                quadraticTo(c.x - r * 1.2f, o(0f, -0.42f).y, c.x - r * 1.05f, o(0f, -0.4f).y)
-                lineTo(c.x + r * 1.05f, o(0f, -0.4f).y)
-                quadraticTo(c.x + r * 1.2f, o(0f, -0.42f).y, c.x + r * 1.12f, c.y)
-                arcTo(Rect(c.x - r * 1.12f, c.y - r * 1.12f, c.x + r * 1.12f, c.y + r * 1.12f), 0f, -180f, false)
-                close()
-            }
-            inked(back, color.darken(0.08f), pen)
-        }
-        5 -> for (side in listOf(-1f, 1f)) {
-            for (k in 0 until 3) {
-                inkedOval(rect(side * 0.245f * h, (-0.6f + k * 0.07f) * h, 0.08f * h, 0.085f * h), color, pen)
-            }
-            inkedCircle(o(side * 0.245f, -0.38f), 0.03f * h, Color(0xFFFF6FA8), pen, shade = false)
-        }
-        6 -> inkedCircle(o(0f, -0.975f), 0.09f * h, color, pen)
-        8 -> {
-            val back = Path().apply {
-                moveTo(c.x - r * 1.16f, c.y)
-                lineTo(c.x - r * 1.16f, o(0f, -0.54f).y)
-                quadraticTo(c.x - r * 1.16f, o(0f, -0.49f).y, c.x - r * 0.9f, o(0f, -0.49f).y)
-                lineTo(c.x + r * 0.9f, o(0f, -0.49f).y)
-                quadraticTo(c.x + r * 1.16f, o(0f, -0.49f).y, c.x + r * 1.16f, o(0f, -0.54f).y)
-                lineTo(c.x + r * 1.16f, c.y)
-                arcTo(Rect(c.x - r * 1.16f, c.y - r * 1.16f, c.x + r * 1.16f, c.y + r * 1.16f), 0f, -180f, false)
-                close()
-            }
-            inked(back, color.darken(0.06f), pen)
-        }
-    }
-}
-
-private fun DrawScope.hairFront(style: Int, color: Color, c: Offset, r: Float, pen: Pen, h: Float, t: Float) {
-    fun cap(bottomEdge: Path.() -> Unit): Path = Path().apply {
-        arcTo(Rect(c.x - r * 1.06f, c.y - r * 1.06f, c.x + r * 1.06f, c.y + r * 1.06f), 185f, 170f, true)
-        bottomEdge()
-        close()
-    }
-    val y = { f: Float -> f * h }
-    when (style) {
-        0 -> drawOval(Color.White.copy(alpha = 0.3f), Offset(c.x - r * 0.45f, c.y - r * 0.95f), Size(r * 0.5f, r * 0.22f))
-        1 -> inked(cap {
-            lineTo(c.x + r * 0.95f, y(-0.64f))
-            quadraticTo(c.x + r * 0.9f, y(-0.78f), c.x + r * 0.6f, y(-0.8f))
-            quadraticTo(c.x + r * 0.35f, y(-0.84f), c.x + r * 0.15f, y(-0.8f))
-            quadraticTo(c.x - r * 0.1f, y(-0.85f), c.x - r * 0.35f, y(-0.8f))
-            quadraticTo(c.x - r * 0.7f, y(-0.83f), c.x - r * 0.88f, y(-0.76f))
-            lineTo(c.x - r * 0.95f, y(-0.64f))
-        }, color, pen)
-        2 -> inked(cap {
-            lineTo(c.x + r * 1.02f, y(-0.6f))
-            lineTo(c.x + r * 0.8f, y(-0.62f))
-            lineTo(c.x + r * 0.78f, y(-0.78f))
-            quadraticTo(c.x, y(-0.775f), c.x - r * 0.78f, y(-0.78f))
-            lineTo(c.x - r * 0.8f, y(-0.62f))
-            lineTo(c.x - r * 1.02f, y(-0.6f))
-        }, color, pen)
-        3 -> for (i in -3..3) {
-            val p = Offset(c.x + i * r * 0.26f, c.y - r * (0.86f - abs(i) * 0.05f))
-            inkedCircle(p, r * 0.2f, color, pen)
-        }
-        4 -> inked(cap {
-            lineTo(c.x + r * 1.05f, y(-0.5f))
-            lineTo(c.x + r * 0.82f, y(-0.52f))
-            quadraticTo(c.x + r * 0.78f, y(-0.72f), c.x + r * 0.35f, y(-0.8f))
-            quadraticTo(c.x - r * 0.35f, y(-0.86f), c.x - r * 0.85f, y(-0.7f))
-            lineTo(c.x - r * 1.05f, y(-0.55f))
-        }, color, pen)
-        5 -> inked(cap {
-            lineTo(c.x + r * 0.96f, y(-0.62f))
-            quadraticTo(c.x + r * 0.7f, y(-0.8f), c.x + r * 0.05f, y(-0.86f))
-            lineTo(c.x - r * 0.05f, y(-0.86f))
-            quadraticTo(c.x - r * 0.7f, y(-0.8f), c.x - r * 0.96f, y(-0.62f))
-        }, color, pen)
-        6 -> inked(cap {
-            lineTo(c.x + r * 0.95f, y(-0.66f))
-            quadraticTo(c.x + r * 0.6f, y(-0.84f), c.x, y(-0.86f))
-            quadraticTo(c.x - r * 0.6f, y(-0.84f), c.x - r * 0.95f, y(-0.66f))
-        }, color, pen)
-        7 -> {
-            val spikes = Path().apply {
-                val n = 9
-                for (i in 0..n) {
-                    val ang = Math.toRadians(195.0 + i * (150.0 / n))
-                    val rr = if (i % 2 == 0) r * 1.02f else r * (1.32f + 0.03f * sin(t * 3f + i))
-                    val p = Offset(c.x + (rr * cos(ang)).toFloat(), c.y + (rr * sin(ang)).toFloat())
-                    if (i == 0) moveTo(p.x, p.y) else lineTo(p.x, p.y)
-                }
-                lineTo(c.x + r * 0.9f, y(-0.72f))
-                quadraticTo(c.x, y(-0.84f), c.x - r * 0.9f, y(-0.72f))
-                close()
-            }
-            inked(spikes, color, pen)
-        }
-        8 -> inked(cap {
-            lineTo(c.x + r * 1.0f, y(-0.62f))
-            quadraticTo(c.x + r * 0.85f, y(-0.8f), c.x + r * 0.5f, y(-0.8f))
-            lineTo(c.x - r * 0.5f, y(-0.8f))
-            quadraticTo(c.x - r * 0.85f, y(-0.8f), c.x - r * 1.0f, y(-0.62f))
-        }, color, pen)
-    }
-    // Fine strands give the hair direction and a little shine.
-    if (style in STRANDED) {
-        val strand = color.darken(0.3f)
-        for (k in -1..1) {
-            val path = Path().apply {
-                moveTo(c.x + k * r * 0.3f, c.y - r * 1.0f)
-                quadraticTo(c.x + k * r * 0.5f + r * 0.12f, c.y - r * 0.85f, c.x + k * r * 0.58f + r * 0.06f, c.y - r * 0.58f)
-            }
-            drawPath(path, strand, style = Stroke(pen.lw * 0.55f, cap = StrokeCap.Round))
-        }
-        drawArc(Color.White.copy(alpha = 0.35f), 205f, 40f, false, Offset(c.x - r * 0.9f, c.y - r * 0.95f), Size(r * 1.2f, r * 0.9f), style = Stroke(pen.lw * 0.9f, cap = StrokeCap.Round))
-    }
-}
-
-private val STRANDED = setOf(1, 2, 4, 5, 6, 8)
 
 // ---------------------------------------------------------------------------------------- pets
 

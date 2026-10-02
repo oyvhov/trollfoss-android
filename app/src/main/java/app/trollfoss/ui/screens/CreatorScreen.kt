@@ -340,7 +340,9 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
                 val partLabel = part.label.str()
                 GameText(partLabel, fontSize = 16.sp, color = T.Ink)
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (part.count == 0 || part == Part.HEIGHT) {
+                if (look.hair == 0 && (part == Part.HAIR_SIZE || part == Part.HAIR_LENGTH)) {
+                    GameText(S.chooseHairFirst.str(), fontSize = 16.sp, color = T.Ink)
+                } else if (part.count == 0 || part == Part.HEIGHT) {
                     Slider(value = look.value(part), onValueChange = { look = look.adjust(part, it); anim.face = Face.HAPPY; anim.faceTime = 0f },
                         valueRange = part.range, modifier = Modifier.fillMaxWidth().semantics { contentDescription = partLabel },
                         colors = SliderDefaults.colors(thumbColor = T.Grape, activeTrackColor = T.Grape, inactiveTrackColor = T.Cream))

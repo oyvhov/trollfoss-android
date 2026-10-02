@@ -164,6 +164,7 @@ class Engine(
     var counterTarget = Offset(0f, 0f)
 
     var bagOpen by mutableStateOf(false)
+    var emptyBagHint: String = ""
 
     /** The home designer is open: furniture moves with a plain drag, and the panel below takes it away. */
     var designMode by mutableStateOf(false)
@@ -859,6 +860,10 @@ class Engine(
 
     fun undoStorage() {
         if (sim.designer.undoDiscard()) { designVersion++; host.changed() }
+    }
+
+    fun restoreStorage(index: Int) {
+        if (sim.designer.restoreDiscarded(index)) { designVersion++; host.sfx(Sfx.POP, 0.6f); host.changed() }
     }
 
     private fun placed(f: Fixture?) {
@@ -3053,6 +3058,8 @@ class Engine(
             drawRoundRect(Ink.line, tray.topLeft, tray.size, CornerRadius(dp(26f)), style = Stroke(dp(2.2f)))
             if (bag.isEmpty()) {
                 drawRoundRect(T.CreamLine, Offset(tray.left + dp(12f), tray.top + dp(12f)), Size(tray.width - dp(24f), tray.height - dp(24f)), CornerRadius(dp(18f)), style = Stroke(dp(2.5f), pathEffect = PathEffect.dashPathEffect(floatArrayOf(dp(10f), dp(8f)))))
+                val hint = text.measure(emptyBagHint, TextStyle(color = T.Ink, fontSize = 14.sp, fontWeight = FontWeight.Bold), constraints = androidx.compose.ui.unit.Constraints(maxWidth = (tray.width - dp(36f)).toInt().coerceAtLeast(1)))
+                drawText(hint, topLeft = Offset(tray.center.x - hint.size.width / 2f, tray.center.y - hint.size.height / 2f))
             }
             val slot = traySlot()
             bag.forEachIndexed { i, b ->
@@ -3073,7 +3080,7 @@ class Engine(
         // The bag button, drawn like the other round buttons.
         val wobble = if (bag.isNotEmpty() && motion) sin(time * 3f) * 3f else 0f
         drawCircle(T.SunDeep, r, Offset(c.x, c.y + dp(5f)))
-        drawCircle(Brush.verticalGradient(listOf(T.SunTop, T.Sun), c.y - r, c.y + r), r, c)
+        drawCircle(Brush.verticalGradient(if (bagOpen) listOf(T.Mint, T.MintDeep) else listOf(T.SunTop, T.Sun), c.y - r, c.y + r), r, c)
         drawCircle(Ink.line, r, c, style = Stroke(dp(2.2f)))
         rotate(wobble, c) {
             inset(c.x - r * 0.62f, c.y - r * 0.66f, size.width - (c.x + r * 0.62f), size.height - (c.y + r * 0.58f)) { Icons.Bag(this) }

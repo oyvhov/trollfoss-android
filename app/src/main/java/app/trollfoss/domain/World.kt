@@ -271,6 +271,8 @@ class World {
 
     /** Furniture the child has put away in the home designer's store. */
     val storage = ArrayList<Stored>()
+    /** Removed furniture waits here until restored, including across app restarts. */
+    val discardedStorage = ArrayList<Pair<Int, Stored>>()
 
     /** Stickers earned from tasks, by sticker number. They open special furniture in the catalogue. */
     val stickers = ArrayList<Int>()

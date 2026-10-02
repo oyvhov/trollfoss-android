@@ -115,6 +115,7 @@ class WorldStore(private val file: File) {
             put("discoveries", JSONArray(world.discoveries.toList()))
             put("styles", JSONObject().apply { world.styles.forEach { (k, s) -> put(k, JSONArray(listOf(s.wall, s.floor))) } })
             put("storage", JSONArray().apply { world.storage.forEach { put(JSONObject().put("type", it.type.name).put("variant", it.variant)) } })
+            put("discardedStorage", JSONArray().apply { world.discardedStorage.forEach { (index, item) -> put(JSONObject().put("index", index).put("type", item.type.name).put("variant", item.variant)) } })
             put("stickers", JSONArray(world.stickers))
             put("eggs", JSONArray(world.eggs.toList()))
             put("tasks", JSONObject().apply {
@@ -301,6 +302,13 @@ class WorldStore(private val file: File) {
                 }
             }
             json.optJSONArray("stickers")?.let { s -> for (i in 0 until s.length()) world.stickers += s.optInt(i) }
+            json.optJSONArray("discardedStorage")?.let { trash ->
+                for (i in 0 until trash.length()) {
+                    val o = trash.optJSONObject(i) ?: continue
+                    val type = enumOrNull<FixtureType>(o.optString("type")) ?: continue
+                    world.discardedStorage += o.optInt("index", 0).coerceAtLeast(0) to Stored(type, o.optInt("variant", 0))
+                }
+            }
             world.eggs += strings(json.optJSONArray("eggs"))
             json.optJSONObject("tasks")?.let { t ->
                 world.taskSet += strings(t.optJSONArray("set"))
