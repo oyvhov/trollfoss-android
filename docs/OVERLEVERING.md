@@ -1,5 +1,52 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – MAGISK LEIK, ANDRE RUNDE (2026-10-02, Codex):** Brukaren bad «Go go».
+> Tiltaka 7, 10, 18 og 21 og dei første åtte nivåleikene er implementerte på `codex/magic-play`.
+> Kjelde: `1cceea4ad2b97c8431d05288aa54447c3462d274`. Plan/status: `docs/MAGISK_LEIK.md`.
+> Nivå 1–3 er aktive ved 0/2/5 merke. Høgare nivå og dei resterande 15 løfta er framleis planlagde.
+> Gamle merke blir bevarte; opptente rettar blir lagra som `toy:*`. Merka blir ikkje brukte opp.
+> Ny verd byrjar med gulrot til hest, venn i seng og krone på hovudet. Blåkopi-oppsett gir ikkje merke.
+> Kartet viser neste leike og manglande merke. Oppdrag/Gåver viser bilete, framgang, hjelp og byte av
+> eitt kort. Nytt nivå gir eit roleg kort med fire leiker. Låste nye møbelkort opnar same vegvisar.
+> Alle elleve nye møbeltypar finst i Møblar på alle 24 stader; opna leiker kan dragast inn eller prøvast.
+> Nivå 2: boblemaskin, fønar-driven vindmølle, vennebuss og mjuk putekastar. Nivå 3: tre vendbare
+> klinkekulerenner, vaskbar fargesprøyte, miniheis og popcornvogn. Originale ting/last blir bevarte.
+> Gratis pumpe for ball/vatn og kamera med varige Look-portrett. Foto kan flyttast og lagrast på lager.
+> Togeventyr i Andre høgda: løft tannhjul, reparer tog, set oppi venn. Første fullføring gir eitt merke
+> og varig tog-rett. Øydelagt variant overlever pakking; gamle brot-flagg blir migrerte utan å smitte
+> ein annan møbeltype som har teke over same ID. Tog/buss brukar dei vanlege køyrepilene.
+> Angreloggen har åtte steg i den opne økta: flytting, bygging/riving, samansetjing, møblering og
+> figurpakking/henting. To fingrar ventar på begge sleppa. Originale figurar, klede og delar blir
+> tilbakeførte, medan opptente merke, oppdrag, eventyrsteg og opplåsingar blir verande. Loggen er
+> mellombels; lager/papirkorg/delar/rettar er lagra. Verkstad- og spelarvalendringar tømmer loggen.
+> Angring lastar ei samanføyd verd gjennom WorldStore; eventuelle innflyttingsgjester blir sende heim.
+> **Kontroll:** 442 einingstestar og 18 Android-testar grøne på siste kjelde. `testDebugUnitTest`,
+> `assembleDebug`, `assembleDebugAndroidTest` og `lintDebug` grøne gjennom byggelåsen: 0 lint-feil,
+> 30 åtvaringar (éin ny om same skjermhøgd-mønsteret i oppdragsboka; resten er eksisterande).
+> GitHub «Bygg og test» er grøn på `1cceea4` (37061426858).
+> Isolert pakke `app.trollfoss.levels`: mobil 2400 × 1080 / 420 dpi og nettbrett 1920 × 1200 / 240 dpi.
+> Faktisk krone- og sengdraging fullførte oppdrag. Angring av krona lét det opptente merket stå.
+> På stranda vart same ball 359 pumpa til badeball. Kamera laga portrett 361 av Hedda, og bilete
+> variant 10361 vart pakka til lager. Det og to spelar-ID-ar 25/45 overlevde installasjon/omstart.
+> På mobil vart boblemaskina dratt ut av Møblar og starta. Låst klinkekulebane viste manglande merke
+> og reiseknappar. I lås-dialogen på den låge mobilen kan barnet rulle for å sjå heile reiseknappane.
+> Tannhjul 362 vart dratt til toget, same del gjekk i sekken, og Alva 45 vart sett oppi. Fire merke vart
+> førehandslagde i prøveverda for grensekontroll; denne verkelege fullføringa gav det femte, nivå 3,
+> gåvekort og varig `toy:TRAIN`. Toget vart køyrt med pilene og stoppa, med same passasjer.
+> Vanleg kaldstart opna Kartet. Oppdrag opna frå Kartet vart lukka tilbake til Kartet.
+> På siste nettbrettprøve vart mais 363 dratt til popcornvogna og vart den same tingen som POPCORN,
+> FREE. Foto 10361 vart henta frå lager etter omstart som nytt flyttbart møbel 344 med same portrett.
+> Ingen Trollfoss-krasj i krasjbufferen; `lastanr` viste ingen ANR sidan oppstart av denne emulatoren.
+> Prøvepakkane `.levels`/`.levels.test` er avinstallerte. Fysisk 1080 × 2400 / 420 dpi og rotasjon 1/1
+> er tilbakeførte; emulatoren starta for prøva er stoppa. Produksjonsapp 1.5.0 og original debug-app
+> står att, og deira verdsfiler er urørte. Prøveskript, testdata og bilete i `screenshots/levels/` er
+> Git-ignorerte. Ingen privat verd eller signeringsinformasjon er lagt i Git.
+> **Att før barnetest:** dyret kan ha vandra inn mellom gamle møblar før hjelpa blir brukt. Gulrot-
+> hjelpa viste stad/råvare og gav ein roleg pause; den manuelle matarprøva vart ikkje fullført. Barnet
+> kan velje eit anna kort. Plassering/hint og balanse må prøvast med barn før vi kallar dei forståelege.
+> Versjon er framleis 1.5.0 / kode 8; ingen ny APK-release eller signeringsendring.
+> Neste runde er 8, 13, 14, 15 og 19. Barnetest, fletting til `main` og publisering står att.
+
 > **NYAST – MAGISK LEIK, FØRSTE RUNDE (2026-10-02, Codex):** Etter dei 25 prioriterte ideane
 > bad brukaren «GO!». Dei seks første tiltaka er implementerte på `codex/magic-play`.
 > Kjelde: `2a38289b1470c951fec86c0eb658f297df797e85`; førre hovudendring `3086d86`.

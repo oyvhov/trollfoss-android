@@ -1,6 +1,6 @@
 # Dei 25 prioriterte løfta for Trollfoss
 
-Dato: 2026-10-02. Brukaren valde dei 25 beste ideane og bad «GO!». Dei seks første er implementerte og teknisk prøvde i første arbeidsrunde, slik tilrådinga var. Resten er ein utviklingsplan. Dette dokumentet inneber ikkje at ein ny APK er publisert.
+Dato: 2026-10-02. Brukaren valde dei 25 beste ideane og bad «GO!», deretter «Go go». Dei seks første og tiltaka 7, 10, 18 og 21 er implementerte i to arbeidsrundar. Dei resterande 15 er ein utviklingsplan. Dette dokumentet inneber ikkje at ein ny APK er publisert.
 
 ## Kva vi vil få til
 
@@ -21,7 +21,22 @@ Ferdig tyder fungerande leik, lagring, nynorsk/bokmål og kontroll i både mobil
 
 **Kontrollert i første runde:** 414 einingstestar og 13 Android-kontrollar er grøne. Mobil og nettbrett er prøvde med faktisk draging, bruk av hytta, eventyrfullføring, omstart, tilbakeføring av delane, vognhjelp og husbygging. Detaljert overlevering står i [OVERLEVERING.md](OVERLEVERING.md).
 
-## Neste rundar: rekkjefølgje og ferdigkrav
+## Andre runde: opplåsing, leiker og trygg angring
+
+Nivå **1–3 er aktive**, med grensene **0, 2 og 5 merke**. Gamle merke blir bevarte. Høgare nivå blir først synlege når dei har ferdig innhald. Kartet viser nivået, neste leike og manglande merke med prikkar. Oppdragsboka har tre biletoppdrag, hjelp, reise, framgang og eit val om å byte eitt kort. Ei ny verd byrjar med gulrot til hest, venn i seng og krone på hovudet. Oppsettet av ei ny verd gir ingen oppdragsmerke.
+
+«Gåver» og låste leiker i «Møblar» viser fullfargebilete, bruk og konkrete oppdrag. Ei opna leike kan prøvast frå boka eller dragast frå møbelpanelet. Ingen merke blir brukte opp. Nye gåver blir varsla med eit roleg kort som kan lukkast; retten til å hente leika blir lagra.
+
+- **Nivå 2:** boblemaskin med bobler barnet kan sprekke, vindmølle driven av hårfønar, køyrbar vennebuss med to setar, og putekastar for den same bamsen eller ballen. Ein venn med ledig hand kan fange det mjuke kastet.
+- **Nivå 3:** tre vendbare renner i klinkekulebana, fargesprøyte med seks fargar som kan vaskast tilbake, miniheis for venn eller ting, og popcornvogn som gjer den same mais-tingen til mat.
+- **Frå starten:** pumpe gjer ball til badeball og fyller bøtte/vatnekanne. Vennekamera tek eit portrett av ein venn i nærleiken og lagar eit flyttbart bilete. Portrettet hugsar utsjånaden frå fotograferinga gjennom lagring og omstart.
+- **Opplevingsgåve:** finn tannhjulet i Andre høgda, dra det til det øydelagde leiketoget, og set oppi ein venn. Tre bilethint viser stega. Fullføring gir eitt merke og varig tilgang til fleire køyrbare tog. Delar og det øydelagde toget kan hentast att; pakking skal ikkje omgå reparasjonen.
+
+**Angre** tek tilbake opptil åtte handlingar i den opne speleøkta: flytting, møblering, figurpakking/henting, samansetjing, bygging og riving. To fingrar som flyttar kvar sin figur, blir avslutta samla før angring er mogleg. Figurar, klede, last og dei opphavlege delane følgjer handlinga; opptente merke, eventyrsteg og opplåsingar blir verande. Angreloggen er mellombels, medan lager, papirkorg, leikedelar og opplåsingsrettar er lagra og kan hentast etter omstart.
+
+**Kontrollert i andre runde:** 442 einingstestar og 18 Android-kontrollar er grøne. Bygg, lint og GitHub-kontrollen er grøne på kjelde `1cceea4`. Oppdrag, gåver, reise, omstart, figur-/leikedraging, foto på lager og den faktiske togreparasjonen er prøvde i mobil- og nettbrettformat. Kontroll og kjeldestatus står i [OVERLEVERING.md](OVERLEVERING.md). Barnetest står att, så grensene er framleis startbalanse.
+
+## Heile rekkjefølgja og ferdigkrava
 
 | Nr. | Løft | Minste ferdige leik | Avhengig av / ferdig når |
 | --- | --- | --- | --- |
@@ -45,7 +60,7 @@ Ferdig tyder fungerande leik, lagring, nynorsk/bokmål og kontroll i både mobil
 | 24 | Levande bamse | Ei frivillig trylling får den same bamsen til å gå og kose | Tryll tilbake gir den same tingen; ikkje to bamsekopiar etter lagring eller oppdatering. |
 | 25 | Barna lagar fest | Vel gjester, musikk, mat og lys; start/avslutt fest | Gjester tek med utsjånad og kjem trygt tilbake; mat, leiker og møblering blir bevarte. |
 
-**Runde 2:** 7, 10, 18 og 21, deretter dei første åtte nye nivåleikene. Det gir forståeleg progresjon og trygg tilbakeføring før meir kompliserte maskinar.
+**Runde 2 – implementert:** 7, 10, 18 og 21, med dei første åtte nye nivåleikene. Familiefoto er òg ein del av grunnlaget for tiltak 8; dyrking og reparert stad står att.
 
 **Runde 3:** 8, 13, 14, 15 og 19. Gjer relasjonar og kvardag personlege og levande.
 
@@ -55,11 +70,11 @@ Ferdig tyder fungerande leik, lagring, nynorsk/bokmål og kontroll i både mobil
 
 ## Nivå og belønningar
 
-[PROGRESJON.md](PROGRESJON.md) er den detaljerte nivåplanen: 10 nivå, 36 nye interaktive leiker og åtte historiebelønningar. Han er framleis ein plan. Første magirunde prøver frileik, biletkort, varig eventyrframgang og samarbeid; ho innfører ikkje eit halvferdig nivåsystem.
+[PROGRESJON.md](PROGRESJON.md) er den detaljerte nivåplanen: 10 nivå, 36 nye interaktive leiker og åtte historiebelønningar. Nivå 1–3 og dei første åtte nivåleikene er implementerte. Nivå 4–10 og dei åtte skisserte bonusgåvene er framleis planlagde.
 
 Nivå brukar dei eksisterande klistremerka: grenser **0, 2, 5, 9, 14, 20, 27, 35, 44 og 54**. Barnet betaler ikkje med merke og går aldri ned eit nivå. Gamle leiker blir ikkje låste. Historier skal kunne spelast utan å vente på eit høgt nivå, og nivåframgang skal ha fleire val av oppgåver.
 
-Før vi slår på nivåa, byggjer vi nivå 1–3 heilt: ei enkel vegvisar, åtte ferdige leiker, biletsteg, hjelp, feiring og gjenhenting. Då testar vi med yngre og eldre barn. Tala over er startbalanse, ikkje ein påstand om kva som passar alle barn. Barnet skal sjå **kva det får, kva det skal gjere, kva som manglar** på den same sida.
+Nivå 1–3 har no vegvisar, åtte fungerande leiker, biletsteg, hjelp, feiring og gjenhenting. Neste kontroll av balansen er prøve med yngre og eldre barn. Tala over er startbalanse, ikkje ein påstand om kva som passar alle barn. Barnet skal sjå **kva det får, kva det skal gjere, kva som manglar** på den same sida.
 
 ## Kontroll for kvar runde
 

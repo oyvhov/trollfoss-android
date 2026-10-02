@@ -1,6 +1,6 @@
 # Plan: nivå, oppdagingar og nye leiker i Trollfoss
 
-Dato: 2026-10-02. Dette er ein konkret utviklingsplan, ikkje funksjonar som er utgjevne.
+Dato: 2026-10-02. Nivå 1–3 og dei første åtte nivåleikene er implementerte på `codex/magic-play`, saman med gratis pumpe/kamera, tog-reparasjon og trygg angring. Dei er ikkje publiserte i ein ny APK. Nivå 4–10 og dei åtte bonusgåvene nedanfor er framleis utviklingsplan. Sjå [MAGISK_LEIK.md](MAGISK_LEIK.md) og [OVERLEVERING.md](OVERLEVERING.md) for faktisk åtferd og kontrollstatus.
 
 ## 1. Målet
 
@@ -14,11 +14,11 @@ Behald klistremerka som allereie blir gitt for oppdrag. **Eitt ferdig biletoppdr
 
 Nivået har eit stort bilete, eit lite tal og eit kort namn. Neste gåve og dei manglande merka står rett ved sida av. Glimt og husnøklar held fram som eigne oppdagingar; dei blir ikkje obligatoriske krav til nivå. Det gjer at barnet ikkje blir fast fordi éin hemmeleg ting er vanskeleg å finne.
 
-Gamle lagringar brukar alle eksisterande klistremerke. Eit barn med 20 merke byrjar på nivå 6. Gamle opplåsingar, plasserte ting og lager blir bevarte; noko barnet allereie har, blir aldri låst igjen.
+Gamle lagringar brukar alle eksisterande klistremerke. I den aktive prøva er nivået avgrensa til 3: eit barn med 20 merke behaldar alle 20 og får alle dei åtte ferdige nivåleikene. Når heile planen er bygd, svarar 20 merke til nivå 6. Gamle opplåsingar, plasserte ting og lager blir bevarte; noko barnet allereie har, blir aldri låst igjen.
 
 ## 3. Nivå og 36 nye interaktive ting
 
-Dette er foreslått startbalanse. Tala skal prøvast med barn før dei blir endelege. «Totalt» er alle merka barnet har, ikkje merka som skal betalast.
+Dette er foreslått startbalanse. Nivå 1–3 er implementerte; nivå 4–10 er planlagde. Tabellen skildrar målbildet: den første klinkekulebana har tre vendbare renner, ikkje frie banedelar; vindmølla blir driven av fønaren, og hjelp har bilete/tekst og henting av råvarer. Animerte demonstreringar, opplesing og vidare fleirstegsoppdrag står att. Tala skal prøvast med barn før dei blir endelege. «Totalt» er alle merka barnet har, ikkje merka som skal betalast.
 
 | Nivå | Namn | Merke totalt | Nye merke frå førre nivå | Fire nye ting og det dei gjer |
 | --- | --- | ---: | ---: | --- |
