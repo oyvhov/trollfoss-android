@@ -85,7 +85,7 @@ fun PlayCreation(vm: TrollfossViewModel, engine: Engine, f: Fixture) {
 @Composable
 fun PlayCards(vm: TrollfossViewModel, engine: Engine, onClose: () -> Unit) {
     var tab by remember { mutableIntStateOf(if (vm.sim.magic.active == null) 0 else 1) }
-    val compact = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp < 520
+    val compact = engine.compact
     TrollDialog(onClose = onClose, maxWidth = 620.dp) {
         GameText(S.playCards.str(), fontSize = if (compact) 20.sp else 26.sp, color = T.Ink)
         if (!compact) GameText(S.playOptional.str(), fontSize = 14.sp, color = T.Ink)

@@ -336,6 +336,7 @@ class WorldStore(private val file: File) {
                 f.on = o.optBoolean("on", false)
                 f.mode = o.optInt("mode", 0)
                 f.count = o.optInt("count", 0)
+                if (f.type == FixtureType.PLAY_CART) f.count = 0 // Touches belong to this session only.
                 if (o.has("x")) {
                     f.x = o.optDouble("x", f.x.toDouble()).toFloat()
                     f.y = o.optDouble("y", f.y.toDouble()).toFloat()

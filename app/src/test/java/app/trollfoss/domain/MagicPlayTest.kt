@@ -6,6 +6,24 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class MagicPlayTest {
+    @Test fun foregroundKitMakesFurnitureAtNormalDepthAndRestartDoesNotKeepFingerGrips() {
+        val w = World(); val s = Sim(w)
+        s.magic.kit(PlayRecipe.CART,PlaceId.HOME,1.2f)
+        val parts = w.playKits.getValue(PlayRecipe.CART).map { w.bodies[it] as Thing }
+        parts.forEach { it.x=1.2f }
+        val f = requireNotNull(s.magic.combine(parts.last()))
+        assertEquals(PlaceId.HOME.floor,f.y,0.01f)
+        s.magic.grip(1,f,0,1f); s.magic.grip(2,f,1,1f); assertEquals(2,f.count)
+        val saved = WorldStore.decode(WorldStore.encode(w,Settings())).world
+        assertEquals(0,saved.fixtures.getValue(f.id).count)
+    }
+
+    @Test fun aStaleStoryReferenceNeverReplacesAFriend() {
+        val w = World(); val s = Sim(w)
+        val friend = w.addPerson(Species.FOLK,Look(),1f,PlaceId.HOME,1f,0.9f)
+        w.adventureHat=friend.id; s.magic.start(Adventure.HAT)
+        assertSame(friend,w.bodies[friend.id]); assertNotEquals(friend.id,w.adventureHat)
+    }
     @Test fun recallingOurKitReleasesItsEarlierCreationAndReusesAllOriginalParts() {
         val w = World(); val s = Sim(w); val f = make(s,PlayRecipe.FORT)
         val ids = w.playAssemblies.getValue(f.id).parts

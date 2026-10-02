@@ -124,7 +124,7 @@ class MagicPlay(private val sim: Sim) {
             val parts = mutableListOf<Thing>()
             for (type in recipe.parts) available.firstOrNull { it.type == type && it !in parts }?.let { parts += it }
             if (parts.size != recipe.parts.size || t !in parts) continue
-            val f = sim.designer.add(place, recipe.fixture, 0, t.x, t.y) ?: return null
+            val f = sim.designer.add(place, recipe.fixture, 0, t.x, place.floor) ?: return null
             for (part in parts) {
                 part.mode = Mode.INSIDE; part.holder = f.id; part.inside = -1; part.resting = false
                 part.vx = 0f; part.vy = 0f; part.vrot = 0f; part.rot = 0f
@@ -206,7 +206,7 @@ class MagicPlay(private val sim: Sim) {
         revision++
         if (a == Adventure.HAT && stage(a) < 3 && world.bodies[world.adventureHat] !is Thing) {
             val at = nextPlace(a)
-            val hat = Thing(world.adventureHat.takeIf { it > 0 } ?: world.nextId++, ThingType.CAP, 2)
+            val hat = Thing(world.adventureHat.takeIf { it > 0 && it !in world.bodies } ?: world.nextId++, ThingType.CAP, 2)
             hat.place = at; hat.x = 1.15f; hat.y = at.floor; hat.z = world.nextZ()
             world.bodies[hat.id] = hat
             world.adventureHat = hat.id
