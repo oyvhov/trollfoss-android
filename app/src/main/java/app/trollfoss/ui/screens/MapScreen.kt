@@ -95,7 +95,10 @@ fun MapScreen(vm: TrollfossViewModel) {
         while (true) withFrameNanos { t = if (motion) (it - start) / 1e9f else 0f }
     }
     val from = vm.place.mapPlace
-    val riders = remember(vm.place, vm.generation) { vm.world.people().filter { it.species == Species.FOLK && (it.place == vm.place || it.mode == app.trollfoss.domain.Mode.BAG) }.take(3).map { it.look } }
+    val riders = remember(vm.place, vm.generation, vm.playersVersion) {
+        val team = app.trollfoss.domain.Players.team(vm.world)
+        (team.ifEmpty { vm.world.people().filter { it.species == Species.FOLK && it.place == vm.place }.take(3) }).map { it.look }
+    }
     val scroll = rememberScrollState()
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
@@ -196,6 +199,7 @@ fun MapScreen(vm: TrollfossViewModel) {
         Row(Modifier.align(Alignment.BottomStart).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             RoundButton(S.book.str(), onClick = { vm.open(Screen.Book) }, tone = Tones.Grape, icon = Icons.Book)
             RoundButton(S.workshop.str(), onClick = { vm.open(Screen.Creator(null)) }, tone = Tones.Grape, icon = Icons.Workshop)
+            RoundButton(S.players.str(), onClick = { vm.open(Screen.Players) }, tone = Tones.Mint, icon = Icons.Friends)
         }
         RoundButton(S.parents.str(), onClick = { vm.open(Screen.ParentGate) }, modifier = Modifier.align(Alignment.TopEnd).padding(16.dp), size = 52.dp, tone = Tones.Cream, icon = Icons.Gear)
         GameText(S.mapDrag.str(), modifier = Modifier.align(Alignment.TopCenter).padding(top = 16.dp), fontSize = 14.sp, color = Color.White)
@@ -227,7 +231,7 @@ fun DrawScope.drawBalloon(c: Offset, r: Float, pen: Pen, riders: List<Look> = em
     for (i in 0..1) inkedRound(Rect(c.x - r * 0.9f + i * r * 1.25f, bed.top - r * 0.16f, c.x - r * 0.4f + i * r * 1.25f, bed.top + r * 0.02f), r * 0.08f, Color.White, pen)
     val a = PersonAnim().apply { face = app.trollfoss.domain.Face.HAPPY; wave = if (riders.size == 1) 1f else 0f }
     for ((i, look) in riders.withIndex()) {
-        val x = c.x + (i - (riders.size - 1) / 2f) * r * 0.56f
+        val x = c.x + (i - (riders.size - 1) / 2f) * r * (1.65f / riders.size.coerceAtLeast(3))
         translate(x, bed.top + r * 0.1f) { drawPerson(Species.FOLK, look, Pose.SIT, a, r * 0.88f, Pen(pen.lw * 0.5f, pen.t), seed = i.toFloat()) }
     }
     inkedRound(Rect(bed.left + r * 0.1f, bed.top + r * 0.12f, bed.right - r * 0.1f, bed.bottom), r * 0.06f, Color(0xFF68A4CB), pen)

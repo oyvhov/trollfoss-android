@@ -47,6 +47,7 @@ import app.trollfoss.ui.screens.MapScreen
 import app.trollfoss.ui.screens.ParentGateScreen
 import app.trollfoss.ui.screens.ParentScreen
 import app.trollfoss.ui.screens.PlayScreen
+import app.trollfoss.ui.screens.PlayersScreen
 import app.trollfoss.ui.theme.LocalMotion
 import app.trollfoss.ui.theme.T
 import kotlinx.coroutines.awaitCancellation
@@ -83,6 +84,7 @@ fun TrollfossApp(vm: TrollfossViewModel) {
                 when (target) {
                     Screen.Play -> Box(Modifier)
                     Screen.Map -> MapScreen(vm)
+                    Screen.Players -> PlayersScreen(vm)
                     is Screen.Creator -> CreatorScreen(vm, target.editId)
                     Screen.Book -> BookScreen(vm)
                 Screen.Tasks -> TasksScreen(vm)

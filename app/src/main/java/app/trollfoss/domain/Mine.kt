@@ -311,6 +311,7 @@ object Mine {
     /** Sends the guests of a housewarming home (also after a save was loaded in the middle of one). */
     fun returnGuests(world: World) {
         for (g in world.mine.guests) {
+            if (g.id in world.playerIds) continue
             val p = world.bodies[g.id] as? Person ?: continue
             if (p.place?.mine == true) House.moveTo(world, p, g.place, g.x)
         }

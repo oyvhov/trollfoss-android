@@ -243,6 +243,9 @@ class World {
     var night = false
     var weather = Weather.SUN
 
+    /** The children's chosen figures, in player order. The same bodies travel with their belongings. */
+    val playerIds = linkedSetOf<Int>()
+
     /** Glimt the child has collected. */
     val found = linkedSetOf<String>()
 
@@ -335,6 +338,7 @@ class World {
     fun remove(body: Body) {
         bodies.remove(body.id)
         if (body is Person) {
+            playerIds.remove(body.id)
             carried(body).forEach { it.mode = Mode.FREE; it.holder = -1; it.place = body.place; it.resting = false }
         }
     }

@@ -45,6 +45,7 @@ import app.trollfoss.domain.Part
 import app.trollfoss.domain.Passage
 import app.trollfoss.domain.Person
 import app.trollfoss.domain.PlayConnections
+import app.trollfoss.domain.Players
 import app.trollfoss.domain.PlayInteractions
 import app.trollfoss.domain.PlaceId
 import app.trollfoss.domain.Pose
@@ -141,6 +142,7 @@ class Engine(
     var visibleRoom by mutableIntStateOf(0)
         private set
     private var chosenRoom: Int? = null
+    private var bringTeamAfterPan = false
 
     /** Screen pixels above scene y = 0; the place art fills them with more sky or wall. */
     private val top: Float get() = heightPx - u
@@ -265,7 +267,15 @@ class Engine(
         focusOn((range.start + range.endInclusive) / 2f)
         chosenRoom = index
         visibleRoom = index
+        if (Players.team(world).isNotEmpty() && canBringPlayers(index)) {
+            cancel()
+            Players.arrive(world, place, (range.start + range.endInclusive) / 2f)
+            host.changed()
+        }
     }
+
+    private fun canBringPlayers(index: Int): Boolean =
+        (place != PlaceId.MINE_GROUND && place != PlaceId.MINE_UPPER) || world.mine.standing(place, index)
 
     private fun clampCam() {
         val maxCam = max(0f, place.width - visibleViewport)
@@ -343,6 +353,21 @@ class Engine(
         }
 
         shake *= exp(-7f * dt)
+        if (bringTeamAfterPan && abs(camV) < 0.08f && grabs.isEmpty()) {
+            val team = Players.team(world)
+            if (team.none { it.held }) {
+                val center = centerX()
+                val nextRoom = Decor.roomAt(place, center)
+                if (canBringPlayers(nextRoom) && team.any {
+                    it.place != place || it.x !in (cam + it.w / 2f)..(cam + visibleViewport - it.w / 2f) ||
+                        Decor.roomAt(place, it.x) != nextRoom
+                }) {
+                    Players.arrive(world, place, center)
+                    host.changed()
+                }
+                bringTeamAfterPan = false
+            }
+        }
         vehicle?.takeIf { it.on && grabs.isEmpty() }?.let { f ->
             val margin = visibleViewport * 0.28f
             if (f.x < cam + margin) cam = f.x - margin
@@ -787,7 +812,7 @@ class Engine(
         }
         when {
             body != null && body.held -> drop(g, body, vx, vy)
-            g.target is Target.Pan -> camV = -vx
+            g.target is Target.Pan -> { camV = -vx; bringTeamAfterPan = true }
             g.target is Target.Furniture -> {
                 val f = (g.target as Target.Furniture).fixture
                 overStore = false
@@ -823,6 +848,13 @@ class Engine(
         }
     }
 
+    fun packPerson(p: Person) {
+        if (world.bodies[p.id] !== p || p.place != place || p.mode == Mode.BAG) return
+        cancel()
+        intoBag(p)
+        bagCount = world.bag().size
+    }
+
     private fun centerX(): Float {
         val middle = cam + visibleViewport / 2f
         val range = chosenRoom?.let { Decor.rooms(place).getOrNull(it) } ?: return middle
@@ -837,6 +869,37 @@ class Engine(
         val y = if (type.spec.wall) 0.5f else (place.back + PlaceId.FRONT) / 2f
         placed(sim.designer.add(place, type, variant, centerX() + (random.nextFloat() - 0.5f) * 0.3f, y))
     }
+
+    private var cataloguePreview: Fixture? = null
+    private var catalogueFinger = Offset.Zero
+    private var catalogueStoreIndex: Int? = null
+
+    /** A preview only: nothing enters the world or leaves storage until released over the scene. */
+    fun beginCatalogueDrag(type: FixtureType, variant: Int, at: Offset, storeIndex: Int? = null) {
+        cataloguePreview = Fixture(-1, place, type, 0f, 0f, variant)
+        catalogueStoreIndex = storeIndex
+        moveCatalogueDrag(at)
+        host.sfx(Sfx.PICK, 0.6f)
+    }
+
+    fun moveCatalogueDrag(at: Offset) {
+        catalogueFinger = at
+        val p = toScene(at)
+        cataloguePreview?.let { f -> f.x = p.x; f.y = p.y + f.spec.h / 2f }
+    }
+
+    fun finishCatalogueDrag() {
+        val f = cataloguePreview ?: return
+        val at = catalogueFinger
+        val fromStore = catalogueStoreIndex
+        cancelCatalogueDrag()
+        if (at.x !in 0f..(widthPx - panelPx) || at.y !in 0f..heightPx || storeZone?.contains(at) == true) return
+        val furniture = if (fromStore != null) sim.designer.unstore(place, fromStore, f.x, f.y)
+            else sim.designer.add(place, f.type, f.variant, f.x, f.y)
+        placed(furniture, focus = false)
+    }
+
+    fun cancelCatalogueDrag() { cataloguePreview = null; catalogueStoreIndex = null }
 
     fun addFromStore(index: Int) {
         val type = world.storage.getOrNull(index)?.type ?: return
@@ -866,11 +929,11 @@ class Engine(
         if (sim.designer.restoreDiscarded(index)) { designVersion++; host.sfx(Sfx.POP, 0.6f); host.changed() }
     }
 
-    private fun placed(f: Fixture?) {
+    private fun placed(f: Fixture?, focus: Boolean = true) {
         placementFailed = f == null
         if (f == null) { host.sfx(Sfx.HMM, 0.7f); return }
         // A dry beach placement can be outside the view when the camera was over the sea.
-        focusOn(f.x)
+        if (focus) focusOn(f.x)
         designVersion++
         host.changed()
     }
@@ -979,8 +1042,10 @@ class Engine(
     }
 
     fun cancel() {
+        bringTeamAfterPan = false
+        cancelCatalogueDrag()
         closeDriving()
-        for (g in grabs.values) heldBody(g)?.let { drop(g, it, 0f, 0f) }
+        for (g in grabs.values) heldBody(g)?.takeIf { it.held && it.place == place }?.let { drop(g, it, 0f, 0f) }
         grabs.clear()
     }
 
@@ -992,8 +1057,10 @@ class Engine(
         val list = drawList()
         for (i in list.indices.reversed()) {
             val b = list[i]
+            // A second finger cannot take the first child's figure or its held belongings.
+            if (grabs.values.any { heldBody(it)?.id == b.id }) continue
             if (b is Person) {
-                for (t in world.carried(b)) if (hitCarried(b, t, p)) return Target.Hold(t)
+                for (t in world.carried(b)) if (grabs.values.none { heldBody(it)?.id == t.id } && hitCarried(b, t, p)) return Target.Hold(t)
             }
             if (hit(b, p)) return Target.Hold(b)
         }
@@ -1160,11 +1227,12 @@ class Engine(
     }
 
     private fun intoBag(body: Body) {
-        body.mode = Mode.BAG
-        body.place = null
-        body.resting = false
-        body.z = world.nextZ()
-        if (body is Person) world.carried(body).forEach { it.place = null }
+        if (body is Person) Players.pack(world, body) else {
+            body.mode = Mode.BAG
+            body.place = null
+            body.resting = false
+            body.z = world.nextZ()
+        }
         host.sfx(Sfx.ZIP, 0.7f)
         particles.burst(PKind.SPARK, units(bagCenter.x) + cam, units(bagCenter.y - top), 8, 0.4f)
         host.changed()
@@ -2196,6 +2264,12 @@ class Engine(
         withTransform({ translate(0f, top) }) { drawLightning() }
         drawFlights()
         drawBag(text, pen)
+        cataloguePreview?.let { f ->
+            translate((f.x - cam) * u, top + f.y * u) {
+                drawFixtureBack(f, u, pen)
+                drawFixtureFront(f, u, pen)
+            }
+        }
         if (flash > 0f) drawRect(Color.White.copy(alpha = flash * 0.85f))
         drawNameTagsLate(text)
         with(sprites) { finish() }
@@ -2512,7 +2586,7 @@ class Engine(
             val p = b as? Person ?: continue
             if (p.anim.nameTag <= 0f || p.name.isBlank()) continue
             val alpha = min(1f, p.anim.nameTag / 0.4f)
-            val grow = min(1f, (2.2f - p.anim.nameTag) / 0.2f)
+            val grow = ((2.5f - p.anim.nameTag) / 0.2f).coerceIn(0f, 1f)
             val layout = text.measure(p.name, TextStyle(color = T.Ink.copy(alpha = alpha), fontSize = 17.sp, fontWeight = FontWeight.Black))
             val hat = Anatomy.at(p, Part.HAT)
             val cx = sx(p.x)

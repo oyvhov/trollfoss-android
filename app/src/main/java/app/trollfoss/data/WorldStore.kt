@@ -96,6 +96,7 @@ class WorldStore(private val file: File) {
             put("found", JSONArray(world.found.toList()))
             put("unlocked", JSONArray(world.unlocked.toList()))
             put("flags", JSONArray(world.flags.toList()))
+            put("players", JSONArray(world.playerIds.toList()))
             put("mine", JSONObject().apply {
                 val h = world.mine
                 put("started", h.started)
@@ -342,6 +343,12 @@ class WorldStore(private val file: File) {
             }
             world.nextId = maxOf(json.optInt("nextId", 1), maxId + 1)
             world.zCounter = maxOf(json.optLong("z", 0L), world.bodies.values.maxOfOrNull { it.z } ?: 0L)
+            json.optJSONArray("players")?.let { players ->
+                for (i in 0 until players.length()) {
+                    val id = players.optInt(i, -1)
+                    if ((world.bodies[id] as? Person)?.species == Species.FOLK) world.playerIds.add(id)
+                }
+            }
 
             // Anything that refers to something that is gone falls free where it was.
             for (b in world.bodies.values) {
@@ -355,8 +362,12 @@ class WorldStore(private val file: File) {
                     b.holder = -1
                 }
                 if (b.inside >= 0 && world.fixtures[b.inside] == null) b.inside = -1
-                if (b.mode != Mode.BAG && b.place == null) b.place = PlaceId.HOME
+                if (b.mode != Mode.BAG && b.mode != Mode.WORN && b.place == null) b.place = PlaceId.HOME
                 b.age = 10f
+            }
+            // Belongings stay with their owner, including when the owner is packed in the bag.
+            for (b in world.bodies.values) {
+                if (b.mode == Mode.WORN) b.place = (world.bodies[b.holder] as Person).place
             }
             val known = json.optJSONArray("places")?.let { a -> strings(a).mapNotNull { enumOrNull<PlaceId>(it) }.toSet() }
                 ?: world.bodies.values.mapNotNull { it.place }.toSet()

@@ -322,7 +322,7 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
         val place = world.place.takeIf { it.mine } ?: PlaceId.MINE_YARD
         val away = world.people().filter {
             val at = it.place
-            at != null && !at.mine && it.mode == Mode.FREE && !it.held && it.species != Species.DRAGON
+            at != null && !at.mine && it.mode == Mode.FREE && !it.held && it.species != Species.DRAGON && it.id !in world.playerIds
         }.shuffled(random).take(5)
         val party = MineParty(place)
         h.party = party
@@ -351,6 +351,7 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
         val party = h.party ?: return
         val place = party.place
         for (g in h.guests) {
+            if (g.id in world.playerIds) continue
             val p = world.bodies[g.id] as? Person ?: continue
             if (p.place == place) {
                 fx(MineEvent.GUEST, -1, p.x, p.y)
@@ -454,7 +455,7 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
         doorClock -= dt
         if (doorClock > 0f) return
         doorClock = 14f + random.nextFloat() * 16f
-        val residents = world.people().filter { it.place?.mine == true && it.species != Species.DRAGON }
+        val residents = world.people().filter { it.place?.mine == true && it.species != Species.DRAGON && it.id !in world.playerIds }
         val inside = residents.filter { it.place == PlaceId.MINE_GROUND && it.mode == Mode.FREE && !it.held && it.anim.pose == Pose.STAND }
         val outside = residents.filter { it.place == PlaceId.MINE_YARD && it.mode == Mode.FREE && !it.held && it.id !in heading && it.anim.wish == null && it.resting && it.anim.pose == Pose.STAND }
         if (inside.isNotEmpty() && (outside.isEmpty() || random.nextBoolean())) {

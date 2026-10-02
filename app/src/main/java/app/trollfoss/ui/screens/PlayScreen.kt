@@ -209,8 +209,11 @@ fun PlayScreen(vm: TrollfossViewModel) {
             }
         }
 
-        RoundButton(S.friends.str(), onClick = { friendsOpen = true }, size = btn, tone = Tones.Mint,
+        RoundButton(S.friends.str(), onClick = { engine.cancel(); friendsOpen = true }, size = btn, tone = Tones.Mint,
             modifier = Modifier.align(Alignment.TopStart).padding(start = edge + (btn + gap) * 2, top = edge), icon = Icons.Friends)
+        RoundButton(S.players.str(), onClick = { vm.open(Screen.Players) }, size = btn, tone = Tones.Sun,
+            modifier = Modifier.align(Alignment.TopStart).padding(start = edge + (btn + gap) * 3, top = edge), icon = Icons.Friends)
+        PlayerBar(vm, compact, Modifier.align(Alignment.TopStart).padding(start = edge, top = edge + btn + 6.dp))
 
         if (place == app.trollfoss.domain.PlaceId.LAB) {
             var tunnelLabelVisible by remember(place) { mutableStateOf(false) }
@@ -311,7 +314,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
         }
         if (place.mine && !engine.designMode) MineTravelButtons(vm, place, compact,
             if (compact) Modifier.align(Alignment.TopCenter).padding(top = 8.dp)
-            else Modifier.align(Alignment.TopStart).padding(start = edge + (btn + gap) * 3, top = 8.dp))
+            else Modifier.align(Alignment.TopStart).padding(start = edge + (btn + gap) * 4, top = 8.dp))
         if (!compact) RoomNavigator(vm, engine, Modifier.align(Alignment.TopCenter).padding(top = 100.dp, start = 20.dp, end = 20.dp))
         if (!engine.designMode) {
             RoundButton(app.trollfoss.ui.SM.furnish.str(), onClick = { menuOpen = false; engine.closeDriving(); engine.designMode = true },
@@ -338,7 +341,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
             }
         }
         } // The controls belong to the visible scene, beside the panel.
-        if (friendsOpen) FriendsPanel(vm.world, engine::invite, onClose = { friendsOpen = false })
+        if (friendsOpen) FriendsPanel(vm.world, vm.place, engine::invite, engine::packPerson, onClose = { friendsOpen = false })
         AnimatedVisibility(
             visible = engine.designMode,
             enter = slideInHorizontally { it } + fadeIn(),

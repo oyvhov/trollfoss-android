@@ -52,7 +52,7 @@ internal fun DrawScope.manorFront(place: PlaceId, st: Stage, pen: Pen) {
 }
 
 /** True when [f] belongs to the big house and its floor's art drew it. */
-internal fun DrawScope.drawManorFixtureBack(f: Fixture, u: Float, pen: Pen, contents: List<Thing>): Boolean = when (f.place) {
+internal fun DrawScope.drawManorFixtureBack(f: Fixture, u: Float, pen: Pen, contents: List<Thing>): Boolean = when (fixtureArtworkPlace(f.type, f.place)) {
     PlaceId.MANOR_GROUND -> drawGroundFixtureBack(f, u, pen, contents)
 
     PlaceId.MANOR_UPPER -> drawUpperFixtureBack(f, u, pen, contents)
@@ -67,7 +67,7 @@ internal fun DrawScope.drawManorFixtureBack(f: Fixture, u: Float, pen: Pen, cont
     else -> drawCellarFixtureBack(f, u, pen, contents)
 }
 
-internal fun DrawScope.drawManorFixtureFront(f: Fixture, u: Float, pen: Pen): Boolean = when (f.place) {
+internal fun DrawScope.drawManorFixtureFront(f: Fixture, u: Float, pen: Pen): Boolean = when (fixtureArtworkPlace(f.type, f.place)) {
     PlaceId.MANOR_GROUND -> drawGroundFixtureFront(f, u, pen)
 
     PlaceId.MANOR_UPPER -> drawUpperFixtureFront(f, u, pen)

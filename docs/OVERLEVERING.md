@@ -1,5 +1,45 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **RELEASE 1.5.0 KLARGJORT (2026-10-02, Codex):** Brukaren bad «Release» etter arbeidet nedanfor.
+> Versjon 1.5.0 / kode 8 samlar faste spelarar, lokal fleirspelar, møbeldraging, flytta møbelkunst og
+> trygg pakking/henting av figurar. Release-notat i `docs/release-v1.5.0.md`.
+> Eksisterande 1.4.1 / kode 7 står på emulatoren for prøve av oppdateringa gjennom appen.
+> Før oppstart vart begge stoppade userdata-diskar kopierte til det ignorerte
+> `.gradle-tmp/release-1.5.0-original/emulator-disk/` (om lag 6,4 GB). Ingen verdsfil er nullstilt.
+> Endeleg publiserings- og oppdateringskontroll blir dokumentert etter release.
+> «Lokalt/ikkje utgjeve»-status nedanfor skildrar arbeidet før denne release-førespurnaden.
+
+> **NYAST – FASTE SPELARAR, MØBELDRAGING OG TA BORT FIGURAR (2026-10-02, Codex, lokalt):**
+> Arbeidet ligg ukommittert på `main`, etter publisert 1.4.1. Ingen versjonsendring, release, push
+> eller signeringsendring. Produksjonsappen og den opphavlege debug-verda er urørte.
+> Fyrste start opnar spelarval over Kartet; barnet kan velje seinare. «Spelarar» finst på Kartet
+> og i romma. Éin, to eller fleire faste figur-ID-ar blir lagra med verda; ingen figurkopiar.
+> Spelarane følgjer med på reiser, gjennom trappene og ved romval/panorering. Utsjånad, klede,
+> hatt og ting i hendene følgjer same figur. Dei vandrar ikkje til andre etasjar på eiga hand.
+> Portrett: trykk hentar hit, hald inne opnar verkstaden. Ny figur frå spelarval blir automatisk vald.
+> To barn kan flytte kvar sin figur samtidig; ein annan finger kan ikkje overta ein halden figur.
+> «Venner» viser «Her no» med «Legg i sekken», og venner ein kan hente hit. Pakking tek figuren
+> ut av spelarvalet, også ved draging til sekken, så han ikkje automatisk kjem etter. Figuren og
+> tinga hans blir bevarte og kan hentast tilbake. Lagra WORN-ting skal ha same stad som eigaren.
+> Møblar/Lager støttar sidelengs draging til rommet, med førehandsvising fram til slepp; loddrett
+> rørsle rullar menyen. Avbrot eller slepp over panelet tek ingenting frå lager og legg ingenting til.
+> GR/UP/AT/CE/GA-møblar blir teikna med eigen etasje-kunst også i andre stader. Android-test
+> dekkjer alle desse og MI-møblar i alle 24 stader. Tomme golv i Mitt hus tek ikkje imot spelarar.
+> Isolert prøvepakke `app.trollfoss.players`, bilete i ignorerte `screenshots/players/`.
+> Mobil 2400 × 1080 / 420 dpi og nettbrett 1920 × 1200 / 240 dpi blir brukte på same emulator.
+> **Kontroll:** 399 einingstestar og 10 Android-testar grøne. `assembleDebug` og
+> `assembleDebugAndroidTest` grøne; `lintDebug` 0 feil / 29 åtvaringar, alt gjennom byggelåsen.
+> Fyrsteval, to spelarar, fire spelarar, ny figur, endring av Hedda, romval, panorering og trapp er
+> prøvde. Mobil og nettbrett: ekte draging frå Møblar, meny-rulling utan ekstra plassering, og
+> sofa/leiketog frå Lager til Stranda med rett kunst. Hatt/bamse er bevarte gjennom reiser/omstart.
+> Nettbrett: Hedda (ID 25) pakka, omstart/reise, framleis BAG og ute av spelarvalet; henta tilbake
+> til Stranda med same utsjånad og to WORN-ting. Mobil: tilsvarande pakking/henting av Alva (ID 45),
+> deretter begge valde på nytt; fire spelar-ID-ar lagra og bevarte ved vanleg kaldstart på Kartet.
+> Alle fire og tinga deira følgde «Oppe» i Mitt hus. Ingen Trollfoss-krasj i krasjbufferen.
+> Prøvepakkane `.players`/`.players.test` er avinstallerte. Fysisk 1080 × 2400 / 420 dpi og rotasjon
+> 1/1 er tilbakeførte; emulatoren som vart starta for prøva er stoppa. Original debug- og
+> produksjonsapp/verdsfil er urørte. Ignorerte bilete og prøveskript står att lokalt.
+
 > **UTGÅVE 1.4.1 PUBLISERT (2026-10-02, Codex):** Brukaren bad «Publiser» etter rettingane nedanfor.
 > https://github.com/oyvhov/trollfoss-android/releases/tag/v1.4.1 er offentleg, stabil og nyaste utgåve.
 > Kjelde/tagg: `a968d4a9be22832cf5bed3e3dab3d46f2b570cbb`. Versjon 1.4.1 / kode 7.

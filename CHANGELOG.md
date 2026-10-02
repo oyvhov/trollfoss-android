@@ -1,5 +1,14 @@
 # Endringslogg
 
+## 1.5.0 – Spelarar og møbeldraging
+
+- Vel éin, to eller fleire spelarar ved fyrste start eller frå Kartet og romma. Same figur, utsjånad, klede og ting følgjer med mellom stader, gjennom trappene og ved rombyte inne i huset, og spelarvalet blir lagra.
+- Lag ein ny spelar i figurverkstaden eller endre ein vald figur undervegs. Spelarportretta i romma hentar figuren til rommet ein ser på; hald inne for å endre utsjånad og klede.
+- To barn kan dra kvar sin figur samtidig på same nettbrett. Ein annan finger kan ikkje ta over ein figur som allereie blir halden.
+- Venner viser «Her no» med «Legg i sekken». Figuren og alle ting han har på seg blir bevarte og kan hentast tilbake. Ein pakka spelar blir teken ut av spelarvalet, også når barnet dreg han til sekken, så han ikkje kjem etter automatisk.
+- Dra møblar frå Møblar og Lager rett inn i rommet. Loddrett rørsle rullar menyen; trykk for å setje ut eit møbel som før. Avbroten draging legg ikkje til eit møbel eller tek noko frå Lager.
+- Storhusmøblar får den rette teikninga også når dei er sette ut i andre stader, framfor å bli farga boksar.
+
 ## 1.4.1 – Tryggare lager og betre husbygging
 
 - Appen startar på Kartet. Når ein lukkar ei bok eller ein meny, kjem ein tilbake til skjermen ein opna henne frå, også etter at ein har lagra ein figur.

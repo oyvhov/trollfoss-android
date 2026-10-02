@@ -1,5 +1,17 @@
 # Trollfoss – designunderlag
 
+Tillegg 2026-10-02 (lokalt, etter 1.4.1): barnet vel éin eller fleire faste spelarfigurar ved start
+eller seinare med «Spelarar». Dei er dei same figurane overalt, med lagra utsjånad, klede og det dei
+held eller har på hovudet. Spelarane kjem med på kartreiser og gjennom passasjar; dei vandrar ikkje
+vekk til andre etasjar på eiga hand. To eller fleire barn leikar på same skjerm med kvar sin figur
+og fleire fingrar samtidig. Portretta hentar figuren til det synlege rommet, og eit langt trykk opnar
+figurverkstaden. Nye figurar laga frå spelarvalet blir automatisk valde som spelarar. Romknappane
+tek med spelarane til valt rom. Ved panorering kjem dei med når kameraet har stoppa, utan å ta ein
+figur ut av hendene til barnet som held han. Tomme rom i Mitt hus får ingen figurar før golvet er bygd.
+«Venner» viser kven som er her, med «Legg i sekken», og kven barnet kan hente hit. Å pakke ein figur
+tek han også ut av spelarvalet; figuren, utsjånaden og tinga hans blir bevarte. Han kan hentast tilbake
+frå Venner eller sekken og veljast som spelar igjen.
+
 > **Trollfoss** er ei lita bygd under ein stor foss, der folk, dyr og troll bur saman. Ein digital
 > leikekasse for barn frå 4 til 10 år: ingen reglar, ingen poeng, ingen tap – berre figurar, ting og
 > stader som svarar når du rører dei.

@@ -4,6 +4,7 @@ package app.trollfoss.ui
 sealed interface Screen {
     object Play : Screen
     object Map : Screen
+    object Players : Screen
     class Creator(val editId: Int?) : Screen
     object Book : Screen
     object Tasks : Screen
@@ -15,6 +16,8 @@ internal class ScreenHistory {
     var current: Screen = Screen.Map
         private set
     private val previous = mutableListOf<Screen>()
+
+    fun previousIsPlayers(): Boolean = previous.lastOrNull() == Screen.Players
 
     fun open(target: Screen): Screen {
         if (target == current) return current

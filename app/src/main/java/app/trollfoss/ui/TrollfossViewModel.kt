@@ -29,6 +29,7 @@ import app.trollfoss.domain.Maalform
 import app.trollfoss.domain.Mode
 import app.trollfoss.domain.Passage
 import app.trollfoss.domain.Person
+import app.trollfoss.domain.Players
 import app.trollfoss.domain.PlaceId
 import app.trollfoss.domain.Season
 import app.trollfoss.domain.SeasonChoice
@@ -115,6 +116,10 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     var generation by mutableIntStateOf(0)
         private set
 
+    var playersVersion by mutableIntStateOf(0)
+        private set
+    private var visiblePlayerIds: List<Int> = emptyList()
+
     var engine: Engine? = null
         private set
     private val cams = EnumMap<PlaceId, Float>(PlaceId::class.java)
@@ -135,6 +140,10 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         wireTasks()
         syncFromWorld()
         applySettings()
+        if (Players.CHOSEN !in world.flags) screen = navigation.open(Screen.Players)
+        if (Players.team(world).any { it.place != place || it.mode == Mode.BAG }) {
+            Players.arrive(world, place, arrivalCenter(place))
+        }
     }
 
     /** A new world begins on the plot: the family comes along, and the builder panel is open. */
@@ -259,6 +268,8 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         // Whatever the builder is busy with is finished before the child goes; a housewarming ends when they leave the house.
         sim.mine.finishJob()
         if (!to.mine) sim.mine.endParty()
+        engine?.cancel()
+        Players.arrive(world, to, pendingFocus ?: arrivalCenter(to))
         world.place = to
         place = to
         screen = navigation.arrive(Screen.Play)
@@ -273,13 +284,43 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun open(target: Screen) {
+        if (target != Screen.Play) engine?.cancel()
         screen = navigation.open(target)
         updateMusic()
     }
 
     fun back() {
+        if (screen == Screen.Players) world.flags.add(Players.CHOSEN)
         screen = navigation.back()
         updateMusic()
+        scheduleSave()
+    }
+
+    private fun arrivalCenter(to: PlaceId): Float = when {
+        to == PlaceId.MINE_GROUND || to == PlaceId.MINE_UPPER -> 1f
+        to == PlaceId.BEACH -> 0.85f
+        else -> ((cams[to] ?: defaultCam(to)) + (engine?.viewport ?: 2f).coerceAtMost(2f) / 2f)
+            .coerceIn(0.3f, to.width - 0.3f)
+    }
+
+    fun togglePlayer(person: Person) {
+        Players.toggle(world, person)
+        if (person.id in world.playerIds) engine?.invite(person)
+        playersVersion++
+        scheduleSave()
+    }
+
+    fun recallPlayers() {
+        engine?.cancel()
+        val x = engine?.let { it.cam + it.visibleViewport / 2f } ?: arrivalCenter(place)
+        Players.arrive(world, place, x)
+        scheduleSave()
+    }
+
+    fun recallPlayer(person: Person) {
+        if (person.id !in world.playerIds) return
+        engine?.invite(person)
+        scheduleSave()
     }
 
     // ---------------------------------------------------------------------------------- world controls
@@ -319,7 +360,9 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
             p.age = 0f
             p.anim.sparkle = 1f
             p.vy = -0.5f
+            if (navigation.previousIsPlayers()) world.playerIds.add(p.id)
         }
+        playersVersion++
         sfx(Sfx.FANFARE, 0.7f)
         screen = navigation.back()
         updateMusic()
@@ -344,7 +387,8 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         engine = null
         syncFromWorld()
         generation++
-        screen = navigation.arrive(Screen.Play)
+        screen = navigation.arrive(Screen.Map)
+        screen = navigation.open(Screen.Players)
         scheduleSave(immediate = true)
     }
 
@@ -408,6 +452,11 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     private var partyMusic = false
 
     override fun changed() {
+        val ids = world.playerIds.toList()
+        if (ids != visiblePlayerIds) {
+            visiblePlayerIds = ids
+            playersVersion++
+        }
         mineVersion = world.mine.version
         mineUi.version = mineVersion
         val party = world.mine.party != null

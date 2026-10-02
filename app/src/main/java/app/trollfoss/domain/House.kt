@@ -175,6 +175,7 @@ object House {
         }
         val total = weights.values.sum()
         for (p in world.people()) {
+            if (p.id in world.playerIds) continue
             val here = p.place ?: continue
             if (!here.manor || here == current || p.held || p.mode != Mode.FREE) continue
             if (random.nextFloat() > 0.45f) continue
@@ -203,6 +204,7 @@ object House {
         p.restOwner = -2
         p.resting = false
         p.inside = -1
+        p.anim.pose = Pose.STAND
         p.anim.walkTo = Float.NaN
         p.anim.goalFixture = -1
         p.anim.goal = 0
@@ -266,6 +268,7 @@ class HouseRules(private val sim: Sim, private val random: Random) {
                 rider.anim.faceTime = 1.4f
             }
         }
+        Players.arrive(world, passage.to, arrival.x, arrival.y)
         House.shuffle(world, passage.to, random)
         listener.onPassage(passage, arrival.x, riders.size)
     }

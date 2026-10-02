@@ -6,6 +6,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -48,6 +49,9 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -75,6 +79,7 @@ import app.trollfoss.ui.components.Tones
 import app.trollfoss.ui.play.Engine
 import app.trollfoss.ui.theme.T
 import app.trollfoss.ui.SM
+import app.trollfoss.ui.S
 import app.trollfoss.ui.str
 import kotlin.math.max
 import kotlin.math.min
@@ -155,6 +160,8 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
             }
         }
         if (Decor.rooms(place).size > 1) GameText(roomLabel(world, place, currentRoom).str(), fontSize = 13.sp, color = T.Ink)
+        if (tab == DesignTab.FURNITURE.ordinal || tab == DesignTab.STORE.ordinal)
+            GameText(S.furnitureDragHint.str(), fontSize = 12.sp, color = T.Ink)
         if (engine.placementFailed) GameText(
             (if ((place == PlaceId.MINE_GROUND || place == PlaceId.MINE_UPPER) &&
                 (0 until app.trollfoss.domain.Mine.SLOTS).none { world.mine.standing(place, it) }) SM.buildBeforeFurnishing else SM.placeFull).str(),
@@ -171,7 +178,7 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                         itemsIndexed(items) { index, item ->
                             val locked = item.stickers > stickers
                             val hangs = item.type.spec.wall
-                            Tile(look = TileLook.ROOM, tint = index / 2 + index % 2, feet = if (hangs) null else thumbSide * fixtureThumbFeet(item.type), onClick = {
+                            Tile(modifier = furnitureDrag(engine, item.type, item.variant, locked = locked), look = TileLook.ROOM, tint = index / 2 + index % 2, feet = if (hangs) null else thumbSide * fixtureThumbFeet(item.type), onClick = {
                                 if (locked) feedback.sfx(Sfx.HMM, 0.6f, 0.8f) else engine.addFurniture(item.type, item.variant)
                             }) {
                                 // What hangs on the wall hangs a little higher, clear of the floor.
@@ -210,7 +217,7 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                             itemsIndexed(stored) { index, item ->
                                 // In the store the furniture just stands there, on a pale pad with no frame round it.
                                 Box {
-                                Tile(look = TileLook.SOFT, feet = if (item.type.spec.wall) null else thumbSide * fixtureThumbFeet(item.type), onClick = { engine.addFromStore(index) }) {
+                                Tile(modifier = furnitureDrag(engine, item.type, item.variant, storeIndex = index), look = TileLook.SOFT, feet = if (item.type.spec.wall) null else thumbSide * fixtureThumbFeet(item.type), onClick = { engine.addFromStore(index) }) {
                                     FurnitureThumb(item.type, item.variant, place, false)
                                 }
                                 RoundButton(SM.deleteStored.str(), onClick = { engine.discardFromStore(index) },
@@ -273,14 +280,14 @@ private val ROOM_FLOOR_LINE = Color(0xFFCDA670)
  * rug lies on a wide floor and a wardrobe stands at the back of a narrow one.
  */
 @Composable
-private fun Tile(chosen: Boolean = false, look: TileLook = TileLook.PLAIN, tint: Int = 0, feet: Dp? = null, onClick: () -> Unit, content: @Composable () -> Unit) {
+private fun Tile(modifier: Modifier = Modifier, chosen: Boolean = false, look: TileLook = TileLook.PLAIN, tint: Int = 0, feet: Dp? = null, onClick: () -> Unit, content: @Composable () -> Unit) {
     val feedback = LocalFeedback.current
     val source = remember { MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()
     val press by animateFloatAsState(if (pressed) 0.92f else 1f, spring(dampingRatio = 0.45f, stiffness = 600f), label = "tile press")
     val shape = RoundedCornerShape(18.dp)
     Box(
-        Modifier
+        modifier
             .fillMaxWidth().aspectRatio(1f)
             .graphicsLayer { scaleX = press; scaleY = press }
             .clip(shape)
@@ -300,6 +307,23 @@ private fun Tile(chosen: Boolean = false, look: TileLook = TileLook.PLAIN, tint:
             },
         contentAlignment = Alignment.Center,
     ) { content() }
+}
+
+/** Horizontal pulls take furniture out; vertical gestures still scroll the catalogue. */
+@Composable
+private fun furnitureDrag(engine: Engine, type: FixtureType, variant: Int, locked: Boolean = false, storeIndex: Int? = null): Modifier {
+    var origin by remember { androidx.compose.runtime.mutableStateOf(Offset.Zero) }
+    val description = S.furnitureDragHint.str()
+    return Modifier.onGloballyPositioned { origin = it.boundsInRoot().topLeft }
+        .semantics { contentDescription = description }
+        .pointerInput(engine, type, variant, locked, storeIndex) {
+            if (!locked) detectHorizontalDragGestures(
+                onDragStart = { engine.beginCatalogueDrag(type, variant, origin + it, storeIndex) },
+                onHorizontalDrag = { change, _ -> engine.moveCatalogueDrag(origin + change.position) },
+                onDragEnd = engine::finishCatalogueDrag,
+                onDragCancel = engine::cancelCatalogueDrag,
+            )
+        }
 }
 
 /** A corner of a showroom: a painted wall, a skirting board, a wooden floor and the shadow of what stands on it. */
