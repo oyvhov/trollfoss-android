@@ -29,6 +29,7 @@ import kotlin.math.sin
  * The engine squashes the back layer on a tap, so the art does not bounce by itself.
  */
 fun DrawScope.drawFixtureBack(f: Fixture, u: Float, pen: Pen, contents: List<Thing> = emptyList()) {
+    if (f.type == FixtureType.SECRET_NOOK) { drawSecretNook(f, u, pen); return }
     // The newer places draw their own furniture, shadows included.
     if (drawRoomsBack(f, u, pen, contents) || drawRidesBack(f, u, pen, contents) || drawDecorBack(f, u, pen, contents) || drawBergBack(f, u, pen, contents) || drawManorFixtureBack(f, u, pen, contents) || drawMineFixtureBack(f, u, pen, contents)) return
     val spec = f.spec

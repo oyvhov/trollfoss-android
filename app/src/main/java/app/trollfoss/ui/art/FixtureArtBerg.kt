@@ -36,7 +36,7 @@ import kotlin.math.sin
 @Suppress("UNUSED_PARAMETER")
 fun DrawScope.drawBergBack(f: Fixture, u: Float, pen: Pen, contents: List<Thing>): Boolean {
     when (f.type) {
-        FixtureType.MOUNTAIN_HUT -> brHut(f, u, pen)
+        FixtureType.MOUNTAIN_HUT -> if (f.place == app.trollfoss.domain.PlaceId.VAGSTADDALEN) drawValleyCabin(f, u, pen) else brHut(f, u, pen)
         FixtureType.CABLE_STATION -> brStation(f, u, pen)
         FixtureType.CABLE_CAR -> brCabin(f, u, pen)
         FixtureType.ROCK_LEDGE -> brLedge(f, u, pen)

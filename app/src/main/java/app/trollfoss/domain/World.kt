@@ -17,7 +17,7 @@ enum class Mode {
 enum class Weather { SUN, RAIN, SNOW }
 
 /** A figure's face. The art draws each one; the engine picks them as things happen. */
-enum class Face { HAPPY, GRIN, OOH, CHOMP, YUM, SLEEP, DIZZY, LAUGH, WOW }
+enum class Face { HAPPY, GRIN, OOH, CHOMP, YUM, SLEEP, DIZZY, LAUGH, WOW, YUCK }
 
 /**
  * Anything that can be picked up: a thing or a figure. Position is the bottom centre in scene units.
@@ -100,6 +100,8 @@ class Thing(id: Int, var type: ThingType, var variant: Int = 0) : Body(id) {
 class Person(id: Int, val species: Species, var look: Look, var voice: Float, var name: String = "") : Body(id) {
     /** Grow and shrink potions. */
     var scale = 1f
+    var scaleBefore = 1f
+    var scaleTime = 0f
 
     /** Seconds left of the float potion. */
     var floatTime = 0f
@@ -213,13 +215,14 @@ class Fixture(val id: Int, val place: PlaceId, val type: FixtureType, var x: Flo
     var angleV = 0f
     var taps = 0
     var tapTime = -10f
+    var bumpTime = -10f
     var bob = 0f
 
     /** How far a vehicle has moved from its spot (the tractor drives, the rocket flies). */
     var shiftX = 0f
     var shiftY = 0f
 
-    val spec: FixtureSpec get() = type.spec
+    val spec: FixtureSpec get() = if (type == FixtureType.MOUNTAIN_HUT && place == PlaceId.VAGSTADDALEN) Vagstaddalen.cabinSpec else type.spec
 
     /** Top edge in scene units. */
     val top: Float get() = y - spec.h

@@ -1,5 +1,44 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – 1.3.0 KLARGJORT FOR PUBLISERING (2026-10-02, Codex):** implementert på `main`.
+> Brukaren har bede om publisering. Versjon 1.3.0 / kode 5, tag `v1.3.0`; original signeringsnøkkel.
+> Den grundige planen og oversikta for alle stader står i `docs/INTERAKSJON.md`; endringane står
+> under «1.3.0» i `CHANGELOG.md`. Utgivingsnotat: `docs/release-v1.3.0.md`.
+> Publiseringskontroll: 362 testar, `lintRelease` (0 feil, 18 åtvaringar) og `assembleRelease` grøne.
+> Signert universal APK: `app.trollfoss`, versjon 1.3.0 / kode 5, Android 8+, ikkje debuggbar.
+> Sertifikat SHA-256 samsvarar med originalnøkkelen. Publiseringsresultat blir ført øvst når verifisert.
+>
+> **Gjort:** fast portrettknapp for å hente eksisterande venner (og namngjevne eigne figurar), med
+> klede og handting; tørr ankomst ved elver og berre i bygde rom. Gripeprioriteten lèt folk flyttast
+> medan møbelpanelet er ope. Møbleringsknappen ligg til høgre. Traktoren flyttar faktisk posisjon
+> med piler, stopp, passasjer, kamera og skubbing, også etter flytting gjennom lageret til Bakeriet.
+> Rå fisk/egg/pølse/deig gir grimase; råvarene kan tilberedast på bål/vedomn/komfyr og etast vidare.
+> Koppar og bøtter held på vatnet ved lagring; vatn/ved, planter, instrument og spegel gir felles
+> samanhengar på tvers av stader. Sopp gir kjempe i 20 sekund, slime gir sveving, lagra saman med
+> gjenverande effekttid. Seks hemmelege små rom og ni nye oppdagingsbok-overraskingar.
+> Vagstaddalen har fotoinspirert brun plankehytte, raude lister, blå vindauge, torvtak, grå pipe,
+> bjørker og bergvegg; elva byrjar i terrenget. Rommet i dalen er skjult i ein stein med raud bok.
+>
+> **Kontroll:** 362 einingstestar, ingen feil eller hoppa over; `assembleDebug` og `lintDebug` grøne,
+> gjennom `Build-Locked.ps1`. Testane prøver rå fisk → bål → grilla fisk → alle bitane i alle 24 stader,
+> vatn/musikk/lys på tvers av stader, lagring midt i magi, henting med klede og handting, sekken,
+> bygde rom, traktor frå Garden sitt lager til Bakeriet med innlasting etter køyring, kollisjonar og
+> elvebreidd, og hemmelege rom utan gjenteken premie. `git diff --check` er rein.
+>
+> **Sett og brukt på Tunet_Ascii (`-gpu host`, denne gongen starta emulatoren):** mobil 2400 × 1080
+> / 420 dpi og nettbrett 1920 × 1200 / 240 dpi. I begge format: venneliste og ankomst, rå fisk-grimase,
+> grilling og første bit, traktor med passasjer og skubbing, hemmeleg bokrom, høgre møbleringsknapp
+> og ny hytte/elv. Mobil: Hedda flytta medan møbelpanelet står ope, sopp-kjempe og tilbake til
+> opphavleg storleik etter 20 sekund. Nettbrett: BesteSonja henta med lue/briller, Berit på tørr
+> elvebreidd, natt i dalen. Ingen Trollfoss-krasj i krasjloggen. Bilete i `screenshots/interaction/`.
+> Dette er målretta kontroll av tillegget; alle 24 stader er ikkje visuelt gjennomgått på nytt.
+>
+> **Data verna:** brukt isolert kopi av testverda. Opphavleg privat lagring er sett tilbake, verifisert
+> med SHA-256 `a0d97549ca33476618fbc82987534017994b2902275230299a422744c0077d8f`.
+> Skjermstorleik/dpi og begge rotasjonsinnstillingane er sette tilbake, og emulatoren er avslutta.
+> Release-appen og signeringa er urørte. Debug-APK: `app/build/outputs/apk/debug/app-debug.apk`.
+> Kontroll på fysisk mobil/nettbrett og publisering av dette tillegget står att.
+
 > **RELEASE 1.2.1 PUBLISERT (2026-10-01, Codex):** https://github.com/oyvhov/trollfoss-android/releases/tag/v1.2.1
 > er offentleg, stabil og nyaste utgåve. Taggen peikar på `90e6cd694b2af31abd10d35f56a9b0cba102e977`.
 > Éin universal APK, 2 959 830 byte, med den opphavlege Trollfoss-signaturen.
@@ -16,7 +55,7 @@
 > Mobil-/nettbrettkontrollane av same spelendringar frå førre økt er dokumenterte nedanfor.
 > Oppdatering gjennom appen og kontroll på ekte maskinvare er framleis ikkje utførte.
 
-Resten av dokumentet er historikk frå tidlegare økter; statusen over er gjeldande.
+Resten av dokumentet er historikk frå tidlegare økter; den øvste statusen er gjeldande.
 
 > **NYAST – 1.2.1 UNDER ARBEID (2026-10-01 kveld, Claude Fable 5.1):** lokalt på `main`, **ikkje committa**,
 > ikkje pusha, inga utgåve. Brukaren vil at fokuset alltid er betre UI og oppleving for barna. Planen står i

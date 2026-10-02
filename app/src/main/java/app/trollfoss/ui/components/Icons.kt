@@ -32,6 +32,18 @@ fun IconCanvas(icon: DrawScope.() -> Unit, modifier: Modifier = Modifier) {
  * style of the rest of the game, so the buttons look like they belong in the world.
  */
 object Icons {
+    val Friends: DrawScope.() -> Unit = {
+        val s = size.minDimension
+        val pen = Pen(s * 0.035f)
+        for (i in 0..1) {
+            val x = s * (0.32f + i * 0.36f)
+            inkedRound(Rect(x - s * 0.19f, s * 0.52f, x + s * 0.19f, s * 0.84f), s * 0.12f,
+                if (i == 0) T.Sea else T.Berry, pen)
+            inkedCircle(Offset(x, s * 0.33f), s * 0.17f, Color(0xFFFFD5A5), pen)
+            drawCircle(T.Ink, s * 0.018f, Offset(x - s * 0.05f, s * 0.32f))
+            drawCircle(T.Ink, s * 0.018f, Offset(x + s * 0.05f, s * 0.32f))
+        }
+    }
     private fun DrawScope.u(block: DrawScope.(s: Float, pen: Pen) -> Unit) {
         val s = size.minDimension / 100f
         val dx = (size.width - 100f * s) / 2f

@@ -197,6 +197,9 @@ class WorldStore(private val file: File) {
                     put("name", b.name)
                     put("voice", b.voice.toDouble())
                     put("scale", b.scale.toDouble())
+                    put("scaleBefore", b.scaleBefore.toDouble())
+                    put("scaleTime", b.scaleTime.toDouble())
+                    put("floatTime", b.floatTime.toDouble())
                     put("look", JSONObject().apply {
                         put("skin", b.look.skin)
                         put("height", b.look.height.toDouble())
@@ -352,7 +355,7 @@ class WorldStore(private val file: File) {
                 "thing" -> {
                     val type = enumOrNull<ThingType>(o.optString("type")) ?: return null
                     Thing(id, type, o.optInt("variant", 0)).apply {
-                        used = o.optInt("used", 0).coerceIn(0, maxOf(0, type.bites - 1))
+                        used = o.optInt("used", 0).coerceIn(0, if (type == ThingType.CUP || type == ThingType.BUCKET || type == ThingType.WATERING_CAN) 1 else maxOf(0, type.bites - 1))
                         enumOrNull<PlaceId>(o.optString("home"))?.let { home ->
                             homePlace = home
                             homeOwner = o.optInt("homeOwner", -1)
@@ -380,7 +383,10 @@ class WorldStore(private val file: File) {
                         extra = l.optInt("extra", 0),
                     ).safe()
                     Person(id, species, look, o.optDouble("voice", 1.0).toFloat().coerceIn(0.6f, 1.8f), o.optString("name", "").take(24)).apply {
-                        scale = o.optDouble("scale", 1.0).toFloat().coerceIn(0.5f, 1.7f)
+                        scaleTime = o.optDouble("scaleTime", 0.0).toFloat().coerceIn(0f, 20f)
+                        scaleBefore = o.optDouble("scaleBefore", 1.0).toFloat().coerceIn(0.5f, 1.7f)
+                        scale = o.optDouble("scale", 1.0).toFloat().coerceIn(0.5f, if (scaleTime > 0f) 2.6f else 1.7f)
+                        floatTime = o.optDouble("floatTime", 0.0).toFloat().coerceIn(0f, 20f)
                     }
                 }
                 else -> return null

@@ -1,10 +1,23 @@
 # Vegkart
 
-Oppdatert 2026-10-01. Detaljert status og kontrollar står i `docs/OVERLEVERING.md`, utgjevne endringar i
+Oppdatert 2026-10-02. Detaljert status og kontrollar står i `docs/OVERLEVERING.md`, utgjevne endringar i
 `CHANGELOG.md`.
 
 **Retning:** verda er stor nok for no. Dei neste utgåvene gjer det som finst solid og sett på ekte einingar,
 og går så i djupna med historier og sesongar før det kjem fleire stader.
+
+## 1.3.0 – venner og samanhengande leik
+
+Stor plan og gjennomføring: [docs/INTERAKSJON.md](docs/INTERAKSJON.md).
+
+- [x] Hente eksisterande venner med portrett, klede og handting til den aktive staden
+- [x] Flytte figurar når møbleringspanelet er ope; møbleringsknapp til høgre
+- [x] Køyre traktor mellom stader med piler, stopp, passasjer, kamera og leikent kaos
+- [x] Rå mat → grimase → bål/komfyr → grilla mat → måltid
+- [x] Vatn, eld, planter, instrument og lys i eit felles system for flytta ting og møblar
+- [x] Magi i 20 sekund, lagra effekttid og seks nye hemmelege små rom
+- [x] Hytte etter fotoet, bjørker og elv som byrjar på bakken
+- [ ] Prøve dette tillegget på fysisk mobil og nettbrett
 
 ## Utgjeve
 

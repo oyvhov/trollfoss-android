@@ -69,7 +69,7 @@ interface SimListener {
 }
 
 /** What happened when a thing was given to a figure. */
-enum class Give { ATE, FINISHED, DRANK, POTION, WORE, HELD, HAIR, DRESSED, SNEEZE, SNIFF, NONE }
+enum class Give { ATE, FINISHED, DRANK, POTION, WORE, HELD, HAIR, DRESSED, SNEEZE, SNIFF, NONE, YUCK }
 
 /**
  * The rules of the island: gravity, water, cupboards, seats, machines and what figures do with
@@ -231,7 +231,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         for (f in world.fixturesIn(place)) {
             for (s in f.spec.surfaces) {
                 val active = when {
-                    s.interior -> allInterior || f.open
+                    s.interior -> f.open || (allInterior && f.type != FixtureType.SECRET_NOOK)
                     s.closedOnly -> !f.open
                     else -> true
                 }
@@ -305,7 +305,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         pools = pools(place)
         val floating = zeroG(place)
         for (f in world.fixturesIn(place)) {
-            if (f.type == FixtureType.TRACTOR) f.shiftX = f.mode * TRACTOR_DRIVE
+            if (f.type == FixtureType.TRACTOR) { f.shiftX = 0f; f.mode = 0; f.on = false }
         }
         for (b in world.bodiesIn(place)) {
             when (b.mode) {
@@ -381,6 +381,13 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         if (b.inside >= 0) {
             val box = world.fixtures[b.inside]
             if (box != null && !box.open) return
+        }
+        // A deliberately placed ingredient stays on the hot surface, including in zero gravity.
+        if (b is Thing && b.resting && !b.held) {
+            val hot = world.fixtures[b.restOwner]
+            if (hot != null && hot.on && (hot.type == FixtureType.STOVE || hot.type == FixtureType.CAMPFIRE || hot.type == FixtureType.WOOD_STOVE)
+                && hot.spec.surfaces.any { abs(hot.y + it.dy - b.y) < 0.004f }
+                && abs(hot.x - b.x) <= hot.spec.w / 2f) return
         }
         if (floating) {
             stepFloating(place, b, list, dt)
@@ -662,6 +669,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     }
 
     private fun stepPerson(p: Person, dt: Float) {
+        PlayConnections.step(p, dt)
         jokes.step(p, dt)
         if (p.floatTime > 0f) {
             p.floatTime = max(0f, p.floatTime - dt)
@@ -809,11 +817,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
                 if (f.timer <= 0f) f.mode = 0
             }
             FixtureType.TRACTOR -> {
-                val target = f.mode * TRACTOR_DRIVE
-                val step = 0.32f * dt
-                f.on = abs(target - f.shiftX) > 0.001f
-                f.shiftX = if (f.shiftX < target) min(target, f.shiftX + step) else max(target, f.shiftX - step)
-                if (f.on) f.bob = sin(time * 30f) * 0.003f else f.bob = 0f
+                stepTractor(place, f, dt)
             }
             FixtureType.ROCKET_SHIP -> if (f.on) {
                 f.timer += dt
@@ -1069,6 +1073,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         f.tapTime = time
         f.anim = 1f
         val top = f.top
+        if (PlaySecrets.tap(this, f, dx)) return
         if (!place.mine && mine.play.tap(place, f)) return
         if (House.hasPassages(place) && house.tap(place, f, dx, dy)) return
         if (attractions.tap(place, f, dx, dy)) return
@@ -1185,9 +1190,8 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
             }
             FixtureType.ICE_POND -> listener.onFx(Fx.CRACK, f.x + dx, f.y, f)
             FixtureType.TRACTOR -> {
-                f.mode = 1 - f.mode
+                driveTractor(f, if (f.on) 0 else if (dx < -0.08f) -1 else 1)
                 f.count++
-                listener.onFx(Fx.VROOM, f.x + f.shiftX, top, f, param = 2)
                 if (f.count >= 3) unlock("farm_drive")
             }
             FixtureType.ROCKET_SHIP -> {
@@ -1470,9 +1474,30 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
      * A thing dropped over a machine. Returns true when the machine took it; otherwise it falls as usual.
      */
     fun dropInto(place: PlaceId, f: Fixture, t: Thing): Boolean {
+        here = place
+        if (f.type == FixtureType.SECRET_NOOK) return PlaySecrets.drop(this, f, t)
         if (!place.mine && mine.play.drop(place, f, t)) return true
         if (place.big && house.drop(place, f, t)) return true
+        if (PlayInteractions.apply(this, place, f, t)) return false
         when (f.type) {
+            FixtureType.STOVE, FixtureType.CAMPFIRE, FixtureType.WOOD_STOVE -> {
+                val recipe = if (f.type == FixtureType.STOVE) Recipes.stove(t.type) else Recipes.fire(t.type)
+                if (recipe == null && !(f.type == FixtureType.CAMPFIRE && t.type == ThingType.DRAGON_EGG)) return false
+                val surface = f.spec.surfaces.firstOrNull() ?: return false
+                t.place = place
+                t.mode = Mode.FREE
+                t.holder = -1
+                t.inside = -1
+                t.held = false
+                t.x = f.x
+                t.y = f.y + surface.dy
+                t.ground = t.y
+                t.restOwner = f.id
+                t.resting = true
+                t.vx = 0f; t.vy = 0f; t.vrot = 0f; t.rot = 0f
+                t.cook = 0f
+                f.on = true
+            }
             FixtureType.BLENDER -> {
                 if (f.on || world.inMachine(f).size >= 3) return false
                 take(t, f)
@@ -1572,7 +1597,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
             Give.HAIR -> tasks.record(Deed.HAIRCUT, here, type)
             else -> Unit
         }
-        if (result != Give.NONE && result != Give.SNEEZE) life.given(p, type)
+        if (result != Give.NONE && result != Give.SNEEZE && result != Give.YUCK) life.given(p, type)
         if (result == Give.ATE || result == Give.DRANK || result == Give.FINISHED) jokes.ate(p, type, result, time)
         // Brunost for the moose calf: a little dance.
         if (p.species == Species.ELK && type == ThingType.BROWN_CHEESE && result != Give.NONE) {
@@ -1584,6 +1609,27 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
 
     private fun giveTo(p: Person, t: Thing, part: Part): Give {
         when {
+            part == Part.MOUTH && t.type == ThingType.CUP && t.used > 0 -> {
+                t.used = 0
+                p.anim.chew = 1f
+                return Give.DRANK
+            }
+            part == Part.MOUTH && PlayConnections.raw(t.type) -> {
+                p.anim.face = Face.YUCK
+                p.anim.faceTime = 2f
+                p.anim.talk = 0f
+                p.anim.chew = 0f
+                p.anim.tilt = -8f
+                t.held = false
+                return Give.YUCK
+            }
+            part == Part.MOUTH && PlayConnections.strange(p, t.type) -> {
+                removeThing(t, quiet = true)
+                p.anim.face = Face.WOW
+                p.anim.faceTime = 2f
+                egg("strange_${t.type.name}")
+                return Give.POTION
+            }
             t.type == ThingType.PEPPER && (part == Part.MOUTH || part == Part.GLASSES) -> {
                 jokes.pepper(p)
                 return Give.SNEEZE
@@ -1683,6 +1729,10 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
 
     fun applyPotion(p: Person, type: ThingType) {
         p.anim.sparkle = 1f
+        if (type == ThingType.POTION_GROW || type == ThingType.POTION_SHRINK || type == ThingType.POTION_NORMAL) {
+            if (p.scaleTime > 0f) p.scale = p.scaleBefore
+            p.scaleTime = 0f
+        }
         when (type) {
             ThingType.POTION_GROW -> p.scale = (p.scale * 1.3f).coerceAtMost(1.7f)
             ThingType.POTION_SHRINK -> p.scale = (p.scale * 0.75f).coerceAtLeast(0.5f)
@@ -1706,6 +1756,44 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     }
 
     // ------------------------------------------------------------------ home designer
+
+    fun driveTractor(f: Fixture, direction: Int) {
+        if (f.type != FixtureType.TRACTOR || world.fixtures[f.id] !== f) return
+        f.mode = direction.coerceIn(-1, 1)
+        f.on = f.mode != 0
+        f.shiftX = 0f
+        if (f.on) listener.onFx(Fx.VROOM, f.x, f.top, f, param = 2)
+    }
+
+    private fun stepTractor(place: PlaceId, f: Fixture, dt: Float) {
+        if (!f.on || f.lift > 0f) { f.bob = 0f; return }
+        val wanted = f.x + f.mode * 0.55f * dt
+        val at = clampFixture(place, f, wanted, f.y)
+        val dx = at[0] - f.x
+        if (abs(dx) < 0.00001f) { driveTractor(f, 0); return }
+        moveFixture(place, f, at[0], at[1])
+        f.angle += dx
+        f.bob = sin(time * 30f) * 0.003f
+        for (other in world.fixturesIn(place).toList()) {
+            if (other === f || other.host >= 0 || other.spec.wall || abs(other.depth - f.depth) > 0.07f) continue
+            if (abs(other.x - f.x) >= (other.spec.w + f.spec.w) / 2f) continue
+            other.anim = 1f
+            if (movable(other)) {
+                val pushed = clampFixture(place, other, other.x + dx * 2f, other.y)
+                moveFixture(place, other, pushed[0], pushed[1])
+            }
+            if (time - f.bumpTime > 0.4f) {
+                f.bumpTime = time
+                listener.onFx(Fx.BUMP, other.x, other.top, other)
+            }
+        }
+        for (b in world.bodiesIn(place)) {
+            if (b.mode != Mode.FREE || b.held || b.inside >= 0 || b.restOwner == f.id || b.cool > 0f) continue
+            if (abs(b.x - f.x) > f.spec.w / 2f + b.w / 2f || abs(b.y - f.y) > 0.09f) continue
+            b.resting = false; b.restOwner = -2; b.vx = f.mode * 0.9f; b.vy = -0.9f; b.cool = 0.8f
+            listener.onFx(Fx.BUMP, b.x, b.y - b.h / 2f, f, param = if (b is Person) b.id else 0)
+        }
+    }
 
     /** Furniture the child may pick up and move. Water-bound and built-in things stay put. */
     fun movable(f: Fixture): Boolean = when (f.type) {

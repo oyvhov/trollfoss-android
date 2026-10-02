@@ -457,6 +457,14 @@ private fun DrawScope.mouth(a: PersonAnim, h: Float, pen: Pen, t: Float) {
     val chewing = a.chew > 0f
     val talking = a.talk > 0f
     when {
+        a.face == Face.YUCK -> {
+            val path = Path().apply {
+                moveTo(-0.058f * h, -0.56f * h)
+                quadraticTo(0f, -0.62f * h, 0.058f * h, -0.56f * h)
+            }
+            drawPath(path, Ink.line, style = stroke)
+            inkedOval(rect(0.01f * h, -0.54f * h, 0.04f * h, 0.035f * h), Tongue, pen, shade = false)
+        }
         chewing || a.face == Face.CHOMP -> {
             val open = 0.012f + 0.03f * abs(sin(t * 20f))
             val m = rect(0f, -0.575f * h, 0.075f * h, open * h)

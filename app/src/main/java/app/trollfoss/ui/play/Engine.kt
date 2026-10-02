@@ -44,6 +44,8 @@ import app.trollfoss.domain.Mode
 import app.trollfoss.domain.Part
 import app.trollfoss.domain.Passage
 import app.trollfoss.domain.Person
+import app.trollfoss.domain.PlayConnections
+import app.trollfoss.domain.PlayInteractions
 import app.trollfoss.domain.PlaceId
 import app.trollfoss.domain.Pose
 import app.trollfoss.domain.Season
@@ -291,7 +293,9 @@ class Engine(
         flash = max(0f, flash - dt * 2.5f)
 
         for (f in world.fixturesIn(place)) if (f.type == FixtureType.MAILBOX) f.mode = if (sim.giftWaiting()) 1 else 0
+        val wasDriving = vehicle?.on == true
         sim.step(place, dt)
+        if (wasDriving && vehicle?.on != true) host.changed()
 
         // Held bodies follow their fingers with a little lag, which reads as weight.
         val follow = 1f - exp(-22f * dt)
@@ -337,6 +341,12 @@ class Engine(
         }
 
         shake *= exp(-7f * dt)
+        vehicle?.takeIf { it.on && grabs.isEmpty() }?.let { f ->
+            val margin = visibleViewport * 0.28f
+            if (f.x < cam + margin) cam = f.x - margin
+            if (f.x > cam + visibleViewport - margin) cam = f.x - visibleViewport + margin
+            clampCam()
+        }
         updatePreviews()
         updatePeople(dt)
         particles.update(dt)
@@ -346,7 +356,11 @@ class Engine(
         bagCount = world.bag().size
     }
 
-    private fun accepts(f: Fixture, t: Thing): Boolean = app.trollfoss.domain.MinePlay.accepts(world, f, t) || when (f.spec.machine) {
+    private fun accepts(f: Fixture, t: Thing): Boolean = PlayInteractions.accepts(f, t) ||
+        (f.type == FixtureType.SECRET_NOOK && (t.type == ThingType.WAND || t.type == ThingType.GOLDEN_KEY || t.type == ThingType.CROWN)) ||
+        app.trollfoss.domain.MinePlay.accepts(world, f, t) || when (f.spec.machine) {
+        app.trollfoss.domain.Machine.STOVE -> app.trollfoss.domain.Recipes.stove(t.type) != null
+        app.trollfoss.domain.Machine.CAMPFIRE -> app.trollfoss.domain.Recipes.fire(t.type) != null || t.type == ThingType.DRAGON_EGG
         app.trollfoss.domain.Machine.BLENDER -> !f.on && world.inMachine(f).size < 3
         app.trollfoss.domain.Machine.CAULDRON -> !f.on && world.inMachine(f).size < 2
         app.trollfoss.domain.Machine.TOILET -> true
@@ -372,12 +386,12 @@ class Engine(
                     val center = Offset(body.x, body.y - body.h / 2)
                     val finger = toScene(g.finger)
                     val machine = world.fixturesIn(place).firstOrNull { f ->
-                        val zone = f.spec.dropZone ?: return@firstOrNull false
+                        val zone = PlayInteractions.zone(f, body) ?: f.spec.dropZone ?: return@firstOrNull false
                         val fx = f.x + f.shiftX
                         (zone.contains(finger.x - fx, finger.y - f.y) || zone.contains(center.x - fx, center.y - f.y)) && accepts(f, body)
                     }
                     if (machine != null) {
-                        val zone = machine.spec.dropZone!!
+                        val zone = PlayInteractions.zone(machine, body) ?: machine.spec.dropZone!!
                         previews += Preview(Offset(machine.x + machine.shiftX + (zone.left + zone.right) / 2, machine.y + max(zone.top, -machine.spec.h) + 0.02f), 0.05f)
                         continue
                     }
@@ -520,7 +534,7 @@ class Engine(
             a.nextIdle -= dt
             if (a.nextIdle <= 0f) {
                 a.nextIdle = 4f + random.nextFloat() * 8f
-                if (a.face != Face.SLEEP && !p.held && visible(p)) {
+                if (a.face != Face.SLEEP && a.faceTime <= 0f && !p.held && visible(p)) {
                     val friend = if (p.species == Species.FOLK || p.species == Species.ROBOT || p.species == Species.GHOST) chatPartner(p) else null
                     if (friend != null) {
                         chat(p, friend)
@@ -538,7 +552,7 @@ class Engine(
 
     /** A figure close by to chat with: same side of the room, about the same depth. */
     private fun chatPartner(p: Person): Person? = world.bodiesIn(place).filterIsInstance<Person>().firstOrNull { o ->
-        o !== p && o.species == Species.FOLK && !o.held && o.anim.face != Face.SLEEP && o.anim.sayTime == 0f &&
+        o !== p && o.species == Species.FOLK && !o.held && o.anim.face != Face.SLEEP && o.anim.faceTime <= 0f && o.anim.sayTime == 0f &&
             abs(o.x - p.x) < 0.38f && abs(bodyKey(o) - bodyKey(p)) < 0.12f
     }
 
@@ -556,7 +570,7 @@ class Engine(
         }
         pending += (time + 1.1f) to {
             val o = other.anim
-            if (!other.held && o.face != Face.SLEEP) {
+            if (!other.held && o.face != Face.SLEEP && o.faceTime <= 0f) {
                 o.say = random.nextInt(CHAT_ICONS)
                 o.sayTime = 1.5f
                 o.talk = 1f
@@ -787,6 +801,24 @@ class Engine(
 
     // ---------------------------------------------------------------------------------- home designer
 
+    var vehicleId by mutableIntStateOf(-1)
+        private set
+    val vehicle: Fixture? get() = world.fixtures[vehicleId]?.takeIf { it.place == place && it.type == FixtureType.TRACTOR }
+
+    fun drive(direction: Int) {
+        vehicle?.let { sim.driveTractor(it, direction); host.changed() }
+    }
+
+    fun closeDriving() { drive(0); vehicleId = -1 }
+
+    fun invite(p: Person) {
+        if (PlayConnections.invite(sim, p, place, centerX())) {
+            particles.burst(PKind.STAR, p.x, p.y - p.h / 2f, 12, 0.5f, 0.012f)
+            host.sfx(Sfx.POP, 0.7f)
+            host.changed()
+        }
+    }
+
     private fun centerX(): Float {
         val middle = cam + visibleViewport / 2f
         val range = chosenRoom?.let { Decor.rooms(place).getOrNull(it) } ?: return middle
@@ -927,12 +959,6 @@ class Engine(
         if (hypot(at.x - bagCenter.x, at.y - bagCenter.y) < bagRadius * 1.1f) return Target.BagButton
         if (bagOpen) trayHit(at)?.let { return Target.FromBag(it) }
         val p = toScene(at)
-        // In the home designer furniture comes first.
-        if (designMode) fixtureAt(p)?.let { f ->
-            if (sim.movable(f)) return Target.Furniture(f)
-            f.anim = 1f
-            host.sfx(Sfx.HMM, 0.4f, 0.8f)
-        }
         val list = drawList()
         for (i in list.indices.reversed()) {
             val b = list[i]
@@ -940,6 +966,12 @@ class Engine(
                 for (t in world.carried(b)) if (hitCarried(b, t, p)) return Target.Hold(t)
             }
             if (hit(b, p)) return Target.Hold(b)
+        }
+        // Figures and loose objects keep working while the furniture panel is open.
+        if (designMode) fixtureAt(p)?.let { f ->
+            if (sim.movable(f)) return Target.Furniture(f)
+            f.anim = 1f
+            host.sfx(Sfx.HMM, 0.4f, 0.8f)
         }
         return Target.Pan
     }
@@ -1067,7 +1099,7 @@ class Engine(
             val finger = toScene(g.finger)
             // Machines first: the pot, the blender, the toilet, the workbench, the garden.
             for (f in world.fixturesIn(place)) {
-                val zone = f.spec.dropZone ?: continue
+                val zone = PlayInteractions.zone(f, body) ?: f.spec.dropZone ?: continue
                 val fx = f.x + f.shiftX
                 if (zone.contains(finger.x - fx, finger.y - f.y) || zone.contains(center.x - fx, center.y - f.y)) {
                     if (sim.dropInto(place, f, body)) {
@@ -1138,7 +1170,7 @@ class Engine(
             val p = b as? Person ?: continue
             val k = max(0.6f, p.h / 0.31f)
             val parts = buildList {
-                if (t.type.edible || t.type == ThingType.PEPPER) add(Part.MOUTH to (if (t.type == ThingType.PEPPER) 0.09f else 0.075f))
+                if (PlayConnections.canTaste(t) || t.type == ThingType.PEPPER) add(Part.MOUTH to (if (t.type == ThingType.PEPPER) 0.09f else 0.075f))
                 if (t.type.slot == Slot.HEAD) add(Part.HAT to 0.1f)
                 if (t.type.slot == Slot.FACE) add(Part.GLASSES to 0.07f)
                 if (t.type == ThingType.GARMENT) add(Part.BODY to 0.1f)
@@ -1169,11 +1201,20 @@ class Engine(
         val a = p.anim
         val mouth = Anatomy.at(p, Part.MOUTH)
         when (result) {
+            Give.YUCK -> {
+                if (t.mode == Mode.FREE) sim.give(p, t, Part.HAND)
+                a.face = Face.YUCK
+                a.faceTime = 2f
+                a.talk = 0f
+                a.chew = 0f
+                voice(p, Sfx.HMM, 0.8f)
+            }
             Give.ATE, Give.DRANK -> {
                 a.face = Face.CHOMP
                 a.faceTime = 0.6f
                 host.sfx(if (result == Give.DRANK) Sfx.GULP else Sfx.CHOMP, 0.8f)
                 if (result == Give.ATE) particles.burst(PKind.CRUMB, mouth[0], mouth[1], 6, 0.35f, 0.008f, Color(0xFFD9A15A), up = 0.1f)
+                if (t.type == ThingType.GRILLED_FISH || t.type == ThingType.GRILLED_SAUSAGE) voiceLater(p, Sfx.YUM)
                 // A half-eaten thing drops back into the hand, ready for the next bite.
                 if (t.mode == Mode.FREE) sim.give(p, t, Part.HAND)
             }
@@ -1295,7 +1336,9 @@ class Engine(
         }
         // A fixture? Front-most first, wall fixtures last.
         fixtureAt(p)?.let { f ->
+            if (f.type == FixtureType.TRACTOR && vehicleId != f.id) vehicle?.let { sim.driveTractor(it, 0) }
             sim.tap(place, f, p.x - (f.x + f.shiftX), p.y - (f.y + f.shiftY))
+            if (f.type == FixtureType.TRACTOR) vehicleId = f.id
             host.changed()
             return
         }
@@ -2131,6 +2174,7 @@ class Engine(
 
     /** The scene left the screen: let go of every picture. */
     fun detach() {
+        closeDriving()
         sprites.clear()
         sprites.graphics = null
     }

@@ -118,6 +118,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
     val edge = if (compact) 8.dp else 16.dp
     val gap = if (compact) 8.dp else 12.dp
     var menuOpen by remember { mutableStateOf(false) }
+    var friendsOpen by remember { mutableStateOf(false) }
     val builderOpen = place.mine && mineUi.open && !engine.designMode && vm.world.mine.job == null
     val panelWidth = when {
         engine.designMode -> playPanelWidth(compact, designer = true)
@@ -196,6 +197,9 @@ fun PlayScreen(vm: TrollfossViewModel) {
             }
         }
 
+        RoundButton(S.friends.str(), onClick = { friendsOpen = true }, size = btn, tone = Tones.Mint,
+            modifier = Modifier.align(Alignment.TopStart).padding(start = edge + (btn + gap) * 2, top = edge), icon = Icons.Friends)
+
         val photo = {
             scope.launch {
                 if (!capturePhoto) {
@@ -235,7 +239,6 @@ fun PlayScreen(vm: TrollfossViewModel) {
             }
             Row(Modifier.align(Alignment.BottomStart).padding(edge), horizontalArrangement = Arrangement.spacedBy(gap)) {
                 RoundButton(S.workshop.str(), onClick = { vm.open(Screen.Creator(null)) }, tone = Tones.Grape, icon = Icons.Workshop)
-                RoundButton(app.trollfoss.ui.SM.furnish.str(), onClick = { engine.designMode = true }, tone = Tones.Berry, icon = DesignIcons.Sofa)
                 if (place.mine) RoundButton(app.trollfoss.ui.SM.build.str(), onClick = { mineUi.open = !mineUi.open }, tone = if (mineUi.open) Tones.Sun else Tones.Mint, icon = BuildIcons.Hammer)
                 if (place.mine) RoundButton(app.trollfoss.ui.SM.paint.str(), onClick = {
                     mineUi.tab = 2; mineUi.open = true
@@ -275,7 +278,6 @@ fun PlayScreen(vm: TrollfossViewModel) {
                     RoundButton(S.weather.str(), onClick = { vm.cycleWeather() }, size = small, tone = Tones.Cream, icon = weatherIcon)
                     RoundButton(S.camera.str(), onClick = { menuOpen = false; photo() }, size = small, tone = Tones.Cream, tapSound = false, icon = Icons.Camera)
                     RoundButton(S.workshop.str(), onClick = { menuOpen = false; vm.open(Screen.Creator(null)) }, size = small, tone = Tones.Grape, icon = Icons.Workshop)
-                    RoundButton(app.trollfoss.ui.SM.furnish.str(), onClick = { menuOpen = false; engine.designMode = true }, size = small, tone = Tones.Berry, icon = DesignIcons.Sofa)
                     if (place.mine) RoundButton(app.trollfoss.ui.SM.build.str(), onClick = { menuOpen = false; mineUi.open = !mineUi.open }, size = small, tone = if (mineUi.open) Tones.Sun else Tones.Mint, icon = BuildIcons.Hammer)
                     if (place.mine) RoundButton(app.trollfoss.ui.SM.paint.str(), onClick = {
                         menuOpen = false; mineUi.tab = 2; mineUi.open = true
@@ -286,9 +288,26 @@ fun PlayScreen(vm: TrollfossViewModel) {
         }
         if (place.mine && !engine.designMode) MineTravelButtons(vm, place, compact,
             if (compact) Modifier.align(Alignment.TopCenter).padding(top = 8.dp)
-            else Modifier.align(Alignment.TopStart).padding(start = edge + (btn + gap) * 2, top = 8.dp))
+            else Modifier.align(Alignment.TopStart).padding(start = edge + (btn + gap) * 3, top = 8.dp))
         if (!compact) RoomNavigator(vm, engine, Modifier.align(Alignment.TopCenter).padding(top = 100.dp, start = 20.dp, end = 20.dp))
+        if (!engine.designMode) {
+            RoundButton(app.trollfoss.ui.SM.furnish.str(), onClick = { menuOpen = false; engine.closeDriving(); engine.designMode = true },
+                modifier = Modifier.align(Alignment.BottomEnd).padding(end = if (compact) 78.dp else 108.dp, bottom = edge),
+                size = btn, tone = Tones.Berry, icon = DesignIcons.Sofa)
+        }
+        if (!engine.designMode && engine.vehicle != null) {
+            Row(Modifier.align(Alignment.BottomCenter).padding(bottom = edge).background(T.Cream.copy(alpha = 0.94f), RoundedCornerShape(32.dp)).padding(6.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                RoundButton(S.driveLeft.str(), onClick = { engine.drive(-1) }, size = btn, tone = Tones.Sea, icon = { driveArrow(false) })
+                RoundButton(S.stopDriving.str(), onClick = { engine.drive(0) }, size = btn, tone = Tones.Sun, icon = {
+                    drawRect(T.Ink, Offset(size.width * 0.3f, size.height * 0.3f), androidx.compose.ui.geometry.Size(size.width * 0.4f, size.height * 0.4f))
+                })
+                RoundButton(S.driveRight.str(), onClick = { engine.drive(1) }, size = btn, tone = Tones.Sea, icon = { driveArrow(true) })
+                app.trollfoss.ui.components.CloseButton(engine::closeDriving, size = btn)
+            }
+        }
         } // The controls belong to the visible scene, beside the panel.
+        if (friendsOpen) FriendsPanel(vm.world, engine::invite, onClose = { friendsOpen = false })
         AnimatedVisibility(
             visible = engine.designMode,
             enter = slideInHorizontally { it } + fadeIn(),
@@ -319,7 +338,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
             if (compact) {
                 BuildHint(pointDown = false, modifier = Modifier.align(Alignment.TopEnd).padding(top = edge + btn + 6.dp + 48.dp, end = edge))
             } else {
-                BuildHint(pointDown = true, modifier = Modifier.align(Alignment.BottomStart).padding(bottom = edge + btn + 8.dp, start = edge + (btn + gap) * 2 - 10.dp))
+                BuildHint(pointDown = true, modifier = Modifier.align(Alignment.BottomStart).padding(bottom = edge + btn + 8.dp, start = edge + (btn + gap) - 10.dp))
             }
         }
         if (place.mine && mine.askDemolish >= 0) DemolishDialog(vm)
@@ -358,6 +377,15 @@ private fun GlimtCounter(found: Int, total: Int, modifier: Modifier = Modifier, 
 }
 
 /** Three dots, or a cross when the menu is open. */
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.driveArrow(right: Boolean) {
+    val s = size.minDimension
+    val a = if (right) 0.3f else 0.7f
+    val b = 1f - a
+    drawLine(T.Ink, Offset(a * s, 0.5f * s), Offset(b * s, 0.5f * s), s * 0.09f)
+    drawLine(T.Ink, Offset(0.5f * s, 0.28f * s), Offset(b * s, 0.5f * s), s * 0.09f)
+    drawLine(T.Ink, Offset(0.5f * s, 0.72f * s), Offset(b * s, 0.5f * s), s * 0.09f)
+}
+
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.menuDots(open: Boolean) {
     val s = size.minDimension
     val ink = T.Ink

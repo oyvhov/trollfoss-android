@@ -154,7 +154,11 @@ private fun DrawScope.thing(type: ThingType, v: Int, used: Int, w: Float, h: Flo
     ThingType.COMB -> thComb(w, h, pen)
     ThingType.SPRAY -> thSpray(v, w, h, pen)
     ThingType.WAND -> thWand(w, h, pen)
-    ThingType.BUCKET -> thBucket(v, w, h, pen)
+    ThingType.BUCKET -> {
+        thBucket(v, w, h, pen)
+        if (used > 0) inkedOval(Rect(-0.37f * w, -0.77f * h, 0.37f * w, -0.67f * h), Color(0xFF75C8D8), pen, shade = false)
+        Unit
+    }
     ThingType.SPADE -> thSpade(w, h, pen)
     ThingType.TOOTHBRUSH -> thToothbrush(w, h, pen)
     ThingType.HAMMER -> thHammer(w, h, pen)
@@ -176,7 +180,11 @@ private fun DrawScope.thing(type: ThingType, v: Int, used: Int, w: Float, h: Flo
     ThingType.FEATHER -> thFeather(w, h, pen)
 
     // Home
-    ThingType.CUP -> thCup(v, w, h, pen)
+    ThingType.CUP -> {
+        thCup(v, w, h, pen)
+        if (used > 0) inkedOval(Rect(-0.32f * w, -0.87f * h, 0.22f * w, -0.73f * h), Color(0xFF75C8D8), pen, shade = false)
+        Unit
+    }
     ThingType.PILLOW -> thPillow(v, w, h, pen)
     ThingType.PLANT_POT -> thPlantPot(w, h, pen)
     ThingType.CANDLE -> thCandle(w, h, pen)

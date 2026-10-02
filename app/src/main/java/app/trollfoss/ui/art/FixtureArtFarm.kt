@@ -62,8 +62,8 @@ internal fun DrawScope.fxTractor(f: Fixture, u: Float, pen: Pen) {
     val red = FxC.red
     val dark = FxC.charcoal
     val bob = f.bob * u
-    val rear = f.shiftX / TRACTOR_RR
-    val front = f.shiftX / TRACTOR_FR
+    val rear = f.angle / TRACTOR_RR
+    val front = f.angle / TRACTOR_FR
     // The far wheels peek out behind the body.
     fxWheel(u, q(-0.11f, -0.12f, 0.17f), TRACTOR_RR * u, 0.04f, rear, red, pen)
     fxWheel(u, q(0.17f, -0.065f, 0.16f), TRACTOR_FR * u, 0.03f, front, red, pen)
@@ -117,7 +117,7 @@ internal fun DrawScope.fxTractor(f: Fixture, u: Float, pen: Pen) {
 internal fun DrawScope.fxTractorFront(f: Fixture, u: Float, pen: Pen) {
     fun q(x: Float, y: Float, z: Float) = fxQ(u, x, y, z)
     val c = q(-0.11f, -0.12f, 0f)
-    fxWheel(u, c, TRACTOR_RR * u, 0.045f, f.shiftX / TRACTOR_RR, FxC.red, pen)
+    fxWheel(u, c, TRACTOR_RR * u, 0.045f, f.angle / TRACTOR_RR, FxC.red, pen)
     translate(0f, f.bob * u) {
         val ro = 0.15f * u
         val ri = 0.132f * u

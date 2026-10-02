@@ -28,7 +28,7 @@ påske og graskartid. Storhuset og Mitt hus har fleire etasjar bak kvart sitt re
 | Stad | Det du kan gjere |
 | --- | --- |
 | **Familiehuset** | Leggje nokon i senga, slå på radioen og danse, lage mat, bade, spyle ting ned i do. |
-| **Bakeriet** | Bake kake av deig og eple, lage smoothie, hente is og frukt. |
+| **Bakeriet** | Bake kake av deig og eple, lage smoothie, hente venner og ta med traktoren inn. |
 | **Frisøren** | Klippe, krølle og farge håret, prøve nye klede og hattar. |
 | **Stranda** | Fiske frå brygga, bade, byggje sandslott, ro båt. |
 | **Fossen** | Telt, bål, marshmallow og eit drakeegg som klekkjer. Nordlys og stjerneskot om natta. |
@@ -44,11 +44,15 @@ påske og graskartid. Storhuset og Mitt hus har fleire etasjar bak kvart sitt re
 | **Heileberget** | Det store, lange fjellet: ta taubana opp, rop mot ekko-steinen, møt geitene og plant flagget på toppen. |
 | **Storhuset** | Utforske fire etasjar og ein hage, ta heisen og rutsjebanane, møte roboten Rolf og spøkelset Sture og finne fem gylne nøklar. |
 | **Mitt hus** | Byggje eit eige hus rom for rom, velje tak og fargar, møblere og lage ein etasje til. Dyrke bær, bake og snikre ein gitar. |
-| **Vagstaddalen** | Opne dørene i laftehytta, fiske i elva, sitje ved bålet og møte katten. |
+| **Vagstaddalen** | Opne den brune hytta med blå vindauge og torvtak, fiske i elva, grille fangsten og hente venner på tur. |
 
 ## Det som gjer det spesielt
 
 - **Humor overalt.** Prompepute, bananskal, pepar som bles hatten av, kake i fjeset, hikke og rap, kiling – og alle ler med.
+- **Hent venner.** Vel eit portrett frå heile bygda, så kjem den same figuren med klede og det han held. Også eigne namngjevne figurar og venner i sekken kan hentast.
+- **Samansette historier.** Rå fisk gir «æsj», grilla fisk gir «nam». Fyll ein kopp, drikk vatnet eller sløkk eit bål, og tenn att med ved. Instrument får venner til å danse, og lys mot spegel gir stjerneregn.
+- **Traktor overalt.** Ta han med mellom stader og køyr med piler og stopp. Passasjeren og kameraet følgjer med, medan møblar blir skubba og lause ting sprett.
+- **Magi og hemmelege rom.** Eventyrsopp gjer figuren kjempestor i 20 sekund. Slime gir sveving. Raude bøker og nøklar kan avsløre små rom med overraskingar.
 - **Ønskjebobler.** Figurane tenkjer på noko dei vil ha. Gi dei det og sjå kva som skjer.
 - **Heimedesignar.** Flytt møblar, hent nye frå katalogen, byt tapet og golv, legg møblar på lager og ta dei med til andre hus. Møblar glir på plass ved veggar og ved sida av kvarandre. Kosten ryddar heile staden.
 - **Meir hus på nettbrett.** Romoversikt gir direkte romval, og over romma kan ein sjå takbjelkar, loft og små dyr. Sidepanelet held leikeområdet og sekken synlege.
@@ -57,6 +61,10 @@ påske og graskartid. Storhuset og Mitt hus har fleire etasjar bak kvart sitt re
 - **Skrå-3D.** Verda er teikna i skrå projeksjon med djupn, skuggar og lys som følgjer tida på døgnet.
 - **76 løynde glimt**, ei oppdagingsbok med oppskrifter, dagens pakke i postkassa – og nokre **løynde overraskingar** som ikkje er nemnde her.
 - **Dag og natt**, regn, snø, regnboge, nordlys. Kamera og fotoalbum.
+
+Plan og gjennomføring av dei nye samanhengane står i
+[interaksjonsplanen](docs/INTERAKSJON.md), med kontrollresultat i
+[overleveringa](docs/OVERLEVERING.md).
 
 <p align="center"><img src="docs/images/trollfoss-sosial.png" width="720" alt="Trollfoss" /></p>
 

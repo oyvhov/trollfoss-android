@@ -17,6 +17,11 @@ fun Txt.str(): String = get(LocalMaalform.current)
  * labels, the grown-up page and accessibility descriptions.
  */
 object S {
+    val friends = Txt("Venner", "Venner")
+    val bringFriend = Txt("Hent ein venn", "Hent en venn")
+    val driveLeft = Txt("Køyr til venstre", "Kjør til venstre")
+    val driveRight = Txt("Køyr til høgre", "Kjør til høyre")
+    val stopDriving = Txt("Stopp traktoren", "Stopp traktoren")
     val mapDrag = Txt("Dra kartet sidelengs", "Dra kartet sidelengs")
     val appName = txt("Trollfoss")
 

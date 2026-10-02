@@ -1,5 +1,17 @@
 # Endringslogg
 
+## 1.3.0 – Venner og samanhengande leik
+
+- Hent venner frå heile bygda med ein fast portrettknapp. Same figur kjem med klede og det han held, også frå sekken. Han blir sett på tørr grunn eller eit rom som har golv.
+- Folk og ting kan flyttast også medan møbelpanelet er ope. Møbleringsknappen er flytta til høgre, ved sekken.
+- Traktoren køyrer med reell posisjon i alle stader, også etter flytting via møbellageret til Bakeriet. Piler og stopp styrer han; passasjer og kamera følgjer med. Han skubbar møblar og sprett lause ting utan å slette noko.
+- Rå fisk, egg, pølse og deig gir ei tydeleg grimase. Legg råvarene på bål, komfyr eller vedomn og gi den ferdige maten til ein figur. Grilla fisk gir «nam».
+- Fyll koppar og bøtter, drikk vatnet, sløkk eld og tenn att med ved. Frø og vatn gir planter svar, instrument får venner til å danse, og lys mot spegel gir stjerneregn.
+- Eventyrsopp gir kjempestor figur i 20 sekund; slime gir sveving. Effekten og det fylte vatnet blir lagra.
+- Seks nye hemmelege små rom i Familiehuset, Bakeriet, Trollhola, Romstasjonen, Garden og Vagstaddalen. Bank tre gonger, prøv den raude boka eller ein nøkkel. Oppdagingsboka har ni nye overraskingar.
+- Hytta i Vagstaddalen har fått brune plankar, raude lister, blå vindauge, torvtak og grå pipe frå referansefotoet. Bjørker og bergvegg omkransar hytta, og elva byrjar i terrenget.
+- Grundig plan og oversikt over samanhengane: `docs/INTERAKSJON.md`.
+
 ## 1.2.1 – Finare hus, levande kart og lettare møblering
 
 - Kartet følgjer årstidene: gyllen bakke og oransje tre om hausten, snø og kvite tre om vinteren, frisk grøn bakke og rosa blomstring om våren.

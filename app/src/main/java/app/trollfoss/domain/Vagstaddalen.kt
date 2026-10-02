@@ -7,6 +7,10 @@ object Vagstaddalen {
     const val WATERLINE = 0.83f
     const val BED = 0.97f
     const val CABIN = 0
+    val cabinSpec = FixtureSpec(0.92f, 0.42f,
+        container = RRect(-0.3f, -0.30f, 0.3f, -0.02f),
+        surfaces = listOf(SurfaceSpec(-0.3f, 0.3f, -0.02f, interior = true), SurfaceSpec(-0.46f, 0.46f, -0.42f)),
+        light = RRect(-0.5f, -0.46f, 0.5f, 0.05f))
 
     fun blueprint(): PlaceSpec {
         val p = PlaceId.VAGSTADDALEN

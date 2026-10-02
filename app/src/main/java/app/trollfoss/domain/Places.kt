@@ -152,7 +152,8 @@ object Places {
             if (d.on >= 0) raw.fixtures[d.on].shift.let { s -> d.copy(y = d.y + s, shift = s) } else d
         }
         val things = raw.things.map { t -> if (t.on >= 0) t.copy(y = t.y + fixtures[t.on].shift) else t }
-        return PlaceSpec(raw.id, raw.grounds, raw.water, fixtures, things, raw.people)
+        val nook = PlaySecrets.nooks[raw.id]?.let { (x, variant) -> FixtureDef(FixtureType.SECRET_NOOK, x, raw.id.back + 0.012f, variant) }
+        return PlaceSpec(raw.id, raw.grounds, raw.water, fixtures + listOfNotNull(nook), things, raw.people)
     }
 
     private fun f(type: FixtureType, x: Float, y: Float = Float.NaN, variant: Int = 0, on: Int = -1) = FixtureDef(type, x, y, variant, 0f, on)
