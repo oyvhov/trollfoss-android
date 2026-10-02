@@ -71,6 +71,7 @@ class Designer(private val sim: Sim, private val random: Random) {
 
     /** Puts [f] away in the store. What stood on it falls; whoever sat on it stands up. */
     fun store(place: PlaceId, f: Fixture): Boolean {
+        if (f.id in world.playAssemblies) return sim.magic.unmake(f)
         if (!canStore(place, f)) return false
         for (b in world.bodiesIn(place)) {
             if (b.mode == Mode.SEATED && b.holder == f.id) {

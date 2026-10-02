@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,6 +27,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -191,7 +194,12 @@ private fun RoomsTab(vm: TrollfossViewModel, engine: Engine, place: PlaceId, til
         return
     }
     val selected = if (h.selectedPlace == place) h.selected else -1
-    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    var preview by remember(place, selected) { mutableStateOf<RoomKind?>(null) }
+    val roomScroll = rememberScrollState()
+    val roomScope = rememberCoroutineScope()
+    Column(Modifier.fillMaxWidth().verticalScroll(roomScroll), verticalArrangement = Arrangement.spacedBy(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        if (preview == null) {
+        GameText(SM.houseOverview.str(), fontSize = 14.sp, color = T.Ink)
         // The five slots of the floor: tap one to look at it.
         for (floor in listOf(PlaceId.MINE_UPPER, PlaceId.MINE_GROUND)) {
         GameText((if (floor == PlaceId.MINE_UPPER) SM.upperFloor else SM.groundFloor).str(), fontSize = 12.sp, color = T.Ink)
@@ -204,7 +212,7 @@ private fun RoomsTab(vm: TrollfossViewModel, engine: Engine, place: PlaceId, til
                 val label = (if (floor == PlaceId.MINE_UPPER) SM.upperFloor else SM.groundFloor).str() + " · " + (if (i == 0) SM.hall.str() else h.kind(floor, i)?.let { SM.kind(it).str() } ?: (SM.chooseSlot.str() + " ${i + 1}"))
                 Box(
                     Modifier
-                        .size(chip)
+                        .weight(1f).height(if (tile < 100.dp) 48.dp else 64.dp)
                         .semantics { contentDescription = label }
                         .clip(RoundedCornerShape(8.dp))
                         .background(if (chosen) T.SunTop else if (standing) Color.White else T.CreamDeep)
@@ -235,6 +243,7 @@ private fun RoomsTab(vm: TrollfossViewModel, engine: Engine, place: PlaceId, til
             }
         }
         }
+        }
         val kind = if (selected >= 0) h.kind(place, selected) else null
         if (selected >= 0) GameText(if (kind == null && selected > 0) SM.buildingSlot.str() + " ${selected + 1}" else SM.youAreHere.str() + ": " + (kind?.let { SM.kind(it).str() } ?: SM.hall.str()), fontSize = 14.sp, color = T.Ink)
         when {
@@ -258,11 +267,20 @@ private fun RoomsTab(vm: TrollfossViewModel, engine: Engine, place: PlaceId, til
                 )
             }
             selected >= 0 && Mine.canBuild(h, place, selected) -> {
+                preview?.let { k ->
+                    GameText(SM.previewRoom.str(), fontSize = 14.sp, color = T.Ink)
+                    CachedThumb("mine:preview:${k.name}", if (tile < 100.dp) 112.dp else 200.dp) { drawKindThumb(k) }
+                    GameText(SM.kind(k).str(), fontSize = 18.sp, color = T.Ink)
+                    RoundButton(SM.buildThisRoom.str(), onClick = {
+                        if (sim.mine.buildRoom(place, selected, k)) { focusSlot(selected); vm.changed() }
+                    }, enabled = !vm.sim.mine.busy, size = 56.dp, tone = Tones.Mint, icon = BuildIcons.Hammer)
+                    GameText(SM.buildThisRoom.str(), fontSize = 13.sp, color = T.Ink)
+                }
                 for (row in RoomKind.entries.chunked(2)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         for (k in row) {
-                            Tile(size = tile, desc = SM.kind(k).str(), enabled = !vm.sim.mine.busy, onClick = {
-                                if (sim.mine.buildRoom(place, selected, k)) { focusSlot(selected); vm.changed() }
+                            Tile(size = tile, desc = SM.kind(k).str(), chosen = preview == k, enabled = !vm.sim.mine.busy, onClick = {
+                                preview = k; roomScope.launch { roomScroll.animateScrollTo(0) }
                             }) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     CachedThumb("mine:kind:${k.name}", tile - 32.dp) { drawKindThumb(k) }

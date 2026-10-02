@@ -204,6 +204,7 @@ class Engine(
     private class Flight(val from: Offset, var t: Float = 0f)
 
     private sealed interface Target {
+        class Coop(val fixture: Fixture) : Target
         class Hold(val body: Body) : Target
         class FromBag(val body: Body) : Target
         object BagButton : Target
@@ -298,6 +299,7 @@ class Engine(
     // ---------------------------------------------------------------------------------- update
 
     fun update(dt: Float) {
+        if (playVersion != sim.magic.revision) playVersion = sim.magic.revision
         time += dt
         val targetNight = if (world.night) 1f else 0f
         night += (targetNight - night) * min(1f, dt * 1.6f)
@@ -749,6 +751,16 @@ class Engine(
     fun down(id: Long, at: Offset, uptime: Long) {
         // A finger on the side panel belongs to the panel, not to the furniture hidden behind it.
         if (panelPx > 0f && at.x > widthPx - panelPx) return
+        if (!designMode && !bagOpen && hypot(at.x - bagCenter.x, at.y - bagCenter.y) >= bagRadius * 1.1f) {
+            val point = toScene(at)
+            for (f in world.fixturesIn(place).asReversed()) {
+                val side = sim.magic.handle(f, point.x - f.x, point.y - f.y) ?: continue
+                if (sim.magic.grip(id, f, side, point.x)) {
+                    grabs[id] = Grab(Target.Coop(f), at, uptime, time).apply { moved = true }
+                }
+                return
+            }
+        }
         val grab = Grab(pick(at), at, uptime, time)
         grab.tracker.addPosition(uptime, at)
         val body = heldBody(grab)
@@ -773,6 +785,11 @@ class Engine(
 
     fun move(id: Long, at: Offset, uptime: Long) {
         val g = grabs[id] ?: return
+        if (g.target is Target.Coop) {
+            g.finger = at
+            if (sim.magic.drag(id, toScene(at).x)) host.changed()
+            return
+        }
         g.tracker.addPosition(uptime, at)
         val dx = at.x - g.finger.x
         g.finger = at
@@ -791,6 +808,7 @@ class Engine(
 
     fun up(id: Long, at: Offset, uptime: Long) {
         val g = grabs.remove(id) ?: return
+        if (g.target is Target.Coop) { sim.magic.release(id); host.changed(); return }
         g.tracker.addPosition(uptime, at)
         g.finger = at
         val v = g.tracker.calculateVelocity()
@@ -807,6 +825,7 @@ class Engine(
                 }
                 Target.Pan -> tapScene(at)
                 is Target.Furniture -> putDown(t.fixture)
+                is Target.Coop -> Unit
             }
             return
         }
@@ -1042,6 +1061,8 @@ class Engine(
     }
 
     fun cancel() {
+        sim.magic.cancel()
+        playThingId = -1; playFixtureId = -1
         bringTeamAfterPan = false
         cancelCatalogueDrag()
         closeDriving()
@@ -1120,6 +1141,7 @@ class Engine(
 
     /** Picks a body up: out of seats, hands, cupboards and the bag. */
     private fun lift(g: Grab, body: Body) {
+        if (body is Thing) sim.magic.lifted(body)
         if (body.mode == Mode.BAG) {
             body.mode = Mode.FREE
             body.place = place
@@ -1192,6 +1214,8 @@ class Engine(
             }
         }
         if (body is Thing) {
+            sim.magic.lifted(body)
+            if (sim.magic.combine(body) != null) { host.changed(); return }
             val center = Offset(body.x, body.y - body.h / 2)
             val finger = toScene(g.finger)
             // Machines first: the pot, the blender, the toilet, the workbench, the garden.
@@ -1370,7 +1394,19 @@ class Engine(
         due.forEach { it.second() }
     }
 
+    var playThingId by mutableIntStateOf(-1)
+    var playVersion by mutableIntStateOf(0)
+        private set
+    var playFixtureId by mutableIntStateOf(-1)
+    fun playAction(action: app.trollfoss.domain.PlayAction): Boolean {
+        val t = world.bodies[playThingId] as? Thing ?: return false
+        if (!sim.magic.act(t, action)) return false
+        host.changed(); playThingId = -1
+        return true
+    }
+
     private fun tapBody(b: Body) {
+        if (b is Thing && sim.magic.actions(b).size > 1) { playThingId = b.id; return }
         when (b) {
             is Person -> {
                 val a = b.anim
@@ -1438,6 +1474,7 @@ class Engine(
         }
         // A fixture? Front-most first, wall fixtures last.
         fixtureAt(p)?.let { f ->
+            if (f.type == FixtureType.PLAY_FORT || f.type == FixtureType.PLAY_CART) { playFixtureId = f.id; return }
             if (Vehicles.controllable(f) && vehicleId != f.id) vehicle?.let { sim.vehicles.drive(it, 0) }
             sim.tap(place, f, p.x - (f.x + f.shiftX), p.y - (f.y + f.shiftY))
             if (Vehicles.controllable(f)) vehicleId = f.id

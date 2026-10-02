@@ -95,6 +95,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     private inner class Relay(private val inner: SimListener) : SimListener by inner {
         override fun onFx(fx: Fx, x: Float, y: Float, fixture: Fixture?, thing: Thing?, param: Int) {
             heard(fx, fixture, thing, param)
+            magic.react(fixture?.place ?: thing?.place ?: here, fx, x, y)
             inner.onFx(fx, x, y, fixture, thing, param)
         }
 
@@ -216,6 +217,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     val designer = Designer(this, random)
     val vehicles = Vehicles(this)
     val personPlay = PersonPlay(this)
+    val magic = MagicPlay(this)
 
     /** Mitt hus: building, the housewarming and what the furniture of the child's own house does. */
     val mine = MineBuilder(this, random)
@@ -771,6 +773,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         life.seated(p)
         p.place?.let { jokes.seated(it, p) }
         tasks.record(Deed.SEATED, p.place ?: here, fixture = f.type)
+        magic.seated(f)
         return true
     }
 
@@ -1072,6 +1075,11 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
 
     /** A tap on a fixture at ([dx], [dy]) from its bottom centre. */
     fun tap(place: PlaceId, f: Fixture, dx: Float, dy: Float) {
+        if (f.type == FixtureType.PLAY_FORT || f.type == FixtureType.PLAY_CART) {
+            f.on = !f.on; f.anim = 1f
+            listener.onFx(if (f.on) Fx.ON else Fx.OFF, f.x, f.top, f)
+            return
+        }
         here = place
         f.taps = if (time - f.tapTime < 3.5f) f.taps + 1 else 1
         f.tapTime = time
@@ -1737,6 +1745,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         t.resting = false
         t.inside = -1
         t.rot = 0f
+        if (slot == Slot.HEAD) magic.wore(p, t)
     }
 
     fun applyPotion(p: Person, type: ThingType) {

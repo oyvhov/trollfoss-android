@@ -246,6 +246,12 @@ class World {
     /** The children's chosen figures, in player order. The same bodies travel with their belongings. */
     val playerIds = linkedSetOf<Int>()
 
+    /** Parts retain their identities while made into a toy; kit recalls never steal ordinary furniture. */
+    val playAssemblies = linkedMapOf<Int, PlayAssembly>()
+    val playKits = linkedMapOf<PlayRecipe, List<Int>>()
+    val playLightIds = linkedSetOf<Int>()
+    var adventureHat = -1
+
     /** Glimt the child has collected. */
     val found = linkedSetOf<String>()
 

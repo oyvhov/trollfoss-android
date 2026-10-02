@@ -21,6 +21,8 @@ import app.trollfoss.domain.ThingType
 import app.trollfoss.domain.Weather
 import app.trollfoss.domain.World
 import app.trollfoss.domain.WorldFactory
+import app.trollfoss.domain.PlayAssembly
+import app.trollfoss.domain.PlayRecipe
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -97,6 +99,14 @@ class WorldStore(private val file: File) {
             put("unlocked", JSONArray(world.unlocked.toList()))
             put("flags", JSONArray(world.flags.toList()))
             put("players", JSONArray(world.playerIds.toList()))
+            put("play", JSONObject().apply {
+                put("hat", world.adventureHat)
+                put("lights", JSONArray(world.playLightIds.toList()))
+                put("kits", JSONObject().apply { world.playKits.forEach { (recipe, ids) -> put(recipe.name, JSONArray(ids)) } })
+                put("assemblies", JSONArray().apply { world.playAssemblies.forEach { (id, a) ->
+                    put(JSONObject().put("id", id).put("recipe", a.recipe.name).put("parts", JSONArray(a.parts)))
+                } })
+            })
             put("mine", JSONObject().apply {
                 val h = world.mine
                 put("started", h.started)
@@ -351,6 +361,28 @@ class WorldStore(private val file: File) {
             }
 
             // Anything that refers to something that is gone falls free where it was.
+            json.optJSONObject("play")?.let { play ->
+                world.adventureHat = play.optInt("hat", -1)
+                play.optJSONArray("lights")?.let { a -> for (i in 0 until a.length()) world.playLightIds += a.optInt(i) }
+                play.optJSONObject("kits")?.let { kits -> for (key in kits.keys()) {
+                    val recipe = enumOrNull<PlayRecipe>(key) ?: continue
+                    val ids = kits.optJSONArray(key) ?: continue
+                    world.playKits[recipe] = (0 until minOf(ids.length(), recipe.parts.size)).map { ids.optInt(it, -1) }
+                } }
+                val assemblies = play.optJSONArray("assemblies") ?: JSONArray()
+                val claimed = hashSetOf<Int>()
+                for (i in 0 until assemblies.length()) {
+                    val a = assemblies.optJSONObject(i) ?: continue
+                    val id = a.optInt("id", -1)
+                    val recipe = enumOrNull<PlayRecipe>(a.optString("recipe")) ?: continue
+                    val parts = a.optJSONArray("parts") ?: continue
+                    val ids = (0 until parts.length()).map { parts.optInt(it, -1) }
+                    if (world.fixtures[id]?.type != recipe.fixture || ids.size != recipe.parts.size || ids.distinct().size != ids.size) continue
+                    if (ids.withIndex().any { (index, part) -> val t = world.bodies[part] as? Thing
+                        t == null || t.type != recipe.parts[index] || t.mode != Mode.INSIDE || t.holder != id || part in claimed }) continue
+                    world.playAssemblies[id] = PlayAssembly(recipe, ids); claimed += ids
+                }
+            }
             for (b in world.bodies.values) {
                 val valid = when (b.mode) {
                     Mode.SEATED, Mode.INSIDE -> world.fixtures[b.holder] != null
@@ -360,6 +392,9 @@ class WorldStore(private val file: File) {
                 if (!valid) {
                     b.mode = Mode.FREE
                     b.holder = -1
+                }
+                if (b.mode == Mode.INSIDE && world.fixtures[b.holder]?.type in setOf(FixtureType.PLAY_FORT, FixtureType.PLAY_CART) && b.holder !in world.playAssemblies) {
+                    b.mode = Mode.FREE; b.holder = -1; b.inside = -1
                 }
                 if (b.inside >= 0 && world.fixtures[b.inside] == null) b.inside = -1
                 if (b.mode != Mode.BAG && b.mode != Mode.WORN && b.place == null) b.place = PlaceId.HOME

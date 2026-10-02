@@ -122,6 +122,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
     val gap = if (compact) 8.dp else 12.dp
     var menuOpen by remember { mutableStateOf(false) }
     var friendsOpen by remember { mutableStateOf(false) }
+    var playCardsOpen by remember { mutableStateOf(false) }
     val builderOpen = place.mine && mineUi.open && !engine.designMode && vm.world.mine.job == null
     val selectedBuildRoom = remember(mineVersion, place) {
         vm.world.mine.let { if (it.selectedPlace == place) it.selected else -1 }
@@ -340,8 +341,18 @@ fun PlayScreen(vm: TrollfossViewModel) {
                 app.trollfoss.ui.components.CloseButton(engine::closeDriving, size = btn)
             }
         }
+        if (!engine.designMode && !builderOpen && engine.vehicle == null) RoundButton(S.playCards.str(), onClick = {
+            engine.cancel(); playCardsOpen = true
+        }, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = edge), size = btn, tone = Tones.Sun, icon = Icons.Star)
+        if (!engine.designMode && !builderOpen && !place.big) AdventureReminder(vm, engine,
+            Modifier.align(Alignment.TopCenter).padding(top = if (compact) 70.dp else 150.dp)) {
+            engine.cancel(); playCardsOpen = true
+        }
         } // The controls belong to the visible scene, beside the panel.
         if (friendsOpen) FriendsPanel(vm.world, vm.place, engine::invite, engine::packPerson, onClose = { friendsOpen = false })
+        if (playCardsOpen) PlayCards(vm, engine) { playCardsOpen = false }
+        (vm.world.bodies[engine.playThingId] as? app.trollfoss.domain.Thing)?.let { PlayActions(vm, engine, it) }
+        vm.world.fixtures[engine.playFixtureId]?.let { PlayCreation(vm, engine, it) }
         AnimatedVisibility(
             visible = engine.designMode,
             enter = slideInHorizontally { it } + fadeIn(),

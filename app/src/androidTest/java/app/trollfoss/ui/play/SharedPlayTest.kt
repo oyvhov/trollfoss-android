@@ -12,6 +12,39 @@ import org.junit.runner.RunWith
 /** Run on Android: exercises the real pointer engine used by children sharing the screen. */
 @RunWith(AndroidJUnit4::class)
 class SharedPlayTest {
+    @Test fun cartHandlesUseTwoIndependentFingersAndCancelClearsBoth() {
+        val world = World(); val sim = Sim(world)
+        sim.magic.kit(PlayRecipe.CART, PlaceId.HOME, 1.1f)
+        val parts = world.playKits.getValue(PlayRecipe.CART).map { world.bodies[it] as Thing }
+        parts.forEach { it.x = 1.1f; it.y = PlaceId.HOME.floor }
+        val cart = requireNotNull(sim.magic.combine(parts.last()))
+        val e = Engine(world, PlaceId.HOME, sim, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        fun handle(side: Float) = Offset((cart.x + side*0.36f - e.cam)*e.u, 1200f - e.u + (cart.y-0.15f)*e.u)
+        val left = handle(-1f); val right = handle(1f); val x = cart.x
+        e.down(1, left, 1000); e.move(1,left+Offset(40f,0f),1100)
+        assertEquals(x, cart.x,0.001f)
+        e.down(2,right,1101); e.move(1,left+Offset(120f,0f),1200)
+        e.move(2,right+Offset(80f,0f),1201)
+        assertTrue(cart.x > x); assertEquals(2,cart.count)
+        e.up(1,left+Offset(120f,0f),1300); assertEquals(1,cart.count)
+        val after = cart.x; e.move(2,right+Offset(100f,0f),1400)
+        assertEquals(after,cart.x,0.001f); e.cancel(); assertEquals(0,cart.count)
+    }
+
+    @Test fun aRealDragCombinesPartsAndTapOffersMultipleUses() {
+        val world = World(); val sim = Sim(world)
+        val e = Engine(world,PlaceId.HOME,sim,host,false,0f).apply { setSize(1920f,1200f,1.5f) }
+        val sheet = world.addThing(ThingType.AT_SHEET_HAT,0,PlaceId.HOME,1.0f,0.9f)
+        val pillow = world.addThing(ThingType.PILLOW,0,PlaceId.HOME,1.4f,0.9f)
+        val from = Offset((pillow.x-e.cam)*e.u,1200f-e.u+(pillow.y-pillow.h/2)*e.u)
+        e.down(1,from,1000); e.up(1,from,1100); assertEquals(pillow.id,e.playThingId)
+        e.playThingId = -1
+        e.down(1,from,1200)
+        val to = Offset((sheet.x-e.cam)*e.u,from.y)
+        e.move(1,to,1400); repeat(20) { e.update(0.016f) }; e.up(1,to,1700)
+        assertTrue(world.fixtures.values.any { it.type == FixtureType.PLAY_FORT })
+        assertEquals(Mode.INSIDE,pillow.mode); assertEquals(Mode.INSIDE,sheet.mode)
+    }
     @Test fun draggingAPlayerIntoTheBagAlsoStopsFollowing() {
         val world = World()
         val p = world.addPerson(Species.FOLK, Look(), 1f, PlaceId.HOME, 0.7f, 0.9f, "A")

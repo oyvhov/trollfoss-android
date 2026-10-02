@@ -164,7 +164,7 @@ enum class FixtureType {
     GA_GREENHOUSE, GA_PLANTER, GA_FROG, GA_BRIDGE, GA_SHED, GA_GRILL, GA_PATIO, GA_FLOWER_BED, GA_BIRDHOUSE,
     GA_BARREL, GA_COMPOST, GA_HAMMOCK, GA_GNOME, GA_MOWER, GA_SPRINKLER, GA_GATE, GA_SNOWMAN, GA_PINWHEEL,
     GA_SANDBOX, GA_TRAMPOLINE, GA_TREEHOUSE, GA_LADDER, GA_SWING, GA_ZIP, GA_ZIP_POLE,
-    SECRET_NOOK,
+    SECRET_NOOK, PLAY_FORT, PLAY_CART,
     ;
 
     val spec: FixtureSpec get() = specs.getValue(this)
@@ -177,6 +177,12 @@ enum class FixtureType {
         private fun seat(dx: Float, dy: Float) = SpotSpec(dx, dy, Pose.SIT)
 
         private fun build(type: FixtureType): FixtureSpec = when (type) {
+            PLAY_FORT -> FixtureSpec(0.58f, 0.39f, front = true,
+                spots = listOf(seat(-0.12f, -0.025f), seat(0.12f, -0.025f)),
+                surfaces = listOf(SurfaceSpec(-0.22f, 0.22f, -0.025f)))
+            PLAY_CART -> FixtureSpec(0.78f, 0.25f, front = true,
+                spots = listOf(seat(-0.11f, -0.12f), seat(0.11f, -0.12f)),
+                surfaces = listOf(SurfaceSpec(-0.23f, 0.23f, -0.12f)))
             SECRET_NOOK -> FixtureSpec(0.62f, 0.48f,
                 container = RRect(-0.27f, -0.45f, 0.27f, -0.02f),
                 surfaces = listOf(SurfaceSpec(-0.27f, 0.27f, -0.02f, interior = true), SurfaceSpec(0.13f, 0.25f, -0.15f, interior = true)),

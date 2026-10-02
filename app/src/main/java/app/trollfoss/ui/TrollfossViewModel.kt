@@ -257,6 +257,12 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         private set
     private var pendingFocus: Float? = null
 
+    fun travelPlayCard(to: PlaceId, x: Float = 1.15f) {
+        pendingFocus = x
+        travel(to)
+        engine?.takeIf { it.place == to }?.focusOn(x)
+    }
+
     override fun passage(passage: Passage, arrivalX: Float) {
         pendingFocus = arrivalX
         travel(passage.to)
