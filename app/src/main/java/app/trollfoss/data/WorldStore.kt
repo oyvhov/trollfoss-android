@@ -99,6 +99,10 @@ class WorldStore(private val file: File) {
             put("unlocked", JSONArray(world.unlocked.toList()))
             put("flags", JSONArray(world.flags.toList()))
             put("players", JSONArray(world.playerIds.toList()))
+            put("toys", JSONObject().apply {
+                put("inputs", JSONObject().apply { world.toyInputs.forEach { (key,id) -> put(key,id) } })
+                put("photos", JSONArray().apply { world.toyPhotos.values.forEach { put(encodeBody(it)) } })
+            })
             put("play", JSONObject().apply {
                 put("hat", world.adventureHat)
                 put("lights", JSONArray(world.playLightIds.toList()))
@@ -157,13 +161,14 @@ class WorldStore(private val file: File) {
             put("fixtures", JSONArray().apply {
                 world.fixtures.values.forEach { f ->
                     val moved = WorldFactory.moved(f)
-                    if (f.open || f.on || f.mode != 0 || f.count != 0 || moved) {
+                    if (f.open || f.on || f.mode != 0 || f.count != 0 || moved || f.type==FixtureType.PLAY_LIFT) {
                         put(JSONObject().apply {
                             put("id", f.id)
                             put("open", f.open)
                             put("on", f.on)
                             put("mode", f.mode)
                             put("count", f.count)
+                            if(f.type==FixtureType.PLAY_LIFT) put("toyAngle",f.angle.toDouble())
                             // Furniture the child has moved keeps its new spot.
                             if (moved) {
                                 put("x", f.x.toDouble())
@@ -336,6 +341,8 @@ class WorldStore(private val file: File) {
                 f.on = o.optBoolean("on", false)
                 f.mode = o.optInt("mode", 0)
                 f.count = o.optInt("count", 0)
+                if(f.type==FixtureType.PLAY_TRAIN && "train:broken:${f.id}" in world.flags) f.variant=1
+                if(f.type==FixtureType.PLAY_LIFT) f.angle=o.optDouble("toyAngle",f.mode.coerceIn(0,1).toDouble()).toFloat().coerceIn(0f,1f)
                 if (f.type == FixtureType.PLAY_CART) f.count = 0 // Touches belong to this session only.
                 if (o.has("x")) {
                     f.x = o.optDouble("x", f.x.toDouble()).toFloat()
@@ -344,6 +351,7 @@ class WorldStore(private val file: File) {
                 }
             }
 
+            world.fixtures.values.filter { it.type==FixtureType.PLAY_TRAIN && "train:broken:${it.id}" in world.flags }.forEach { it.variant=1 }
             var maxId = 0
             val bodies = json.optJSONArray("bodies") ?: JSONArray()
             for (i in 0 until bodies.length()) {
@@ -411,6 +419,16 @@ class WorldStore(private val file: File) {
             Mine.returnGuests(world)
             Mine.syncFixtures(world)
             WorldFactory.addMissingPlaces(world, known)
+            json.optJSONObject("toys")?.let { toys ->
+                toys.optJSONObject("inputs")?.let { inputs -> inputs.keys().forEach { key ->
+                    val id=inputs.optInt(key,-1)
+                    if(key.length<=100 && (id in world.bodies || id in world.fixtures)) world.toyInputs[key]=id
+                } }
+                toys.optJSONArray("photos")?.let { photos -> for(i in 0 until photos.length()) {
+                    val p=photos.optJSONObject(i)?.let(::decodeBody) as? Person ?: continue
+                    if(p.id in 1..1_000_000) world.toyPhotos[p.id]=p
+                } }
+            }
             return Saved(world, settings)
         }
 

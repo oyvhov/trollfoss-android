@@ -21,6 +21,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import app.trollfoss.domain.*
+import app.trollfoss.ui.SP
+import app.trollfoss.ui.components.TrollDialog
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,93 +66,104 @@ import kotlinx.coroutines.delay
  */
 @Composable
 fun TasksScreen(vm: TrollfossViewModel) {
-    val tasks = vm.sim.tasks
-    val board = remember(vm.tasksLeft, vm.stickers) { tasks.board() }
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF3B2A6B), Color(0xFF1F1840))))
-            .padding(horizontal = 24.dp, vertical = 16.dp),
-    ) {
-        Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                IconCanvas(DesignIcons.Tasks, Modifier.size(52.dp))
-                GameText(S.tasks.str(), fontSize = 34.sp, style = MaterialTheme.typography.displaySmall, color = Color.White)
-                Row(
-                    Modifier.background(T.Grape, RoundedCornerShape(50)).border(2.dp, T.Ink, RoundedCornerShape(50)).padding(horizontal = 12.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    IconCanvas(DesignIcons.Sticker, Modifier.size(30.dp))
-                    GameText("${vm.stickers}", fontSize = 22.sp, style = MaterialTheme.typography.titleLarge, color = Color.White)
+    vm.tasksVersion
+    var tab by remember { mutableIntStateOf(if(vm.levelGift>0) 1 else 0) }
+    LaunchedEffect(tab) { if(tab==1) vm.dismissLevelGift() }
+    var selected by remember { mutableStateOf<ToyReward?>(null) }
+    val compact=androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp<520
+    val board=vm.sim.tasks.board()
+    Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF3B2A6B),Color(0xFF1F1840)))).padding(if(compact) 12.dp else 24.dp)) {
+        Column(Modifier.fillMaxSize(),verticalArrangement=Arrangement.spacedBy(10.dp)) {
+            Row(Modifier.padding(end=60.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)) {
+                GameText(SP.level(Progression.level(vm.world)).str(),fontSize=if(compact) 22.sp else 30.sp,color=Color.White)
+                IconCanvas(DesignIcons.Sticker,Modifier.size(28.dp))
+                GameText("${vm.stickers}",fontSize=22.sp,color=Color.White)
+                if(Progression.missing(vm.world)>0) {
+                    val next=ToyReward.entries.first { it.level==Progression.level(vm.world)+1 }
+                    ToyPicture(next,if(compact) 42.dp else 60.dp)
+                    GameText(SP.missing(Progression.missing(vm.world)).str(),fontSize=if(compact) 14.sp else 18.sp,color=Color.White)
+                    LevelDots(vm)
                 }
             }
-            Row(Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
-                for (task in board) TaskCard(vm, task, tasks.progress(task), tasks.done(task))
-                if (vm.tasksLeft == 0) {
-                    RoundButton("Nye oppdrag", onClick = vm::newTasks, size = 96.dp, tone = Tones.Sun, icon = Icons.Dice)
+            Row(horizontalArrangement=Arrangement.spacedBy(10.dp),verticalAlignment=Alignment.CenterVertically) {
+                for(i in 0..1) Row(Modifier.background(if(tab==i) T.Sun else T.Cream,RoundedCornerShape(18.dp)).clickable { tab=i }.padding(horizontal=18.dp,vertical=10.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+                    IconCanvas(if(i==0) DesignIcons.Tasks else Icons.Star,Modifier.size(28.dp))
+                    GameText((if(i==0) S.tasks else SP.gifts).str(),fontSize=18.sp,color=T.Ink)
                 }
+                if(tab==0 && vm.tasksLeft==0) RoundButton(SP.newTasks.str(),onClick=vm::newTasks,size=48.dp,tone=Tones.Sun,icon=Icons.Dice)
+                if(vm.levelGift>0) GameText(SP.newGifts.str(),fontSize=16.sp,color=T.Sun)
             }
-        }
-        CloseButton(onClick = vm::back, modifier = Modifier.align(Alignment.TopEnd))
-    }
-}
-
-@Composable
-private fun TaskCard(vm: TrollfossViewModel, task: Task, progress: Int, done: Boolean) {
-    val stamp = remember(task.id) { Animatable(if (done) 1f else 0f) }
-    LaunchedEffect(done) {
-        if (done && stamp.value < 1f) {
-            delay(200)
-            stamp.snapTo(2.2f)
-            stamp.animateTo(1f, spring(dampingRatio = 0.45f, stiffness = Spring.StiffnessMediumLow))
-        }
-    }
-    Column(
-        Modifier
-            .width(200.dp)
-            .clip(RoundedCornerShape(26.dp))
-            .background(if (done) Color(0xFFE8FFF1) else T.Cream)
-            .border(3.dp, T.Ink, RoundedCornerShape(26.dp))
-            .padding(12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Box(Modifier.size(150.dp), contentAlignment = Alignment.Center) {
-            CachedThumb("task:${task.id}", 150.dp) { drawTaskPicture(task) }
-            if (stamp.value > 0.01f) {
-                Canvas(Modifier.size(120.dp).graphicsLayer { scaleX = stamp.value; scaleY = stamp.value; alpha = (2.2f - stamp.value).coerceIn(0f, 1f) }) {
-                    rotate(-14f) {
-                        drawCircle(T.Mint.copy(alpha = 0.25f), size.minDimension / 2f)
-                        drawCircle(T.MintDeep, size.minDimension / 2f - 4f, style = Stroke(8f))
-                        val tick = Path().apply {
-                            moveTo(size.width * 0.28f, size.height * 0.52f)
-                            lineTo(size.width * 0.44f, size.height * 0.68f)
-                            lineTo(size.width * 0.74f, size.height * 0.34f)
+            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(12.dp)) {
+                if(tab==0) {
+                    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp)) {
+                        for(task in board) TaskCard(vm,task,Modifier.weight(1f),compact)
+                    }
+                    GameText(SP.keepStickers.str(),fontSize=14.sp,color=Color.White)
+                } else {
+                    for(level in listOf(1,2,3)) {
+                        GameText((if(level==1) SP.free else SP.level(level)).str(),fontSize=20.sp,color=Color.White)
+                        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)) {
+                            for(reward in ToyReward.entries.filter { it.level==level }) Column(Modifier.weight(1f).background(T.Cream,RoundedCornerShape(20.dp)).border(2.dp,T.Ink,RoundedCornerShape(20.dp)).clickable { selected=reward }.padding(10.dp),horizontalAlignment=Alignment.CenterHorizontally) {
+                                ToyPicture(reward,if(compact) 64.dp else 104.dp)
+                                GameText(SP.name(reward).str(),fontSize=if(compact) 14.sp else 18.sp,color=T.Ink,maxLines=2)
+                                Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(5.dp)) {
+                                    IconCanvas(if(Progression.unlocked(vm.world,reward)) Icons.Check else Icons.Lock,Modifier.size(22.dp))
+                                    GameText((if(Progression.unlocked(vm.world,reward)) SP.tryIt else SP.level(level)).str(),fontSize=14.sp,color=T.Ink)
+                                }
+                            }
                         }
-                        drawPath(tick, T.MintDeep, style = Stroke(16f, cap = StrokeCap.Round))
+                    }
+                    Row(Modifier.fillMaxWidth().background(T.Cream,RoundedCornerShape(20.dp)).padding(14.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)) {
+                        ToyPicture(ToyReward.TRAIN,76.dp)
+                        Column(Modifier.weight(1f)) {
+                            GameText(SP.trainFound.str(),fontSize=20.sp,color=T.Ink)
+                            GameText(SP.trainStep(vm.sim.toys.trainStage).str(),fontSize=16.sp,color=T.Ink)
+                            Row(horizontalArrangement=Arrangement.spacedBy(12.dp)) { repeat(3) { i -> Box(Modifier.size(40.dp),contentAlignment=Alignment.Center) {
+                                if(i==0) CachedThumb("train:gear",40.dp) { drawThingThumb(ThingType.PLAY_GEAR,0,Rect(Offset.Zero,size)) }
+                                else IconCanvas(if(i==1) Icons.Gear else Icons.Friends,Modifier.size(34.dp))
+                                if(vm.sim.toys.trainStage>i) IconCanvas(Icons.Check,Modifier.size(20.dp).align(Alignment.BottomEnd).background(T.Mint,RoundedCornerShape(12.dp)))
+                            } } }
+                        }
+                        RoundButton((if(Progression.unlocked(vm.world,ToyReward.TRAIN)) SP.tryIt else S.playGo).str(),onClick={
+                            if(Progression.unlocked(vm.world,ToyReward.TRAIN)) selected=ToyReward.TRAIN
+                            else { vm.sim.toys.startTrain();vm.changed();vm.travelPlayCard(PlaceId.MANOR_UPPER,vm.world.fixtures[vm.world.toyInputs["train:fixture"]]?.x ?: 1.15f) }
+                        },size=52.dp,tone=Tones.Sea,icon=Icons.Map)
                     }
                 }
             }
         }
-        // Progress: one dot for each time it has to be done.
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            for (i in 0 until task.need) {
-                Canvas(Modifier.size(20.dp)) {
-                    drawCircle(if (i < progress) T.Sun else T.CreamDeep, size.minDimension / 2f)
-                    drawCircle(Ink.line, size.minDimension / 2f - 1.5f, style = Stroke(3f))
-                }
-            }
+        CloseButton(vm::back,Modifier.align(Alignment.TopEnd))
+    }
+    selected?.let { reward -> ToyRewardDetails(vm,reward) { selected=null } }
+}
+
+@Composable
+fun ToyPicture(reward:ToyReward,side:androidx.compose.ui.unit.Dp) {
+    CachedThumb("reward:${reward.name}",side) { drawFixtureThumb(reward.type,0,Rect(Offset.Zero,size)) }
+}
+
+@Composable
+private fun TaskCard(vm:TrollfossViewModel,task:Task,modifier:Modifier,compact:Boolean) {
+    val done=vm.sim.tasks.done(task)
+    Column(modifier.background(if(done) Color(0xFFE8FFF1) else T.Cream,RoundedCornerShape(22.dp)).border(2.dp,T.Ink,RoundedCornerShape(22.dp)).padding(if(compact) 9.dp else 14.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(6.dp)) {
+        Box(contentAlignment=Alignment.Center) {
+            CachedThumb("task:${task.id}",if(compact) 76.dp else 120.dp) { drawTaskPicture(task) }
+            if(done) IconCanvas(Icons.Check,Modifier.size(50.dp).background(T.Mint.copy(alpha=0.8f),RoundedCornerShape(30.dp)))
         }
-        val place = task.place
-        if (place != null) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                GameText(S.place(place).str(), fontSize = 16.sp, style = MaterialTheme.typography.titleMedium, color = Color.White)
-                if (!done && place != vm.place) RoundButton(S.map.str(), onClick = { vm.travel(place) }, size = 44.dp, tone = Tones.Sea, icon = Icons.Map)
+        GameText(SP.taskHint(task).str(),fontSize=if(compact) 14.sp else 18.sp,color=T.Ink,maxLines=3)
+        Row(horizontalArrangement=Arrangement.spacedBy(6.dp)) {
+            repeat(task.need) { i -> Canvas(Modifier.size(18.dp)) { drawCircle(if(i<vm.sim.tasks.progress(task)) T.Sun else T.CreamDeep);drawCircle(Ink.line,size.minDimension/2-1.5f,style=Stroke(3f)) } }
+        }
+        GameText((task.place?.let { S.place(it) } ?: S.map).str(),fontSize=14.sp,color=T.Grape)
+        if(!done) Row(horizontalArrangement=Arrangement.spacedBy(10.dp)) {
+            Column(horizontalAlignment=Alignment.CenterHorizontally) {
+                RoundButton(SP.help.str(),onClick={ vm.goTask(task) },size=48.dp,tone=Tones.Sea,icon=Icons.Map)
+                GameText(SP.help.str(),fontSize=12.sp,color=T.Ink)
             }
-        } else {
-            // Anywhere at all.
-            IconCanvas(Icons.Map, Modifier.height(36.dp).size(36.dp).graphicsLayer { alpha = 0.35f })
+            Column(horizontalAlignment=Alignment.CenterHorizontally) {
+                RoundButton(SP.swap.str(),onClick={ vm.swapTask(task) },size=48.dp,tone=Tones.Cream,icon=Icons.Dice)
+                GameText(SP.swap.str(),fontSize=12.sp,color=T.Ink)
+            }
         }
     }
 }
@@ -158,6 +176,10 @@ fun DrawScope.drawTaskPicture(task: Task) {
     val thing = task.thing
     val species = task.species
     when {
+        task.id=="crown" -> {
+            drawSpeciesThumb(app.trollfoss.domain.Species.FOLK,square(c,s*0.82f))
+            drawThingThumb(app.trollfoss.domain.ThingType.CROWN,1,square(Offset(c.x,c.y-s*0.34f),s*0.32f))
+        }
         fixture != null && thing != null -> {
             drawFixtureThumb(fixture, 0, square(Offset(c.x - s * 0.08f, c.y - s * 0.04f), s * 0.8f))
             drawThingThumb(thing, 0, square(Offset(c.x + s * 0.3f, c.y + s * 0.3f), s * 0.36f))

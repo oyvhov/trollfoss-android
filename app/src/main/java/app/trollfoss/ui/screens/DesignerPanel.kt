@@ -79,6 +79,7 @@ import app.trollfoss.ui.components.Tones
 import app.trollfoss.ui.play.Engine
 import app.trollfoss.ui.theme.T
 import app.trollfoss.ui.SM
+import app.trollfoss.ui.SP
 import app.trollfoss.ui.S
 import app.trollfoss.ui.str
 import kotlin.math.max
@@ -104,7 +105,6 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
     // The store as a list of its own for every change: the grid below only redraws when it is handed a new list.
     val stored = remember(version, world.storage.size) { world.storage.toList() }
     val discarded = remember(version, world.discardedStorage.size) { world.discardedStorage.toList() }
-    val stickers = world.stickers.size
     val thumbSide = if (compact) 88.dp else 112.dp
     // Furniture dropped on the panel flies into the box: open the box, so the child sees where it went.
     var storedBefore by remember(place) { mutableIntStateOf(stored.size) }
@@ -176,13 +176,17 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                     val items = remember(place) { Decor.catalogue(place) }
                     LazyVerticalGrid(GridCells.Fixed(2), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         itemsIndexed(items) { index, item ->
-                            val locked = item.stickers > stickers
+                            val reward = Decor.reward(item)
+                            val label = reward?.let { SP.name(it).str() }
+                            val locked = !Decor.available(world, item)
                             val hangs = item.type.spec.wall
-                            Tile(modifier = furnitureDrag(engine, item.type, item.variant, locked = locked), look = TileLook.ROOM, tint = index / 2 + index % 2, feet = if (hangs) null else thumbSide * fixtureThumbFeet(item.type), onClick = {
-                                if (locked) feedback.sfx(Sfx.HMM, 0.6f, 0.8f) else engine.addFurniture(item.type, item.variant)
+                            Tile(modifier = furnitureDrag(engine, item.type, item.variant, locked = locked).semantics { if (label != null) contentDescription = label }, look = TileLook.ROOM, tint = index / 2 + index % 2, feet = if (hangs) null else thumbSide * fixtureThumbFeet(item.type), onClick = {
+                                if (locked && reward != null) {
+                                    engine.cancel(); engine.designMode = false; engine.wantedToy = reward
+                                } else if (locked) feedback.sfx(Sfx.HMM, 0.6f, 0.8f) else engine.addFurniture(item.type, item.variant)
                             }) {
                                 // What hangs on the wall hangs a little higher, clear of the floor.
-                                Box(Modifier.padding(bottom = if (hangs) 22.dp else 0.dp)) { FurnitureThumb(item.type, item.variant, place, locked) }
+                                Box(Modifier.padding(bottom = if (hangs) 22.dp else 0.dp)) { FurnitureThumb(item.type, item.variant, place, locked && reward == null) }
                                 if (locked) LockBadge(item)
                             }
                         }
@@ -347,7 +351,7 @@ private fun DrawScope.drawRoomCard(wall: Color, feet: Float?) {
 @Composable
 private fun LockBadge(item: CatalogueItem) {
     Box(Modifier.size(104.dp)) {
-        Row(
+        if (Decor.reward(item) != app.trollfoss.domain.ToyReward.TRAIN) Row(
             Modifier.align(Alignment.BottomCenter).padding(bottom = 4.dp).background(T.Grape, RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp),

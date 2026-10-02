@@ -215,6 +215,8 @@ fun PlayScreen(vm: TrollfossViewModel) {
         RoundButton(S.players.str(), onClick = { vm.open(Screen.Players) }, size = btn, tone = Tones.Sun,
             modifier = Modifier.align(Alignment.TopStart).padding(start = edge + (btn + gap) * 3, top = edge), icon = Icons.Friends)
         PlayerBar(vm, compact, Modifier.align(Alignment.TopStart).padding(start = edge, top = edge + btn + 6.dp))
+        if(vm.canUndo) RoundButton(app.trollfoss.ui.SP.undo.str(),onClick=vm::undoEdit,size=btn,tone=Tones.Sun,
+            modifier=Modifier.align(Alignment.TopStart).padding(start=edge+(btn+gap)*4,top=edge),icon=DesignIcons.Undo)
 
         if (place == app.trollfoss.domain.PlaceId.LAB) {
             var tunnelLabelVisible by remember(place) { mutableStateOf(false) }
@@ -353,6 +355,8 @@ fun PlayScreen(vm: TrollfossViewModel) {
         if (playCardsOpen) PlayCards(vm, engine) { playCardsOpen = false }
         (vm.world.bodies[engine.playThingId] as? app.trollfoss.domain.Thing)?.let { PlayActions(vm, engine, it) }
         vm.world.fixtures[engine.playFixtureId]?.let { PlayCreation(vm, engine, it) }
+        vm.world.fixtures[engine.toyFixtureId]?.let { ToyControls(vm,engine,it) }
+        engine.wantedToy?.let { ToyRewardDetails(vm,it) { engine.wantedToy=null } }
         AnimatedVisibility(
             visible = engine.designMode,
             enter = slideInHorizontally { it } + fadeIn(),

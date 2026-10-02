@@ -18,7 +18,8 @@ class Designer(private val sim: Sim, private val random: Random) {
     val canUndoDiscard: Boolean get() = discarded.isNotEmpty()
 
     /** Move one stored piece into the saved recycling box. */
-    fun discard(index: Int): Boolean {
+    fun discard(index: Int): Boolean = sim.edit { discardNow(index) }
+    private fun discardNow(index: Int): Boolean {
         if (index !in world.storage.indices) return false
         discarded += index to world.storage.removeAt(index)
         return true
@@ -28,7 +29,8 @@ class Designer(private val sim: Sim, private val random: Random) {
         return restoreDiscarded(discarded.lastIndex)
     }
 
-    fun restoreDiscarded(trashIndex: Int): Boolean {
+    fun restoreDiscarded(trashIndex: Int): Boolean = sim.edit { restoreDiscardedNow(trashIndex) }
+    private fun restoreDiscardedNow(trashIndex: Int): Boolean {
         if (trashIndex !in discarded.indices) return false
         val (index, item) = discarded.removeAt(trashIndex)
         world.storage.add(index.coerceIn(0, world.storage.size), item)
@@ -38,7 +40,8 @@ class Designer(private val sim: Sim, private val random: Random) {
     // ------------------------------------------------------------------ furniture
 
     /** Adds a piece of furniture from the catalogue or the store at ([x], [y]). Returns null when the place is full. */
-    fun add(place: PlaceId, type: FixtureType, variant: Int, x: Float, y: Float): Fixture? {
+    fun add(place: PlaceId, type: FixtureType, variant: Int, x: Float, y: Float): Fixture? = sim.edit { addNow(place,type,variant,x,y) }
+    private fun addNow(place: PlaceId, type: FixtureType, variant: Int, x: Float, y: Float): Fixture? {
         if ((place == PlaceId.MINE_GROUND || place == PlaceId.MINE_UPPER) &&
             (0 until Mine.SLOTS).none { world.mine.standing(place, it) }) return null
         val used = world.fixturesIn(place).map { place.indexOf(it.id) }.toSet()
@@ -70,7 +73,8 @@ class Designer(private val sim: Sim, private val random: Random) {
     }
 
     /** Puts [f] away in the store. What stood on it falls; whoever sat on it stands up. */
-    fun store(place: PlaceId, f: Fixture): Boolean {
+    fun store(place: PlaceId, f: Fixture): Boolean = sim.edit { storeNow(place,f) }
+    private fun storeNow(place: PlaceId, f: Fixture): Boolean {
         if (f.id in world.playAssemblies) return sim.magic.unmake(f)
         if (!canStore(place, f)) return false
         for (b in world.bodiesIn(place)) {
@@ -100,13 +104,15 @@ class Designer(private val sim: Sim, private val random: Random) {
         }
         world.fixtures.remove(f.id)
         world.storage += Stored(f.type, f.variant)
+        if(f.type==FixtureType.PLAY_TRAIN) world.flags.remove("train:broken:${f.id}")
         sim.invalidate(place)
         listener.onFx(Fx.STORE, f.x, f.y - f.spec.h / 2, f)
         return true
     }
 
     /** Takes a piece out of the store and places it. */
-    fun unstore(place: PlaceId, index: Int, x: Float, y: Float): Fixture? {
+    fun unstore(place: PlaceId, index: Int, x: Float, y: Float): Fixture? = sim.edit { unstoreNow(place,index,x,y) }
+    private fun unstoreNow(place: PlaceId, index: Int, x: Float, y: Float): Fixture? {
         val item = world.storage.getOrNull(index) ?: return null
         val f = add(place, item.type, item.variant, x, y) ?: return null
         world.storage.removeAt(index)
@@ -196,7 +202,8 @@ class Designer(private val sim: Sim, private val random: Random) {
     }
 
     /** New wallpaper ([wall]) or floor ([floor]) for a room; null keeps what is there. */
-    fun restyle(place: PlaceId, room: Int, wall: Int? = null, floor: Int? = null) {
+    fun restyle(place: PlaceId, room: Int, wall: Int? = null, floor: Int? = null) = sim.edit { restyleNow(place,room,wall,floor) }
+    private fun restyleNow(place: PlaceId, room: Int, wall: Int?, floor: Int?) {
         if (!Decor.decoratable(place)) return
         val old = Decor.style(world, place, room)
         world.styles[Decor.key(place, room)] = RoomStyle(

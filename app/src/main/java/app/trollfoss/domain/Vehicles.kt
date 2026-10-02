@@ -8,7 +8,7 @@ class Vehicles(private val sim: Sim) {
     private val world get() = sim.world
 
     fun drive(f: Fixture, direction: Int) {
-        if (!controllable(f) || world.fixtures[f.id] !== f) return
+        if (!controllable(f) || world.fixtures[f.id] !== f || sim.toys.broken(f)) return
         f.mode = direction.coerceIn(-1, 1)
         f.angleV = 0f
         f.on = f.mode != 0
@@ -27,6 +27,7 @@ class Vehicles(private val sim: Sim) {
     }
 
     fun step(place: PlaceId, f: Fixture, dt: Float) {
+        if(sim.toys.broken(f)) { f.on=false;f.mode=0;return }
         if (!f.on || f.lift > 0f) {
             f.bob = if (f.type == FixtureType.BOAT) sin(sim.time * 1.7f + f.id) * 0.007f else 0f
             return
@@ -77,6 +78,6 @@ class Vehicles(private val sim: Sim) {
 
     companion object {
         fun controllable(f: Fixture): Boolean = f.type in TYPES
-        private val TYPES = setOf(FixtureType.TRACTOR, FixtureType.BOAT, FixtureType.SUBMARINE, FixtureType.BUMPER_CAR)
+        private val TYPES = setOf(FixtureType.TRACTOR, FixtureType.BOAT, FixtureType.SUBMARINE, FixtureType.BUMPER_CAR, FixtureType.PLAY_BUS, FixtureType.PLAY_TRAIN)
     }
 }

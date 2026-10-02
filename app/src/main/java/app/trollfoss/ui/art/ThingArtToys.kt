@@ -21,10 +21,10 @@ import kotlin.math.sqrt
 
 private fun circlePath(c: Offset, r: Float): Path = Path().apply { addOval(Rect(c.x - r, c.y - r, c.x + r, c.y + r)) }
 
-internal fun DrawScope.thBall(w: Float, h: Float, pen: Pen) {
+internal fun DrawScope.thBall(w: Float, h: Float, pen: Pen, variant: Int = 0) {
     val c = Offset(0f, -h * 0.5f)
     val r = w * 0.48f
-    val red = Color(0xFFFF5A4E)
+    val red = ToyColors[variant.mod(ToyColors.size)]
     inkedCircle(c, r, red, pen)
     clipPath(circlePath(c, r)) {
         val band = Path().apply {

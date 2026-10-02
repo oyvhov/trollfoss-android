@@ -58,6 +58,9 @@ import app.trollfoss.domain.Species
 import app.trollfoss.domain.Thing
 import app.trollfoss.domain.ThingType
 import app.trollfoss.domain.Weather
+import app.trollfoss.domain.ToyPlay
+import app.trollfoss.domain.ToyReward
+import app.trollfoss.domain.edit
 import app.trollfoss.domain.Wish
 import app.trollfoss.domain.WishEvent
 import app.trollfoss.domain.WishKind
@@ -755,13 +758,21 @@ class Engine(
             val point = toScene(at)
             for (f in world.fixturesIn(place).asReversed()) {
                 val side = sim.magic.handle(f, point.x - f.x, point.y - f.y) ?: continue
+                beginEdit(id, f.id)
                 if (sim.magic.grip(id, f, side, point.x)) {
                     grabs[id] = Grab(Target.Coop(f), at, uptime, time).apply { moved = true }
-                }
+                    touching = true
+                } else endEdit(id)
                 return
             }
         }
         val grab = Grab(pick(at), at, uptime, time)
+        when(val target=grab.target) {
+            is Target.Hold -> beginEdit(id,target.body.id)
+            is Target.FromBag -> beginEdit(id,target.body.id)
+            is Target.Furniture -> beginEdit(id,target.fixture.id)
+            else -> Unit
+        }
         grab.tracker.addPosition(uptime, at)
         val body = heldBody(grab)
         if (body != null) {
@@ -781,6 +792,7 @@ class Engine(
             host.haptic()
         }
         grabs[id] = grab
+        touching = true
     }
 
     fun move(id: Long, at: Offset, uptime: Long) {
@@ -806,7 +818,15 @@ class Engine(
         }
     }
 
+    private val editFingers = mutableSetOf<Long>()
+    var touching by mutableStateOf(false)
+        private set
+    private fun beginEdit(id: Long, body: Int) { if(editFingers.add(id)) sim.journal?.begin(body) }
+    private fun endEdit(id: Long) { if(editFingers.remove(id)) sim.journal?.end() }
     fun up(id: Long, at: Offset, uptime: Long) {
+        try { upNow(id,at,uptime) } finally { endEdit(id);touching=grabs.isNotEmpty() }
+    }
+    private fun upNow(id: Long, at: Offset, uptime: Long) {
         val g = grabs.remove(id) ?: return
         if (g.target is Target.Coop) { sim.magic.release(id); host.changed(); return }
         g.tracker.addPosition(uptime, at)
@@ -860,18 +880,20 @@ class Engine(
     fun closeDriving() { drive(0); vehicleId = -1 }
 
     fun invite(p: Person) {
+        sim.journal?.begin(p.id)
+        try {
         if (PlayConnections.invite(sim, p, place, centerX())) {
             particles.burst(PKind.STAR, p.x, p.y - p.h / 2f, 12, 0.5f, 0.012f)
             host.sfx(Sfx.POP, 0.7f)
             host.changed()
         }
+        } finally { sim.journal?.end() }
     }
 
     fun packPerson(p: Person) {
         if (world.bodies[p.id] !== p || p.place != place || p.mode == Mode.BAG) return
         cancel()
-        intoBag(p)
-        bagCount = world.bag().size
+        sim.edit { intoBag(p);bagCount=world.bag().size }
     }
 
     private fun centerX(): Float {
@@ -973,11 +995,12 @@ class Engine(
      * floor and in depth, taking along whatever is on it, and lands with a thump where it is let go.
      */
     private fun moveFurniture(dt: Float) {
-        for (g in grabs.values) {
+        for ((fingerId,g) in grabs) {
             if (g.target is Target.Pan && !g.moved && time - g.born > LONG_PRESS) {
                 val p = toScene(g.finger)
                 val f = fixtureAt(p)
                 if (f != null && sim.movable(f)) {
+                    beginEdit(fingerId,f.id)
                     g.target = Target.Furniture(f)
                     g.moved = true
                     g.offX = f.x - p.x
@@ -1062,12 +1085,14 @@ class Engine(
 
     fun cancel() {
         sim.magic.cancel()
-        playThingId = -1; playFixtureId = -1
+        playThingId = -1; playFixtureId = -1; toyFixtureId = -1
         bringTeamAfterPan = false
         cancelCatalogueDrag()
         closeDriving()
         for (g in grabs.values) heldBody(g)?.takeIf { it.held && it.place == place }?.let { drop(g, it, 0f, 0f) }
         grabs.clear()
+        touching = false
+        editFingers.toList().forEach(::endEdit)
     }
 
     /** What a finger touches, from the top down. */
@@ -1141,7 +1166,7 @@ class Engine(
 
     /** Picks a body up: out of seats, hands, cupboards and the bag. */
     private fun lift(g: Grab, body: Body) {
-        if (body is Thing) sim.magic.lifted(body)
+        if (body is Thing) { sim.magic.lifted(body);sim.toys.lifted(body) }
         if (body.mode == Mode.BAG) {
             body.mode = Mode.FREE
             body.place = place
@@ -1214,6 +1239,7 @@ class Engine(
             }
         }
         if (body is Thing) {
+            sim.toys.lifted(body)
             sim.magic.lifted(body)
             if (sim.magic.combine(body) != null) { host.changed(); return }
             val center = Offset(body.x, body.y - body.h / 2)
@@ -1395,6 +1421,8 @@ class Engine(
     }
 
     var playThingId by mutableIntStateOf(-1)
+    var toyFixtureId by mutableIntStateOf(-1)
+    var wantedToy by mutableStateOf<ToyReward?>(null)
     var playVersion by mutableIntStateOf(0)
         private set
     var playFixtureId by mutableIntStateOf(-1)
@@ -1464,6 +1492,7 @@ class Engine(
 
     private fun tapScene(at: Offset) {
         val p = toScene(at)
+        if(sim.toys.pop(place,p.x,p.y)) { host.changed();return }
         if (catchStar(p)) return
         // A glimt?
         for (s in sim.visibleSecrets(place)) {
@@ -1474,6 +1503,7 @@ class Engine(
         }
         // A fixture? Front-most first, wall fixtures last.
         fixtureAt(p)?.let { f ->
+            if(f.type in ToyPlay.TYPES && (!Vehicles.controllable(f) || sim.toys.broken(f))) { cancel();toyFixtureId=f.id;return }
             if (f.type == FixtureType.PLAY_FORT || f.type == FixtureType.PLAY_CART) { playFixtureId = f.id; return }
             if (Vehicles.controllable(f) && vehicleId != f.id) vehicle?.let { sim.vehicles.drive(it, 0) }
             sim.tap(place, f, p.x - (f.x + f.shiftX), p.y - (f.y + f.shiftY))
@@ -2246,6 +2276,7 @@ class Engine(
     }
 
     private fun bodyKey(b: Body): Float {
+        if(b.mode==Mode.INSIDE && world.fixtures[b.holder]?.type in ToyPlay.VISIBLE_INSIDE) world.fixtures[b.holder]?.let { return fixtureKey(it)+0.0006f }
         if (b.mode == Mode.SEATED) world.fixtures[b.holder]?.let { f ->
             // Riders on the carousel go far to near as it turns.
             if (f.type == FixtureType.CAROUSEL) return fixtureKey(f) + 0.0006f + 0.00009f * (sin(f.angle + b.slot * 2.0944f) + 1f)
@@ -2271,6 +2302,7 @@ class Engine(
     }
 
     private fun hidden(b: Body): Boolean {
+        if(b.mode==Mode.INSIDE && world.fixtures[b.holder]?.type in ToyPlay.VISIBLE_INSIDE) return false
         if (b.mode == Mode.INSIDE || b.mode == Mode.WORN || b.mode == Mode.BAG) return true
         if (b.inside >= 0) {
             val box = world.fixtures[b.inside] ?: return false
@@ -2435,6 +2467,12 @@ class Engine(
         }
 
         timed(5) { particles.draw(this, u, cam, lw) }
+        for (bubble in sim.toys.bubbles) {
+            val center=Offset(sx(bubble.x),sy(bubble.y))
+            drawCircle(Color(0xFFCDEEF5).copy(alpha=0.45f),u*0.026f,center)
+            drawCircle(Color.White,u*0.026f,center,style=Stroke(lw*0.65f))
+            drawCircle(Color.White,u*0.007f,center+Offset(-u*0.009f,-u*0.010f))
+        }
         timed(6) { drawNight(lw) }
         drawSeasonGrade()
         lateText = list
@@ -2666,7 +2704,7 @@ class Engine(
 
     /** Stamps a cached picture of [f]'s [layer] (0 back, 1 front); false when it must be drawn live. */
     private fun DrawScope.stampFixture(f: Fixture, layer: Int, pen: Pen, empty: Boolean): Boolean {
-        if (!empty || f.anim > 0.01f || f.lift > 0f || f.type in LIVE_FIXTURES || (f.on && f.type in LIVE_WHEN_ON)) return false
+        if (!empty || f.anim > 0.01f || f.lift > 0f || f.type in LIVE_FIXTURES || f.type==FixtureType.PLAY_LIFT || f.type==FixtureType.PLAY_WINDMILL || (f.on && f.type in LIVE_WHEN_ON)) return false
         val look = FixtureLook(f.type, f.variant, layer, f.open, f.on, f.mode, f.count, (pen.night * 10f).toInt(), pen.weather, (pen.rainbow * 5f).toInt(), u.toInt())
         val w = f.spec.w * u
         val h = f.spec.h * u

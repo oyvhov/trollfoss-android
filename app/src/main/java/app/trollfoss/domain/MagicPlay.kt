@@ -82,7 +82,8 @@ class MagicPlay(private val sim: Sim) {
     }
 
     /** Only our own kit pieces are recalled. Existing room arrangements and held belongings stay put. */
-    fun kit(recipe: PlayRecipe, place: PlaceId, x: Float): Boolean {
+    fun kit(recipe: PlayRecipe, place: PlaceId, x: Float): Boolean = sim.edit { kitNow(recipe,place,x) }
+    private fun kitNow(recipe: PlayRecipe, place: PlaceId, x: Float): Boolean {
         sim.here = place
         val ground = PlaceId.FRONT - 0.04f
         if (place.mine && (place == PlaceId.MINE_YARD || !world.mine.standing(place, Mine.slotAt(x)))) return false
@@ -111,7 +112,8 @@ class MagicPlay(private val sim: Sim) {
     }
 
     /** Dropping any part beside its partners makes the same creation as its picture card. */
-    fun combine(t: Thing): Fixture? {
+    fun combine(t: Thing): Fixture? = sim.edit { combineNow(t) }
+    private fun combineNow(t: Thing): Fixture? {
         val place = t.place ?: return null
         sim.here = place
         if (t.held || t.mode != Mode.FREE) return null
@@ -139,7 +141,8 @@ class MagicPlay(private val sim: Sim) {
         return null
     }
 
-    fun unmake(f: Fixture): Boolean {
+    fun unmake(f: Fixture): Boolean = sim.edit { unmakeNow(f) }
+    private fun unmakeNow(f: Fixture): Boolean {
         val assembly = world.playAssemblies.remove(f.id) ?: return false
         cancel(f.id)
         // Use the normal safe storage path to release seats, loose contents and carried clothes.
@@ -183,7 +186,7 @@ class MagicPlay(private val sim: Sim) {
 
     fun react(place: PlaceId, fx: Fx, x: Float, y: Float) {
         val face = when (fx) {
-            Fx.BUILD, Fx.PLACE, Fx.GIFT, Fx.STARRAIN -> Face.WOW
+            Fx.BUILD, Fx.PLACE, Fx.GIFT, Fx.STARRAIN, Fx.PUMP, Fx.DRY, Fx.COOKED, Fx.SPARKLE -> Face.WOW
             Fx.FLUFF, Fx.BOING, Fx.SQUEAK -> Face.LAUGH
             Fx.WATER, Fx.BUBBLES -> Face.OOH
             else -> return

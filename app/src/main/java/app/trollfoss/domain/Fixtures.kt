@@ -165,6 +165,8 @@ enum class FixtureType {
     GA_BARREL, GA_COMPOST, GA_HAMMOCK, GA_GNOME, GA_MOWER, GA_SPRINKLER, GA_GATE, GA_SNOWMAN, GA_PINWHEEL,
     GA_SANDBOX, GA_TRAMPOLINE, GA_TREEHOUSE, GA_LADDER, GA_SWING, GA_ZIP, GA_ZIP_POLE,
     SECRET_NOOK, PLAY_FORT, PLAY_CART,
+    PLAY_BUBBLES, PLAY_WINDMILL, PLAY_BUS, PLAY_LAUNCHER, PLAY_MARBLES, PLAY_COLORS,
+    PLAY_LIFT, PLAY_POPCORN, PLAY_PUMP, PLAY_CAMERA, PLAY_TRAIN,
     ;
 
     val spec: FixtureSpec get() = specs.getValue(this)
@@ -177,6 +179,19 @@ enum class FixtureType {
         private fun seat(dx: Float, dy: Float) = SpotSpec(dx, dy, Pose.SIT)
 
         private fun build(type: FixtureType): FixtureSpec = when (type) {
+            PLAY_BUS, PLAY_TRAIN -> FixtureSpec(0.58f, 0.29f, front = true,
+                spots = listOf(seat(-0.12f, -0.09f), seat(0.12f, -0.09f)),
+                surfaces = listOf(SurfaceSpec(-0.20f, 0.20f, -0.09f)))
+            PLAY_LIFT -> FixtureSpec(0.34f, 0.48f, front = true,
+                spots = listOf(seat(0f, -0.045f)), dropZone = RRect(-0.17f, -0.5f, 0.17f, 0f))
+            PLAY_MARBLES -> FixtureSpec(0.58f, 0.38f, dropZone = RRect(-0.34f, -0.44f, 0.34f, 0f))
+            PLAY_LAUNCHER -> FixtureSpec(0.28f, 0.10f, dropZone = RRect(-0.19f, -0.24f, 0.19f, 0f))
+            PLAY_POPCORN -> FixtureSpec(0.33f, 0.37f, dropZone = RRect(-0.19f, -0.44f, 0.19f, 0f))
+            PLAY_COLORS -> FixtureSpec(0.24f, 0.29f, dropZone = RRect(-0.16f, -0.38f, 0.16f, 0f))
+            PLAY_PUMP -> FixtureSpec(0.18f, 0.27f, dropZone = RRect(-0.13f, -0.35f, 0.13f, 0f))
+            PLAY_WINDMILL -> FixtureSpec(0.35f, 0.43f, dropZone = RRect(-0.24f, -0.48f, 0.24f, 0f))
+            PLAY_BUBBLES -> FixtureSpec(0.28f, 0.24f)
+            PLAY_CAMERA -> FixtureSpec(0.20f, 0.33f)
             PLAY_FORT -> FixtureSpec(0.58f, 0.39f, front = true,
                 spots = listOf(seat(-0.12f, -0.025f), seat(0.12f, -0.025f)),
                 surfaces = listOf(SurfaceSpec(-0.22f, 0.22f, -0.025f)))

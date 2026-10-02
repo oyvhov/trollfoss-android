@@ -198,7 +198,7 @@ class PersonAnim {
  * A piece of furniture or a machine in a place. Its state is saved; the rest comes from the blueprint.
  * [depth] is where it stands on the floor band; for a radio on a table it is the table's depth.
  */
-class Fixture(val id: Int, val place: PlaceId, val type: FixtureType, var x: Float, var y: Float, val variant: Int = 0, var depth: Float = y) {
+class Fixture(val id: Int, val place: PlaceId, val type: FixtureType, var x: Float, var y: Float, var variant: Int = 0, var depth: Float = y) {
     var open = false
 
     /** The fixture this one stands on (a radio on a table), or -1. Set from the blueprint, never saved. */
@@ -251,6 +251,9 @@ class World {
     val playKits = linkedMapOf<PlayRecipe, List<Int>>()
     val playLightIds = linkedSetOf<Int>()
     var adventureHat = -1
+    /** Photographs keep the look at shutter time, including after clothes are changed. */
+    val toyPhotos = linkedMapOf<Int, Person>()
+    val toyInputs = linkedMapOf<String, Int>()
 
     /** Glimt the child has collected. */
     val found = linkedSetOf<String>()

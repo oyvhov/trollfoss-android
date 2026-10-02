@@ -17,6 +17,21 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class MovedFurnitureArtTest {
+    @Test fun levelToysHaveTheirOwnArtInEveryPlace() {
+        val image=Bitmap.createBitmap(220,220,Bitmap.Config.ARGB_8888)
+        val scope=CanvasDrawScope()
+        for(reward in app.trollfoss.domain.ToyReward.entries) for(place in PlaceId.entries) {
+            image.eraseColor(android.graphics.Color.TRANSPARENT)
+            scope.draw(Density(1f),LayoutDirection.Ltr,Canvas(image.asImageBitmap()),Size(220f,220f)) {
+                drawContext.transform.translate(110f,200f)
+                val f=Fixture(-1,place,reward.type,0f,0f)
+                assertTrue(drawToyBack(f,260f,Pen(2f)));assertTrue(drawToyFront(f,260f,Pen(2f)))
+            }
+            val pixels=IntArray(220*220);image.getPixels(pixels,0,220,0,0,220,220)
+            assertTrue("${reward.name} in $place has empty art",pixels.count { it ushr 24!=0 }>100)
+        }
+        image.recycle()
+    }
     @Test fun handmadeToysHaveRealArtInEveryPlace() {
         val image = Bitmap.createBitmap(200,200,Bitmap.Config.ARGB_8888)
         val scope = CanvasDrawScope()

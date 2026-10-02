@@ -202,6 +202,7 @@ fun MapScreen(vm: TrollfossViewModel) {
             RoundButton(S.players.str(), onClick = { vm.open(Screen.Players) }, tone = Tones.Mint, icon = Icons.Friends)
         }
         RoundButton(S.parents.str(), onClick = { vm.open(Screen.ParentGate) }, modifier = Modifier.align(Alignment.TopEnd).padding(16.dp), size = 52.dp, tone = Tones.Cream, icon = Icons.Gear)
+        ProgressButton(vm,Modifier.align(Alignment.BottomEnd).padding(16.dp))
         GameText(S.mapDrag.str(), modifier = Modifier.align(Alignment.TopCenter).padding(top = 16.dp), fontSize = 14.sp, color = Color.White)
     }
 }

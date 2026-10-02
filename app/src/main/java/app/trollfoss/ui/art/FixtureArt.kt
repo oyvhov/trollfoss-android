@@ -29,6 +29,7 @@ import kotlin.math.sin
  * The engine squashes the back layer on a tap, so the art does not bounce by itself.
  */
 fun DrawScope.drawFixtureBack(f: Fixture, u: Float, pen: Pen, contents: List<Thing> = emptyList()) {
+    if (drawToyBack(f, u, pen)) return
     if (drawPlayBack(f, u, pen)) return
     if (f.type == FixtureType.SECRET_NOOK) { drawSecretNook(f, u, pen); return }
     // The newer places draw their own furniture, shadows included.
@@ -140,6 +141,7 @@ private val FX_PENDING = listOf(Color(0xFFFFC83D), Color(0xFF7CCBFF), Color(0xFF
 
 /** Draws the part of a fixture that sits in front of whoever uses it (a duvet, a bath side, glass). */
 fun DrawScope.drawFixtureFront(f: Fixture, u: Float, pen: Pen) {
+    if (drawToyFront(f, u, pen)) return
     if (drawPlayFront(f, u, pen)) return
     if (!f.spec.front && !f.spec.glass) return
     if (drawRoomsFront(f, u, pen) || drawRidesFront(f, u, pen) || drawDecorFront(f, u, pen) || drawBergFront(f, u, pen) || drawManorFixtureFront(f, u, pen) || drawMineFixtureFront(f, u, pen)) return

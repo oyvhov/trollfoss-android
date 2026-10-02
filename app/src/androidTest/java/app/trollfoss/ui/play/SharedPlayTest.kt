@@ -12,6 +12,51 @@ import org.junit.runner.RunWith
 /** Run on Android: exercises the real pointer engine used by children sharing the screen. */
 @RunWith(AndroidJUnit4::class)
 class SharedPlayTest {
+    @Test fun explicitPackingAndInvitingEachHaveAnUndoEntry() {
+        var w=World();val s=Sim(w);val p=w.addPerson(Species.FOLK,Look(),1f,PlaceId.HOME,0.7f,0.9f)
+        w.playerIds+=p.id
+        val h=app.trollfoss.data.WorldHistory({ w });s.journal=h
+        val e=Engine(w,PlaceId.HOME,s,host,false,0f).apply { setSize(1920f,1200f,1.5f) }
+        e.packPerson(p);assertEquals(Mode.BAG,p.mode);w=h.undo()!!
+        assertEquals(Mode.FREE,w.bodies[p.id]?.mode);assertTrue(p.id in w.playerIds)
+        val next=Sim(w);next.journal=h
+        val other=Engine(w,PlaceId.HOME,next,host,false,0f).apply { setSize(1920f,1200f,1.5f) }
+        other.invite(w.bodies[p.id] as Person);assertTrue(h.available)
+        val restored=h.undo()!!;assertEquals(0.7f,restored.bodies[p.id]!!.x,0f)
+    }
+    @Test fun longPressFurnitureMoveCanBeUndoneWithoutEnteringTheDesigner() {
+        val w=World();val s=Sim(w);val f=s.toys.claim(ToyReward.PUMP,PlaceId.HOME,0.8f)!!
+        val h=app.trollfoss.data.WorldHistory({ w });s.journal=h
+        val e=Engine(w,PlaceId.HOME,s,host,false,0f).apply { setSize(1920f,1200f,1.5f) }
+        val x=f.x;val tap=Offset((x-e.cam)*e.u,1200f-e.u+(f.y-0.14f)*e.u)
+        e.down(1,tap,1000);repeat(60) { e.update(0.016f) }
+        e.move(1,tap+Offset(230f,0f),2000);repeat(20) { e.update(0.016f) };e.up(1,tap+Offset(230f,0f),2400)
+        assertTrue(f.x>x);assertTrue(h.available);assertEquals(x,h.undo()!!.fixtures[f.id]!!.x,0f)
+    }
+    @Test fun undoWaitsForBothFingersAndRestoresBothOriginalFigures() {
+        val w=World();val s=Sim(w);val h=app.trollfoss.data.WorldHistory({ w });s.journal=h
+        val a=w.addPerson(Species.FOLK,Look(),1f,PlaceId.HOME,0.7f,0.9f)
+        val b=w.addPerson(Species.FOLK,Look(hair=6),1f,PlaceId.HOME,1.4f,0.9f)
+        val e=Engine(w,PlaceId.HOME,s,host,false,0f).apply { setSize(1920f,1200f,1.5f) }
+        val pa=finger(e,a);val pb=finger(e,b)
+        e.down(1,pa,1000);e.down(2,pb,1001);e.move(1,pa+Offset(180f,0f),1100);e.move(2,pb+Offset(160f,0f),1101)
+        repeat(12) { e.update(0.016f) }
+        e.up(1,pa+Offset(180f,0f),1400);assertTrue(e.touching);assertFalse(h.available)
+        e.up(2,pb+Offset(160f,0f),1401);assertFalse(e.touching);assertTrue(h.available)
+        val restored=h.undo()!!;assertEquals(0.7f,restored.bodies[a.id]!!.x,0f);assertEquals(1.4f,restored.bodies[b.id]!!.x,0f)
+        assertEquals(6,(restored.bodies[b.id] as Person).look.hair)
+    }
+    @Test fun realToyTapOpensItsControlsAndRealDragKeepsOriginalCargo() {
+        val w=World();val s=Sim(w)
+        val f=s.toys.claim(ToyReward.PUMP,PlaceId.HOME,0.8f)!!
+        val e=Engine(w,PlaceId.HOME,s,host,false,0f).apply { setSize(1920f,1200f,1.5f) }
+        val tap=Offset((f.x-e.cam)*e.u,1200f-e.u+(f.y-0.14f)*e.u)
+        e.down(1,tap,1000);e.up(1,tap,1100);assertEquals(f.id,e.toyFixtureId);e.toyFixtureId=-1
+        val ball=w.addThing(ThingType.BALL,0,PlaceId.HOME,1.3f,0.9f)
+        val from=Offset((ball.x-e.cam)*e.u,1200f-e.u+(ball.y-ball.h/2)*e.u)
+        e.down(2,from,1200);e.move(2,tap,1350);repeat(16) { e.update(0.016f) };e.up(2,tap,1700)
+        assertEquals(ThingType.BEACH_BALL,ball.type);assertSame(ball,w.bodies[ball.id]);assertEquals(Mode.FREE,ball.mode)
+    }
     @Test fun cartHandlesUseTwoIndependentFingersAndCancelClearsBoth() {
         val world = World(); val sim = Sim(world)
         sim.magic.kit(PlayRecipe.CART, PlaceId.HOME, 1.1f)

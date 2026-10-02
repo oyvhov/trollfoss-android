@@ -14,7 +14,8 @@ object PlayInteractions {
 
     fun water(t: Thing) = t.type == ThingType.WATERING_CAN || (t.type in carriers && t.used > 0)
     fun accepts(f: Fixture, t: Thing): Boolean = when {
-        f.type in basins -> t.type in carriers || t.type == ThingType.DUCK || t.type == ThingType.SNOWBALL
+        ToyPlay.accepts(f, t) -> true
+        f.type in basins -> t.type in carriers || t.type == ThingType.DUCK || t.type == ThingType.SNOWBALL || (t.type.variants>1 && t.type.cat !in setOf(Cat.HAT,Cat.GARMENT))
         f.type in fires -> water(t) || t.type == ThingType.SNOWBALL || t.type == ThingType.STICK || t.type == ThingType.PLANK
         f.type in plants -> water(t) || t.type == ThingType.SEEDS
         f.type in music -> t.type in instruments
@@ -35,6 +36,7 @@ object PlayInteractions {
         if (!accepts(f, t)) return false
         when {
             f.type in basins -> {
+                sim.toys.wash(t)
                 f.on = true
                 if (t.type in carriers) t.used = 1
                 if (t.type == ThingType.SNOWBALL) { t.type = ThingType.SLIME; t.variant = 1 }

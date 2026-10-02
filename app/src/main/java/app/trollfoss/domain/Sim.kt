@@ -218,6 +218,8 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     val vehicles = Vehicles(this)
     val personPlay = PersonPlay(this)
     val magic = MagicPlay(this)
+    val toys = ToyPlay(this)
+    var journal: EditJournal? = null
 
     /** Mitt hus: building, the housewarming and what the furniture of the child's own house does. */
     val mine = MineBuilder(this, random)
@@ -358,6 +360,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         floating = zeroG(place)
         val fixtures = world.fixturesIn(place)
         for (f in fixtures) stepFixture(place, f, dt)
+        toys.tick(place, dt)
         // Read after the machines: an oven that just opened has shelves again.
         val list = surfaces(place)
         for (b in world.bodiesIn(place)) {
@@ -714,6 +717,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         var y = f.y + s.dy + f.shiftY
         when (f.type) {
             FixtureType.SALON_CHAIR -> y -= f.mode * 0.04f
+            FixtureType.PLAY_LIFT -> y -= f.angle * 0.28f
             FixtureType.BOAT -> y += f.bob
             FixtureType.SLED_HILL, FixtureType.SKI_JUMP -> if (f.on) {
                 val point = ridePoint(f.type, f.angle.coerceIn(0f, 1f))
@@ -774,6 +778,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         p.place?.let { jokes.seated(it, p) }
         tasks.record(Deed.SEATED, p.place ?: here, fixture = f.type)
         magic.seated(f)
+        toys.seated(f)
         return true
     }
 
@@ -801,6 +806,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     // ------------------------------------------------------------------ fixtures
 
     private fun stepFixture(place: PlaceId, f: Fixture, dt: Float) {
+        if (toys.step(f, dt)) return
         f.anim = max(0f, f.anim - dt * 2.5f)
         if (time - f.tapTime > 3.5f) f.taps = 0
         if (place.big) house.step(place, f, dt)
@@ -823,7 +829,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
                 f.timer -= dt
                 if (f.timer <= 0f) f.mode = 0
             }
-            FixtureType.TRACTOR -> {
+            FixtureType.TRACTOR, FixtureType.PLAY_BUS, FixtureType.PLAY_TRAIN -> {
                 vehicles.step(place, f, dt)
             }
             FixtureType.ROCKET_SHIP -> if (f.on) {
@@ -1075,6 +1081,8 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
 
     /** A tap on a fixture at ([dx], [dy]) from its bottom centre. */
     fun tap(place: PlaceId, f: Fixture, dx: Float, dy: Float) {
+        here = place
+        if (toys.tap(f, dx, dy)) return
         if (f.type == FixtureType.PLAY_FORT || f.type == FixtureType.PLAY_CART) {
             f.on = !f.on; f.anim = 1f
             listener.onFx(if (f.on) Fx.ON else Fx.OFF, f.x, f.top, f)
@@ -1492,6 +1500,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
      */
     fun dropInto(place: PlaceId, f: Fixture, t: Thing): Boolean {
         here = place
+        if (toys.drop(f, t)) return true
         if (f.type == FixtureType.SECRET_NOOK) return PlaySecrets.drop(this, f, t)
         if (!place.mine && mine.play.drop(place, f, t)) return true
         if (place.big && house.drop(place, f, t)) return true

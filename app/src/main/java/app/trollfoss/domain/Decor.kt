@@ -17,6 +17,11 @@ object Decor {
     const val WALLS = 12
     const val FLOORS = 9
 
+    fun reward(item: CatalogueItem): ToyReward? = ToyReward.entries.firstOrNull { it.type == item.type }
+    fun available(world: World, item: CatalogueItem): Boolean = reward(item)?.let {
+        Progression.unlocked(world, it)
+    } ?: (world.stickers.size >= item.stickers)
+
     /** Added furniture gets ids from [PlaceId.addedFrom] up to [PlaceId.addedMax] (blueprint furniture uses the ids below). */
 
     /** Places whose walls and floors can be changed. */
@@ -67,7 +72,9 @@ object Decor {
             CatalogueItem(FixtureType.PINE_TREE, stickers = 2), CatalogueItem(FixtureType.CAMPFIRE, stickers = 3), CatalogueItem(FixtureType.TENT, stickers = 4),
             CatalogueItem(FixtureType.TRAMPOLINE, stickers = 6), CatalogueItem(FixtureType.SANDCASTLE, stickers = 2),
         )
-        return when {
+        val toys = ToyReward.entries.map { reward -> CatalogueItem(reward.type,
+            stickers = Progression.thresholds.getOrNull(reward.level - 1) ?: 0) }
+        return toys + when {
             place == PlaceId.UNDERWATER -> listOf(
                 CatalogueItem(FixtureType.CORAL, 0), CatalogueItem(FixtureType.CORAL, 1), CatalogueItem(FixtureType.KELP),
                 CatalogueItem(FixtureType.SUBMARINE),

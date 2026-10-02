@@ -6,8 +6,88 @@ import app.trollfoss.domain.Maalform
 import app.trollfoss.domain.PlaceId
 import app.trollfoss.domain.Txt
 import app.trollfoss.domain.txt
+import app.trollfoss.domain.ToyReward
+import app.trollfoss.domain.FixtureType
+import app.trollfoss.domain.Task
 
 val LocalMaalform = staticCompositionLocalOf { Maalform.NYNORSK }
+
+object SP {
+    val gifts=Txt("Gåver", "Gaver")
+    val free=Txt("Tilgjengeleg no", "Tilgjengelig nå")
+    val tryIt=Txt("Prøv", "Prøv")
+    val doIt=Txt("Bruk", "Bruk")
+    val color=Txt("Farge", "Farge")
+    val help=Txt("Hent hjelp", "Hent hjelp")
+    val swap=Txt("Vel noko anna", "Velg noe annet")
+    val newTasks=Txt("Nye oppdrag", "Nye oppdrag")
+    val release=Txt("Ta ut tingen", "Ta ut tingen")
+    val undo=Txt("Angre", "Angre")
+    val noSpace=Txt("Her er fullt. Legg ei leike på lager og prøv igjen.", "Her er fullt. Legg en leke på lager og prøv igjen.")
+    val allReady=Txt("Alle desse leikene er klare!", "Alle disse lekene er klare!")
+    val newGifts=Txt("Nye leiker til deg!", "Nye leker til deg!")
+    val keepStickers=Txt("Merka dine blir verande. Du kan velje eit anna oppdrag.", "Merkene dine blir værende. Du kan velge et annet oppdrag.")
+    val noFriend=Txt("Set ein venn ved sida av kameraet.", "Sett en venn ved siden av kameraet.")
+    val trainFound=Txt("Det vesle toget", "Det lille toget")
+    fun level(n:Int)=Txt("Nivå $n", "Nivå $n")
+    fun missing(n:Int)=Txt("$n merke til nye leiker", "$n ${if(n==1) "merke" else "merker"} til nye leker")
+    fun name(t:ToyReward):Txt=when(t) {
+        ToyReward.BUBBLES -> Txt("Boblemaskin","Boblemaskin")
+        ToyReward.WINDMILL -> Txt("Vindmølle","Vindmølle")
+        ToyReward.BUS -> Txt("Vennebuss","Vennebuss")
+        ToyReward.PILLOW -> Txt("Putekastar","Putekaster")
+        ToyReward.MARBLES -> Txt("Klinkekulebane","Klinkekulebane")
+        ToyReward.COLORS -> Txt("Fargesprøyte","Fargesprøyte")
+        ToyReward.LIFT -> Txt("Miniheis","Miniheis")
+        ToyReward.POPCORN -> Txt("Popcornvogn","Popcornvogn")
+        ToyReward.PUMP -> Txt("Leikepumpe","Lekepumpe")
+        ToyReward.CAMERA -> Txt("Vennekamera","Vennekamera")
+        ToyReward.TRAIN -> Txt("Leiketog","Leketog")
+    }
+    fun trainStep(stage:Int):Txt=when(stage) {
+        0 -> Txt("Finn tannhjulet ved toget i Andre høgda.","Finn tannhjulet ved toget i Andre etasje.")
+        1 -> Txt("Dra tannhjulet til toget.","Dra tannhjulet til toget.")
+        2 -> Txt("Set ein venn oppi toget.","Sett en venn oppi toget.")
+        else -> Txt("Du har reparert toget! Du kan hente nye tog her.","Du har reparert toget! Du kan hente nye tog her.")
+    }
+    fun use(type:FixtureType):Txt=when(type) {
+        FixtureType.PLAY_BUBBLES -> Txt("Start boblene. Trykk på ei boble!","Start boblene. Trykk på en boble!")
+        FixtureType.PLAY_WINDMILL -> Txt("Dra hårfønaren til mølla. Ho snurrar!","Dra hårføneren til mølla. Den snurrer!")
+        FixtureType.PLAY_BUS,FixtureType.PLAY_TRAIN -> Txt("Set oppi to venner. Trykk på køyrepilene.","Sett oppi to venner. Trykk på kjørepilene.")
+        FixtureType.PLAY_LAUNCHER -> Txt("Dra bamsen til puta. Trykk Bruk for eit mjukt kast.","Dra bamsen til puta. Trykk Bruk for et mykt kast.")
+        FixtureType.PLAY_MARBLES -> Txt("Vend dei tre rennene. Dra kula øvst i bana.","Vend de tre rennene. Dra kula øverst i banen.")
+        FixtureType.PLAY_COLORS -> Txt("Vel farge. Dra ein ball til sprøyta. Vask i vasken for å få fargen tilbake.","Velg farge. Dra en ball til sprøyta. Vask i vasken for å få fargen tilbake.")
+        FixtureType.PLAY_LIFT -> Txt("Set oppi ein venn eller dra ein bamse til heisen. Trykk Bruk: opp og ned!","Sett oppi en venn eller dra en bamse til heisen. Trykk Bruk: opp og ned!")
+        FixtureType.PLAY_POPCORN -> Txt("Dra maisen til vogna. Så blir han popcorn til vennene!","Dra maisen til vogna. Så blir den popcorn til vennene!")
+        FixtureType.PLAY_PUMP -> Txt("Dra ballen til pumpa: større ball! Ei bøtte får vatn.","Dra ballen til pumpa: større ball! En bøtte får vann.")
+        FixtureType.PLAY_CAMERA -> Txt("Set ein venn ved kameraet. Trykk Bruk: eit bilete til veggen!","Sett en venn ved kameraet. Trykk Bruk: et bilde til veggen!")
+        else -> Txt("Prøv leika!","Prøv leken!")
+    }
+    fun taskHint(task:Task):Txt=when(task.id) {
+        "feed_horse" -> Txt("Dra gulrota til hesten.","Dra gulroten til hesten.")
+        "feed_dog" -> Txt("Dra pølsa til hunden.","Dra pølsa til hunden.")
+        "bedtime", "bath" -> if(task.id=="bedtime") Txt("Dra ein venn til senga.","Dra en venn til senga.") else Txt("Dra ein venn til badekaret.","Dra en venn til badekaret.")
+        "crown" -> Txt("Dra krona til hovudet til ein venn.","Dra krona til hodet til en venn.")
+        "tractor", "submarine" -> Txt("Set oppi ein venn og køyr.","Sett oppi en venn og kjør.")
+        "harvest" -> Txt("Trykk på gulrota i kjøkkenhagen.","Trykk på gulroten i kjøkkenhagen.")
+        "bake_cake" -> Txt("Dra mjøl, egg og mjølk til omnen.","Dra mel, egg og melk til ovnen.")
+        "smoothie" -> Txt("Dra frukt og mjølk til blandaren.","Dra frukt og melk til blenderen.")
+        "egg_to_cafe", "fish_home" -> Txt("Legg tingen i sekken og ta henne med til staden på kortet.","Legg tingen i sekken og ta den med til stedet på kortet.")
+        "cans" -> Txt("Kast ein ball mot boksane.","Kast en ball mot boksene.")
+        "catch_fish" -> Txt("Trykk ved fiskestonga når fisken nappar.","Trykk ved fiskestanga når fisken napper.")
+        "cable_car", "ski_jump", "ferris_top", "bounce", "xray" -> Txt("Dra ein venn til leika på biletet.","Dra en venn til leken på bildet.")
+        "scan" -> Txt("Dra varer til kassa.","Dra varer til kassa.")
+        "haircut", "dress_up", "heart" -> Txt("Dra tingen på biletet til ein venn.","Dra tingen på bildet til en venn.")
+        "sing", "disco", "ink", "gravity", "echo", "summit", "launch", "brew" -> Txt("Trykk på tingen på biletet.","Trykk på tingen på bildet.")
+        "tidy" -> Txt("Trykk på kosten i møbelmenyen.","Trykk på kosten i møbelmenyen.")
+        "paint" -> Txt("Vel ein ny veggfarge i møbelmenyen.","Velg en ny veggfarge i møbelmenyen.")
+        "furnish" -> Txt("Dra inn møblar frå møbelmenyen.","Dra inn møbler fra møbelmenyen.")
+        "photo" -> Txt("Trykk på kameraet og ta eit bilete.","Trykk på kameraet og ta et bilde.")
+        "wishes" -> Txt("Sjå kva ein venn ønskjer seg, og gi det til venen.","Se hva en venn ønsker seg, og gi det til vennen.")
+        "glimt" -> Txt("Finn og trykk på gylne glimt.","Finn og trykk på gylne glimt.")
+        else -> Txt("Prøv handlinga på biletet. Prikkane viser kor mange gonger.","Prøv handlingen på bildet. Prikkene viser hvor mange ganger.")
+    }
+}
 
 @Composable
 fun Txt.str(): String = get(LocalMaalform.current)

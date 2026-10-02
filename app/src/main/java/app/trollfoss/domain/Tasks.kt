@@ -51,6 +51,8 @@ class Task(
  * Nothing is ever lost or timed, and a new set comes when a set is done.
  */
 class TaskBook(private val world: World) {
+    /** Blueprint population is setup, not something a child did. */
+    var recording=true
     /** Called when a task is finished, for the celebration. */
     var onDone: (Task) -> Unit = {}
 
@@ -68,6 +70,11 @@ class TaskBook(private val world: World) {
     fun deal() {
         world.taskSet.clear()
         world.taskProgress.clear()
+        if (world.stickers.size < 5) {
+            world.taskSet += listOf("feed_horse", "bedtime", "crown")
+            world.taskCursor += 3
+            return
+        }
         val deck = ALL.shuffled(kotlin.random.Random(world.taskSeed))
         val places = HashSet<PlaceId?>()
         var i = world.taskCursor
@@ -87,8 +94,19 @@ class TaskBook(private val world: World) {
     /** True when all three tasks on the board are done, and a new set can be dealt. */
     fun allDone(): Boolean = board().all { done(it) }
 
+    /** A voluntary alternative keeps the progress on the other two cards. */
+    fun swap(task: Task) {
+        val slot=world.taskSet.indexOf(task.id)
+        if(slot<0 || done(task)) return
+        val choices=if(world.stickers.size<5) ALL.filter { it.id in listOf("feed_horse","bedtime","crown","feed_dog","bath","tractor","harvest") } else ALL
+        val next=choices.shuffled(kotlin.random.Random(world.taskSeed+world.taskCursor++)).firstOrNull { it.id !in world.taskSet } ?: return
+        world.taskProgress.remove(task.id);world.taskProgress.remove(next.id)
+        world.taskSet[slot]=next.id
+    }
+
     /** Hears a deed; moves on every task it counts for. */
     fun record(deed: Deed, place: PlaceId, thing: ThingType? = null, fixture: FixtureType? = null, species: Species? = null) {
+        if(!recording) return
         for (t in board()) {
             if (done(t)) continue
             if (t.place != null && t.place != place && deed != Deed.BROUGHT) continue
@@ -97,6 +115,7 @@ class TaskBook(private val world: World) {
             world.taskProgress[t.id] = now
             if (now >= t.need) {
                 world.stickers += world.stickers.size
+                Progression.remember(world)
                 onDone(t)
             }
         }

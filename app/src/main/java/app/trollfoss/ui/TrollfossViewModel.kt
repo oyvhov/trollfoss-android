@@ -21,6 +21,11 @@ import app.trollfoss.audio.Sfx
 import app.trollfoss.audio.SoundFx
 import app.trollfoss.data.Settings
 import app.trollfoss.data.WorldStore
+import app.trollfoss.data.WorldHistory
+import app.trollfoss.domain.Progression
+import app.trollfoss.domain.ToyReward
+import app.trollfoss.domain.ThingType
+import app.trollfoss.domain.edit
 import app.trollfoss.domain.Festival
 import app.trollfoss.domain.FixtureType
 import app.trollfoss.domain.HouseKeys
@@ -111,6 +116,15 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         private set
     var stickers by mutableIntStateOf(0)
         private set
+    var undoVersion by mutableIntStateOf(0)
+        private set
+    var tasksVersion by mutableIntStateOf(0)
+        private set
+    private val history=WorldHistory({ world }) { undoVersion++ }
+    val canUndo: Boolean get() { undoVersion; return history.available && !sim.mine.busy && engine?.touching != true }
+    var levelGift by mutableIntStateOf(0)
+        private set
+    private var seenLevel=1
 
     /** Bumps when the world is replaced, so engines are rebuilt. */
     var generation by mutableIntStateOf(0)
@@ -137,6 +151,10 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         if (saved == null) startOnPlot()
         settings = saved?.settings ?: Settings()
         sim = Sim(world)
+        sim.journal=history
+        Progression.remember(world)
+        seenLevel=Progression.level(world)
+        if(seenLevel>=2 && "gift:level:seen:$seenLevel" !in world.flags) levelGift=seenLevel
         wireTasks()
         syncFromWorld()
         applySettings()
@@ -179,8 +197,13 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun refreshTasks() {
+        tasksVersion++
+        Progression.remember(world)
         tasksLeft = sim.tasks.board().count { !sim.tasks.done(it) }
         stickers = world.stickers.size
+        val level=Progression.level(world)
+        if(level>seenLevel) levelGift=level
+        seenLevel=level
     }
 
     /** Deals three new tasks once the board is done. */
@@ -189,6 +212,43 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         sfx(Sfx.MAGIC, 0.8f)
         refreshTasks()
         scheduleSave()
+    }
+
+    fun swapTask(task:Task) { sim.tasks.swap(task);refreshTasks();scheduleSave() }
+    fun dismissLevelGift() { if(levelGift>0) world.flags+="gift:level:seen:$levelGift";levelGift=0;scheduleSave() }
+    fun undoEdit() {
+        if(!canUndo) return
+        engine?.cancel()
+        val restored=history.undo() ?: return
+        world=restored;sim=Sim(world);sim.journal=history;wireTasks()
+        if(world.place==PlaceId.MINE_GROUND && !world.mine.started || world.place==PlaceId.MINE_UPPER && !world.mine.upperBuilt) world.place=PlaceId.MINE_YARD
+        if(Players.team(world).any { it.place!=world.place }) Players.arrive(world,world.place,arrivalCenter(world.place))
+        engine=null;generation++;syncFromWorld();playersVersion++;changed()
+        sfx(Sfx.MAGIC,0.65f)
+    }
+    fun tryToy(reward:ToyReward):Boolean {
+        val to=if(place==PlaceId.MINE_UPPER && !world.mine.upperBuilt || place==PlaceId.MINE_GROUND && !world.mine.started) PlaceId.MINE_YARD else place
+        val x=engine?.takeIf { it.place==to }?.let { it.cam+it.visibleViewport/2 } ?: 1.15f
+        val f=sim.toys.claim(reward,to,x) ?: return false
+        sim.toys.supply(f);changed();travelPlayCard(to,f.x);return true
+    }
+    fun goTask(task:Task) {
+        val to=task.place ?: place
+        val fixture=world.fixturesIn(to).firstOrNull { it.type==task.fixture }
+        val x=fixture?.x ?: world.people().firstOrNull { it.place==to && it.species==task.species }?.x ?: 1.15f
+        // Only these introductory raw materials are supplied. An owned tool is never taken from a friend.
+        val type=when(task.id) { "feed_horse" -> ThingType.CARROT;"feed_dog" -> ThingType.SAUSAGE;"crown" -> ThingType.CROWN;else -> null }
+        if(type!=null) sim.edit {
+            val key="task:${task.id}"
+            val old=world.bodies[world.toyInputs[key]] as? app.trollfoss.domain.Thing
+            val t=old?.takeIf { it.type==type && it.used==0 } ?: world.addThing(type,0,to,x-0.22f,to.floor).also { world.toyInputs[key]=it.id }
+            if(!t.held && t.mode in listOf(Mode.FREE,Mode.BAG)) { t.place=to;t.mode=Mode.FREE;t.holder=-1;t.x=(x-0.22f).coerceAtLeast(0.1f);t.y=to.floor;t.ground=t.y;t.resting=false;t.restOwner=-2 }
+        }
+        changed();travelPlayCard(to,x)
+        // The helper gives a moving animal a calm pause while the child tries the pictured action.
+        world.people().filter { it.place==to && it.species==task.species && it.mode==Mode.FREE && !it.held }.forEach {
+            it.anim.walkTo=Float.NaN;it.anim.nextWalk=30f;it.anim.pose=app.trollfoss.domain.Pose.STAND;it.anim.auto=0
+        }
     }
 
     /** The device was shaken: the world shakes, but only while the play screen is showing. */
@@ -227,6 +287,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         engine?.let { cams[it.place] = it.cam }
         val start = cams[place] ?: defaultCam(place)
         app.trollfoss.ui.art.MineView.house = world.mine
+        app.trollfoss.ui.art.ToyArt.photos=world.toyPhotos
         return Engine(world, place, sim, this, motion, start).also {
             pendingFocus?.let { x -> it.focusOn(x); pendingFocus = null }
             it.season = season
@@ -310,6 +371,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun togglePlayer(person: Person) {
+        history.clear()
         Players.toggle(world, person)
         if (person.id in world.playerIds) engine?.invite(person)
         playersVersion++
@@ -354,6 +416,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
 
     /** Makes a new figure (or updates one) from the workshop and lets it pop into the current place. */
     fun saveFigure(editId: Int?, look: Look, name: String) {
+        history.clear()
         val existing = editId?.let { world.bodies[it] as? Person }
         if (existing != null) {
             existing.look = look.safe()
@@ -385,9 +448,11 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     fun folk(): List<Person> = world.people().filter { it.species == Species.FOLK }.sortedBy { it.id }
 
     fun resetWorld() {
+        history.clear()
         world = WorldFactory.create()
         startOnPlot()
         sim = Sim(world)
+        sim.journal=history
         wireTasks()
         cams.clear()
         engine = null
@@ -471,6 +536,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
             updateMusic()
         }
         houseKeys = HouseKeys.found(world)
+        refreshTasks()
         scheduleSave()
     }
 

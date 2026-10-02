@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -93,6 +94,8 @@ fun TrollfossApp(vm: TrollfossViewModel) {
                 }
             }
             if (vm.splash) Splash(onDone = { vm.splash = false })
+            if(!vm.splash && vm.levelGift>0 && vm.screen in listOf(Screen.Play,Screen.Map))
+                app.trollfoss.ui.screens.LevelGiftCard(vm,Modifier.align(Alignment.BottomCenter).padding(bottom=90.dp))
         }
     }
 }

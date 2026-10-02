@@ -86,7 +86,9 @@ enum class ThingType(
     GARMENT(0.085f, 0.075f, Cat.GARMENT),
 
     // Toys
-    BALL(0.05f, 0.05f, Cat.TOY, bounce = 0.74f, buoyant = true, rolls = true),
+    BALL(0.05f, 0.05f, Cat.TOY, bounce = 0.74f, buoyant = true, rolls = true, variants = 6),
+    PLAY_CORN(0.045f, 0.055f, Cat.FOOD, bites = 1),
+    PLAY_GEAR(0.06f, 0.06f, Cat.TOY, rolls = true),
     BEACH_BALL(0.085f, 0.085f, Cat.TOY, bounce = 0.8f, lift = 0.7f, buoyant = true, rolls = true),
     TEDDY(0.07f, 0.085f, Cat.TOY, buoyant = true),
     BALLOON(0.06f, 0.17f, Cat.TOY, bounce = 0.4f, lift = -0.35f, variants = 6),

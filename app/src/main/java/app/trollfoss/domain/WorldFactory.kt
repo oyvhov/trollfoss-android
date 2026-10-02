@@ -33,7 +33,7 @@ object WorldFactory {
     fun create(random: Random = Random(2026)): World {
         val world = World()
         addFixtures(world)
-        val sim = Sim(world)
+        val sim = Sim(world).apply { tasks.recording=false }
         for (place in PlaceId.entries) populate(world, sim, place, random)
         world.bodies.values.forEach { it.age = 10f }
         return world
@@ -45,7 +45,7 @@ object WorldFactory {
      * on purpose stays empty. Returns true if anything was added.
      */
     fun addMissingPlaces(world: World, known: Set<PlaceId>, random: Random = Random(2026)): Boolean {
-        val sim = Sim(world)
+        val sim = Sim(world).apply { tasks.recording=false }
         var added = false
         for (place in PlaceId.entries) {
             if (place in known) continue

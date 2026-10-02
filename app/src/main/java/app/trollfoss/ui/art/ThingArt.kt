@@ -133,7 +133,8 @@ private fun DrawScope.thing(type: ThingType, v: Int, used: Int, w: Float, h: Flo
     ThingType.GARMENT -> thGarment(v, w, h, pen)
 
     // Toys
-    ThingType.BALL -> thBall(w, h, pen)
+    ThingType.BALL -> thBall(w, h, pen, v)
+    ThingType.PLAY_CORN, ThingType.PLAY_GEAR -> drawToyIngredient(type,w,h,pen)
     ThingType.BEACH_BALL -> thBeachBall(w, h, pen)
     ThingType.TEDDY -> thTeddy(w, h, pen)
     ThingType.BALLOON -> thBalloon(v, w, h, pen)

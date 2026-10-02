@@ -126,6 +126,7 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
     fun layFoundation(shape: Int): Boolean {
         val h = house
         if (h.started || h.job != null) return false
+        sim.journal?.begin()
         h.job = MineJob(JobKind.FOUNDATION, PlaceId.MINE_YARD, 0, null, shape.coerceIn(0, Mine.TEMPLATES - 1)).also { it.pieces = emptyList() }
         fx(MineEvent.FOUNDATION_START, shape, yardDoorX(), 0.7f)
         touch()
@@ -136,6 +137,7 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
     fun buildRoom(place: PlaceId, slot: Int, kind: RoomKind): Boolean {
         val h = house
         if (h.job != null || !Mine.canBuild(h, place, slot)) return false
+        sim.journal?.begin()
         h.job = MineJob(JobKind.ROOM, place, slot, kind, 0).also { it.pieces = MineRooms.preset(kind) }
         h.askDemolish = -1
         fx(MineEvent.PLANK, slot, slot * Mine.SLOT_W + 1f, 0.85f)
@@ -147,6 +149,7 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
     fun buildUpper(): Boolean {
         val h = house
         if (h.job != null || !Mine.canBuildUpper(h)) return false
+        sim.journal?.begin()
         h.job = MineJob(JobKind.UPPER, world.place.takeIf { it.mine } ?: PlaceId.MINE_YARD, 0, null, 0).also { it.pieces = MineRooms.landing }
         fx(MineEvent.CRANE, 0, yardDoorX(), 0.4f)
         touch()
@@ -154,7 +157,8 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
     }
 
     /** Tears a room down: everything in it goes to the store, whoever stood in it walks to the hall, nothing is lost. */
-    fun demolish(place: PlaceId, slot: Int): Boolean {
+    fun demolish(place: PlaceId, slot: Int): Boolean = sim.edit { demolishNow(place,slot) }
+    private fun demolishNow(place: PlaceId, slot: Int): Boolean {
         val h = house
         if (h.job != null || !Mine.canDemolish(h, place, slot)) return false
         val range = Mine.slotRange(slot)
@@ -185,7 +189,7 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
     }
 
     /** Changes the look from outside; only what is given changes. */
-    fun restyle(wall: Int? = null, roof: Int? = null, roofColor: Int? = null, door: Int? = null, windows: Int? = null, chimney: Boolean? = null, flag: Boolean? = null) {
+    fun restyle(wall: Int? = null, roof: Int? = null, roofColor: Int? = null, door: Int? = null, windows: Int? = null, chimney: Boolean? = null, flag: Boolean? = null) = sim.edit {
         val h = house
         wall?.let { h.wall = it.mod(Mine.WALL_COLORS) }
         roof?.let { h.roof = it.mod(Mine.ROOFS) }
@@ -291,6 +295,7 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
             }
         }
         touch()
+        sim.journal?.end()
     }
 
     /** The small things of a room land on their furniture and are remembered as theirs, so tidying puts them back. */
