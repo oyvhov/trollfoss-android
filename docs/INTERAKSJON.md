@@ -154,3 +154,65 @@ Neste tillegg bør innehalde ein synleg ledetråd, ei konkret kjede og minst éi
 Nye stader bør vente til desse samanhengane er prøvde på verkeleg mobil og nettbrett.
 
 Gjennomføringsstatus og testresultat står øvst i `OVERLEVERING.md` og under 1.3.0 i endringsloggen.
+
+## 7. Tillegg: Lager og fleire køyretøy (2026-10-02, ikkje utgjeve)
+
+Lageret er felles og kan brukast i alle 24 stader. Utplassering flyttar kameraet til den nye tingen:
+ser ein ut over sjøen, blir eit vanleg møbel sett på land og vist med ein gong. Den tidlegare grensa
+på 20 ekstra møblar i dei opphavlege stadene er utvida til 60, utan å endre gamle id-ar. Storhuset
+har 100 ekstra plassar per etasje, som Mitt hus. Full stad eller ubygd rom gir ei kort forklaring;
+ting frå Lager blir ikkje fjerna før utplasseringa lykkast.
+
+Kvart lagerkort har ei søppelbøtte som fjernar berre den valde tingen. Angreknappen hentar tilbake
+dei sletta tinga i motsett rekkjefølgje, også etter reise. Angrehistorikken gjeld medan appen er open;
+slettinga blir lagra, men angrehistorikken blir ikkje lagra ved avslutting.
+
+`Vehicles` samlar køyrereglane for traktor, båt, radiobil og ubåt. Piler vel retning og stopp stansar
+all rørsle. Ubåten har i tillegg opp og dykk; kvar pil erstattar førre retning. Radiobilar vender ved
+møblar og andre bilar, traktoren skubbar som før, og båt og ubåt glir forbi inventaret. Båten held seg
+på naturleg vatn når staden har det; på land utan vatn kan han brukast som ein leikebåt. Ubåten har
+høgdegrenser og held seg under vassflata på Havbotnen. Setar, passasjerar, klede og handting følgjer
+den verkelege posisjonen. Køyring stansar ved bakgrunn, reise og ny innlasting.
+
+Ingen nye ting- eller møbeltypar, lydar, oppdrag eller lagringsfelt. Fellesfilene `Sim`, `Engine`,
+`Attractions`, `Decor` og `PlayScreen` koplar dei eksisterande køyretøya til same styring. Testane
+prøver alle lagerdestinasjonar, meir enn 20 tillegg og innlasting, full stad utan tap, sletting og
+angring med like ting, passasjerar, køyring, retur, stopp, kollisjon, vatn og høgdegrenser.
+
+## 8. Tillegg: Figurverkstad, sengballong og personleik (2026-10-02, ikkje utgjeve)
+
+Den felles teikninga av folk er redesigna. Verkstaden har tre grupper: hår, ansikt/kropp og klede.
+Det er 18 frisyrer, 14 hårfargar, 12 augefargar, åtte augetypar, fire ansiktsformer, fire nasar,
+fem smil, ni ekstra detaljar, tolv overdelar, fem underdelar og seks mønster. Dei gamle indeksane
+er behaldne. Hårstorleik, hårlengd, augestorleik, augeavstand og høgd har glidebrytarar og små
+førehandsvisingar. Langt hår blir teikna bak kropp og hender; hovudplagg og handting held dei
+opphavlege festepunkta i alle positurar. Rumle bruker den same teikninga; dyr, robot og spøkjelse
+held sine eigne silhuettar. `Look.safe()` avgrensar tal og erstattar NaN og uendelege verdiar.
+
+`WorldStore` lagrar dei ti nye utsjånadsfelta med gamle standardverdiar når felt manglar. Namn,
+id, stemme, plagg og handting blir ikkje erstatta når ein eksisterande figur blir endra. Bøker
+lagrar side 0–3; aktivitetsrørsler er mellombelse og blir ikkje lagra.
+
+`PersonPlay` gir eigne handstillingar for bok, telefon, tannbørste og kos med bamse/pute.
+Ein telefon svarar ein annan venn med telefon, også i eit anna rom. Instrument får næraste
+venner til å danse. Ei fjør kilar folk og dyr; ein kam gir pelsstell til dyr. Saks og fønar
+endrar også dei nye hårmåla. Trykk på ein aktiv ting i handa gjentar handlinga. Ballar blir
+haldne når ein gir dei; trykk kastar same ball til næraste venn med ledig hand. Mottakaren
+kan kaste tilbake, utan å opprette nye ballar. Manglande mottakar gir eit vanleg kast.
+
+Bokhyller inviterer ein venn til lesing, TV gir felles reaksjon, og radio/piano får venner til
+å danse. Bading fjernar krem og blekk. `PlayInteractions` utvidar flyttbare møblar med spade/
+bøtte–sandslott, snøball/pinne/gulrot–snømann, verktøy–lys, telefon–TV, vatn/and–akvarium,
+pute/bamse–seng og ball–trampoline. Verktøy og leiker blir ikkje brukte opp; trampolina gir
+same ball verkeleg fart oppover.
+
+Kartballongen har ei brei hengande seng med puter, madrass, teppe og sengegavlar. Opptil tre
+folk frå staden/sekken blir viste sitjande; dette endrar ikkje dei eksisterande reisereglane.
+Brukaren har uttrykkeleg valt å behalde Trollhola–Storhuset som hemmeleg tunnel. Inngangen
+har hus og pil, og forklaringa kjem etter stadstittelen. Berre den rette `SECRET_DOOR` i
+Trollhola kan bruke denne passasjen; eit anna trappemøbel får ikkje koplinga ved lik id.
+
+Kontroll: testar av ny/gammal lagring, ugyldige hår-/augemål, kombinasjonar av klede, lesing
+gjennom reise og ny innlasting, to telefonar i ulike rom, ball fram og tilbake utan kopiar,
+pelsstell/kos/musikk, verktøysamband i alle 24 stader, bading, trampoline og tunnelen.
+Den utførte visuelle kontrollen og byggjeresultatet står øvst i `OVERLEVERING.md`.

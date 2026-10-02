@@ -2492,7 +2492,7 @@ private inline fun DrawScope.rmSubLean(f: Fixture, u: Float, block: DrawScope.()
 private fun DrawScope.rmSubBack(f: Fixture, u: Float, pen: Pen) {
     fun o(x: Float, y: Float) = Offset(x * u, y * u)
     // Its shadow stays on the sea floor while it rises.
-    val lift = (-f.shiftY).coerceAtLeast(0f)
+    val lift = (f.place.floor - f.y - f.shiftY).coerceAtLeast(0f)
     translate(0f, lift * u) { rmShadow(u, 0.46f, 0.1f, alpha = (1f - lift * 2.2f).coerceIn(0.2f, 1f)) }
     rmSubLean(f, u) {
         rmExtrude(rmSubHull(u), 0.07f * u, Color(0xFFD9A021), pen)

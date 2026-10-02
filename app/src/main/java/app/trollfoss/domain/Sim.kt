@@ -69,7 +69,7 @@ interface SimListener {
 }
 
 /** What happened when a thing was given to a figure. */
-enum class Give { ATE, FINISHED, DRANK, POTION, WORE, HELD, HAIR, DRESSED, SNEEZE, SNIFF, NONE, YUCK }
+enum class Give { ATE, FINISHED, DRANK, POTION, WORE, HELD, HAIR, DRESSED, SNEEZE, SNIFF, NONE, YUCK, PLAY }
 
 /**
  * The rules of the island: gravity, water, cupboards, seats, machines and what figures do with
@@ -214,6 +214,8 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
 
     /** Furniture catalogue, store, wallpaper and tidying up. */
     val designer = Designer(this, random)
+    val vehicles = Vehicles(this)
+    val personPlay = PersonPlay(this)
 
     /** Mitt hus: building, the housewarming and what the furniture of the child's own house does. */
     val mine = MineBuilder(this, random)
@@ -305,7 +307,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         pools = pools(place)
         val floating = zeroG(place)
         for (f in world.fixturesIn(place)) {
-            if (f.type == FixtureType.TRACTOR) { f.shiftX = 0f; f.mode = 0; f.on = false }
+            if (Vehicles.controllable(f)) vehicles.drive(f, 0)
         }
         for (b in world.bodiesIn(place)) {
             when (b.mode) {
@@ -373,6 +375,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
             if (b is Person) stepPerson(b, dt)
             if (b is Thing && b.cook < 0f) stepRocket(b, dt)
         }
+        personPlay.catchBalls(place)
         life.step(place, dt)
         if (place == PlaceId.FOREST && world.night) unlock("forest_night")
     }
@@ -670,6 +673,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
 
     private fun stepPerson(p: Person, dt: Float) {
         PlayConnections.step(p, dt)
+        personPlay.step(p, dt)
         jokes.step(p, dt)
         if (p.floatTime > 0f) {
             p.floatTime = max(0f, p.floatTime - dt)
@@ -799,7 +803,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         if (place.big) house.step(place, f, dt)
         if (!place.mine) mine.play.step(f, dt)
         when (f.type) {
-            FixtureType.BOAT -> f.bob = sin(time * 1.7f + f.id) * 0.007f
+            FixtureType.BOAT -> vehicles.step(place, f, dt)
             FixtureType.PINE_TREE -> {
                 f.angle += f.angleV * dt
                 f.angleV += (-f.angle * 60f - f.angleV * 5f) * dt
@@ -817,7 +821,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
                 if (f.timer <= 0f) f.mode = 0
             }
             FixtureType.TRACTOR -> {
-                stepTractor(place, f, dt)
+                vehicles.step(place, f, dt)
             }
             FixtureType.ROCKET_SHIP -> if (f.on) {
                 f.timer += dt
@@ -1076,7 +1080,16 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         if (PlaySecrets.tap(this, f, dx)) return
         if (!place.mine && mine.play.tap(place, f)) return
         if (House.hasPassages(place) && house.tap(place, f, dx, dy)) return
+        if (Vehicles.controllable(f)) {
+            vehicles.drive(f, if (f.on) 0 else if (dx < -0.04f) -1 else 1)
+            if (f.type == FixtureType.TRACTOR) {
+                f.count++
+                if (f.count >= 3) unlock("farm_drive")
+            }
+            return
+        }
         if (attractions.tap(place, f, dx, dy)) return
+        personPlay.fixture(f)
         when (f.type) {
             FixtureType.CANDY_FLOSS_STAND, FixtureType.POPCORN_CART -> dispense(place, f, dx)
             FixtureType.TOY_BOX -> {
@@ -1189,11 +1202,6 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
                 }
             }
             FixtureType.ICE_POND -> listener.onFx(Fx.CRACK, f.x + dx, f.y, f)
-            FixtureType.TRACTOR -> {
-                driveTractor(f, if (f.on) 0 else if (dx < -0.08f) -1 else 1)
-                f.count++
-                if (f.count >= 3) unlock("farm_drive")
-            }
             FixtureType.ROCKET_SHIP -> {
                 if (f.on) return
                 if (world.seatedAt(f, 0) != null) {
@@ -1282,7 +1290,6 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
                 f.timer = 1.5f
                 listener.onFx(Fx.CAST, f.x, top, f)
             }
-            FixtureType.BOAT -> listener.onFx(Fx.TOOT, f.x, top, f)
             FixtureType.UMBRELLA -> {
                 f.angleV += 9f
                 listener.onFx(Fx.SPIN, f.x, top, f)
@@ -1421,6 +1428,8 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
 
     /** A tap on a loose thing. */
     fun use(place: PlaceId, t: Thing) {
+        val carrier = if (t.mode == Mode.WORN) world.bodies[t.holder] as? Person else null
+        if (carrier != null && personPlay.use(carrier, t)) return
         when (t.type) {
             ThingType.GIFT -> {
                 val made = Gifts.surprise(t.id + t.variant * 13 + today.toInt())
@@ -1456,7 +1465,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
             ThingType.GUITAR -> listener.onFx(Fx.STRUM, t.x, t.y - t.h / 2, thing = t, param = random.nextInt(4))
             ThingType.DRUM -> listener.onFx(Fx.DRUM, t.x, t.y - t.h, thing = t)
             ThingType.PHONE -> listener.onFx(Fx.RING, t.x, t.y - t.h, thing = t)
-            ThingType.BOOK -> listener.onFx(Fx.PAGE, t.x, t.y - t.h, thing = t)
+            ThingType.BOOK -> { t.used = t.used % 3 + 1; listener.onFx(Fx.PAGE, t.x, t.y - t.h, thing = t) }
             ThingType.WAND, ThingType.GEM, ThingType.STAR_JAR, ThingType.CROWN -> listener.onFx(Fx.SPARKLE, t.x, t.y - t.h / 2, thing = t)
             else -> {
                 if (t.mode == Mode.FREE && t.resting) {
@@ -1478,7 +1487,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         if (f.type == FixtureType.SECRET_NOOK) return PlaySecrets.drop(this, f, t)
         if (!place.mine && mine.play.drop(place, f, t)) return true
         if (place.big && house.drop(place, f, t)) return true
-        if (PlayInteractions.apply(this, place, f, t)) return false
+        if (PlayInteractions.apply(this, place, f, t)) return f.type == FixtureType.TRAMPOLINE
         when (f.type) {
             FixtureType.STOVE, FixtureType.CAMPFIRE, FixtureType.WOOD_STOVE -> {
                 val recipe = if (f.type == FixtureType.STOVE) Recipes.stove(t.type) else Recipes.fire(t.type)
@@ -1608,6 +1617,8 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     }
 
     private fun giveTo(p: Person, t: Thing, part: Part): Give {
+        if (part == Part.MOUTH && personPlay.brush(p, t)) return Give.PLAY
+        if ((part == Part.BODY || part == Part.HAIR) && personPlay.tickle(p, t)) return Give.PLAY
         when {
             part == Part.MOUTH && t.type == ThingType.CUP && t.used > 0 -> {
                 t.used = 0
@@ -1680,9 +1691,9 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
             part == Part.HAIR && t.type.hairTool && p.species == Species.FOLK -> {
                 val look = p.look
                 p.look = when (t.type) {
-                    ThingType.SCISSORS -> look.copy(hair = shorter(look.hair))
+                    ThingType.SCISSORS -> look.copy(hair = shorter(look.hair), hairLength = (look.hairLength - 0.15f).coerceAtLeast(0.65f), hairSize = (look.hairSize - 0.08f).coerceAtLeast(0.8f))
                     ThingType.COMB -> look.copy(hair = look.hair % (Styles.HAIRS - 1) + 1)
-                    ThingType.HAIR_DRYER -> look.copy(hair = if (look.hair == 3) 7 else 3)
+                    ThingType.HAIR_DRYER -> look.copy(hair = if (look.hair == 3) 7 else 3, hairSize = (look.hairSize + 0.12f).coerceAtMost(1.5f))
                     ThingType.SPRAY -> look.copy(hairColor = t.variant.mod(Palette.hairs.size))
                     else -> look
                 }
@@ -1691,6 +1702,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
             }
             part == Part.HAND -> {
                 wear(p, t, Slot.HAND)
+                personPlay.given(p, t)
                 return Give.HELD
             }
         }
@@ -1698,7 +1710,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     }
 
     private fun shorter(hair: Int): Int = when (hair) {
-        4, 5 -> 8
+        4, 5, 9, 10, 14, 15, 17 -> 8
         8 -> 1
         6, 3, 2, 7 -> 1
         else -> 0
@@ -1757,47 +1769,11 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
 
     // ------------------------------------------------------------------ home designer
 
-    fun driveTractor(f: Fixture, direction: Int) {
-        if (f.type != FixtureType.TRACTOR || world.fixtures[f.id] !== f) return
-        f.mode = direction.coerceIn(-1, 1)
-        f.on = f.mode != 0
-        f.shiftX = 0f
-        if (f.on) listener.onFx(Fx.VROOM, f.x, f.top, f, param = 2)
-    }
+    fun driveTractor(f: Fixture, direction: Int) = vehicles.drive(f, direction)
 
-    private fun stepTractor(place: PlaceId, f: Fixture, dt: Float) {
-        if (!f.on || f.lift > 0f) { f.bob = 0f; return }
-        val wanted = f.x + f.mode * 0.55f * dt
-        val at = clampFixture(place, f, wanted, f.y)
-        val dx = at[0] - f.x
-        if (abs(dx) < 0.00001f) { driveTractor(f, 0); return }
-        moveFixture(place, f, at[0], at[1])
-        f.angle += dx
-        f.bob = sin(time * 30f) * 0.003f
-        for (other in world.fixturesIn(place).toList()) {
-            if (other === f || other.host >= 0 || other.spec.wall || abs(other.depth - f.depth) > 0.07f) continue
-            if (abs(other.x - f.x) >= (other.spec.w + f.spec.w) / 2f) continue
-            other.anim = 1f
-            if (movable(other)) {
-                val pushed = clampFixture(place, other, other.x + dx * 2f, other.y)
-                moveFixture(place, other, pushed[0], pushed[1])
-            }
-            if (time - f.bumpTime > 0.4f) {
-                f.bumpTime = time
-                listener.onFx(Fx.BUMP, other.x, other.top, other)
-            }
-        }
-        for (b in world.bodiesIn(place)) {
-            if (b.mode != Mode.FREE || b.held || b.inside >= 0 || b.restOwner == f.id || b.cool > 0f) continue
-            if (abs(b.x - f.x) > f.spec.w / 2f + b.w / 2f || abs(b.y - f.y) > 0.09f) continue
-            b.resting = false; b.restOwner = -2; b.vx = f.mode * 0.9f; b.vy = -0.9f; b.cool = 0.8f
-            listener.onFx(Fx.BUMP, b.x, b.y - b.h / 2f, f, param = if (b is Person) b.id else 0)
-        }
-    }
-
-    /** Furniture the child may pick up and move. Water-bound and built-in things stay put. */
+    /** Furniture the child may pick up and move. Built-in things stay put; vehicles must first stop. */
     fun movable(f: Fixture): Boolean = when (f.type) {
-        FixtureType.PIER, FixtureType.FISHING_SPOT, FixtureType.BOAT, FixtureType.ICE_POND, FixtureType.STAGE_PLATFORM,
+        FixtureType.PIER, FixtureType.FISHING_SPOT, FixtureType.ICE_POND, FixtureType.STAGE_PLATFORM,
         FixtureType.SHIPWRECK, FixtureType.CABLE_CAR, FixtureType.CABLE_STATION, FixtureType.ROCK_LEDGE, FixtureType.SUMMIT_ROCK,
         FixtureType.ECHO_ROCK, FixtureType.MOUNTAIN_HUT, FixtureType.EAGLE_NEST, FixtureType.SUMMIT_FLAG -> false
         // Small things on furniture (the radio on the table) go with their furniture; running rides wait.
@@ -1809,12 +1785,22 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
      * wall furniture, and never off the ends of the place or into water.
      */
     fun clampFixture(place: PlaceId, f: Fixture, x: Float, y: Float): FloatArray {
-        val half = f.spec.w / 2f
+        // The projected hull and propeller extend beyond the seat/hit box.
+        val half = f.spec.w / 2f + if (f.type == FixtureType.BOAT || f.type == FixtureType.SUBMARINE) 0.08f else 0f
         var cx = x.coerceIn(half + 0.01f, place.width - half - 0.01f)
         // Furniture stays inside the rooms that stand: an empty slot of Mitt hus is open air.
         if (place.mine) cx = Mine.clampX(world.mine, place, cx, half)
         val cy = if (f.spec.wall) {
             y.coerceIn(place.ceiling + f.spec.h + 0.02f, place.back - 0.01f)
+        } else if (f.type == FixtureType.SUBMARINE) {
+            // A submarine has free height, also when the child plays with it in a room.
+            val top = max(place.ceiling + f.spec.h + 0.02f, if (underwater(place)) place.floor - 0.3f else 0f)
+            y.coerceIn(top, PlaceId.FRONT)
+        } else if (f.type == FixtureType.BOAT && Places.spec(place).water != null) {
+            val water = Places.spec(place).water!!
+            val reach = min(half, (water.x2 - water.x1) / 2f)
+            cx = cx.coerceIn(water.x1 + reach, water.x2 - reach)
+            water.line + 0.02f
         } else {
             // Only where there is dry floor.
             val band = surfaces(place).filter { it.band }
@@ -1906,7 +1892,6 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
 
     companion object {
         const val PI_F = 3.1415927f
-        const val TRACTOR_DRIVE = 0.62f
         const val GROW_SECONDS = 6f
         const val PORTHOLE_VIEWS = 6
         val RIDES = setOf(FixtureType.SLED_HILL, FixtureType.SKI_JUMP)
@@ -1914,7 +1899,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         const val NUDGE_REACH = 0.015f
         const val NUDGE_DROP = 0.25f
 
-        val MOVING = setOf(FixtureType.CABLE_CAR, FixtureType.ROCKET_SHIP, FixtureType.SUBMARINE, FixtureType.FERRIS_WHEEL, FixtureType.CAROUSEL, FixtureType.BUMPER_CAR, FixtureType.TRACTOR)
+        val MOVING = setOf(FixtureType.CABLE_CAR, FixtureType.ROCKET_SHIP, FixtureType.SUBMARINE, FixtureType.FERRIS_WHEEL, FixtureType.CAROUSEL, FixtureType.BUMPER_CAR, FixtureType.TRACTOR, FixtureType.BOAT)
         const val GRAVITY = 5.2f
         const val MAX_THINGS = 70
         const val TV_CHANNELS = 6

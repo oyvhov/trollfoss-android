@@ -150,6 +150,11 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
             }
         }
         if (Decor.rooms(place).size > 1) GameText(roomLabel(world, place, currentRoom).str(), fontSize = 13.sp, color = T.Ink)
+        if (engine.placementFailed) GameText(
+            (if ((place == PlaceId.MINE_GROUND || place == PlaceId.MINE_UPPER) &&
+                (0 until app.trollfoss.domain.Mine.SLOTS).none { world.mine.standing(place, it) }) SM.buildBeforeFurnishing else SM.placeFull).str(),
+            fontSize = 13.sp, color = T.Ink,
+        )
 
         Box(Modifier.fillMaxWidth().weight(1f)) {
             // Read the version so the panel redraws after every change.
@@ -199,8 +204,13 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                         LazyVerticalGrid(GridCells.Fixed(2), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             itemsIndexed(stored) { index, item ->
                                 // In the store the furniture just stands there, on a pale pad with no frame round it.
+                                Box {
                                 Tile(look = TileLook.SOFT, feet = if (item.type.spec.wall) null else thumbSide * fixtureThumbFeet(item.type), onClick = { engine.addFromStore(index) }) {
                                     FurnitureThumb(item.type, item.variant, place, false)
+                                }
+                                RoundButton(SM.deleteStored.str(), onClick = { engine.discardFromStore(index) },
+                                    modifier = Modifier.align(Alignment.BottomEnd).padding(2.dp), size = 40.dp,
+                                    tone = Tones.Cream, icon = DesignIcons.Bin)
                                 }
                             }
                         }
@@ -213,6 +223,9 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
         }
 
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            if (tab == DesignTab.STORE.ordinal && engine.canUndoStorage) {
+                RoundButton(SM.undoDelete.str(), engine::undoStorage, size = 48.dp, tone = Tones.Sun, icon = DesignIcons.Undo)
+            }
             // How many stickers the child has: they open the special furniture.
             Row(
                 Modifier.background(T.Grape, RoundedCornerShape(50)).border(2.dp, T.Ink, RoundedCornerShape(50)).padding(horizontal = 10.dp, vertical = 4.dp),

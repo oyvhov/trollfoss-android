@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,6 +28,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -98,6 +101,45 @@ private enum class Part(val label: app.trollfoss.domain.Txt, val count: Int, val
     BOTTOM_COLOR(S.catBottomColor, Palette.cloth.size, true),
     SHOES(S.catShoes, Palette.cloth.size, true),
     EXTRA(S.catExtra, Styles.EXTRAS, false),
+    EYE_COLOR(S.catEyeColor, Palette.eyes.size, true),
+    HAIR_SIZE(S.catHairSize, 0, false),
+    HAIR_LENGTH(S.catHairLength, 0, false),
+    EYE_SIZE(S.catEyeSize, 0, false),
+    EYE_SPACING(S.catEyeSpacing, 0, false),
+    FACE(S.catFace, Styles.FACES, false),
+    NOSE(S.catNose, Styles.NOSES, false),
+    MOUTH(S.catMouth, Styles.MOUTHS, false),
+    PATTERN(S.catPattern, Styles.PATTERNS, false),
+    ACCENT(S.catAccent, Palette.cloth.size, true),
+    ;
+    val group: Int get() = when (this) {
+        HAIR, HAIR_COLOR, HAIR_SIZE, HAIR_LENGTH -> 0
+        TOP, TOP_COLOR, BOTTOM, BOTTOM_COLOR, SHOES, PATTERN, ACCENT -> 2
+        else -> 1
+    }
+    val range: ClosedFloatingPointRange<Float> get() = when (this) {
+        HAIR_SIZE -> 0.8f..1.5f
+        HAIR_LENGTH -> 0.65f..1.6f
+        EYE_SIZE -> 0.75f..1.25f
+        EYE_SPACING -> 0.8f..1.2f
+        else -> 0.7f..1.2f
+    }
+}
+
+private fun Look.adjust(part: Part, value: Float): Look = when (part) {
+    Part.HAIR_SIZE -> copy(hairSize = value)
+    Part.HAIR_LENGTH -> copy(hairLength = value)
+    Part.EYE_SIZE -> copy(eyeSize = value)
+    Part.EYE_SPACING -> copy(eyeSpacing = value)
+    else -> copy(height = value)
+}.safe()
+
+private fun Look.value(part: Part): Float = when (part) {
+    Part.HAIR_SIZE -> hairSize
+    Part.HAIR_LENGTH -> hairLength
+    Part.EYE_SIZE -> eyeSize
+    Part.EYE_SPACING -> eyeSpacing
+    else -> height
 }
 
 private fun Look.with(part: Part, i: Int): Look = when (part) {
@@ -113,6 +155,13 @@ private fun Look.with(part: Part, i: Int): Look = when (part) {
     Part.BOTTOM_COLOR -> copy(bottomColor = i)
     Part.SHOES -> copy(shoes = i)
     Part.EXTRA -> copy(extra = i)
+    Part.EYE_COLOR -> copy(eyeColor = i)
+    Part.FACE -> copy(face = i)
+    Part.NOSE -> copy(nose = i)
+    Part.MOUTH -> copy(mouth = i)
+    Part.PATTERN -> copy(pattern = i)
+    Part.ACCENT -> copy(accent = i)
+    else -> this
 }
 
 private fun Look.index(part: Part): Int = when (part) {
@@ -128,11 +177,19 @@ private fun Look.index(part: Part): Int = when (part) {
     Part.BOTTOM_COLOR -> bottomColor
     Part.SHOES -> shoes
     Part.EXTRA -> extra
+    Part.EYE_COLOR -> eyeColor
+    Part.FACE -> face
+    Part.NOSE -> nose
+    Part.MOUTH -> mouth
+    Part.PATTERN -> pattern
+    Part.ACCENT -> accent
+    else -> -1
 }
 
 private fun Part.swatch(i: Int): Color = when (this) {
     Part.SKIN -> argb(Palette.skins[i])
     Part.HAIR_COLOR -> argb(Palette.hairs[i])
+    Part.EYE_COLOR -> argb(Palette.eyes[i])
     else -> argb(Palette.cloth[i])
 }
 
@@ -140,8 +197,9 @@ private fun Part.swatch(i: Int): Color = when (this) {
 private enum class Crop { HEAD, BODY, WHOLE }
 
 private fun Part.crop(): Crop = when (this) {
-    Part.HAIR, Part.EYES, Part.EARS, Part.EXTRA, Part.HAIR_COLOR, Part.SKIN -> Crop.HEAD
-    Part.TOP, Part.TOP_COLOR -> Crop.BODY
+    Part.HAIR, Part.EYES, Part.EARS, Part.EXTRA, Part.HAIR_COLOR, Part.SKIN, Part.EYE_COLOR,
+    Part.HAIR_SIZE, Part.HAIR_LENGTH, Part.EYE_SIZE, Part.EYE_SPACING, Part.FACE, Part.NOSE, Part.MOUTH -> Crop.HEAD
+    Part.TOP, Part.TOP_COLOR, Part.PATTERN, Part.ACCENT -> Crop.BODY
     else -> Crop.WHOLE
 }
 
@@ -210,7 +268,8 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
                     val pen = Pen(max(2f, size.height * 0.006f), t)
                     val floor = size.height * 0.94f
                     drawOval(Color(0x332B2140), Offset(size.width / 2 - size.height * 0.2f, floor - size.height * 0.03f), androidx.compose.ui.geometry.Size(size.height * 0.4f, size.height * 0.06f))
-                    val h = size.height * 0.82f * (look.height / 1.14f) * (if (look.ears == 2) 0.86f else 1f)
+                    val crown = max(if (look.ears == 2) 1.24f else 1f, 0.7f + 0.43f * look.hairSize)
+                    val h = size.height * 0.86f / crown * (look.height / 1.2f)
                     val jump = (1f - hop.value) * 0f + kotlin.math.sin(hop.value * Math.PI.toFloat()) * size.height * 0.05f
                     translate(size.width / 2, floor - jump) {
                         val turn = kotlin.math.cos(spin.value * 2f * Math.PI.toFloat())
@@ -259,8 +318,18 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
                     }
                 }
                 // What: the parts.
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    for (p in Part.entries) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    for ((i, label) in listOf(S.hairGroup, S.faceGroup, S.clothesGroup).withIndex()) {
+                        Box(Modifier.weight(1f).heightIn(min = 40.dp).clip(RoundedCornerShape(14.dp))
+                            .background(if (part.group == i) T.Sun else Color.White)
+                            .border(2.dp, T.Ink, RoundedCornerShape(14.dp))
+                            .clickable { part = when (i) { 0 -> Part.HAIR; 1 -> Part.EYES; else -> Part.TOP } }, contentAlignment = Alignment.Center) {
+                            Text(label.str(), color = T.Ink, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        }
+                    }
+                }
+                Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    for (p in Part.entries.filter { it.group == part.group }) {
                         PartTab(p, look, selected = p == part) {
                             part = p
                             feedback.sfx(Sfx.TAP)
@@ -268,8 +337,22 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
                     }
                 }
                 // Choices for that part.
+                val partLabel = part.label.str()
+                GameText(partLabel, fontSize = 16.sp, color = T.Ink)
+                Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (part.count == 0 || part == Part.HEIGHT) {
+                    Slider(value = look.value(part), onValueChange = { look = look.adjust(part, it); anim.face = Face.HAPPY; anim.faceTime = 0f },
+                        valueRange = part.range, modifier = Modifier.fillMaxWidth().semantics { contentDescription = partLabel },
+                        colors = SliderDefaults.colors(thumbColor = T.Grape, activeTrackColor = T.Grape, inactiveTrackColor = T.Cream))
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        for (value in listOf(part.range.start, (part.range.start + part.range.endInclusive) / 2f, part.range.endInclusive)) {
+                            Box(Modifier.size(84.dp).clip(RoundedCornerShape(18.dp)).background(Color.White).border(2.dp, T.Ink, RoundedCornerShape(18.dp)).clickable { look = look.adjust(part, value) }) {
+                                Canvas(Modifier.fillMaxSize()) { drawCrop(look.adjust(part, value), part.crop(), 0f) }
+                            }
+                        }
+                    }
+                } else {
                 FlowRow(
-                    Modifier.weight(1f).verticalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
@@ -280,6 +363,8 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
                             react(part == Part.TOP || part == Part.HEIGHT)
                         }
                     }
+                }
+                }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                     RoundButton(S.random.str(), onClick = {
@@ -326,6 +411,7 @@ private fun ChipHead(look: Look?, selected: Boolean, label: String, onClick: () 
 
 @Composable
 private fun PartTab(part: Part, look: Look, selected: Boolean, onClick: () -> Unit) {
+    val label = part.label.str()
     Box(
         Modifier
             .size(50.dp)
@@ -333,7 +419,7 @@ private fun PartTab(part: Part, look: Look, selected: Boolean, onClick: () -> Un
             .background(if (selected) T.Sun else Color.White)
             .border(if (selected) 3.dp else 2.dp, T.Ink, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
-            .semantics { contentDescription = part.label.get(app.trollfoss.domain.Maalform.NYNORSK) },
+            .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
         Canvas(Modifier.fillMaxSize().padding(6.dp)) { drawPartIcon(part, look) }
@@ -342,6 +428,7 @@ private fun PartTab(part: Part, look: Look, selected: Boolean, onClick: () -> Un
 
 @Composable
 private fun Choice(part: Part, i: Int, look: Look, selected: Boolean, onClick: () -> Unit) {
+    val label = "${part.label.str()} ${i + 1}"
     val shape = RoundedCornerShape(if (part.color) 40.dp else 18.dp)
     val size = if (part.color) 58.dp else 84.dp
     Box(
@@ -351,7 +438,8 @@ private fun Choice(part: Part, i: Int, look: Look, selected: Boolean, onClick: (
             .clip(shape)
             .background(if (part.color) part.swatch(i) else if (selected) T.SunTop else Color.White)
             .border(if (selected) 4.dp else 2.dp, if (selected) T.Grape else T.Ink, shape)
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .semantics { contentDescription = label },
     ) {
         if (!part.color) Canvas(Modifier.fillMaxSize()) { drawCrop(look.with(part, i).safe(), part.crop(), 0f) }
         else if (selected) Canvas(Modifier.fillMaxSize()) { Icons.Check(this) }
@@ -384,11 +472,28 @@ private fun DrawScope.drawPartIcon(part: Part, look: Look) {
             inkedRound(androidx.compose.ui.geometry.Rect(c.x - s * 0.14f, c.y - s * 0.44f, c.x + s * 0.14f, c.y + s * 0.44f), s * 0.06f, T.Sun, pen)
             for (i in 0 until 6) drawLine(T.Ink, Offset(c.x - s * 0.14f, c.y - s * 0.34f + i * s * 0.14f), Offset(c.x - s * (if (i % 2 == 0) 0.02f else 0.07f), c.y - s * 0.34f + i * s * 0.14f), strokeWidth = pen.lw * 0.7f)
         }
-        Part.HAIR, Part.EARS -> drawCrop(look, Crop.HEAD, 0f, small = true)
+        Part.HAIR, Part.EARS, Part.FACE, Part.NOSE, Part.MOUTH -> drawCrop(look, Crop.HEAD, 0f, small = true)
+        Part.HAIR_SIZE, Part.HAIR_LENGTH -> {
+            drawCrop(look, Crop.HEAD, 0f, small = true)
+            val a = if (part == Part.HAIR_SIZE) Offset(c.x - s * 0.4f, c.y + s * 0.3f) else Offset(c.x + s * 0.32f, c.y - s * 0.38f)
+            val b = if (part == Part.HAIR_SIZE) Offset(c.x + s * 0.4f, c.y + s * 0.3f) else Offset(c.x + s * 0.32f, c.y + s * 0.4f)
+            drawLine(Color.White, a, b, strokeWidth = pen.lw * 2.4f, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+            drawLine(T.Sea, a, b, strokeWidth = pen.lw * 1.1f, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+            val wing = s * 0.13f
+            if (part == Part.HAIR_SIZE) {
+                for ((at, sign) in listOf(a to 1f, b to -1f)) for (dy in listOf(-wing, wing))
+                    drawLine(T.Sea, at, Offset(at.x + sign * wing, at.y + dy), strokeWidth = pen.lw, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+            } else {
+                for ((at, sign) in listOf(a to 1f, b to -1f)) for (dx in listOf(-wing, wing))
+                    drawLine(T.Sea, at, Offset(at.x + dx, at.y + sign * wing), strokeWidth = pen.lw, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+            }
+        }
         Part.HAIR_COLOR -> drop(part.swatch(look.hairColor))
         Part.TOP_COLOR -> drop(part.swatch(look.topColor))
         Part.BOTTOM_COLOR -> drop(part.swatch(look.bottomColor))
-        Part.EYES -> {
+        Part.EYE_COLOR -> drop(part.swatch(look.eyeColor))
+        Part.ACCENT -> drop(part.swatch(look.accent))
+        Part.EYES, Part.EYE_SIZE, Part.EYE_SPACING -> {
             val eye = androidx.compose.ui.geometry.Rect(c.x - s * 0.42f, c.y - s * 0.26f, c.x + s * 0.42f, c.y + s * 0.26f)
             val path = androidx.compose.ui.graphics.Path().apply {
                 moveTo(eye.left, c.y)
@@ -397,11 +502,11 @@ private fun DrawScope.drawPartIcon(part: Part, look: Look) {
                 close()
             }
             inked(path, Color.White, pen, shade = false)
-            drawCircle(Color(0xFF7A5634), s * 0.17f, c)
+            drawCircle(argb(Palette.eyes[look.eyeColor]), s * 0.17f, c)
             drawCircle(T.Ink, s * 0.09f, c)
             drawCircle(Color.White, s * 0.04f, Offset(c.x - s * 0.05f, c.y - s * 0.05f))
         }
-        Part.TOP -> {
+        Part.TOP, Part.PATTERN -> {
             val shirt = androidx.compose.ui.graphics.Path().apply {
                 moveTo(c.x - s * 0.14f, c.y - s * 0.38f)
                 lineTo(c.x - s * 0.44f, c.y - s * 0.18f)
@@ -451,8 +556,8 @@ private fun DrawScope.drawCrop(look: Look, crop: Crop, t: Float, small: Boolean 
     clipRect {
         when (crop) {
             Crop.HEAD -> {
-                val h = size.height * 1.55f
-                translate(size.width / 2, size.height * 0.5f + h * 0.7f) { drawPerson(Species.FOLK, look, Pose.STAND, a, h, pen) }
+                val h = size.height * 1.2f / max(1f, look.hairSize * 0.9f)
+                translate(size.width / 2, size.height * 0.57f + h * 0.7f) { drawPerson(Species.FOLK, look, Pose.STAND, a, h, pen) }
             }
             Crop.BODY -> {
                 val h = size.height * 1.25f

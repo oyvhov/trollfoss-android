@@ -219,6 +219,19 @@ internal fun DrawScope.thDrum(w: Float, h: Float, pen: Pen) {
 private val BOOK_COL = longArrayOf(0xFFE8554E, 0xFF3D6BFF, 0xFF2E8B57, 0xFF8B5CF6)
 
 /** A closed book standing up, with oblique depth: the pages show on top and at the side. */
+internal fun DrawScope.thOpenBook(v: Int, page: Int, w: Float, h: Float, pen: Pen) {
+    val cover = app.trollfoss.ui.theme.T.Grape
+    inkedRound(Rect(-w * 0.62f, -h * 0.76f, w * 0.62f, -h * 0.05f), w * 0.08f, cover, pen)
+    for (side in floatArrayOf(-1f, 1f)) {
+        val left = if (side < 0) -w * 0.55f else 0f
+        inkedRound(Rect(left, -h * 0.7f, left + w * 0.55f, -h * 0.09f), w * 0.04f, Color(0xFFFFF9E9), pen, shade = false)
+        val c = Offset(side * w * 0.27f, -h * 0.43f)
+        if ((page + v) % 2 == 0) twinkle(c, w * 0.13f, Color(0xFFF8C54C), 1f)
+        else { drawCircle(Color(0xFFEE889F), w * 0.13f, c); drawCircle(Color.White, w * 0.05f, c) }
+        drawLine(Ink.line.copy(alpha = 0.45f), Offset(left + w * 0.09f, -h * 0.2f), Offset(left + w * 0.46f, -h * 0.2f), strokeWidth = pen.lw * 0.5f)
+    }
+}
+
 internal fun DrawScope.thBook(v: Int, w: Float, h: Float, pen: Pen) {
     val i = v.mod(4)
     val col = Color(BOOK_COL[i])

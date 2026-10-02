@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
@@ -200,6 +201,17 @@ fun PlayScreen(vm: TrollfossViewModel) {
         RoundButton(S.friends.str(), onClick = { friendsOpen = true }, size = btn, tone = Tones.Mint,
             modifier = Modifier.align(Alignment.TopStart).padding(start = edge + (btn + gap) * 2, top = edge), icon = Icons.Friends)
 
+        if (place == app.trollfoss.domain.PlaceId.LAB) {
+            var tunnelLabelVisible by remember(place) { mutableStateOf(false) }
+            LaunchedEffect(place) { delay(2800); tunnelLabelVisible = true }
+            if (tunnelLabelVisible) {
+                GameText(S.secretTunnel.str(), fontSize = if (compact) 13.sp else 16.sp, color = T.Ink,
+                    modifier = Modifier.align(Alignment.TopCenter).padding(top = edge + btn + 8.dp)
+                        .background(T.Cream, RoundedCornerShape(18.dp)).border(2.dp, T.Ink, RoundedCornerShape(18.dp))
+                        .padding(horizontal = 12.dp, vertical = 6.dp))
+            }
+        }
+
         val photo = {
             scope.launch {
                 if (!capturePhoto) {
@@ -303,6 +315,14 @@ fun PlayScreen(vm: TrollfossViewModel) {
                     drawRect(T.Ink, Offset(size.width * 0.3f, size.height * 0.3f), androidx.compose.ui.geometry.Size(size.width * 0.4f, size.height * 0.4f))
                 })
                 RoundButton(S.driveRight.str(), onClick = { engine.drive(1) }, size = btn, tone = Tones.Sea, icon = { driveArrow(true) })
+                if (engine.vehicle?.type == app.trollfoss.domain.FixtureType.SUBMARINE) {
+                    RoundButton(S.rise.str(), onClick = { engine.dive(-1) }, size = btn, tone = Tones.Mint, icon = {
+                        rotate(-90f) { driveArrow(true) }
+                    })
+                    RoundButton(S.dive.str(), onClick = { engine.dive(1) }, size = btn, tone = Tones.Grape, icon = {
+                        rotate(90f) { driveArrow(true) }
+                    })
+                }
                 app.trollfoss.ui.components.CloseButton(engine::closeDriving, size = btn)
             }
         }

@@ -67,28 +67,7 @@ class Attractions(private val sim: Sim, private val random: Random) {
                     listener.onFx(Fx.KEY, f.x, f.top, f, param = CAROUSEL_TUNE[f.count % CAROUSEL_TUNE.size])
                 }
             }
-            FixtureType.BUMPER_CAR -> if (f.on) {
-                f.shiftX += f.angleV * dt
-                if (abs(f.shiftX) > 0.32f) {
-                    f.shiftX = f.shiftX.coerceIn(-0.32f, 0.32f)
-                    f.angleV = -f.angleV
-                }
-                f.bob = sin(sim.time * 22f) * 0.002f
-                for (o in world.fixturesIn(place)) {
-                    if (o === f || o.type != FixtureType.BUMPER_CAR) continue
-                    val d = (o.x + o.shiftX) - (f.x + f.shiftX)
-                    val closing = (o.angleV - f.angleV) * d < 0f
-                    if (abs(d) < 0.21f && closing) {
-                        f.angleV = -f.angleV
-                        o.angleV = if (o.on) -o.angleV else f.angleV * -0.8f
-                        if (!o.on) { o.on = true }
-                        f.anim = 1f
-                        o.anim = 1f
-                        val rider = world.seatedAt(f, 0) ?: world.seatedAt(o, 0)
-                        listener.onFx(Fx.BUMP, f.x + f.shiftX + d / 2, f.y - 0.08f, f, param = rider?.id ?: -1)
-                    }
-                }
-            }
+            FixtureType.BUMPER_CAR -> sim.vehicles.step(place, f, dt)
             FixtureType.CART -> if (abs(f.angleV) > 0.01f) {
                 val old = f.shiftX
                 f.shiftX += f.angleV * dt
@@ -152,27 +131,7 @@ class Attractions(private val sim: Sim, private val random: Random) {
                 f.angleV += (-f.angle * 20f - f.angleV * 2f) * dt
                 f.angle += f.angleV * dt + sin(sim.time * 0.9f + f.id) * 0.02f * dt
             }
-            FixtureType.SUBMARINE -> if (f.on) {
-                f.timer += dt
-                val t = f.timer
-                val rise = when {
-                    t < 1.2f -> ease(t / 1.2f)
-                    t < 8.2f -> 1f
-                    t < 9.4f -> 1f - ease((t - 8.2f) / 1.2f)
-                    else -> 0f
-                }
-                val cruise = if (t in 1.2f..8.2f) sin((t - 1.2f) / 7f * 2f * PI_F) else 0f
-                f.shiftY = -0.3f * rise + (if (rise > 0.5f) sin(t * 1.4f) * 0.02f else 0f)
-                f.shiftX = cruise * 0.75f
-                f.angle = if (cruise == 0f) 0f else cos((t - 1.2f) / 7f * 2f * PI_F)
-                if (t >= 9.4f) {
-                    f.on = false
-                    f.timer = 0f
-                    f.shiftX = 0f
-                    f.shiftY = 0f
-                    listener.onFx(Fx.BOING, f.x, f.y, f)
-                }
-            }
+            FixtureType.SUBMARINE -> sim.vehicles.step(place, f, dt)
             FixtureType.DISCO_BALL -> if (f.on) f.angle += dt * 1.4f
             FixtureType.CABLE_CAR -> cable(place, f, dt)
             FixtureType.SUMMIT_FLAG -> summit(place, f, dt)
@@ -262,16 +221,6 @@ class Attractions(private val sim: Sim, private val random: Random) {
             FixtureType.FERRIS_WHEEL, FixtureType.CAROUSEL, FixtureType.XRAY -> {
                 f.on = !f.on
                 listener.onFx(if (f.on) Fx.ON else Fx.OFF, f.x, f.y - f.spec.h / 2, f)
-            }
-            FixtureType.BUMPER_CAR -> {
-                if (!f.on) {
-                    f.on = true
-                    f.angleV = if (dx < 0f || random.nextBoolean()) 0.45f else -0.45f
-                    listener.onFx(Fx.VROOM, f.x + f.shiftX, top, f)
-                } else {
-                    f.on = false
-                    listener.onFx(Fx.OFF, f.x + f.shiftX, top, f)
-                }
             }
             FixtureType.CART -> {
                 // Push from the side you tap.
@@ -387,11 +336,6 @@ class Attractions(private val sim: Sim, private val random: Random) {
                 listener.onFx(Fx.BUBBLES, f.x, f.y - f.spec.h * 0.6f, f)
             }
             FixtureType.CORAL -> listener.onFx(Fx.BUBBLES, f.x, top, f, param = 1)
-            FixtureType.SUBMARINE -> if (!f.on) {
-                f.on = true
-                f.timer = 0f
-                listener.onFx(Fx.VROOM, f.x, top, f, param = 2)
-            }
             FixtureType.OCTOPUS -> {
                 f.mode = (f.mode + 1) % 4
                 f.count++

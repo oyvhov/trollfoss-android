@@ -1,5 +1,21 @@
 # Endringslogg
 
+## 1.4.0 – Figurar, reise og meir leik
+
+- Nytt uttrykk for personane og ein større figurverkstad: 18 frisyrer, 14 hårfargar, 12 augefargar, åtte augetypar, ansiktsform, nase, smil, fregner, øyrepynt og fleire klede og mønster. Glidebrytarar endrar hårstorleik, hårlengd, augestorleik, avstand mellom auga og høgd, med førehandsvising medan ein dreg.
+- Ballongen på kartet har ei stor hengande seng med madrass, puter, sengegavlar og opptil tre synlege passasjerar.
+- Koplinga frå Trollhola til kjellaren i Storhuset er behalden som ein hemmeleg tunnel, med husmerke og ei tydeleg forklaring.
+- Gi ei bok, telefon, tannbørste, bamse eller pute til ein figur for lesing, telefonprat, tannpuss eller kos. Instrument i handa får venner til å danse. Trykk på tingen i handa for å bruke han igjen; ballar kan kastast og fangast av ein venn i nærleiken.
+- Fleire tingsamband: spade og bøtte byggjer sandslott, vatn riv det ned, verktøy tenner lys, telefonen styrer TV-en, vatn og badeand gir bobler i akvariet, og trampolina sprett ballar. Bading vaskar bort krem og blekk, og ei fjør kan kile folk og dyr.
+- Gamle figurar held på namn, identitet, klede og ting. Dei nye utsjånadene og boksidene blir lagra.
+
+- Utplassering frå Lager viser den nye tingen med kameraet, også når ein ser utover sjøen på stranda og møbelet må stå på land. Alle 24 stader kan ta imot lagerting; rom i Mitt hus må ha golv først.
+- Dei opphavlege stadene har plass til 60 ekstra møblar, og Storhuset til 100 per etasje. Når det er fullt, får barnet ei forklaring, og tingen blir verande i Lager.
+- Slett éin ting om gongen med søppelbøtta på lagerkortet. Angreknappen hentar tilbake sletta ting, også etter reise medan appen er open.
+- Båten, radiobilane og ubåten har piler og stopp som traktoren. Ubåten kan òg stige og dykke; radiobilane sprett tilbake ved kollisjon. Passasjerar og kamera følgjer med, og den verkelege posisjonen blir lagra.
+- Båten kan flyttast via Lager når han står stille. Han held seg på vatnet der det finst sjø eller elv. Nye køyretøy er tilgjengelege i utekatalogen og ubåten i havbotnkatalogen.
+- Emulatorstarten finn no heile einingsnamnet også når berre éin emulator er tilkopla.
+
 ## 1.3.0 – Venner og samanhengande leik
 
 - Hent venner frå heile bygda med ein fast portrettknapp. Same figur kjem med klede og det han held, også frå sekken. Han blir sett på tørr grunn eller eit rom som har golv.

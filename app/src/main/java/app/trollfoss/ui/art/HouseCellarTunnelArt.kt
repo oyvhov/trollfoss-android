@@ -342,13 +342,17 @@ internal fun DrawScope.ceLabDoor(f: Fixture, u: Float, pen: Pen) {
     val beam = Rect(p(-0.16f, -0.45f), p(0.16f, -0.405f))
     inkedRound(beam, 0.012f * u, CeC.wood, pen)
     drawLine(CeC.woodDark, p(-0.14f, -0.43f), p(0.14f, -0.427f), strokeWidth = pen.lw * 0.7f)
-    // A signboard with a pickaxe, hanging from the beam on two chains.
+    // A picture of Storhuset shows where the secret tunnel leads, without reading.
     for (s in floatArrayOf(-0.03f, 0.03f)) drawLine(Ink.line, p(s, -0.405f), p(s, -0.385f), strokeWidth = pen.lw)
-    val sign = Rect(p(-0.045f, -0.385f), p(0.045f, -0.335f))
+    val sign = Rect(p(-0.085f, -0.385f), p(0.085f, -0.30f))
     inkedRound(sign, 0.005f * u, CeC.woodLight, pen)
-    drawLine(CeC.iron, p(-0.026f, -0.348f), p(0.026f, -0.372f), strokeWidth = pen.lw * 1.8f, cap = StrokeCap.Round)
-    val arc = Path().apply { moveTo(p(-0.026f, -0.372f).x, p(-0.026f, -0.372f).y); quadraticTo(p(0f, -0.395f).x, p(0f, -0.395f).y, p(0.026f, -0.348f).x, p(0.026f, -0.348f).y) }
-    drawPath(arc, CeC.steel, style = Stroke(pen.lw * 2f, cap = StrokeCap.Round))
+    inkedRound(Rect(p(-0.037f, -0.354f), p(0.045f, -0.31f)), 0.003f * u, Color(0xFFEBD196), pen, shade = false)
+    val roof = Path().apply { moveTo(p(-0.047f, -0.352f).x, p(-0.047f, -0.352f).y); lineTo(p(0.004f, -0.378f).x, p(0.004f, -0.378f).y); lineTo(p(0.055f, -0.352f).x, p(0.055f, -0.352f).y); close() }
+    inked(roof, Color(0xFF85566B), pen, shade = false)
+    for (x in floatArrayOf(-0.02f, 0.025f)) inkedRound(Rect(p(x - 0.006f, -0.343f), p(x + 0.006f, -0.326f)), 0.002f * u, Color(0xFF79BCCC), pen, shade = false)
+    drawLine(CeC.iron, p(-0.074f, -0.326f), p(-0.048f, -0.326f), strokeWidth = pen.lw, cap = StrokeCap.Round)
+    drawLine(CeC.iron, p(-0.058f, -0.334f), p(-0.048f, -0.326f), strokeWidth = pen.lw, cap = StrokeCap.Round)
+    drawLine(CeC.iron, p(-0.058f, -0.318f), p(-0.048f, -0.326f), strokeWidth = pen.lw, cap = StrokeCap.Round)
     // A crystal glints on each side.
     for ((i, s) in floatArrayOf(-1f, 1f).withIndex()) {
         val cx = s * 0.17f

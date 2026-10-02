@@ -30,18 +30,23 @@ enum class Species(val height: Float, val widthRatio: Float) {
 
 /** How many choices each part of a figure has. The art draws every index below these counts. */
 object Styles {
-    /** 0 bald, 1 short, 2 fringe, 3 curls, 4 long, 5 braids, 6 bun, 7 spiky, 8 bob. */
-    const val HAIRS = 9
-    /** 0 round, 1 happy, 2 sleepy, 3 lashes, 4 dots. */
-    const val EYES = 5
+    /** Original indices 0..8 stay stable; 9 ponytail, 10 pigtails, 11 afro, 12 space buns,
+     * 13 quiff, 14 locks with beads, 15 waves, 16 mohawk, 17 curly pigtails. */
+    const val HAIRS = 18
+    /** 0 round, 1 bright, 2 sleepy, 3 lashes, 4 dots, 5 narrow, 6 soft oval, 7 star pupils. */
+    const val EYES = 8
     /** 0 plain, 1 cat, 2 bunny, 3 bear, 4 troll. */
     const val EARS = 5
-    /** 0 tee, 1 hoodie, 2 dress, 3 stripes, 4 overalls, 5 lusekofte, 6 bunad. */
-    const val TOPS = 7
-    /** 0 trousers, 1 shorts, 2 skirt. */
-    const val BOTTOMS = 3
-    /** 0 none, 1 freckles, 2 beard, 3 moustache. */
-    const val EXTRAS = 4
+    /** Original 0..6, then 7 jacket, 8 button shirt, 9 ribbed sweater, 10 sports shirt, 11 cape. */
+    const val TOPS = 12
+    /** 0 trousers, 1 shorts, 2 skirt, 3 cargo trousers, 4 striped socks. */
+    const val BOTTOMS = 5
+    /** Original 0..3, then 4 freckles/stubble, 5 cheek stars, 6 patch, 7 earrings, 8 dimples. */
+    const val EXTRAS = 9
+    const val FACES = 4
+    const val NOSES = 4
+    const val MOUTHS = 5
+    const val PATTERNS = 6
 
     /** Figure heights the workshop offers: child, youth, grown-up, tall. */
     val HEIGHTS = floatArrayOf(0.78f, 0.9f, 1.03f, 1.14f)
@@ -62,6 +67,13 @@ object Palette {
         0xFF2B1D16.toInt(), 0xFF5A3824.toInt(), 0xFF9C5B2E.toInt(), 0xFFE8B04A.toInt(),
         0xFFF4E3B5.toInt(), 0xFFC74B2A.toInt(), 0xFFA9A9B8.toInt(), 0xFFFF6FA8.toInt(),
         0xFF4A8BFF.toInt(), 0xFF3DDC97.toInt(),
+        0xFFAD6CE8.toInt(), 0xFFEEF4FF.toInt(), 0xFF20BFC2.toInt(), 0xFFEA925C.toInt(),
+    )
+
+    val eyes = intArrayOf(
+        0xFF805535.toInt(), 0xFF3C86C5.toInt(), 0xFF3C9168.toInt(), 0xFF6C778E.toInt(),
+        0xFFC28B37.toInt(), 0xFF392C4D.toInt(), 0xFFAE6ACF.toInt(), 0xFFEC759F.toInt(),
+        0xFF24B5BC.toInt(), 0xFFDF7540.toInt(), 0xFFADD358.toInt(), 0xFFBECCE6.toInt(),
     )
 
     val cloth = intArrayOf(
@@ -127,10 +139,20 @@ data class Look(
     val bottomColor: Int = 11,
     val shoes: Int = 9,
     val extra: Int = 0,
+    val eyeColor: Int = 0,
+    val hairSize: Float = 1f,
+    val hairLength: Float = 1f,
+    val eyeSize: Float = 1f,
+    val eyeSpacing: Float = 1f,
+    val face: Int = 0,
+    val nose: Int = 0,
+    val mouth: Int = 0,
+    val pattern: Int = 0,
+    val accent: Int = 9,
 ) {
     fun safe(): Look = copy(
         skin = skin.mod(Palette.skins.size),
-        height = height.coerceIn(0.7f, 1.2f),
+        height = height.finite(1.03f, 0.7f, 1.2f),
         hair = hair.mod(Styles.HAIRS),
         hairColor = hairColor.mod(Palette.hairs.size),
         eyes = eyes.mod(Styles.EYES),
@@ -141,6 +163,16 @@ data class Look(
         bottomColor = bottomColor.mod(Palette.cloth.size),
         shoes = shoes.mod(Palette.cloth.size),
         extra = extra.mod(Styles.EXTRAS),
+        eyeColor = eyeColor.mod(Palette.eyes.size),
+        hairSize = hairSize.finite(1f, 0.8f, 1.5f),
+        hairLength = hairLength.finite(1f, 0.65f, 1.6f),
+        eyeSize = eyeSize.finite(1f, 0.75f, 1.25f),
+        eyeSpacing = eyeSpacing.finite(1f, 0.8f, 1.2f),
+        face = face.mod(Styles.FACES),
+        nose = nose.mod(Styles.NOSES),
+        mouth = mouth.mod(Styles.MOUTHS),
+        pattern = pattern.mod(Styles.PATTERNS),
+        accent = accent.mod(Palette.cloth.size),
     )
 
     companion object {
@@ -162,6 +194,16 @@ data class Look(
                 bottomColor = random.nextInt(Palette.cloth.size),
                 shoes = random.nextInt(Palette.cloth.size),
                 extra = if (grown && random.nextFloat() < 0.35f) 1 + random.nextInt(Styles.EXTRAS - 1) else if (random.nextFloat() < 0.2f) 1 else 0,
+                eyeColor = random.nextInt(Palette.eyes.size),
+                hairSize = 0.9f + random.nextFloat() * 0.45f,
+                hairLength = 0.8f + random.nextFloat() * 0.6f,
+                eyeSize = 0.85f + random.nextFloat() * 0.3f,
+                eyeSpacing = 0.9f + random.nextFloat() * 0.2f,
+                face = random.nextInt(Styles.FACES),
+                nose = random.nextInt(Styles.NOSES),
+                mouth = random.nextInt(Styles.MOUTHS),
+                pattern = random.nextInt(Styles.PATTERNS),
+                accent = random.nextInt(Palette.cloth.size),
             )
         }
 
@@ -170,3 +212,6 @@ data class Look(
             (1.55f - look.height * 0.6f + (random.nextFloat() - 0.5f) * 0.25f).coerceIn(0.75f, 1.6f)
     }
 }
+
+private fun Float.finite(fallback: Float, min: Float, max: Float): Float =
+    if (isFinite()) coerceIn(min, max) else fallback

@@ -106,7 +106,7 @@ enum class ThingType(
     HAIR_DRYER(0.07f, 0.06f, Cat.TOOL),
     COMB(0.065f, 0.02f, Cat.TOOL),
     /** Hair colour spray; the variant is the hair colour it gives. */
-    SPRAY(0.03f, 0.07f, Cat.TOOL, variants = 10),
+    SPRAY(0.03f, 0.07f, Cat.TOOL, variants = 14),
     WAND(0.02f, 0.1f, Cat.TOOL, glows = true),
     BUCKET(0.06f, 0.06f, Cat.TOOL, variants = 3),
     SPADE(0.03f, 0.09f, Cat.TOOL),

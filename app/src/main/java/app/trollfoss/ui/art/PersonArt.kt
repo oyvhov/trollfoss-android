@@ -16,6 +16,7 @@ import app.trollfoss.domain.Face
 import app.trollfoss.domain.Look
 import app.trollfoss.domain.Palette
 import app.trollfoss.domain.PersonAnim
+import app.trollfoss.domain.PersonPlay
 import app.trollfoss.domain.Pose
 import app.trollfoss.domain.Species
 import kotlin.math.PI
@@ -90,9 +91,12 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
         else -> breath * 0.003f
     }
 
+    // Long hair falls behind the clothes and hands, including at the slider extremes.
+    withTransform({ translate(0f, bob * h) }) { backHair(look, hair, h, pen) }
+
     // ---- legs
     val legW = 0.092f
-    val legColor = if (look.bottom == 0 || overalls) bottomColor else skin
+    val legColor = if (look.bottom == 0 || look.bottom == 3 || overalls) bottomColor else skin
     val kick = when (pose) {
         Pose.HELD -> sin(t * 13f) * 0.03f
         Pose.SWIM -> sin(t * 7f) * 0.02f
@@ -116,6 +120,8 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
             val ankle = o(side * 0.078f * spread, -0.055f + lift)
             capsule(hip, ankle, legW * h, legColor, pen)
             if (look.bottom == 1 && !overalls) capsule(hip, o(side * 0.073f, -0.105f + bob), legW * h * 1.18f, bottomColor, pen)
+            if (look.bottom == 3 && !overalls) inkedRound(Rect((side * 0.075f - 0.03f) * h, -0.14f * h, (side * 0.075f + 0.03f) * h, -0.095f * h), h * 0.008f, bottomColor.darken(0.15f), pen, shade = false)
+            if (look.bottom == 4 && !overalls) for (k in 0..2) drawLine(argb(Palette.cloth[look.accent]), o(side * 0.078f - 0.04f, -0.105f + k * 0.026f + lift), o(side * 0.078f + 0.04f, -0.105f + k * 0.026f + lift), strokeWidth = h * 0.016f)
             inkedOval(rect(side * 0.086f * h, (-0.036f + lift) * h, 0.14f * h, 0.075f * h), shoe, pen)
             drawLine(shoe.lighten(0.6f), o(side * 0.086f - 0.05f, -0.012f + lift), o(side * 0.086f + 0.05f, -0.012f + lift), strokeWidth = pen.lw * 0.9f, cap = StrokeCap.Round)
         }
@@ -137,6 +143,7 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
 
         // ---- hood behind the neck
         if (look.top == 1) inkedOval(rect(0f, -0.475f * h, 0.36f * h, 0.13f * h), topColor.darken(0.12f), pen)
+        if (look.top == 11) inked(blobPath(-0.15f * h, -0.49f * h, -0.3f * h, -0.12f * h, 0f, -0.07f * h, 0.3f * h, -0.12f * h, 0.15f * h, -0.49f * h), topColor.darken(0.12f), pen)
 
         // ---- torso
         val dress = look.top == 2
@@ -155,7 +162,7 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
         }
         val shirt = if (overalls || look.top == 6) ShirtWhite else topColor
         inked(torso, shirt, pen, outline = false)
-        clipPath(torso) { garmentDetails(look, topColor, h, pen) }
+        clipPath(torso) { garmentDetails(look, topColor, h, pen); folkPattern(look, h, pen) }
         drawPath(torso, Ink.line, style = pen.stroke)
         if (look.top == 0 || look.top == 3) {
             drawArc(Ink.line, 20f, 140f, false, o(-0.07f, -0.53f), Size(0.14f * h, 0.07f * h), style = pen.thin)
@@ -193,7 +200,11 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
         } else if (walking) {
             handL = o(-0.235f, -0.25f - (stepR - stepL) * 0.04f)
         }
-        val longSleeves = look.top == 1 || look.top == 5 || look.top == 6 || overalls
+        PersonPlay.hand(a.activity)?.let {
+            if (holding || a.activity == PersonPlay.BRUSH) handR = o(it[0], it[1])
+            if (a.activity == PersonPlay.READ || a.activity == PersonPlay.HUG) handL = o(-0.14f, -0.35f)
+        }
+        val longSleeves = look.top in setOf(1, 5, 6, 7, 8, 9) || overalls
         val sleeve = if (overalls || look.top == 6) ShirtWhite else topColor
         for ((shoulder, hand) in listOf(shoulderL to handL, shoulderR to handR)) {
             val armColor = if (longSleeves) sleeve else skin
@@ -274,6 +285,14 @@ private fun DrawScope.garmentDetails(look: Look, color: Color, h: Float, pen: Pe
             drawCircle(Ink.line, 0.03f * h, o(0f, -0.47f), style = pen.thin)
             for (k in -1..1) drawCircle(Color(0xFFD9DDE8), 0.009f * h, o(k * 0.02f, -0.42f))
         }
+        7, 8 -> {
+            drawLine(Ink.line, o(0f, -0.48f), o(0f, -0.14f), strokeWidth = pen.lw * 0.75f)
+            for (k in 0..3) inkedCircle(o(0.025f, -0.42f + k * 0.07f), h * 0.009f, argb(Palette.cloth[look.accent]), pen, shade = false)
+            for (s in floatArrayOf(-1f, 1f)) inkedRound(Rect(o(s * 0.10f - 0.035f, -0.3f), o(s * 0.10f + 0.035f, -0.24f)), h * 0.008f, color.darken(0.1f), pen, shade = false)
+        }
+        9 -> for (k in -4..4) drawLine(color.darken(0.1f), o(k * 0.042f, -0.47f), o(k * 0.042f, -0.15f), strokeWidth = pen.lw * 0.5f)
+        10 -> { drawLine(argb(Palette.cloth[look.accent]), o(-0.13f, -0.46f), o(-0.16f, -0.16f), strokeWidth = h * 0.04f); drawLine(argb(Palette.cloth[look.accent]), o(0.13f, -0.46f), o(0.16f, -0.16f), strokeWidth = h * 0.04f) }
+        11 -> inkedCircle(o(0f, -0.45f), h * 0.025f, argb(Palette.cloth[look.accent]), pen)
     }
 }
 
@@ -288,12 +307,19 @@ private fun DrawScope.rosette(center: Offset, r: Float, color: Color) {
     drawCircle(ShirtWhite, r * 0.22f, center)
 }
 
+private fun DrawScope.backHair(look: Look, hair: Color, h: Float, pen: Pen) {
+    val c = Offset(0f, -0.70f * h)
+    val r = 0.238f * h
+    withTransform({ scale(look.hairSize, look.hairSize, c) }) {
+        if (look.hair >= 9) newHair(look.hair, true, hair, argb(Palette.cloth[look.accent]), c, r, pen, look.hairLength)
+        else withTransform({ scale(1f, look.hairLength, Offset(c.x, c.y - r * 0.8f)) }) { hairBack(look.hair, hair, c, r, pen, h) }
+    }
+}
+
 private fun DrawScope.head(look: Look, a: PersonAnim, pose: Pose, h: Float, pen: Pen, t: Float, skin: Color, hair: Color, sleeping: Boolean) {
     fun o(x: Float, y: Float) = Offset(x * h, y * h)
     val c = o(0f, -0.70f)
-    val r = 0.25f * h
-
-    hairBack(look.hair, hair, c, r, pen, h)
+    val r = 0.238f * h
 
     // Ears that sit on top of the head go behind it.
     when (look.ears) {
@@ -342,7 +368,12 @@ private fun DrawScope.head(look: Look, a: PersonAnim, pose: Pose, h: Float, pen:
         }
     }
 
-    inkedCircle(c, r, skin, pen)
+    when (look.face) {
+        1 -> inkedOval(rect(c.x, c.y, r * 1.85f, r * 2.08f), skin, pen)
+        2 -> inkedRound(Rect(c.x - r, c.y - r * 0.96f, c.x + r, c.y + r * 0.96f), r * 0.58f, skin, pen)
+        3 -> inkedOval(rect(c.x, c.y + r * 0.02f, r * 2.18f, r * 1.9f), skin, pen)
+        else -> inkedOval(rect(c.x, c.y, r * 2f, r * 2.02f), skin, pen)
+    }
     // Soft light on the forehead.
     drawOval(Color.White.copy(alpha = 0.16f), o(-0.15f, -0.9f), Size(0.2f * h, 0.1f * h))
 
@@ -358,23 +389,43 @@ private fun DrawScope.head(look: Look, a: PersonAnim, pose: Pose, h: Float, pen:
     // Cheeks, nose, freckles
     drawOval(Ink.blush, o(-0.205f, -0.65f), Size(0.09f * h, 0.052f * h))
     drawOval(Ink.blush, o(0.115f, -0.65f), Size(0.09f * h, 0.052f * h))
-    drawOval(skin.darken(0.16f), o(-0.018f, -0.66f), Size(0.036f * h, 0.026f * h))
-    if (look.extra == 1) {
+    when (look.nose) {
+        1 -> inkedOval(rect(0f, -0.653f * h, 0.062f * h, 0.045f * h), skin.darken(0.05f), pen, shade = false)
+        2 -> { drawLine(skin.darken(0.3f), o(-0.005f, -0.68f), o(0.028f, -0.642f), strokeWidth = pen.lw * 0.8f, cap = StrokeCap.Round); drawLine(skin.darken(0.3f), o(0.028f, -0.642f), o(-0.005f, -0.637f), strokeWidth = pen.lw * 0.8f, cap = StrokeCap.Round) }
+        3 -> inkedCircle(o(0f, -0.654f), h * 0.028f, Color(0xFFF37998), pen, shade = false)
+        else -> drawOval(skin.darken(0.16f), o(-0.018f, -0.66f), Size(0.036f * h, 0.026f * h))
+    }
+    if (look.extra == 1 || look.extra == 4) {
         for (side in listOf(-1f, 1f)) {
             drawCircle(skin.darken(0.35f), 0.008f * h, o(side * 0.13f, -0.645f))
             drawCircle(skin.darken(0.35f), 0.008f * h, o(side * 0.155f, -0.625f))
             drawCircle(skin.darken(0.35f), 0.008f * h, o(side * 0.175f, -0.65f))
         }
     }
+    if (look.extra == 4) for (k in -2..2) drawCircle(hair, h * 0.008f, o(k * 0.035f, -0.53f + abs(k) * 0.01f))
+    if (look.extra == 5) for (s in floatArrayOf(-1f, 1f)) twinkle(o(s * 0.16f, -0.63f), h * 0.032f, argb(Palette.cloth[look.accent]), 1f)
+    if (look.extra == 6) inkedCircle(o(-0.17f, -0.57f), h * 0.035f, skin.lighten(0.35f), pen, shade = false)
+    if (look.extra == 7) for (s in floatArrayOf(-1f, 1f)) inkedCircle(o(s * 0.255f, -0.645f), h * 0.019f, argb(Palette.cloth[look.accent]), pen)
+    if (look.extra == 8) for (s in floatArrayOf(-1f, 1f)) drawArc(skin.darken(0.3f), if (s < 0) 70f else -70f, 140f, false, o(s * 0.19f - 0.028f, -0.63f), Size(h * 0.055f, h * 0.04f), style = pen.thin)
 
     eyes(look, a, h, pen, t, skin, hair, sleeping)
-    mouth(a, h, pen, t)
+    if (a.face == Face.HAPPY && a.chew <= 0f && a.talk <= 0f && look.mouth != 0) {
+        when (look.mouth) {
+            1 -> drawArc(Ink.line, 0f, 180f, false, o(-0.08f, -0.61f), Size(h * 0.16f, h * 0.1f), style = pen.thin)
+            2 -> { inkedOval(rect(0f, -0.57f * h, h * 0.095f, h * 0.058f), MouthDark, pen, shade = false); inkedRound(Rect(o(-0.035f, -0.597f), o(0.035f, -0.572f)), h * 0.006f, Color.White, pen, shade = false) }
+            3 -> drawArc(Ink.line, 10f, 140f, false, o(-0.025f, -0.59f), Size(h * 0.09f, h * 0.045f), style = pen.thin)
+            else -> inkedOval(rect(0f, -0.575f * h, h * 0.055f, h * 0.04f), Color(0xFFC5647E), pen, shade = false)
+        }
+    } else mouth(a, h, pen, t)
     if (look.extra == 3) {
         for (side in listOf(-1f, 1f)) {
             inkedOval(Rect(if (side < 0) -0.085f * h else 0.005f * h, -0.625f * h, if (side < 0) -0.005f * h else 0.085f * h, -0.585f * h), hair, pen)
         }
     }
-    hairFront(look.hair, hair, c, r, pen, h, t)
+    withTransform({ scale(look.hairSize, look.hairSize, c) }) {
+        if (look.hair >= 9) newHair(look.hair, false, hair, argb(Palette.cloth[look.accent]), c, r, pen, look.hairLength)
+        else hairFront(look.hair, hair, c, r, pen, h, t)
+    }
 }
 
 private fun DrawScope.eyes(look: Look, a: PersonAnim, h: Float, pen: Pen, t: Float, skin: Color, hair: Color, sleeping: Boolean) {
@@ -389,7 +440,8 @@ private fun DrawScope.eyes(look: Look, a: PersonAnim, h: Float, pen: Pen, t: Flo
     }
     val closed = sleeping || a.blink > 0f
     for (side in listOf(-1f, 1f)) {
-        val e = o(side * 0.095f, -0.705f)
+        val e = o(side * 0.095f * look.eyeSpacing, -0.705f)
+        withTransform({ scale(look.eyeSize, look.eyeSize, e) }) {
         when {
             face == Face.LAUGH || face == Face.GRIN -> {
                 val arc = Path().apply {
@@ -413,22 +465,20 @@ private fun DrawScope.eyes(look: Look, a: PersonAnim, h: Float, pen: Pen, t: Flo
                 drawPath(arc, Ink.line, style = Stroke(pen.lw * 1.2f, cap = StrokeCap.Round))
             }
             look.eyes == 4 -> {
-                drawOval(Ink.line, Offset(e.x - 0.036f * h + a.lookX * 0.012f * h, e.y - 0.05f * h + a.lookY * 0.012f * h), Size(0.072f * h, 0.1f * h))
+                drawOval(argb(Palette.eyes[look.eyeColor]), Offset(e.x - 0.036f * h + a.lookX * 0.012f * h, e.y - 0.05f * h + a.lookY * 0.012f * h), Size(0.072f * h, 0.1f * h))
+                drawCircle(Ink.line, h * 0.025f, e)
                 drawCircle(Color.White, 0.014f * h, Offset(e.x - 0.01f * h + a.lookX * 0.012f * h, e.y - 0.022f * h))
             }
             else -> {
                 val big = if (face == Face.WOW || face == Face.OOH) 1.15f else 1f
-                val white = Rect(e.x - 0.06f * h * big, e.y - 0.075f * h * big, e.x + 0.06f * h * big, e.y + 0.075f * h * big)
+                val ey = if (look.eyes == 5) 0.047f else if (look.eyes == 6) 0.060f else 0.065f
+                val white = Rect(e.x - 0.061f * h * big, e.y - ey * h * big, e.x + 0.061f * h * big, e.y + ey * h * big)
                 drawOval(Color.White, white.topLeft, white.size)
                 drawOval(Ink.line, white.topLeft, white.size, style = pen.thin)
                 val p = Offset(e.x + a.lookX * 0.022f * h, e.y + a.lookY * 0.026f * h + 0.006f * h)
                 val pupil = (if (face == Face.WOW) 0.026f else 0.038f) * h
-                if (look.eyes == 1) {
-                    drawCircle(Color(0xFF6B4A2B).lighten(0.1f), pupil * 1.3f, p)
-                    drawCircle(Ink.line, pupil * 0.7f, p)
-                } else {
-                    drawCircle(Ink.line, pupil, p)
-                }
+                drawCircle(argb(Palette.eyes[look.eyeColor]), pupil * 1.24f, p)
+                if (look.eyes == 7) twinkle(p, pupil * 0.85f, Ink.line, 1f) else drawCircle(Ink.line, pupil * 0.58f, p)
                 drawCircle(Color.White, pupil * 0.36f, Offset(p.x - pupil * 0.35f, p.y - pupil * 0.4f))
                 if (look.eyes == 2) {
                     // Heavy lids: the top of the eye is covered by skin.
@@ -447,6 +497,7 @@ private fun DrawScope.eyes(look: Look, a: PersonAnim, h: Float, pen: Pen, t: Flo
                     }
                 }
             }
+        }
         }
     }
 }

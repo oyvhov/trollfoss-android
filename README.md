@@ -51,13 +51,15 @@ påske og graskartid. Storhuset og Mitt hus har fleire etasjar bak kvart sitt re
 - **Humor overalt.** Prompepute, bananskal, pepar som bles hatten av, kake i fjeset, hikke og rap, kiling – og alle ler med.
 - **Hent venner.** Vel eit portrett frå heile bygda, så kjem den same figuren med klede og det han held. Også eigne namngjevne figurar og venner i sekken kan hentast.
 - **Samansette historier.** Rå fisk gir «æsj», grilla fisk gir «nam». Fyll ein kopp, drikk vatnet eller sløkk eit bål, og tenn att med ved. Instrument får venner til å danse, og lys mot spegel gir stjerneregn.
-- **Traktor overalt.** Ta han med mellom stader og køyr med piler og stopp. Passasjeren og kameraet følgjer med, medan møblar blir skubba og lause ting sprett.
+- **Køyr sjølv.** Traktor, båt, radiobil og ubåt har piler og stopp. Passasjerane og kameraet følgjer med; ubåten kan stige og dykke.
+- **Reis i sengballong.** Ei stor, hengande seng med puter og teppe tek figurane med over bygda.
 - **Magi og hemmelege rom.** Eventyrsopp gjer figuren kjempestor i 20 sekund. Slime gir sveving. Raude bøker og nøklar kan avsløre små rom med overraskingar.
 - **Ønskjebobler.** Figurane tenkjer på noko dei vil ha. Gi dei det og sjå kva som skjer.
-- **Heimedesignar.** Flytt møblar, hent nye frå katalogen, byt tapet og golv, legg møblar på lager og ta dei med til andre hus. Møblar glir på plass ved veggar og ved sida av kvarandre. Kosten ryddar heile staden.
+- **Heimedesignar.** Flytt møblar, hent nye frå katalogen, byt tapet og golv, legg møblar på lager og set dei ut på alle stadene, også stranda. Slett éin lagerting om gongen og angre medan appen er open. Møblar glir på plass ved veggar og ved sida av kvarandre. Kosten ryddar heile staden.
 - **Meir hus på nettbrett.** Romoversikt gir direkte romval, og over romma kan ein sjå takbjelkar, loft og små dyr. Sidepanelet held leikeområdet og sekken synlege.
 - **Oppdrag og klistremerke.** Tre biletoppdrag om gongen sender deg rundt i bygda. Klistremerka opnar spesialmøblar.
-- **Figurverkstad.** Lag eigne figurar med hud, høgd, frisyre, klede og namn.
+- **Figurverkstad.** Lag eigne figurar med 18 frisyrer, hårfargar, augefargar, ansiktsformer, nase, smil, klede og mønster. Glidebrytarar endrar hårstorleik, hårlengd, auge og høgd medan du ser resultatet.
+- **Meir personleik.** Figurane les bøker, pratar i telefon, pussar tennene, kosar med bamsar, spelar musikk og kastar ball til kvarandre.
 - **Skrå-3D.** Verda er teikna i skrå projeksjon med djupn, skuggar og lys som følgjer tida på døgnet.
 - **76 løynde glimt**, ei oppdagingsbok med oppskrifter, dagens pakke i postkassa – og nokre **løynde overraskingar** som ikkje er nemnde her.
 - **Dag og natt**, regn, snø, regnboge, nordlys. Kamera og fotoalbum.

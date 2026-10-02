@@ -44,6 +44,10 @@ object SM {
     val wallpaper = txt("Tapet")
     val flooring = txt("Golv", "Gulv")
     val storage = txt("Lager")
+    val deleteStored = txt("Slett frå Lager", "Slett fra Lager")
+    val undoDelete = txt("Angre sletting", "Angre sletting")
+    val placeFull = txt("Gjer plass ved å leggje noko i Lager", "Gjør plass ved å legge noe i Lager")
+    val buildBeforeFurnishing = txt("Bygg eit rom først", "Bygg et rom først")
     val tidy = txt("Rydd")
 
     fun template(i: Int): Txt = when (i) {

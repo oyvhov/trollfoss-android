@@ -61,6 +61,7 @@ import app.trollfoss.domain.Wish
 import app.trollfoss.domain.WishEvent
 import app.trollfoss.domain.WishKind
 import app.trollfoss.domain.World
+import app.trollfoss.domain.Vehicles
 import app.trollfoss.ui.art.Ink
 import app.trollfoss.ui.art.Pen
 import app.trollfoss.ui.art.drawFixtureBack
@@ -803,11 +804,13 @@ class Engine(
 
     var vehicleId by mutableIntStateOf(-1)
         private set
-    val vehicle: Fixture? get() = world.fixtures[vehicleId]?.takeIf { it.place == place && it.type == FixtureType.TRACTOR }
+    val vehicle: Fixture? get() = world.fixtures[vehicleId]?.takeIf { it.place == place && Vehicles.controllable(it) }
 
     fun drive(direction: Int) {
-        vehicle?.let { sim.driveTractor(it, direction); host.changed() }
+        vehicle?.let { sim.vehicles.drive(it, direction); host.changed() }
     }
+
+    fun dive(direction: Int) { vehicle?.let { sim.vehicles.dive(it, direction); host.changed() } }
 
     fun closeDriving() { drive(0); vehicleId = -1 }
 
@@ -831,19 +834,40 @@ class Engine(
     /** Puts a piece from the catalogue in the middle of the screen. */
     fun addFurniture(type: FixtureType, variant: Int) {
         val y = if (type.spec.wall) 0.5f else (place.back + PlaceId.FRONT) / 2f
-        sim.designer.add(place, type, variant, centerX() + (random.nextFloat() - 0.5f) * 0.3f, y)?.let {
-            designVersion++
-            host.changed()
-        }
+        placed(sim.designer.add(place, type, variant, centerX() + (random.nextFloat() - 0.5f) * 0.3f, y))
     }
 
     fun addFromStore(index: Int) {
         val type = world.storage.getOrNull(index)?.type ?: return
         val y = if (type.spec.wall) 0.5f else (place.back + PlaceId.FRONT) / 2f
-        sim.designer.unstore(place, index, centerX(), y)?.let {
+        placed(sim.designer.unstore(place, index, centerX(), y))
+    }
+
+    var placementFailed by mutableStateOf(false)
+        private set
+
+    val canUndoStorage: Boolean get() = sim.designer.canUndoDiscard
+
+    fun discardFromStore(index: Int) {
+        if (sim.designer.discard(index)) {
+            placementFailed = false
             designVersion++
+            host.sfx(Sfx.POP, 0.6f)
             host.changed()
         }
+    }
+
+    fun undoStorage() {
+        if (sim.designer.undoDiscard()) { designVersion++; host.changed() }
+    }
+
+    private fun placed(f: Fixture?) {
+        placementFailed = f == null
+        if (f == null) { host.sfx(Sfx.HMM, 0.7f); return }
+        // A dry beach placement can be outside the view when the camera was over the sea.
+        focusOn(f.x)
+        designVersion++
+        host.changed()
     }
 
     fun restyle(wall: Int? = null, floor: Int? = null) {
@@ -950,6 +974,7 @@ class Engine(
     }
 
     fun cancel() {
+        closeDriving()
         for (g in grabs.values) heldBody(g)?.let { drop(g, it, 0f, 0f) }
         grabs.clear()
     }
@@ -1175,6 +1200,8 @@ class Engine(
                 if (t.type.slot == Slot.FACE) add(Part.GLASSES to 0.07f)
                 if (t.type == ThingType.GARMENT) add(Part.BODY to 0.1f)
                 if (t.type.hairTool) add(Part.HAIR to 0.085f)
+                if (t.type == ThingType.TOOTHBRUSH) add(Part.MOUTH to 0.07f)
+                if (t.type == ThingType.FEATHER || t.type == ThingType.COMB && p.species != Species.FOLK) add(Part.BODY to 0.10f)
                 add(Part.HAND to 0.06f)
             }
             for ((part, reach) in parts) {
@@ -1252,7 +1279,7 @@ class Engine(
                 a.tilt = -8f
                 voice(p, Sfx.SNEEZE, 0.9f, own = true)
             }
-            Give.NONE, Give.SNIFF -> Unit
+            Give.NONE, Give.SNIFF, Give.PLAY -> Unit
         }
         host.haptic()
     }
@@ -1315,7 +1342,9 @@ class Engine(
             }
             is Thing -> {
                 if (b.mode == Mode.WORN) {
-                    (world.bodies[b.holder] as? Person)?.let { tapBody(it) }
+                    (world.bodies[b.holder] as? Person)?.let {
+                        if (sim.personPlay.use(it, b)) { host.changed(); host.haptic() } else tapBody(it)
+                    }
                     return
                 }
                 sim.use(place, b)
@@ -1336,9 +1365,9 @@ class Engine(
         }
         // A fixture? Front-most first, wall fixtures last.
         fixtureAt(p)?.let { f ->
-            if (f.type == FixtureType.TRACTOR && vehicleId != f.id) vehicle?.let { sim.driveTractor(it, 0) }
+            if (Vehicles.controllable(f) && vehicleId != f.id) vehicle?.let { sim.vehicles.drive(it, 0) }
             sim.tap(place, f, p.x - (f.x + f.shiftX), p.y - (f.y + f.shiftY))
-            if (f.type == FixtureType.TRACTOR) vehicleId = f.id
+            if (Vehicles.controllable(f)) vehicleId = f.id
             host.changed()
             return
         }

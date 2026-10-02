@@ -114,6 +114,8 @@ class Person(id: Int, val species: Species, var look: Look, var voice: Float, va
 
 /** Moment-to-moment life of a figure. Never saved. */
 class PersonAnim {
+    var activity = 0
+    var activityTime = 0f
     var pose = Pose.STAND
     var face = Face.HAPPY
     var faceTime = 0f

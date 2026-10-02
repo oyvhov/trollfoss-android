@@ -28,7 +28,7 @@ $env:ANDROID_SDK_ROOT = $sdk
 $env:ANDROID_HOME = $sdk
 
 # Sjekk om det allereie køyrer ein emulator
-$devices = (& $adb devices) | Where-Object { $_ -match '^emulator-(\d+)\s+device$' }
+$devices = @((& $adb devices) | Where-Object { $_ -match '^emulator-(\d+)\s+device$' })
 $serial = $null
 
 if ($devices) {
@@ -46,7 +46,7 @@ if ($devices) {
 
     Write-Host 'Ventar på at emulatoren skal starte …'
     & $adb wait-for-device
-    $devices = (& $adb devices) | Where-Object { $_ -match '^emulator-(\d+)' }
+    $devices = @((& $adb devices) | Where-Object { $_ -match '^emulator-(\d+)' })
     if ($devices) {
         $serial = ($devices[0] -split '\s+')[0]
     } else {

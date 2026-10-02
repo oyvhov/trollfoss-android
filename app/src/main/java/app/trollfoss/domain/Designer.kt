@@ -14,11 +14,29 @@ import kotlin.random.Random
 class Designer(private val sim: Sim, private val random: Random) {
     private val world get() = sim.world
     private val listener get() = sim.listener
+    private val discarded = ArrayList<Pair<Int, Stored>>()
+    val canUndoDiscard: Boolean get() = discarded.isNotEmpty()
+
+    /** Remove one stored piece. Undo remains available across travel while the app is open. */
+    fun discard(index: Int): Boolean {
+        if (index !in world.storage.indices) return false
+        discarded += index to world.storage.removeAt(index)
+        return true
+    }
+
+    fun undoDiscard(): Boolean {
+        if (discarded.isEmpty()) return false
+        val (index, item) = discarded.removeAt(discarded.lastIndex)
+        world.storage.add(index.coerceIn(0, world.storage.size), item)
+        return true
+    }
 
     // ------------------------------------------------------------------ furniture
 
     /** Adds a piece of furniture from the catalogue or the store at ([x], [y]). Returns null when the place is full. */
     fun add(place: PlaceId, type: FixtureType, variant: Int, x: Float, y: Float): Fixture? {
+        if ((place == PlaceId.MINE_GROUND || place == PlaceId.MINE_UPPER) &&
+            (0 until Mine.SLOTS).none { world.mine.standing(place, it) }) return null
         val used = world.fixturesIn(place).map { place.indexOf(it.id) }.toSet()
         val slot = (place.addedFrom..place.addedMax).firstOrNull { it !in used } ?: return null
         val f = Fixture(place.idBase + slot, place, type, x, y, variant, y)
@@ -102,6 +120,7 @@ class Designer(private val sim: Sim, private val random: Random) {
      */
     fun settle(place: PlaceId, f: Fixture, x: Float = f.x, y: Float = f.y): FloatArray {
         val start = sim.clampFixture(place, f, x, y)
+        if (Vehicles.controllable(f)) return start
         if (!f.spec.wall && f.spec.h < FLAT) return start
         var sx = start[0]
         var sy = start[1]

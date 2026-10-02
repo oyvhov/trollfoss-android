@@ -59,6 +59,7 @@ object Decor {
             CatalogueItem(FixtureType.TRAMPOLINE, stickers = 10), CatalogueItem(FixtureType.XYLOPHONE, stickers = 8),
         )
         val outdoor = listOf(
+            CatalogueItem(FixtureType.TRACTOR), CatalogueItem(FixtureType.BUMPER_CAR), CatalogueItem(FixtureType.BOAT),
             CatalogueItem(FixtureType.BENCH), CatalogueItem(FixtureType.LAMP_POST), CatalogueItem(FixtureType.UMBRELLA),
             CatalogueItem(FixtureType.LOUNGER), CatalogueItem(FixtureType.STUMP), CatalogueItem(FixtureType.LOG),
             CatalogueItem(FixtureType.HAY_BALE), CatalogueItem(FixtureType.FLOWER_POT, 0), CatalogueItem(FixtureType.FLOWER_POT, 1),
@@ -69,6 +70,7 @@ object Decor {
         return when {
             place == PlaceId.UNDERWATER -> listOf(
                 CatalogueItem(FixtureType.CORAL, 0), CatalogueItem(FixtureType.CORAL, 1), CatalogueItem(FixtureType.KELP),
+                CatalogueItem(FixtureType.SUBMARINE),
                 CatalogueItem(FixtureType.GIANT_CLAM, stickers = 3), CatalogueItem(FixtureType.CHEST, stickers = 2),
             )
             place == PlaceId.MINE_YARD -> outdoor + MineRooms.yardCatalogue

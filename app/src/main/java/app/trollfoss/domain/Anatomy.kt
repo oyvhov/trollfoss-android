@@ -91,7 +91,12 @@ object Anatomy {
 
     /** A part's position in the scene. */
     fun at(person: Person, part: Part): FloatArray {
-        val f = fraction(person.species, person.anim.pose, part)
+        val active = if (person.species == Species.FOLK && part == Part.HAND) PersonPlay.hand(person.anim.activity) else null
+        val f = if (active == null) fraction(person.species, person.anim.pose, part) else when (person.anim.pose) {
+            Pose.SIT -> floatArrayOf(active[0], active[1] + HIPS)
+            Pose.LIE -> floatArrayOf(active[1] + 0.5f, -active[0] - 0.22f)
+            else -> active
+        }
         var y = person.y + f[1] * person.h
         // Rolf bows from the neck: his head, and with it hats and glasses, dips and comes back up.
         if (person.species == Species.ROBOT && part in bowing) y += FigurarPose.dip(person.anim.pose, person.anim.wave) * person.h

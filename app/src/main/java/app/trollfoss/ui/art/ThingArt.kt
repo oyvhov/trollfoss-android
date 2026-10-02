@@ -140,7 +140,7 @@ private fun DrawScope.thing(type: ThingType, v: Int, used: Int, w: Float, h: Flo
     ThingType.DUCK -> thDuck(w, h, pen)
     ThingType.GUITAR -> thGuitar(w, h, pen)
     ThingType.DRUM -> thDrum(w, h, pen)
-    ThingType.BOOK -> thBook(v, w, h, pen)
+    ThingType.BOOK -> if (used > 0) thOpenBook(v, used, w, h, pen) else thBook(v, w, h, pen)
     ThingType.PHONE -> thPhone(w, h, pen)
     ThingType.TOY_CAR -> thToyCar(v, w, h, pen)
     ThingType.SWIM_RING -> thSwimRing(w, h, pen)

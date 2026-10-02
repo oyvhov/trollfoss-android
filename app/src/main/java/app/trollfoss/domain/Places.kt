@@ -70,7 +70,7 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
     /**
      * Fixture ids are [idBase] plus the blueprint index. The older places have room for 100 ids each
      * (blueprint furniture below [addedFrom], furniture the child adds from there to [addedMax]). A place
-     * of the big house has 300: blueprint furniture up to 199, added furniture from 200 to 259.
+     * of the big house has 300: blueprint furniture up to 199, added furniture from 200 to 299.
      */
     val idBase: Int get() = when {
         manor -> 1500 + (ordinal - MANOR_GROUND.ordinal) * 300
@@ -79,7 +79,7 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
         else -> ordinal * 100
     }
     val addedFrom: Int get() = if (big) 200 else 40
-    val addedMax: Int get() = if (mine) 299 else if (big) 259 else 59
+    val addedMax: Int get() = if (big) 299 else 99
 
     /**
      * The floor is a band with depth («skrå-3D»): the back wall meets the floor at [back], the front edge

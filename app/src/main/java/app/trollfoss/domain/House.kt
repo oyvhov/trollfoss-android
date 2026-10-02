@@ -127,6 +127,7 @@ object House {
     /** The passage that [f] is the way in of, or null for any other fixture. */
     fun passageAt(f: Fixture): Passage? {
         if (!hasPassages(f.place)) return null
+        if (f.place == PlaceId.LAB && f.type != FixtureType.SECRET_DOOR) return null
         return passages.firstOrNull { it.place == f.place && f.place.idBase + it.fixture == f.id }
     }
 

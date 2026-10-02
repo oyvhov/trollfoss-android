@@ -213,6 +213,16 @@ class WorldStore(private val file: File) {
                         put("bottomColor", b.look.bottomColor)
                         put("shoes", b.look.shoes)
                         put("extra", b.look.extra)
+                        put("eyeColor", b.look.eyeColor)
+                        put("hairSize", b.look.hairSize.toDouble())
+                        put("hairLength", b.look.hairLength.toDouble())
+                        put("eyeSize", b.look.eyeSize.toDouble())
+                        put("eyeSpacing", b.look.eyeSpacing.toDouble())
+                        put("face", b.look.face)
+                        put("nose", b.look.nose)
+                        put("mouth", b.look.mouth)
+                        put("pattern", b.look.pattern)
+                        put("accent", b.look.accent)
                     })
                 }
             }
@@ -355,7 +365,11 @@ class WorldStore(private val file: File) {
                 "thing" -> {
                     val type = enumOrNull<ThingType>(o.optString("type")) ?: return null
                     Thing(id, type, o.optInt("variant", 0)).apply {
-                        used = o.optInt("used", 0).coerceIn(0, if (type == ThingType.CUP || type == ThingType.BUCKET || type == ThingType.WATERING_CAN) 1 else maxOf(0, type.bites - 1))
+                        used = o.optInt("used", 0).coerceIn(0, when (type) {
+                            ThingType.CUP, ThingType.BUCKET, ThingType.WATERING_CAN -> 1
+                            ThingType.BOOK -> 3
+                            else -> maxOf(0, type.bites - 1)
+                        })
                         enumOrNull<PlaceId>(o.optString("home"))?.let { home ->
                             homePlace = home
                             homeOwner = o.optInt("homeOwner", -1)
@@ -381,6 +395,16 @@ class WorldStore(private val file: File) {
                         bottomColor = l.optInt("bottomColor", 11),
                         shoes = l.optInt("shoes", 9),
                         extra = l.optInt("extra", 0),
+                        eyeColor = l.optInt("eyeColor", 0),
+                        hairSize = l.optDouble("hairSize", 1.0).toFloat(),
+                        hairLength = l.optDouble("hairLength", 1.0).toFloat(),
+                        eyeSize = l.optDouble("eyeSize", 1.0).toFloat(),
+                        eyeSpacing = l.optDouble("eyeSpacing", 1.0).toFloat(),
+                        face = l.optInt("face", 0),
+                        nose = l.optInt("nose", 0),
+                        mouth = l.optInt("mouth", 0),
+                        pattern = l.optInt("pattern", 0),
+                        accent = l.optInt("accent", 9),
                     ).safe()
                     Person(id, species, look, o.optDouble("voice", 1.0).toFloat().coerceIn(0.6f, 1.8f), o.optString("name", "").take(24)).apply {
                         scaleTime = o.optDouble("scaleTime", 0.0).toFloat().coerceIn(0f, 20f)

@@ -12,6 +12,68 @@ import kotlin.random.Random
 
 /** The home designer and tidying up. */
 class DesignerTest {
+    @Test fun `deleting one stored item preserves duplicates and saving and can be undone after travel`() {
+        val w = WorldFactory.create(); val s = Sim(w)
+        val first = Stored(FixtureType.FLOWER_POT, 0)
+        val second = Stored(FixtureType.FLOWER_POT, 1)
+        w.storage += listOf(first, second, first)
+        val fixturesBefore = w.fixtures.size
+        assertTrue(s.designer.discard(1))
+        assertEquals(listOf(first, first), w.storage)
+        val loaded = WorldStore.decode(WorldStore.encode(w, Settings())).world
+        assertEquals(w.storage, loaded.storage)
+        assertEquals(fixturesBefore, loaded.fixtures.size)
+        assertFalse(s.designer.discard(99))
+        assertTrue(s.designer.discard(0))
+        // A remaining piece can be placed elsewhere before both deletions are undone.
+        assertNotNull(s.designer.unstore(PlaceId.BEACH, 0, 1f, 0.9f))
+        assertTrue(s.designer.undoDiscard())
+        assertTrue(s.designer.undoDiscard())
+        assertEquals(listOf(first, second), w.storage)
+        assertFalse(s.designer.canUndoDiscard)
+        assertFalse(s.designer.undoDiscard())
+    }
+
+    @Test fun `storage can place furniture at every destination including the beach and saves it`() {
+        for (place in PlaceId.entries) {
+            val w = WorldFactory.create(Random(1)); val s = Sim(w)
+            MineDemo.fill(s, 0, 0)
+            w.storage += Stored(FixtureType.CAMPFIRE, 2)
+            val f = s.designer.unstore(place, 0, place.width - 0.4f, place.floor)!!
+            assertTrue("$place", w.storage.isEmpty())
+            if (place == PlaceId.BEACH) assertTrue(f.x + f.spec.w / 2f <= 2.3f)
+            val loaded = WorldStore.decode(WorldStore.encode(w, Settings())).world
+            assertEquals("$place", FixtureType.CAMPFIRE, loaded.fixtures[f.id]?.type)
+            assertEquals(f.x, loaded.fixtures[f.id]!!.x, 0.001f)
+        }
+    }
+
+    @Test fun `more than twenty additions survive reload and full destinations keep the stored item`() {
+        val w = WorldFactory.create(); val s = Sim(w); val place = PlaceId.BEACH
+        repeat(30) { assertNotNull(s.designer.add(place, FixtureType.FLOWER_POT, it % 3, 1f, place.floor)) }
+        val loaded = WorldStore.decode(WorldStore.encode(w, Settings())).world
+        assertEquals(30, loaded.fixturesIn(place).count { place.indexOf(it.id) >= place.addedFrom })
+        for (i in place.addedFrom..place.addedMax) {
+            w.fixtures[place.idBase + i] = Fixture(place.idBase + i, place, FixtureType.STOOL, 1f, place.floor)
+        }
+        w.storage += Stored(FixtureType.BENCH, 0)
+        assertNull(s.designer.unstore(place, 0, 1f, place.floor))
+        assertEquals(listOf(Stored(FixtureType.BENCH, 0)), w.storage)
+        w.fixtures.remove(place.idBase + place.addedMax)
+        assertNotNull(s.designer.unstore(place, 0, 1f, place.floor))
+        assertTrue(w.storage.isEmpty())
+    }
+
+    @Test fun `an unbuilt house keeps furniture in storage until a floor exists`() {
+        val w = WorldFactory.create(); val s = Sim(w)
+        w.storage += Stored(FixtureType.SOFA, 0)
+        assertNull(s.designer.unstore(PlaceId.MINE_GROUND, 0, 5f, 0.9f))
+        assertEquals(1, w.storage.size)
+        MineDemo.fill(s, 0, 0)
+        assertNotNull(s.designer.unstore(PlaceId.MINE_GROUND, 0, 5f, 0.9f))
+        assertTrue(w.storage.isEmpty())
+    }
+
     private val events = ArrayList<Fx>()
 
     private fun sim(world: World) = Sim(world, object : SimListener {

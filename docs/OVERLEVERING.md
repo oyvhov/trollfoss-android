@@ -1,5 +1,87 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **UTGÅVE 1.4.0 KLARGJORD (2026-10-02, Codex):** Brukaren bad om ny release.
+> Versjon 1.4.0 / kode 6 samlar figurverkstad, sengballong, personleik, lager og køyretøy nedanfor.
+> 383 einingstestar er grøne (0 feil/0 hoppa over), `lintRelease` har 0 feil og 18 åtvaringar,
+> og `assembleRelease` er grøn gjennom byggjelåsen. Arkiv: `dist/release-v1.4.0/`.
+> Universal APK: 3 008 982 byte, SHA-256
+> `8e3494131eed06787f4dae7f2c9eef1ea6699ab54600e0718f64eb8b1f0852da`.
+> Pakke `app.trollfoss`, minste Android 26, ikkje-debuggable og opphavleg signatur er stadfesta.
+> Tidlegare «ikkje utgjeve»-statusar nedanfor er historikk frå før denne releaseførespurnaden.
+> Publisering, offentleg nedlasting, CI og oppdatering gjennom appen blir stadfesta etter utgjeving.
+
+> **NYAST – FIGURVERKSTAD, SENGBALLONG OG MEIR PERSONLEIK (2026-10-02, Codex, lokalt og ikkje utgjeve):**
+> Dette kjem i tillegg til lager/køyretøy-endringane nedanfor. Alt ligg ukommittert på `main`;
+> publisert utgåve er framleis 1.3.0. Ingen release, versjonsendring, push eller signeringsendring.
+> Folk (og Rumle) har nytt uttrykk og fleire utsjånadval: 18 frisyrer, 14 hårfargar, 12
+> augefargar, åtte augetypar, ansiktsform, nase, smil, ni ekstra detaljar, nye klede og mønster.
+> Hårstorleik/lengd, augestorleik/avstand og høgd har glidebrytarar med direkte førehandsvising.
+> Ti nye `Look`-felt blir lagra med trygge standardverdiar for gamle lagringar. Gamle id-ar,
+> namn, stemmer, plagg og handting er bevarte. Langt hår ligg bak kleda og hendene.
+>
+> Ballongen på kartet har ei brei seng med madrass, puter, teppe og sengegavlar, og opptil tre
+> synlege folk sit oppi. Reisereglane er bevarte. Brukaren svarte **«Behald som hemmeleg tunnel»**:
+> Trollhola–kjellaren i Storhuset er behalden, med hus/pil på inngangen og forklaring etter
+> stadstittelen. Eit anna trappemøbel kan ikkje bruke passasjen berre fordi id-en er lik.
+>
+> `PersonPlay`: lesing, telefonprat (også to telefonar på ulike stader), tannpuss, kos med
+> bamse/pute, instrument og dans, kiling/pelsstell, og ballkast med fangst/retur av same ball.
+> Trykk på den haldne tingen gjentar handlinga. Bøker lagrar sida. `PlayInteractions` utvidar
+> spade/bøtte–sandslott, snømann, verktøy–lys, telefon–TV, vatn/and–akvarium, seng og trampoline;
+> bading fjernar krem/blekk. Verktøy og leiker blir ikkje brukte opp. Detaljar i `INTERAKSJON.md` 8.
+>
+> **Kontroll:** 383 einingstestar, 0 feil og 0 hoppa over; `lintDebug` (0 feil, 27 åtvaringar),
+> `assembleDebug` og `git diff --check` grøne gjennom byggjelåsen. Testar av ny/gammal lagring,
+> ugyldige mål, plagg, reise med bok, telefonar, ball fram/tilbake utan kopiar, kos/tannpuss/kiling,
+> musikk, verktøysamband i alle 24 stader, bading/trampoline og tunnel. Vanleg debug-APK:
+> `app/build/outputs/apk/debug/app-debug.apk`, pakke `app.trollfoss.debug`.
+>
+> **Sett og brukt:** Tunet_Ascii, mobil 2400 × 1080 / 420 dpi og nettbrett 1920 × 1200 / 240 dpi.
+> I begge format: figurverkstad, hengande seng med synlege figurar, lesing, telefon ved øyret,
+> ballkast–fangst–retur, og hemmeleg tunnel til Storhuset. Øyvind fekk ny frisyre og hårstorleik
+> på mobil, vart lagra/opna att med same id/namn/bok, og fekk augefarge, augestorleik, kappe og
+> mønster på nettbrett; den lagra fila stadfesta alle vala. Alle 18 frisyrer og ekstremmål med
+> krone/handting i ulike positurar er visuelt gjennomgåtte. Bokmålsval og tunneltekst er prøvde.
+> Bilete: `screenshots/figurar/` (Git-ignorert). Den nye `WorkshopSheetActivity` er berre i debug
+> og teiknar ei fersk verd utan å lese privat lagring.
+>
+> Visuell kontroll brukte berre den isolerte pakken `app.trollfoss.leike`. Produksjons- og
+> opphavleg debug-app vart ikkje opna, installerte eller nullstilte i denne delen av arbeidet.
+> Testpakken er avinstallert; emulatorstorleik/dpi/rotasjon er tilbakeførte, og emulatoren er
+> avslutta. Ingen Trollfoss-krasj i krasjloggen. Fysisk mobil/nettbrett og full visuell gjennomgang
+> av alle 24 stader står att; dette er målretta kontroll av tillegget.
+
+> **NYAST – LAGER OG FLEIRE KØYRETØY (2026-10-02, Codex, lokalt og ikkje utgjeve):**
+> Endringane ligg ukommitterte på `main`. Publisert utgåve er framleis 1.3.0; ingen ny release,
+> versjonsendring, push eller endring av signeringsnøkkelen er gjort.
+> Lager kan setje ut ting i alle 24 stader (Mitt hus må ha golv), og kameraet viser faktisk
+> plassering, også på stranda. Dei opphavlege stadene har 60 ekstra møbelplassar, Storhuset 100
+> per etasje. Full stad gir forklaring utan tap av lagertingen. Kvart lagerkort har sletting av
+> éin ting og angre; angrehistorikken varer medan appen er open, også etter reise.
+> Båt, radiobil og ubåt har verkeleg rørsle med piler/stopp og passasjerar, som traktoren.
+> Ubåten kan stige/dykke, båten held seg på naturleg vatn, og radiobilen snur ved kollisjon og
+> kan køyre fri om han er plassert oppå inventar. Køyring stoppar ved bakgrunn/reise/innlasting.
+> Detaljar: `docs/INTERAKSJON.md` punkt 7 og øvst i `CHANGELOG.md`.
+>
+> **Kontroll:** 371 einingstestar, 0 feil og 0 hoppa over; `lintDebug` (0 feil, 26 åtvaringar),
+> `assembleDebug` og `git diff --check` grøne gjennom byggjelåsen. Testar av alle 24
+> lagerdestinasjonar, meir enn 20 tillegg og innlasting, full stad utan tap, sletting/angring,
+> passasjerar, køyring/retur/stopp, kollisjon og grenser for vatn/høgde. Vanleg debug-APK:
+> `app/build/outputs/apk/debug/app-debug.apk`, pakke `app.trollfoss.debug`.
+>
+> **Sett og brukt:** Tunet_Ascii i mobilformat 2400 × 1080 / 420 dpi og nettbrettformat
+> 1920 × 1200 / 240 dpi. I begge format: utplassering på stranda, lagring, enkeltvis sletting,
+> angre og ny utplassering; båt, radiobil og ubåt med synlege styringsknappar og faktisk rørsle.
+> Ingen Trollfoss-krasj i krasjloggen. Bilete: `screenshots/lager-leik/` (Git-ignorert).
+> Kontrollane brukte ei ny isolert testpakke `app.trollfoss.leike`; ho er avinstallert etterpå.
+> Produksjonsverda er urørt. Den opphavlege debug-appen fekk ei kodeoppdatering under ein
+> tidleg APK-kopiering, men vart ikkje opna og lagringa hennar vart ikkje endra.
+> Emulatorens storleik, dpi og rotasjon er sette tilbake, og emulatoren er avslutta.
+> Emulatorstartskriptet er òg retta: eitt einingsnamn skal vere ei liste, ikkje bli første bokstav.
+>
+> Alle 24 stader er prøvde i einingstestar, men ikkje visuelt gjennomgåtte på nytt.
+> Full belastningsprøve med 60 ekstra møblar og kontroll på fysisk mobil/nettbrett står att.
+
 > **NYAST – RELEASE 1.3.0 PUBLISERT (2026-10-02, Codex):**
 > https://github.com/oyvhov/trollfoss-android/releases/tag/v1.3.0 er offentleg, stabil og nyaste utgåve.
 > Commit og tag: `889bfa24a7dfe0612c712a24a1232dd2d94ff90b`. README, plan og endringslogg er pusha.

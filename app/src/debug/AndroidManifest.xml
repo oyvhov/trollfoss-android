@@ -6,6 +6,9 @@
         Nothing here is part of the release APK.
     -->
     <application>
+        <activity android:name="app.trollfoss.WorkshopSheetActivity" android:exported="true"
+            android:screenOrientation="landscape" android:resizeableActivity="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|density|keyboardHidden|uiMode" />
         <activity
             android:name="app.trollfoss.LogoActivity"
             android:exported="true"

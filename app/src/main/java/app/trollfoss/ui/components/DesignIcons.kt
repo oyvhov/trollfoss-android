@@ -17,6 +17,22 @@ import app.trollfoss.ui.theme.T
 
 /** Icons for the home designer, tidying and tasks, in the same 100 × 100 ink style as [Icons]. */
 object DesignIcons {
+    val Bin: DrawScope.() -> Unit = {
+        u { s, pen ->
+            inkedRound(Rect(25f * s, 30f * s, 75f * s, 88f * s), 8f * s, T.Sea, pen)
+            inkedRound(Rect(18f * s, 22f * s, 82f * s, 34f * s), 5f * s, T.SeaTop, pen)
+            inkedRound(Rect(38f * s, 12f * s, 62f * s, 23f * s), 4f * s, T.SeaTop, pen)
+            for (x in listOf(40f, 60f)) drawLine(Ink.line, Offset(x * s, 44f * s), Offset(x * s, 74f * s), 4f * s, StrokeCap.Round)
+        }
+    }
+
+    val Undo: DrawScope.() -> Unit = {
+        u { s, _ ->
+            drawArc(Ink.line, -150f, 280f, false, Offset(24f * s, 26f * s), Size(56f * s, 56f * s), style = androidx.compose.ui.graphics.drawscope.Stroke(9f * s, cap = StrokeCap.Round))
+            val arrow = Path().apply { moveTo(18f * s, 16f * s); lineTo(18f * s, 43f * s); lineTo(44f * s, 43f * s) }
+            drawPath(arrow, Ink.line, style = androidx.compose.ui.graphics.drawscope.Stroke(9f * s, cap = StrokeCap.Round))
+        }
+    }
     private fun DrawScope.u(block: DrawScope.(s: Float, pen: Pen) -> Unit) {
         val s = size.minDimension / 100f
         val dx = (size.width - 100f * s) / 2f
