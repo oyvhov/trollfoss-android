@@ -1,6 +1,36 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
-> **NYAST – 1.3.0 KLARGJORT FOR PUBLISERING (2026-10-02, Codex):** implementert på `main`.
+> **NYAST – RELEASE 1.3.0 PUBLISERT (2026-10-02, Codex):**
+> https://github.com/oyvhov/trollfoss-android/releases/tag/v1.3.0 er offentleg, stabil og nyaste utgåve.
+> Commit og tag: `889bfa24a7dfe0612c712a24a1232dd2d94ff90b`. README, plan og endringslogg er pusha.
+> Versjon 1.3.0 / kode 5, éin universal APK på 2 976 214 byte, med opphavleg signatur.
+> APK SHA-256: `d6c342ec62ef4ad8f454231a906a1101c1f5258726ba30337ea50b742faa387a`.
+> Arkiv: `dist/release-v1.3.0/`; mapping, SHA256SUMS og SOURCE_COMMIT er med i releasen.
+> Alle fire kladdfilene er hash- og storleikskontrollerte. Offentleg release-liste og latest er
+> kontrollerte utan token; den offentleg nedlasta APK-en har lik hash og original signatur.
+> 362 einingstestar, `lintRelease` (0 feil, 18 åtvaringar), `assembleRelease` og begge GitHub CI-køyringane
+> er grøne: main `36965692125`, tag `36965691850`.
+>
+> **Ekte oppdatering prøvd:** eldre lokal kopi av same kjelde (1.2.1 / kode 4) installert oppå den
+> eksisterande release-appen, utan nullstilling. Kart → vaksenport → Sjekk no → Last ned → Installer,
+> Android-løyve og installasjonsval. PackageManager stadfesta fullført installasjon med data bevart.
+> Den installerte `base.apk` er henta ut og har nøyaktig same hash som den offentlege APK-en.
+> Foreldresida viser 1.3.0; same 20 figurar, framgang, namngjeven Øyvind, portrett og ting på Heileberget
+> er bevarte. Release-appen er sett i mobilformat 2400 × 1080 / 420 dpi og nettbrettformat
+> 1920 × 1200 / 240 dpi; vennelista og høgre møbelknapp er på plass. Ingen Trollfoss-krasj.
+>
+> **Avvik i Android-dialogen:** etter Play Protect-valet «Install without scanning» viste Android
+> «App not installed», trass i at installasjonen var fullført. Loggen viser både InstallSuccess og
+> InstallFailed, med status 1 på sistnemnde. Årsaka er ikkje avklart; dette er ikkje ein feilfri
+> installasjonsdialog. Appen opnar og rett offentleg APK er installert, stadfesta uavhengig av dialogen.
+> Prøv oppdatering på fysisk eining. Bilete: `screenshots/release-v1.3.0/` (lokalt, Git-ignorert).
+>
+> Emulatorens skjermstorleik, dpi, rotasjon og installasjonsløyve er sette tilbake etter prøva,
+> og emulatoren er avslutta.
+> Produksjonsverda er ikkje nullstilt eller erstatta; debug-verda er urørt i denne publiseringsøkta.
+> Kontroll på fysisk mobil og nettbrett står framleis att.
+
+> **FØR PUBLISERING – 1.3.0 KLARGJORT (2026-10-02, Codex):** implementert på `main`.
 > Brukaren har bede om publisering. Versjon 1.3.0 / kode 5, tag `v1.3.0`; original signeringsnøkkel.
 > Den grundige planen og oversikta for alle stader står i `docs/INTERAKSJON.md`; endringane står
 > under «1.3.0» i `CHANGELOG.md`. Utgivingsnotat: `docs/release-v1.3.0.md`.

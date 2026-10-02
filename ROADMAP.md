@@ -29,6 +29,8 @@ Stor plan og gjennomføring: [docs/INTERAKSJON.md](docs/INTERAKSJON.md).
       (drivhus, kjøken, verkstad).
 - [x] **1.2.1** (2026-10-01): årstider og høgtidspynt på kartet, finare kartbygningar, møbelmeny og lager,
       dokkehussnitt over romma, møblar som glir på plass, jamnare bilete og Android 16-tilpassing.
+- [x] **1.3.0** (2026-10-02): hente venner, traktor på tvers av stader, rå og grilla mat, vatn og eld,
+      magi i 20 sekund, hemmelege rom og fotoinspirert hytte i Vagstaddalen.
 
 ## 1.2.1 – Finare hus, levande kart og lettare møblering
 
