@@ -55,8 +55,7 @@ class GroundRules(private val sim: Sim, private val random: Random) : FloorRules
     internal fun cap(keep: Thing) {
         val things = world.bodiesIn(place).filterIsInstance<Thing>()
         if (things.size <= Sim.MAX_THINGS) return
-        val oldest = things.filter { it !== keep && it.mode == Mode.FREE && it.inside < 0 && !it.held && it.type != ThingType.GOLDEN_KEY }
-            .minByOrNull { it.z } ?: return
+        val oldest = Treasure.oldestToDrop(things, keep) { it.type == ThingType.GOLDEN_KEY } ?: return
         listener.onFx(Fx.POOF, oldest.x, oldest.y - oldest.h / 2, thing = oldest)
         sim.removeThing(oldest)
     }

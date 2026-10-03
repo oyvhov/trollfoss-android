@@ -513,9 +513,11 @@ class HouseAtticRules(private val sim: Sim, private val random: Random) : FloorR
         fx(AtticCode.MAP, f.x, f.y - 0.2f, f, arg = f.mode)
         if (f.mode == 4) {
             // The green star on the map was a gem all along.
-            val t = toss(ThingType.GEM, random.nextInt(ThingType.GEM.variants), f, 0f, -0.2f, 0.4f, -1.9f)
-            t.vrot = 200f
-            trim(MAX_GEMS, setOf(ThingType.GEM))
+            // The child keeps what it has found: with enough gems about, the map keeps this one.
+            if (Treasure.loose(world, place, ThingType.GEM) < MAX_GEMS) {
+                val t = toss(ThingType.GEM, random.nextInt(ThingType.GEM.variants), f, 0f, -0.2f, 0.4f, -1.9f)
+                t.vrot = 200f
+            }
         }
         return true
     }
@@ -529,14 +531,20 @@ class HouseAtticRules(private val sim: Sim, private val random: Random) : FloorR
         f.timer = 3.4f
         f.count++
         sim.invalidate(place)
-        for (i in 0 until 6) {
+        // Nothing the chest gave is ever taken back: it gives only what there is room for on the floor.
+        // A tossed find can roll back into this chest and out again when it opens. Reserve its floor place too.
+        fun waiting(type: ThingType) = Treasure.loose(world, place, type) + world.bodiesIn(place).count {
+            it is Thing && it.type == type && it.mode == Mode.FREE && !it.held && it.inside == f.id
+        }
+        val coins = (MAX_COINS - waiting(ThingType.COIN)).coerceIn(0, 6)
+        for (i in 0 until coins) {
             val t = toss(ThingType.COIN, 0, f, (i - 2.5f) * 0.02f, -0.14f, (i - 2.5f) * 0.22f + (random.nextFloat() - 0.5f) * 0.1f, -2.2f - random.nextFloat() * 0.9f)
             t.vrot = (random.nextFloat() - 0.5f) * 500f
         }
-        if (f.count % 3 == 1) toss(ThingType.GEM, random.nextInt(ThingType.GEM.variants), f, 0f, -0.14f, 0.2f, -2.8f)
-        trim(MAX_COINS, setOf(ThingType.COIN))
-        trim(MAX_GEMS, setOf(ThingType.GEM))
-        fx(AtticCode.CHEST, f.x, f.y - 0.2f, f, arg = 0)
+        val gem = f.count % 3 == 1 && waiting(ThingType.GEM) < MAX_GEMS
+        if (gem) toss(ThingType.GEM, random.nextInt(ThingType.GEM.variants), f, 0f, -0.14f, 0.2f, -2.8f)
+        if (coins == 0 && !gem) sim.listener.onFx(Fx.TREASURE_EMPTY, f.x, f.y - 0.2f, f)
+        else fx(AtticCode.CHEST, f.x, f.y - 0.2f, f, arg = 0)
         sim.unlock("attic_secret")
         return true
     }

@@ -48,6 +48,9 @@ enum class Fx {
 
     // Rolf and Sture: a bow, a dusty sneeze; the code and the figure are in the param (see [FigurarEvent]).
     FIGURAR,
+
+    // Collecting: a find lands in the treasure box, every fifth one is a party, and a chest with nothing left to give.
+    TREASURE_IN, TREASURE_PARTY, TREASURE_EMPTY,
 }
 
 interface SimListener {
@@ -1444,7 +1447,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     private fun capPlace(place: PlaceId, keep: Thing) {
         val things = world.bodiesIn(place).filterIsInstance<Thing>()
         if (things.size <= MAX_THINGS) return
-        val oldest = things.filter { it !== keep && it.mode == Mode.FREE && it.inside < 0 && !it.held }.minByOrNull { it.z } ?: return
+        val oldest = Treasure.oldestToDrop(things, keep) ?: return
         listener.onFx(Fx.POOF, oldest.x, oldest.y - oldest.h / 2, thing = oldest)
         removeThing(oldest)
     }

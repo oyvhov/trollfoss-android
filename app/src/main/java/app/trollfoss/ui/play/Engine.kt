@@ -1968,6 +1968,22 @@ class Engine(
                 particles.burst(PKind.DUST, x, y + (fixture?.spec?.h ?: 0f) / 2, 10, 0.4f, 0.016f, up = 0.05f, life = 0.7f)
                 particles.burst(PKind.SPARK, x, y, 8, 0.4f, 0.012f)
             }
+            Fx.TREASURE_IN -> {
+                s(Sfx.CHOMP, 0.55f, 1.25f)
+                particles.burst(PKind.SPARK, x, y, 5, 0.3f, 0.009f, T.SunTop)
+            }
+            Fx.TREASURE_PARTY -> {
+                s(Sfx.BURP, 0.8f)
+                s(Sfx.SPARKLE, 0.6f)
+                particles.burst(PKind.STAR, x, y, 14, 0.5f, 0.012f, T.Sun)
+                laughAround(x, null)
+            }
+            Fx.TREASURE_EMPTY -> {
+                // Nothing left to give: a cough of dust, and a moth that lived in there.
+                s(Sfx.POOF, 0.6f)
+                particles.burst(PKind.DUST, x, y, 10, 0.35f, 0.016f, up = 0.08f, life = 0.8f)
+                particles.add(Particle(PKind.BUTTERFLY, x, y, 0.12f, -0.2f, 2.4f, 0.016f, Color(0xFFB9A58C)))
+            }
             Fx.STORE -> {
                 s(Sfx.ZIP, 0.8f)
                 particles.burst(PKind.DUST, x, y, 12, 0.4f, 0.018f, up = 0.1f, life = 0.7f)
