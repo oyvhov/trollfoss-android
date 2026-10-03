@@ -157,6 +157,9 @@ class PersonAnim {
     var walkGround = 0f
     var nextWalk = 2f
     var walkPhase = 0f
+    /** Camera-follow walking is controlled by PlayerFollow, not the idle life goals. */
+    var following = false
+    var followSpeed = 0f
     /** The snack an animal is heading for, or -1. */
     var chase = -1
 

@@ -219,6 +219,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     val personPlay = PersonPlay(this)
     val magic = MagicPlay(this)
     val toys = ToyPlay(this)
+    val playerFollow = PlayerFollow(this)
     var journal: EditJournal? = null
 
     /** Mitt hus: building, the housewarming and what the furniture of the child's own house does. */
@@ -363,6 +364,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         toys.tick(place, dt)
         // Read after the machines: an oven that just opened has shelves again.
         val list = surfaces(place)
+        playerFollow.step(place, dt)
         for (b in world.bodiesIn(place)) {
             b.age += dt
             if (b.cool > 0f) b.cool = max(0f, b.cool - dt)

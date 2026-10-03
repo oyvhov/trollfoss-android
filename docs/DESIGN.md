@@ -12,8 +12,12 @@ held eller har på hovudet. Spelarane kjem med på kartreiser og gjennom passasj
 vekk til andre etasjar på eiga hand. To eller fleire barn leikar på same skjerm med kvar sin figur
 og fleire fingrar samtidig. Portretta hentar figuren til det synlege rommet, og eit langt trykk opnar
 figurverkstaden. Nye figurar laga frå spelarvalet blir automatisk valde som spelarar. Romknappane
-tek med spelarane til valt rom. Ved panorering kjem dei med når kameraet har stoppa, utan å ta ein
-figur ut av hendene til barnet som held han. Tomme rom i Mitt hus får ingen figurar før golvet er bygd.
+tek med spelarane til valt rom med ei mjuk gåtur. Ved panorering byrjar dei å gå medan barnet sveipar,
+med roleg start og stopp og eigne plassar ved sida av kvarandre. Små sveip flyttar ikkje figurar som
+framleis er godt synlege. Ein figur som barnet held, blir verande under barnet sin kontroll; andre kan
+gå med både ved sveiping og når barnet dreg sin figur langs skjermkanten. Sovande figurar og passasjerar
+blir verande i senga eller køyretøyet. Valde spelarar vandrar ikkje av garde på eiga hand etterpå.
+På golvet går dei mjukt framfor møblane, slik at dei er lette å sjå. Tomme rom i Mitt hus blir ikkje brukte som snarveg.
 «Venner» viser kven som er her, med «Legg i sekken», og kven barnet kan hente hit. Å pakke ein figur
 tek han også ut av spelarvalet; figuren, utsjånaden og tinga hans blir bevarte. Han kan hentast tilbake
 frå Venner eller sekken og veljast som spelar igjen.
@@ -79,6 +83,11 @@ Storhuset har fire etasjar og ein hage (sjå `HUSET.md`), og Mitt hus har ei tom
 På nettbrett ligg ei lita biletoversikt over romma over scena. Eit trykk glir til rommet, og markøren følgjer
 romval og sveiping. Byggje- og møbelpanel reserverer plass på høgre side; figurar og ting held same storleik,
 og arbeidsområdet og sekken flyttar seg inn i den synlege delen. Sekken opnar over verktøylinja.
+
+Små klossar, sokkar, bøker, verktøy og liknande frå det opphavlege innandørsoppsettet får plass i
+eksisterande kasser, skap og på hyller. Golvet får meir fri plass til figurane. Ting blir bevarte og kan
+hentast fram, og ryddeknappen bruker desse nye heimane. Oppdateringa ordnar berre urørte ting som
+framleis ligg på sin opphavlege golvplass, éin gong; barnet sine flytta ting og Mitt hus blir bevarte.
 
 Mitt hus knyter romma saman gjennom brukbare ting: frø og vatning i drivhuset gir bær eller blomar; egg og
 mjølk blir deig i mjølbollen på kjøkenbenken, og deigen kan bakast med bæra i omnen. I verkstaden gir saga to
