@@ -107,9 +107,7 @@ fun MapScreen(vm: TrollfossViewModel) {
     val scroll = rememberScrollState()
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        val compact = maxHeight < 500.dp
-        val edge = if (compact) 8.dp else 16.dp
-        val buttonSize = if (compact) 56.dp else 64.dp
+        val controls = mapControls(maxHeight.value)
         var controlsHeightPx by remember { mutableIntStateOf(0) }
         val controlsHeight = if (controlsHeightPx > 0) with(LocalDensity.current) { controlsHeightPx.toDp() } else 96.dp
         val viewportWidth = constraints.maxWidth
@@ -195,15 +193,13 @@ fun MapScreen(vm: TrollfossViewModel) {
         )
         // Storhuset (the widest place) goes first, so the other places stay on top where their touch areas meet.
         for (place in PlaceId.entries.filter { it.onMap }.sortedBy { if (it == PlaceId.MANOR_GROUND) 0 else 1 }) {
-            val spot = mapSpot(place)
             val label = mapLabel(place).str()
-            // Coastal labels move up on short screens; their hit areas must not cover the valley above.
-            val markerHeight = if (spot.y > 0.75f) 48.dp else 110.dp
+            val bounds = mapMarkerBounds(place, w.value, h.value, controlsHeight.value)
             Column(
                 Modifier
                     // Keep coastal labels above the floating controls without shrinking the map.
-                    .offset(x = w * spot.x - 70.dp, y = (h * spot.y + 58.dp - markerHeight).coerceAtMost((h - controlsHeight - 8.dp - markerHeight).coerceAtLeast(0.dp)))
-                    .size(140.dp, markerHeight)
+                    .offset(x = bounds.left.dp, y = bounds.top.dp)
+                    .size(bounds.width.dp, bounds.height.dp)
                     .semantics { contentDescription = label; role = Role.Button }
                     .clickable(remember { MutableInteractionSource() }, indication = null) {
                         fly(place)
@@ -219,14 +215,14 @@ fun MapScreen(vm: TrollfossViewModel) {
 
         CloseButton({ vm.back() }, Modifier.align(Alignment.TopStart).padding(16.dp))
         Row(
-            Modifier.align(Alignment.BottomCenter).fillMaxWidth().onSizeChanged { controlsHeightPx = it.height }.padding(edge),
+            Modifier.align(Alignment.BottomCenter).fillMaxWidth().onSizeChanged { controlsHeightPx = it.height }.padding(controls.edge.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom,
         ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 12.dp)) {
-                RoundButton(S.book.str(), onClick = { vm.open(Screen.Book) }, size = buttonSize, tone = Tones.Grape, icon = Icons.Book)
-                RoundButton(S.workshop.str(), onClick = { vm.open(Screen.Creator(null)) }, size = buttonSize, tone = Tones.Grape, icon = Icons.Workshop)
-                RoundButton(S.players.str(), onClick = { vm.open(Screen.Players) }, size = buttonSize, tone = Tones.Mint, icon = Icons.Friends)
+            Row(horizontalArrangement = Arrangement.spacedBy(controls.gap.dp)) {
+                RoundButton(S.book.str(), onClick = { vm.open(Screen.Book) }, size = controls.button.dp, tone = Tones.Grape, icon = Icons.Book)
+                RoundButton(S.workshop.str(), onClick = { vm.open(Screen.Creator(null)) }, size = controls.button.dp, tone = Tones.Grape, icon = Icons.Workshop)
+                RoundButton(S.players.str(), onClick = { vm.open(Screen.Players) }, size = controls.button.dp, tone = Tones.Mint, icon = Icons.Friends)
             }
             ProgressButton(vm)
         }
