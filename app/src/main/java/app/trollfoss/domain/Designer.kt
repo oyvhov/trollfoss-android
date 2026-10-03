@@ -65,6 +65,8 @@ class Designer(private val sim: Sim, private val random: Random) {
      */
     fun canStore(place: PlaceId, f: Fixture): Boolean {
         if (!sim.movable(f)) return false
+        // A treasure box with finds in it stays where it is: nothing the child collected may fall out or get lost.
+        if (f.type == FixtureType.TREASURE_BOX && sim.treasure.holds(f).isNotEmpty()) return false
         if (f.type == FixtureType.MAILBOX || f.type == FixtureType.CHEST && place == PlaceId.HOME && f.id == place.idBase) return false
         // The doors, stairs and other ways between floors stay where they are.
         if (House.passageAt(f) != null) return false
@@ -76,6 +78,7 @@ class Designer(private val sim: Sim, private val random: Random) {
     fun store(place: PlaceId, f: Fixture): Boolean = sim.edit { storeNow(place,f) }
     private fun storeNow(place: PlaceId, f: Fixture): Boolean {
         if (f.id in world.playAssemblies) return sim.magic.unmake(f)
+        if (f.type == FixtureType.TREASURE_BOX && sim.treasure.holds(f).isNotEmpty()) sim.treasure.refuse(place, f)
         if (!canStore(place, f)) return false
         for (b in world.bodiesIn(place)) {
             if (b.mode == Mode.SEATED && b.holder == f.id) {

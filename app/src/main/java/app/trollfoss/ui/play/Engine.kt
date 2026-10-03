@@ -391,7 +391,7 @@ class Engine(
         bagCount = world.bag().size
     }
 
-    private fun accepts(f: Fixture, t: Thing): Boolean = PlayInteractions.accepts(f, t) ||
+    private fun accepts(f: Fixture, t: Thing): Boolean = PlayInteractions.accepts(f, t) || f.type == FixtureType.TREASURE_BOX ||
         (f.type == FixtureType.SECRET_NOOK && (t.type == ThingType.WAND || t.type == ThingType.GOLDEN_KEY || t.type == ThingType.CROWN)) ||
         app.trollfoss.domain.MinePlay.accepts(world, f, t) || when (f.spec.machine) {
         app.trollfoss.domain.Machine.STOVE -> app.trollfoss.domain.Recipes.stove(t.type) != null

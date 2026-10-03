@@ -74,7 +74,8 @@ object Decor {
         )
         val toys = ToyReward.entries.map { reward -> CatalogueItem(reward.type,
             stickers = Progression.thresholds.getOrNull(reward.level - 1) ?: 0) }
-        return toys + when {
+        // The treasure box is free everywhere: a child collects wherever it plays.
+        return toys + CatalogueItem(FixtureType.TREASURE_BOX) + when {
             place == PlaceId.UNDERWATER -> listOf(
                 CatalogueItem(FixtureType.CORAL, 0), CatalogueItem(FixtureType.CORAL, 1), CatalogueItem(FixtureType.KELP),
                 CatalogueItem(FixtureType.SUBMARINE),

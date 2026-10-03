@@ -225,6 +225,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     val community = Community(this)
     val creative = CreativePlay(this)
     val playerFollow = PlayerFollow(this)
+    val treasure = TreasureBox(this)
     var journal: EditJournal? = null
 
     /** Mitt hus: building, the housewarming and what the furniture of the child's own house does. */
@@ -367,6 +368,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         val fixtures = world.fixturesIn(place)
         for (f in fixtures) stepFixture(place, f, dt)
         toys.tick(place, dt)
+        treasure.step(place, dt)
         // Read after the machines: an oven that just opened has shelves again.
         val list = surfaces(place)
         playerFollow.step(place, dt)
@@ -654,6 +656,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
                 if (!(b is Thing && b.type.rolls) && !s.slippery) b.vx *= 0.35f
                 b.squashV += impact * 5f
                 listener.onLand(b, impact)
+                if (b is Thing && s.interior) treasure.landed(b, s.owner)
                 if (b is Person) jokes.landed(place, b)
             }
         }
@@ -1120,6 +1123,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         personPlay.fixture(f)
         when (f.type) {
             FixtureType.CANDY_FLOSS_STAND, FixtureType.POPCORN_CART -> dispense(place, f, dx)
+            FixtureType.TREASURE_BOX -> treasure.tap(place, f)
             FixtureType.TOY_BOX -> {
                 f.open = !f.open
                 invalidate(place)
@@ -1513,6 +1517,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     fun dropInto(place: PlaceId, f: Fixture, t: Thing): Boolean {
         here = place
         if (toys.drop(f, t)) return true
+        if (f.type == FixtureType.TREASURE_BOX) return treasure.put(place, f, t)
         if (f.type == FixtureType.SECRET_NOOK) return PlaySecrets.drop(this, f, t)
         if (!place.mine && mine.play.drop(place, f, t)) return true
         if (place.big && house.drop(place, f, t)) return true
