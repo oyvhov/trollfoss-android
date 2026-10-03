@@ -69,6 +69,7 @@ import app.trollfoss.domain.edit
 import app.trollfoss.domain.Wish
 import app.trollfoss.domain.WishEvent
 import app.trollfoss.domain.WishKind
+import app.trollfoss.domain.TapHint
 import app.trollfoss.domain.World
 import app.trollfoss.domain.Vehicles
 import app.trollfoss.ui.art.Ink
@@ -214,6 +215,14 @@ class Engine(
     /** The wish whose thing twinkles after a tap on the wisher. */
     private var hint: Wish? = null
     private var hintUntil = 0f
+
+    /** The furniture that answers a tap which hit nothing (see [TapHint]). */
+    private var tapHintId = -1
+    private var tapHintUntil = 0f
+    private var tapHintNext = 0f
+
+    /** The id of the furniture hinting right now, or -1. */
+    val hintedFixture: Int get() = if (time < tapHintUntil) tapHintId else -1
     private val flights = ArrayList<Flight>()
     private val grabs = HashMap<Long, Grab>()
     private var lastBabble = 0f
@@ -1612,6 +1621,14 @@ class Engine(
             return
         }
         particles.burst(PKind.SPARK, p.x, p.y, 4, 0.25f, 0.008f, Color.White)
+        // Nothing was there. If something close by would have answered, it shows itself for a blink.
+        if (time >= tapHintNext) TapHint.nearest(world, place, p.x, p.y)?.let { f ->
+            f.anim = 1f
+            tapHintId = f.id
+            tapHintUntil = time + TapHint.SECONDS
+            tapHintNext = time + TapHint.PAUSE
+            host.sfx(Sfx.CHIME, 0.35f, 1.3f)
+        }
     }
 
     private fun collect(s: Secret) {
@@ -2601,6 +2618,7 @@ class Engine(
             disco()?.let { drawDisco(it) }
             if (!photoMode) {
                 drawHints(lw)
+                drawTapHint(lw)
                 drawGuidance(lw)
                 for (b in list) if (b is Person && !b.held) drawBubbles(b, pen)
             }
@@ -3111,6 +3129,18 @@ class Engine(
     }
 
     /** A soft pulsing ring round the things a tapped figure wishes for. */
+    /** The glow round the furniture that answers a missed tap. */
+    private fun DrawScope.drawTapHint(lw: Float) {
+        if (time >= tapHintUntil) return
+        val f = world.fixtures[tapHintId]?.takeIf { it.place == place } ?: return
+        val fade = min(1f, (tapHintUntil - time) / 0.25f)
+        val pulse = if (motion) 1f + sin(time * 14f) * 0.06f else 1f
+        val c = Offset(sx(f.x + f.shiftX), sy(f.y - f.spec.h / 2f))
+        val r = max(f.spec.w, f.spec.h) * 0.6f * u * pulse
+        glow(listOf(T.SunTop.copy(alpha = 0.5f * fade), Color.Transparent), c, r * 1.4f)
+        drawCircle(Color.White.copy(alpha = 0.85f * fade), r, c, style = Stroke(lw * 2f))
+    }
+
     private fun DrawScope.drawHints(lw: Float) {
         val w = hint ?: return
         if (time > hintUntil || w.kind != WishKind.THING) return

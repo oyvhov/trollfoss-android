@@ -596,4 +596,18 @@ class SharedPlayTest {
         assertFalse(t.held)
         assertNull(e.away)
     }
+
+    @Test fun aTapThatHitsNothingMakesTheNearestChestAnswerForAMoment() {
+        val w = World(); val s = Sim(w); val place = PlaceId.HOME
+        val chest = s.designer.add(place, FixtureType.CHEST, 0, 1.0f, 0.9f)!!
+        val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        fun tap(x: Float, y: Float, time: Long) { val o = at(e, x, y); e.down(1, o, time); e.up(1, o, time + 80) }
+        tap(chest.x + 0.3f, chest.y - 0.3f, 1000)
+        assertEquals(chest.id, e.hintedFixture)
+        repeat(50) { e.update(0.016f) }                 // 0.8 s later the hint is over
+        assertEquals(-1, e.hintedFixture)
+        repeat(60) { e.update(0.016f) }
+        tap(chest.x + 0.9f, chest.y - 0.3f, 4000)       // nothing within reach
+        assertEquals(-1, e.hintedFixture); e.cancel()
+    }
 }
