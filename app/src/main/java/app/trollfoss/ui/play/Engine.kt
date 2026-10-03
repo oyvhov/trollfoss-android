@@ -90,6 +90,7 @@ import app.trollfoss.ui.art.shine
 import app.trollfoss.ui.art.starPath
 import app.trollfoss.ui.art.twinkle
 import app.trollfoss.ui.components.Icons
+import app.trollfoss.ui.components.DesignIcons
 import app.trollfoss.ui.theme.T
 import kotlin.math.PI
 import kotlin.math.abs
@@ -187,6 +188,16 @@ class Engine(
 
     /** A piece of furniture is being dragged over the panel. */
     var overStore by mutableStateOf(false)
+
+    /** The put-away corner is awake: something from the scene is held, and the bag has grown to take it. */
+    var away by mutableStateOf<AwayPicture?>(null)
+        private set
+
+    /** What is held hovers over the put-away corner. */
+    var overAway by mutableStateOf(false)
+        private set
+    private var awayGrow = 0f
+    private var awayWobble = 0f
 
     /** Bumps whenever the designer changes something, so its panel redraws. */
     var designVersion by mutableIntStateOf(0)
@@ -306,6 +317,24 @@ class Engine(
     private val bagMargin get() = dp(if (compact) 8f else 20f)
     private val bagCenter get() = Offset(geometry.right - bagMargin - bagRadius, heightPx - bagMargin - bagRadius)
 
+    /** The centre of the bag on screen. */
+    val bagAt: Offset get() = bagCenter
+
+    /** Lifted from the scene (not pulled out of the bag tray): the grown corner is for these. */
+    private fun fromScene(g: Grab): Boolean = g.target is Target.Hold || g.target is Target.Furniture
+
+    /** The finger of [g] is where a let-go means «put away». */
+    private fun onBag(g: Grab): Boolean =
+        AwayCorner.contains(g.finger.x, g.finger.y, bagCenter.x, bagCenter.y, bagRadius, fromScene(g))
+
+    private fun updateAway(dt: Float) {
+        val carrying = grabs.values.filter { it.moved && fromScene(it) }
+        away = AwayCorner.picture(carrying.count { it.target is Target.Hold }, carrying.count { it.target is Target.Furniture })
+        overAway = carrying.any(::onBag)
+        awayGrow = if (away != null) min(1f, awayGrow + dt / AwayCorner.GROW) else max(0f, awayGrow - dt / AwayCorner.GROW)
+        awayWobble = max(0f, awayWobble - dt * 2.5f)
+    }
+
     // ---------------------------------------------------------------------------------- update
 
     fun update(dt: Float) {
@@ -340,6 +369,7 @@ class Engine(
         }
 
         moveFurniture(dt)
+        updateAway(dt)
         updateSky(dt)
         updateWeather(dt)
         // Things flying home when tidied leave a trail of sparkles.
@@ -349,13 +379,16 @@ class Engine(
 
         // A thing carried to the screen edge takes the camera with it.
         val cameraBeforeEdge = cam
-        if (grabs.values.any { it.moved && (heldBody(it) != null || it.target is Target.Furniture) }) {
-            val edge = grabs.values.filter { it.moved && (heldBody(it) != null || it.target is Target.Furniture) }.map { it.finger.x }
+        val carrying = grabs.values.filter { it.moved && (heldBody(it) != null || it.target is Target.Furniture) }
+        if (carrying.isNotEmpty()) {
             // With the designer panel open, the right edge is where the panel starts; over the panel
             // itself the camera stays put, so furniture can be dropped into the store.
             val panel = if (designMode) storeZone else null
             val right = panel?.left?.minus(dp(36f)) ?: (widthPx * 0.92f)
-            for (x in edge) {
+            for (g in carrying) {
+                // In the put-away corner the camera stays put too, so what is held can be let go there.
+                if (onBag(g)) continue
+                val x = g.finger.x
                 if (x < widthPx * 0.08f) cam -= 1.3f * dt
                 if (x > right && (panel == null || x < panel.left)) cam += 1.3f * dt
             }
@@ -416,7 +449,7 @@ class Engine(
         for (g in grabs.values) {
             if (!g.moved) continue
             val body = heldBody(g) ?: continue
-            if (hypot(g.finger.x - bagCenter.x, g.finger.y - bagCenter.y) < bagRadius * 1.4f) continue
+            if (onBag(g)) continue
             when (body) {
                 is Thing -> {
                     val center = Offset(body.x, body.y - body.h / 2)
@@ -860,11 +893,16 @@ class Engine(
             g.target is Target.Furniture -> {
                 val f = (g.target as Target.Furniture).fixture
                 overStore = false
-                if (storeZone?.contains(at) == true && sim.designer.store(place, f)) {
+                // Over the open panel, or in the put-away corner with no panel at all: into the store.
+                val inCorner = onBag(g)
+                if ((storeZone?.contains(at) == true || inCorner) && sim.designer.store(place, f)) {
                     designVersion++
+                    if (inCorner) particles.burst(PKind.SPARK, units(bagCenter.x) + cam, units(bagCenter.y - top), 8, 0.4f)
                     host.changed()
                 } else {
                     letGo(f)
+                    // It could not be stored, or it nearly got there: the corner wobbles once to show where «away» is.
+                    if (inCorner || AwayCorner.nearMiss(at.x, at.y, widthPx, heightPx)) awayWobble = 1f
                 }
             }
         }
@@ -1121,8 +1159,13 @@ class Engine(
         camV = 0f
         cancelCatalogueDrag()
         closeDriving()
-        for (g in grabs.values) heldBody(g)?.takeIf { it.held && it.place == place }?.let { drop(g, it, 0f, 0f) }
+        for (g in grabs.values) {
+            heldBody(g)?.takeIf { it.held && it.place == place }?.let { drop(g, it, 0f, 0f, allowBag = false) }
+            (g.target as? Target.Furniture)?.fixture?.let(::letGo)
+        }
         grabs.clear()
+        away = null
+        overAway = false
         touching = false
         editFingers.toList().forEach(::endEdit)
     }
@@ -1270,9 +1313,9 @@ class Engine(
         host.haptic()
     }
 
-    private fun drop(g: Grab, body: Body, vx: Float, vy: Float) {
+    private fun drop(g: Grab, body: Body, vx: Float, vy: Float, allowBag: Boolean = true) {
         body.held = false
-        val fingerOnBag = hypot(g.finger.x - bagCenter.x, g.finger.y - bagCenter.y) < bagRadius * 1.4f
+        val fingerOnBag = allowBag && onBag(g)
         if (fingerOnBag) {
             intoBag(body)
             return
@@ -1327,6 +1370,8 @@ class Engine(
     }
 
     private fun intoBag(body: Body) {
+        // A figure says goodbye on its way into the bag.
+        if (body is Person) voice(body, Sfx.GIGGLE, 0.7f)
         if (body is Person) Players.pack(world, body) else {
             body.mode = Mode.BAG
             body.place = null
@@ -3326,8 +3371,10 @@ class Engine(
     }
 
     private fun DrawScope.drawBag(text: TextMeasurer, pen: Pen) {
-        val c = bagCenter
-        val r = bagRadius
+        // While something from the scene is held the bag grows up and to the left, clear of the screen edge.
+        val grow = if (motion) awayGrow else if (away != null) 1f else 0f
+        val r = bagRadius * (1f + (AwayCorner.DRAW - 1f) * grow)
+        val c = Offset(bagCenter.x - (r - bagRadius), bagCenter.y - (r - bagRadius))
         val bag = world.bag()
         if (bagOpen) {
             val tray = trayRect()
@@ -3356,12 +3403,18 @@ class Engine(
             }
         }
         // The bag button, drawn like the other round buttons.
-        val wobble = if (bag.isNotEmpty() && motion) sin(time * 3f) * 3f else 0f
+        val wobble = (if (bag.isNotEmpty() && motion) sin(time * 3f) * 3f else 0f) +
+            (if (motion) sin(awayWobble * 20f) * 12f * awayWobble else 0f)
+        // What is held is over the corner: the whole touch area lights up.
+        if (overAway) drawCircle(T.SunTop.copy(alpha = 0.35f), bagRadius * AwayCorner.HIT, bagCenter)
         drawCircle(T.SunDeep, r, Offset(c.x, c.y + dp(5f)))
-        drawCircle(Brush.verticalGradient(if (bagOpen) listOf(T.Mint, T.MintDeep) else listOf(T.SunTop, T.Sun), c.y - r, c.y + r), r, c)
+        drawCircle(Brush.verticalGradient(if (bagOpen || overAway) listOf(T.Mint, T.MintDeep) else listOf(T.SunTop, T.Sun), c.y - r, c.y + r), r, c)
         drawCircle(Ink.line, r, c, style = Stroke(dp(2.2f)))
         rotate(wobble, c) {
-            inset(c.x - r * 0.62f, c.y - r * 0.66f, size.width - (c.x + r * 0.62f), size.height - (c.y + r * 0.58f)) { Icons.Bag(this) }
+            inset(c.x - r * 0.62f, c.y - r * 0.66f, size.width - (c.x + r * 0.62f), size.height - (c.y + r * 0.58f)) {
+                // Furniture goes to the store: the corner shows a crate instead of the bag.
+                if (away == AwayPicture.CRATE) DesignIcons.Box(this) else Icons.Bag(this)
+            }
         }
         if (bag.isNotEmpty()) {
             val badge = Offset(c.x + r * 0.72f, c.y - r * 0.72f)
