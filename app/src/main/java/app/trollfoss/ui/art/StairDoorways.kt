@@ -10,11 +10,22 @@ internal data class Doorway(val left: Float, val top: Float, val right: Float, v
         x in (left - margin)..(right + margin) && y in (top - margin)..(bottom + margin)
 }
 
+/** A floor opening projects back and to the right. Test its parallelogram, not its bounding rectangle. */
+internal data class StairOpening(val left: Float, val right: Float, val near: Float, val far: Float) {
+    fun contains(x: Float, y: Float, margin: Float): Boolean {
+        if (y !in (FX_DY * far - margin)..(FX_DY * near + margin)) return false
+        val depth = (y / FX_DY).coerceIn(near, far)
+        return x - FX_DX * depth in (left - margin)..(right + margin)
+    }
+}
+
 /**
  * The same numbers describe both the painted doorway of a staircase and its touch area, the way
  * [FixtureDoors] does for cupboard doors: a child taps the door it wants to go through, not the steps.
  */
 internal object StairDoorways {
+    val upperDown = StairOpening(-0.38f, 0.38f, 0.03f, 0.27f)
+    val mineDown = StairOpening(-0.38f, 0.38f, 0f, 0.22f)
     /** Storstova: the arch in the wall behind the landing of the grand stairs, [HALL_Z] deep. */
     const val HALL_Z = 0.26f
     val hall = Doorway(-0.4f + FX_DX * HALL_Z, -0.85f + FX_DY * HALL_Z, -0.2f + FX_DX * HALL_Z, -0.52f + FX_DY * HALL_Z)
@@ -38,5 +49,14 @@ internal object StairDoorways {
         else -> null
     }
 
-    fun hit(f: Fixture, x: Float, y: Float, margin: Float): Boolean = of(f)?.contains(x, y, margin) == true
+    fun hit(f: Fixture, x: Float, y: Float, margin: Float): Boolean {
+        if (of(f)?.contains(x, y, margin) == true) return true
+        if (f.type != FixtureType.STAIRCASE) return false
+        val opening = when {
+            f.place == PlaceId.MANOR_UPPER && f.variant != 1 -> upperDown
+            f.place == PlaceId.MINE_UPPER -> mineDown
+            else -> null
+        }
+        return opening?.contains(x, y, margin) == true
+    }
 }

@@ -400,6 +400,9 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         if (b.inside >= 0) {
             val box = world.fixtures[b.inside]
             if (box != null && !box.open) return
+            // A collected find stays on its shelf even with the lid open in space or underwater.
+            // Lifting it clears inside/restOwner, so the child's hand always releases this support.
+            if (box?.type == FixtureType.TREASURE_BOX && b.resting && b.restOwner == box.id) return
         }
         // A deliberately placed ingredient stays on the hot surface, including in zero gravity.
         if (b is Thing && b.resting && !b.held) {

@@ -10,6 +10,12 @@ import org.junit.Test
 
 /** The doorway painted on a staircase belongs to the staircase: a tap on it is a tap on the stairs. */
 class StairDoorwaysTest {
+    @Test fun `the projected far edges of both downward openings are tappable`() {
+        assertTrue(StairDoorways.hit(stairs(PlaceId.MANOR_UPPER), 0.47f, -0.072f, 0f))
+        assertTrue(StairDoorways.hit(stairs(PlaceId.MINE_UPPER), 0.47f, -0.072f, 0f))
+        assertFalse(StairDoorways.hit(stairs(PlaceId.MANOR_UPPER), 0.57f, -0.072f, 0f))
+    }
+
     private fun stairs(place: PlaceId, variant: Int = 0) = Fixture(1, place, FixtureType.STAIRCASE, 0f, 0f, variant)
 
     @Test fun `the glowing arch behind the grand stairs lies above the box of the stairs and is part of them`() {

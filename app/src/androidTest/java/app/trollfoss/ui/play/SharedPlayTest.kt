@@ -12,6 +12,73 @@ import org.junit.runner.RunWith
 /** Run on Android: exercises the real pointer engine used by children sharing the screen. */
 @RunWith(AndroidJUnit4::class)
 class SharedPlayTest {
+    @Test fun automaticPanelClosureWaitsForTheOtherFingerToFinishAtTheSameCorner() {
+        val w = World(); val s = Sim(w)
+        val first = w.addThing(ThingType.BALL, 0, PlaceId.HOME, 0.6f, 0.9f)
+        val second = w.addThing(ThingType.APPLE, 0, PlaceId.HOME, 1.1f, 0.9f)
+        val third = w.addThing(ThingType.GEM, 0, PlaceId.HOME, 1.45f, 0.9f)
+        val e = Engine(w, PlaceId.HOME, s, host, false, 0f).apply {
+            setSize(1920f, 1200f, 1.5f, 528f); designMode = true
+            storeZone = Rect(1392f, 0f, 1920f, 1200f)
+        }
+        nudge(e, at(e, first.x, first.y - first.h / 2f))
+        val corner = e.bagAt
+        e.down(1, at(e, second.x, second.y - second.h / 2f), 2000)
+        e.down(2, at(e, third.x, third.y - third.h / 2f), 2000)
+        e.move(1, corner, 2200); e.move(2, corner, 2200); e.update(0.016f)
+        e.up(1, corner, 2300)
+        assertTrue("the highlighted corner stays put under the second finger", e.designMode)
+        e.up(2, corner, 2400)
+        assertEquals(Mode.BAG, second.mode); assertEquals(Mode.BAG, third.mode)
+        assertFalse(e.designMode); e.cancel()
+    }
+
+    @Test fun touchingFurnitureWithAnotherFingerResetsThePanelCounterImmediately() {
+        val w = World(); val s = Sim(w)
+        val ball = w.addThing(ThingType.BALL, 0, PlaceId.HOME, 0.6f, 0.9f)
+        val apple = w.addThing(ThingType.APPLE, 0, PlaceId.HOME, 1.1f, 0.9f)
+        val stool = s.designer.add(PlaceId.HOME, FixtureType.STOOL, 0, 1.6f, 0.9f)!!
+        val e = Engine(w, PlaceId.HOME, s, host, false, 0f).apply { setSize(1920f,1200f,1.5f); designMode=true }
+        nudge(e, at(e, ball.x, ball.y - ball.h / 2f))
+        e.down(2, at(e, stool.x, stool.y - stool.spec.h / 2f), 2000)
+        nudge(e, at(e, apple.x, apple.y - apple.h / 2f))
+        assertTrue(e.designMode)
+        e.up(2, at(e, stool.x, stool.y - stool.spec.h / 2f), 2400)
+        assertTrue("furniture keeps decorating active", e.designMode); e.cancel()
+    }
+
+    @Test fun theVisibleOpenTreasureLidClosesEvenWithAnObjectBehindIt() {
+        for (behind in listOf(false, true)) {
+            val w = World(); val s = Sim(w)
+            val f = s.designer.add(PlaceId.HOME, FixtureType.TREASURE_BOX, 0, 1f, 0.95f)!!.apply { open=true }
+            if (behind) w.addThing(ThingType.DRUM,0,PlaceId.HOME,f.x,f.y-0.22f).apply { resting=true;ground=0.83f }
+            val e = Engine(w,PlaceId.HOME,s,host,false,0f).apply { setSize(1920f,1200f,1.5f) }
+            val lid = at(e,f.x,f.y-0.265f)
+            e.down(1,lid,1000);e.up(1,lid,1100)
+            assertFalse("the painted lid takes the tap (behind=$behind)",f.open);e.cancel()
+        }
+    }
+
+    @Test fun aLongPressOnTheOpenTreasureLidLiftsTheBox() {
+        val w=World();val s=Sim(w)
+        val f=s.designer.add(PlaceId.HOME,FixtureType.TREASURE_BOX,0,1f,0.95f)!!.apply { open=true }
+        val e=Engine(w,PlaceId.HOME,s,host,false,0f).apply { setSize(1920f,1200f,1.5f) }
+        val lid=at(e,f.x,f.y-0.265f);val x=f.x
+        e.down(1,lid,1000);repeat(35) { e.update(0.016f) }
+        e.move(1,lid+Offset(150f,0f),1700);repeat(15) { e.update(0.016f) }
+        assertTrue("the open lid belongs to the movable box",f.x>x+0.1f);e.cancel()
+    }
+
+    @Test fun theFarEdgeOfThePaintedUpperStairwellGoesDownstairs() {
+        val w=WorldFactory.create();val s=Sim(w);val p=PlaceId.MANOR_UPPER
+        val f=w.fixturesIn(p).first { it.type==FixtureType.STAIRCASE && it.variant==0 }
+        lastPassage=null
+        val e=Engine(w,p,s,passageHost,false,0f).apply { setSize(1920f,1200f,1.5f);focusOn(f.x) }
+        val edge=at(e,f.x+0.47f,f.y-0.072f)
+        e.down(1,edge,1000);e.up(1,edge,1100)
+        assertEquals(PlaceId.MANOR_GROUND,lastPassage?.to);e.cancel()
+    }
+
     @Test fun openFridgeAndWardrobeDoorsCloseWhereTheDoorIsDrawn() {
         for ((type, dx) in listOf(FixtureType.FRIDGE to -0.18f, FixtureType.WARDROBE to -0.19f,
             FixtureType.WARDROBE to 0.15f, FixtureType.OVEN to -0.18f)) {
@@ -641,3 +708,4 @@ class SharedPlayTest {
         assertTrue(e.designMode); e.cancel()
     }
 }
+

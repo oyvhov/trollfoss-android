@@ -728,7 +728,8 @@ private fun DrawScope.miStairs(f: Fixture, u: Float, pen: Pen) {
     val upstairs = f.place == PlaceId.MINE_UPPER
     val wood = FxC.oak.lighten(0.18f)
     if (upstairs) {
-        val opening = fxFlat(u, -0.38f, 0.38f, 0f, 0f, 0.22f)
+        val bounds = StairDoorways.mineDown
+        val opening = fxFlat(u, bounds.left, bounds.right, 0f, bounds.near, bounds.far)
         drawPath(opening, Color(0xFF403447)); drawPath(opening, Ink.line, style = pen.stroke)
         clipPath(opening) {
             for (k in 0 until 6) {

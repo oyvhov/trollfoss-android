@@ -75,6 +75,7 @@ import app.trollfoss.domain.Vehicles
 import app.trollfoss.ui.art.Ink
 import app.trollfoss.ui.art.FixtureDoors
 import app.trollfoss.ui.art.StairDoorways
+import app.trollfoss.ui.art.TreasureBoxLid
 import app.trollfoss.ui.art.TractorCab
 import app.trollfoss.ui.art.Pen
 import app.trollfoss.ui.art.drawFixtureBack
@@ -183,17 +184,21 @@ class Engine(
 
     private val panelIdle = PanelIdle()
     private var designModeState by mutableStateOf(false)
+    private var pendingDesignerClose = false
 
     /** The home designer is open: furniture moves with a plain drag, and the panel below takes it away. */
     var designMode: Boolean
         get() = designModeState
         set(value) {
-            if (value != designModeState) panelIdle.decorating()
+            if (value != designModeState) panelTouched()
             designModeState = value
         }
 
     /** The child touched the furniture panel: still decorating. */
-    fun panelTouched() = panelIdle.decorating()
+    fun panelTouched() {
+        panelIdle.decorating()
+        pendingDesignerClose = false
+    }
 
     /** Closes the furniture panel, the way its red X does. */
     fun closeDesigner() {
@@ -356,7 +361,9 @@ class Engine(
 
     private fun updateAway(dt: Float) {
         val carrying = grabs.values.filter { it.moved && fromScene(it) }
-        away = AwayCorner.picture(carrying.count { it.target is Target.Hold }, carrying.count { it.target is Target.Furniture })
+        val picture = AwayCorner.picture(carrying.count { it.target is Target.Hold }, carrying.count { it.target is Target.Furniture })
+        if (away == null && picture != null) awayWobble = 1f
+        away = picture
         overAway = carrying.any(::onBag)
         awayGrow = if (away != null) min(1f, awayGrow + dt / AwayCorner.GROW) else max(0f, awayGrow - dt / AwayCorner.GROW)
         awayWobble = max(0f, awayWobble - dt * 2.5f)
@@ -847,6 +854,7 @@ class Engine(
         }
         if (grab.target is Target.Pan) camV = 0f
         (grab.target as? Target.Furniture)?.fixture?.let { f ->
+            panelTouched()
             val p = toScene(at)
             grab.offX = f.x - p.x
             grab.offY = f.y - p.y
@@ -889,7 +897,12 @@ class Engine(
     private fun beginEdit(id: Long, body: Int) { if(editFingers.add(id)) sim.journal?.begin(body) }
     private fun endEdit(id: Long) { if(editFingers.remove(id)) sim.journal?.end() }
     fun up(id: Long, at: Offset, uptime: Long) {
-        try { upNow(id,at,uptime) } finally { endEdit(id);touching=grabs.isNotEmpty() }
+        try { upNow(id,at,uptime) } finally {
+            endEdit(id)
+            touching = grabs.isNotEmpty()
+            // Keep the panel, camera and corner fixed until every other finger has finished.
+            if (pendingDesignerClose && grabs.isEmpty()) closeDesigner()
+        }
     }
     private fun upNow(id: Long, at: Offset, uptime: Long) {
         val g = grabs.remove(id) ?: return
@@ -918,12 +931,12 @@ class Engine(
             body != null && body.held -> {
                 drop(g, body, vx, vy)
                 // Playing, not decorating: after two things or figures in a row the furniture panel steps aside.
-                if (designMode && g.target is Target.Hold && panelIdle.played()) closeDesigner()
+                if (designMode && g.target is Target.Hold && panelIdle.played()) pendingDesignerClose = true
             }
             g.target is Target.Pan -> { camV = -vx }
             g.target is Target.Furniture -> {
                 val f = (g.target as Target.Furniture).fixture
-                panelIdle.decorating()
+                panelTouched()
                 overStore = false
                 // Over the open panel, or in the put-away corner with no panel at all: into the store.
                 val inCorner = onBag(g)
@@ -1014,6 +1027,7 @@ class Engine(
 
     /** A preview only: nothing enters the world or leaves storage until released over the scene. */
     fun beginCatalogueDrag(type: FixtureType, variant: Int, at: Offset, storeIndex: Int? = null) {
+        panelTouched()
         cataloguePreview = Fixture(-1, place, type, 0f, 0f, variant)
         catalogueStoreIndex = storeIndex
         moveCatalogueDrag(at)
@@ -1099,6 +1113,7 @@ class Engine(
                 if (f != null && sim.movable(f)) {
                     beginEdit(fingerId,f.id)
                     g.target = Target.Furniture(f)
+                    panelTouched()
                     g.moved = true
                     g.offX = f.x - p.x
                     g.offY = f.y - p.y
@@ -1177,7 +1192,7 @@ class Engine(
             val fy = f.y + f.shiftY
             val dx = p.x - fx
             val dy = p.y - fy
-            if (FixtureDoors.hit(f, dx, dy, pad) || StairDoorways.hit(f, dx, dy, pad) ||
+            if (FixtureDoors.hit(f, dx, dy, pad) || TreasureBoxLid.hit(f, dx, dy, pad) || StairDoorways.hit(f, dx, dy, pad) ||
                 f.type == FixtureType.TRACTOR && TractorCab.contains(dx, dy - f.bob, pad)) return f
             if (p.x in (fx - f.spec.w / 2 - pad)..(fx + f.spec.w / 2 + pad) && p.y in (fy - f.spec.h - pad)..(fy + pad)) return f
         }
@@ -1196,6 +1211,7 @@ class Engine(
             (g.target as? Target.Furniture)?.fixture?.let(::letGo)
         }
         grabs.clear()
+        pendingDesignerClose = false
         away = null
         overAway = false
         touching = false
@@ -1210,7 +1226,8 @@ class Engine(
         val list = drawList()
         val front = fixtureAt(p, pad = 0f)
         val coversBodies = front != null && (Vehicles.controllable(front) ||
-            FixtureDoors.hit(front, p.x - front.x - front.shiftX, p.y - front.y - front.shiftY, 0f))
+            FixtureDoors.hit(front, p.x - front.x - front.shiftX, p.y - front.y - front.shiftY, 0f) ||
+            TreasureBoxLid.hit(front, p.x - front.x - front.shiftX, p.y - front.y - front.shiftY, 0f))
         // Prefer the actual picture before a neighbour's generous touch margin.
         for (precise in listOf(true, false)) for (i in list.indices.reversed()) {
             val b = list[i]
@@ -3457,7 +3474,7 @@ class Engine(
         }
         // The bag button, drawn like the other round buttons.
         val wobble = (if (bag.isNotEmpty() && motion) sin(time * 3f) * 3f else 0f) +
-            (if (motion) sin(awayWobble * 20f) * 12f * awayWobble else 0f)
+            (if (motion) sin((1f - awayWobble) * PI.toFloat()) * 8f * awayWobble else 0f)
         // What is held is over the corner: the whole touch area lights up.
         if (overAway) drawCircle(T.SunTop.copy(alpha = 0.35f), bagRadius * AwayCorner.HIT, bagCenter)
         drawCircle(T.SunDeep, r, Offset(c.x, c.y + dp(5f)))
@@ -3466,7 +3483,11 @@ class Engine(
         rotate(wobble, c) {
             inset(c.x - r * 0.62f, c.y - r * 0.66f, size.width - (c.x + r * 0.62f), size.height - (c.y + r * 0.58f)) {
                 // Furniture goes to the store: the corner shows a crate instead of the bag.
-                if (away == AwayPicture.CRATE) DesignIcons.Box(this) else Icons.Bag(this)
+                when {
+                    away == AwayPicture.CRATE -> DesignIcons.Box(this)
+                    away == AwayPicture.BAG || bagOpen -> Icons.OpenBag(this)
+                    else -> Icons.Bag(this)
+                }
             }
         }
         if (bag.isNotEmpty()) {

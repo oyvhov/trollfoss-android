@@ -11,6 +11,21 @@ import kotlin.random.Random
 
 /** The glass-fronted treasure box: easy to hit, shows what is in it, and never loses a find. */
 class TreasureBoxTest {
+    @Test fun `settled finds stay on their shelves with the lid open in space and underwater`() {
+        for (p in listOf(PlaceId.SPACE, PlaceId.UNDERWATER)) {
+            val w = World(); val s = sim(w)
+            val f = s.designer.add(p, FixtureType.TREASURE_BOX, 0, 1.6f, 0.9f)!!
+            val t = w.addThing(ThingType.GEM, 0, p, f.x, f.y - 0.1f)
+            assertTrue(s.dropInto(p, f, t)); f.open = true
+            val x = t.x; val y = t.y
+            repeat(1800) { s.step(p, 1f / 60f) }
+            assertEquals("$p keeps the shelf x", x, t.x, 0.0001f)
+            assertEquals("$p keeps the shelf y", y, t.y, 0.0001f)
+            assertTrue("$p stays settled", t.resting)
+            assertEquals(f.id, t.inside)
+        }
+    }
+
     private val place = PlaceId.HOME
     private val fxs = ArrayList<Fx>()
 

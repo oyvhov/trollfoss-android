@@ -18,8 +18,9 @@ internal fun DrawScope.fxTreasureBox(f: Fixture, u: Float, pen: Pen) {
     for (x in floatArrayOf(-0.11f, 0.11f)) fxBox(u, x - 0.012f, -0.012f, x + 0.012f, 0f, 0.014f, TreasureBrass, pen, z = d - 0.02f)
     if (f.open) {
         // The lid, tipped up behind the box, with a star on it.
-        fxBox(u, -0.134f, -0.33f, 0.134f, -0.2f, 0.016f, TreasureWood.darken(0.08f), pen, rad = 0.008f, z = d - 0.004f)
-        val star = starPath(p(0f, -0.265f), 0.02f * u, 0.009f * u)
+        val lid = TreasureBoxLid
+        fxBox(u, lid.LEFT, lid.TOP, lid.RIGHT, lid.BOTTOM, lid.DEPTH, TreasureWood.darken(0.08f), pen, rad = 0.008f, z = lid.Z)
+        val star = starPath(p(0f, lid.STAR_Y), 0.02f * u, 0.009f * u)
         drawPath(star, TreasureBrass)
         drawPath(star, Ink.line, style = pen.thin)
     }
