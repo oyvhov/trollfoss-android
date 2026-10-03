@@ -1,4 +1,27 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
+> **NYAST – DØRER OG TRAKTOR PÅ SCENA (2026-10-03):** Opne skapdører og traktortaket låg
+> utanfor dei gamle treffområda. Teikning og trykk bruker no delte geometridata; ting bak
+> tek ikkje trykk frå traktoren/døra framfor. Mat, førar og figurar framfor er framleis dragbare.
+> Sjå `INTERACTION_FIXES_2026-10-03.md`. 467 JVM- og 32 Android-kontrollar grøne, debug-bygg
+> og lint grøne (0 feil / 31 åtvaringar). Faktisk flytting via Lager og taktrykk prøvd på Scena.
+> Same reine arbeidskopi og PR 4 som designarbeidet; ingen ny APK-release.
+
+> **NYAST – DESIGNGJENNOMGANG OG FIGURMENYAR (2026-10-03):** Brukaren bad om betre design.
+> Fersk gjennomgang av kart, Familiehuset, spelarval, figurverkstad og gåver er dokumentert i
+> `DESIGN_REVIEW_2026-10-03.md`. Spelarvalet har større figurar, rein tekst, rolege kortrammer,
+> tydeleg lagmarkering og tomt-lag-hint. Verkstaden har lys spegelramme og same valfargar.
+> Arbeidet held fram på `codex/map-full-height` i den reine arbeidskopien; PR 4 omfattar også dette.
+> Debug-bygg og 467 einingstestar grøne; endeleg lint/CI står i PR-en. Nettbrett visuelt kontrollert,
+> berre kort kontroll av dei to endra skjermane på mobil. Ingen ny release eller endra lagringsformat.
+> Neste designprioritet: kartnamn/stadmarkør, rolegare romknappar, neste gåve synleg før samlinga.
+
+> **NYAST – KART UTAN BOTNFELT (2026-10-03):** Brukaren melde at den mørke rada under
+> kartknappane tok for mykje plass på mobil. `codex/map-full-height` fjernar den faste 88 dp-rada.
+> Kartet fyller heile skjermen; knappane ligg over kartet, med 56 dp knappar og 8 dp kant på korte
+> skjermar. Stadnamna held avstand til den målte knapperada. Dei flytta kystnamna har eigne 48 dp
+> treffområde som ikkje strekkjer seg opp i dalen. Sjå PR-en for endeleg bygg- og skjermkontroll.
+> Endringa er ikkje med i publisert 1.7.0. Arbeid i den reine arbeidskopien `C:/topa/.gradle-tmp/follow-worktree`.
+
 > **NYAST – PUBLISERT 1.7.0 (2026-10-03, Codex):** Brukaren bad «Release».
 > PR 3 er fletta til main og publisert som stabil, nyaste release:
 > https://github.com/oyvhov/trollfoss-android/releases/tag/v1.7.0.

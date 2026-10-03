@@ -1,5 +1,13 @@
 # Endringslogg
 
+## 1.7.1 – Betre trykk og rolegare figurmenyar
+
+- Kjøleskap, garderobar og fleire skap i Storhuset kan lukkast ved trykk på den synlege opne døra. Mat i skapet kan framleis dragast ut.
+- Traktoren startar også ved trykk på taket og førarhytta. Ting bak traktoren tek ikkje trykket frå han. Flytting via Lager og køyring med førar på Scena er kontrollerte.
+- Kartet fyller heile skjermen utan den mørke botnrada. Kompakte knappar og målte stadnamn gir meir plass på mobil og betre treff på kystmåla.
+- Spelarvalet har større figurar, reinare namn, rolegare kort og tydeleg lagmarkering. Tomt lag får eit kort hint.
+- Figurverkstaden har ei lys spegelramme, samanhengande valfargar og ein samla Ferdig-knapp. Figurar, klede, ting, hus og framgang blir bevarte.
+
 ## 1.7.0 – Skyøya og meir magisk leik
 
 - 20 nye interaktive leiker, mellom anna vippe, dokketeater, tandem, kran, transportband, portal, kunststaffeli og redningsleik. Nivå 4–6 gir fire nye gåver kvar, og neste gåve og oppdragshjelp er lettare å finne.

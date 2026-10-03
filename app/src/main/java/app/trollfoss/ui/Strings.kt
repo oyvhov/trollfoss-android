@@ -180,6 +180,7 @@ object S {
     val workshop = txt("Figurverkstaden")
     val players = txt("Spelarar", "Spillere")
     val choosePlayers = txt("Kven vil de vere?", "Hvem vil dere være?")
+    val chooseTeamHint = txt("Trykk på figurane de vil leike med.", "Trykk på figurene dere vil leke med.")
     val playersHint = txt("Vel éin, to eller fleire figurar. Dei følgjer med overalt.", "Velg én, to eller flere figurer. De følger med overalt.")
     val togetherHint = txt("Leik saman på same skjerm – de kan dra kvar dykkar figur samtidig.", "Lek sammen på samme skjerm – dere kan dra hver deres figur samtidig.")
     val chooseLater = txt("Vel seinare", "Velg senere")

@@ -12,6 +12,99 @@ import org.junit.runner.RunWith
 /** Run on Android: exercises the real pointer engine used by children sharing the screen. */
 @RunWith(AndroidJUnit4::class)
 class SharedPlayTest {
+    @Test fun openFridgeAndWardrobeDoorsCloseWhereTheDoorIsDrawn() {
+        for ((type, dx) in listOf(FixtureType.FRIDGE to -0.18f, FixtureType.WARDROBE to -0.19f,
+            FixtureType.WARDROBE to 0.15f, FixtureType.OVEN to -0.18f)) {
+            val w = World(); val s = Sim(w); val place = PlaceId.HOME
+            val f = s.designer.add(place, type, 0, 1f, 0.91f)!!.apply { open = true }
+            // A neighbour behind the swung-out door must not take the tap.
+            s.designer.add(place, FixtureType.PIANO, 0, f.x - 0.25f, 0.85f)
+            val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+            val y = if (type == FixtureType.OVEN) -0.1f else -0.2f
+            val at = Offset((f.x + dx - e.cam) * e.u, 1200f - e.u + (f.y + y) * e.u)
+            e.down(1, at, 1000); e.up(1, at, 1100)
+            assertFalse("$type closes on its visible open door", f.open)
+            e.cancel()
+        }
+    }
+
+    @Test fun tractorFromStorageStartsOnItsRoofOnStageAndDrivesBothWaysWithItsRider() {
+        val w = WorldFactory.create(); val s = Sim(w); val place = PlaceId.STAGE
+        val farmTractor = w.fixturesIn(PlaceId.FARM).first { it.type == FixtureType.TRACTOR }
+        assertTrue(s.designer.store(PlaceId.FARM, farmTractor))
+        val f = s.designer.unstore(place, w.storage.indexOfFirst { it.type == FixtureType.TRACTOR }, 1.4f, 0.97f)!!
+        val rider = w.addPerson(Species.FOLK, Look(), 1f, place, f.x, f.y)
+        assertTrue(s.seat(rider, f, 0))
+        val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        val roof = Offset((f.x - 0.04f - e.cam) * e.u, 1200f - e.u + (f.y - 0.525f) * e.u)
+        e.down(1, roof, 1000); e.up(1, roof, 1100)
+        assertEquals(f.id, e.vehicleId); assertTrue(f.on)
+        e.drive(1)
+        val start = f.x
+        repeat(30) { e.update(0.016f) }
+        assertTrue(f.x > start + 0.1f)
+        e.drive(-1); val right = f.x
+        repeat(30) { e.update(0.016f) }
+        assertTrue(f.x < right - 0.1f)
+        assertEquals(Mode.SEATED, rider.mode); assertEquals(f.id, rider.holder)
+        e.drive(0); val stopped = f.x
+        repeat(10) { e.update(0.016f) }
+        assertEquals(stopped, f.x, 0.001f); e.cancel()
+    }
+
+    @Test fun aHiddenThingBehindTheTractorCannotStealTheStartTap() {
+        val w = World(); val s = Sim(w); val place = PlaceId.STAGE
+        val f = s.designer.add(place, FixtureType.TRACTOR, 0, 1f, 0.98f)!!
+        val t = w.addThing(ThingType.DRUM, 0, place, f.x + 0.1f, f.y - 0.12f).apply {
+            resting = true; ground = 0.84f
+        }
+        val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        val at = Offset((t.x - e.cam) * e.u, 1200f - e.u + (t.y - t.h / 2) * e.u)
+        e.down(1, at, 1000); e.up(1, at, 1100)
+        assertEquals(f.id, e.vehicleId); assertFalse(t.held); e.cancel()
+    }
+
+    @Test fun aFigureInFrontOfTheTractorCanStillBeDragged() {
+        val w = World(); val s = Sim(w); val place = PlaceId.STAGE
+        val f = s.designer.add(place, FixtureType.TRACTOR, 0, 1f, 0.91f)!!
+        val p = w.addPerson(Species.FOLK, Look(), 1f, place, f.x, PlaceId.FRONT)
+        val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        val at = finger(e, p)
+        e.down(1, at, 1000); e.move(1, at + Offset(80f, -60f), 1100); e.update(0.016f)
+        assertTrue(p.held); assertEquals(-1, e.vehicleId); e.cancel()
+    }
+
+    @Test fun foodInsideTheOpenFridgeCanStillBeDraggedOut() {
+        val w = World(); val s = Sim(w); val place = PlaceId.HOME
+        val f = s.designer.add(place, FixtureType.FRIDGE, 0, 1f, 0.91f)!!.apply { open = true }
+        val apple = w.addThing(ThingType.APPLE, 0, place, f.x, f.y - 0.12f).apply {
+            inside = f.id; restOwner = f.id; resting = true; ground = y
+        }
+        val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        val at = Offset((apple.x - e.cam) * e.u, 1200f - e.u + (apple.y - apple.h / 2) * e.u)
+        e.down(1, at, 1000); e.move(1, at + Offset(200f, -80f), 1100); e.update(0.016f)
+        assertTrue(apple.held); assertEquals(-1, apple.inside); assertTrue(f.open)
+        e.cancel()
+    }
+
+    @Test fun cupboardsInTheBigHouseUseTheirVisibleOpenDoorsToo() {
+        val cases = listOf(
+            Triple(FixtureType.GR_FRIDGE, -0.2f, -0.2f),
+            Triple(FixtureType.GR_JAM_CABINET, -0.18f, -0.1f),
+            Triple(FixtureType.GR_SIDEBOARD, -0.24f, -0.1f),
+            Triple(FixtureType.UP_WARDROBE, -0.25f, -0.2f),
+        )
+        for ((type, dx, dy) in cases) {
+            val w = World(); val s = Sim(w)
+            val place = if (type == FixtureType.UP_WARDROBE) PlaceId.MANOR_UPPER else PlaceId.MANOR_GROUND
+            val f = s.designer.add(place, type, 0, 1f, 0.91f)!!.apply { open = true }
+            val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+            val at = Offset((f.x + dx - e.cam) * e.u, 1200f - e.u + (f.y + dy) * e.u)
+            e.down(1, at, 1000); e.up(1, at, 1100)
+            assertFalse("$type closes on its door", f.open); e.cancel()
+        }
+    }
+
     @Test fun bandAndPartyDanceSurviveTheCompleteFrameAndStopWhenPlayEnds() {
         val w=World();val s=Sim(w)
         val people=Community.INSTRUMENTS.mapIndexed { i,type ->

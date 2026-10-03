@@ -7,6 +7,8 @@ import app.trollfoss.ui.art.manorUnit
 import app.trollfoss.ui.art.mapLabel
 import app.trollfoss.ui.art.mapSpot
 import app.trollfoss.ui.art.MAP_WIDTH_FACTOR
+import app.trollfoss.ui.screens.mapControls
+import app.trollfoss.ui.screens.mapMarkerBounds
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -15,13 +17,16 @@ import kotlin.math.max
 
 /**
  * The map's places must keep their words (and the buttons in the corners) clear of each other on every
- * landscape screen: the phone at 2400 × 1080 px (2.625 dp per px) and the tablet at 1920 × 1200 px (1.5).
- * The word sits about 46 dp under the spot, a line of about 34 dp.
+ * landscape screen: the phone at 2400 × 1080 px (2.625 px per dp) and the tablet at 1920 × 1200 px (1.5).
+ * The word ends at the marker's lower edge; floating controls can move that edge above the coast.
  */
 class MapSpotTest {
     private class Screen(val name: String, val wPx: Int, val hPx: Int, val density: Float) {
         val w get() = wPx / density
         val h get() = hPx / density
+        val controls get() = mapControls(h)
+        // The gift card is 58 dp at the default text size; the tablet buttons are taller.
+        val controlsHeight get() = max(controls.button, 58f) + controls.edge * 2
     }
 
     private class Box(val l: Float, val t: Float, val r: Float, val b: Float) {
@@ -37,14 +42,17 @@ class MapSpotTest {
         val chars = max(label.nn.length, label.nb.length)
         val half = (chars * 10.5f + 6f) / 2f
         val cx = spot.x * s.w * MAP_WIDTH_FACTOR
-        val cy = spot.y * s.h + 46f
-        return Box(cx - half, cy - 17f, cx + half, cy + 17f)
+        val bottom = mapMarkerBounds(place, s.w * MAP_WIDTH_FACTOR, s.h, s.controlsHeight).bottom
+        return Box(cx - half, bottom - 34f, cx + half, bottom)
     }
 
     private fun corners(s: Screen) = listOf(
         Box(16f, 16f, 76f, 76f), // close
         Box(s.w - 68f, 16f, s.w - 16f, 68f), // parents
-        Box(16f, s.h - 96f, 156f, s.h - 16f), // book and workshop
+        Box(s.controls.edge, s.h - s.controls.edge - s.controls.button,
+            s.controls.edge + s.controls.groupWidth, s.h - s.controls.edge), // all three buttons
+        Box(s.w - s.controls.edge - 240f, s.h - s.controls.edge - 58f,
+            s.w - s.controls.edge, s.h - s.controls.edge), // progress and next gift
     )
 
     @Test
@@ -97,6 +105,19 @@ class MapSpotTest {
             val dx = kotlin.math.abs(a.x - b.x)
             val dy = kotlin.math.abs(a.y - b.y)
             assertTrue("${places[i]} and ${places[j]} are on top of each other", dx > 0.05f || dy > 0.12f)
+        }
+    }
+
+    @Test
+    fun coastalTargetsStayAboveControlsAndDoNotStealValleyLabelTaps() {
+        for (s in screens) for (p in places.filter { mapSpot(it).y > 0.75f }) {
+            val target = mapMarkerBounds(p, s.w * MAP_WIDTH_FACTOR, s.h, s.controlsHeight)
+            assertEquals("Coastal target keeps a usable touch height", 48f, target.height, 0.01f)
+            assertTrue("$p clears both bottom control groups on ${s.name}", target.bottom <= s.h - s.controlsHeight)
+            val hit = Box(target.left, target.top, target.right, target.bottom)
+            for (other in places.filter { mapSpot(it).y in 0.45f..0.6f }) {
+                assertFalse("$p steals $other label taps on ${s.name}", hit.overlaps(word(other, s)))
+            }
         }
     }
 

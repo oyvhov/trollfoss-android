@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -44,15 +46,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import app.trollfoss.ui.art.safeRadialGradient
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected as selectedState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
@@ -260,12 +265,18 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
     Box(
         Modifier
             .fillMaxSize()
-            .background(safeRadialGradient(listOf(Color(0xFFFFF4E2), Color(0xFFFFD7B0)), radius = 1600f)),
+            .background(T.Cream),
     ) {
         Row(Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             // The figure on its little stage, with its name below.
             Column(Modifier.weight(0.42f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Canvas(Modifier.fillMaxWidth().weight(1f).semantics { contentDescription = name }) {
+                    // A quiet dressing mirror keeps the figure separate from the choice palette.
+                    val inset = 12.dp.toPx()
+                    val mirrorSize = Size((size.width - inset * 2).coerceAtLeast(1f), (size.height - inset * 2).coerceAtLeast(1f))
+                    val mirrorCorner = CornerRadius(mirrorSize.width * 0.48f, mirrorSize.width * 0.48f)
+                    drawRoundRect(lerp(T.Cream, T.SeaTop, 0.18f), Offset(inset, inset), mirrorSize, mirrorCorner)
+                    drawRoundRect(T.CreamLine, Offset(inset, inset), mirrorSize, mirrorCorner, style = Stroke(3.dp.toPx()))
                     val pen = Pen(max(2f, size.height * 0.006f), t)
                     val floor = size.height * 0.94f
                     drawOval(Color(0x332B2140), Offset(size.width / 2 - size.height * 0.2f, floor - size.height * 0.03f), androidx.compose.ui.geometry.Size(size.height * 0.4f, size.height * 0.06f))
@@ -293,6 +304,7 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
                         unfocusedLabelColor = T.InkSoft,
                         cursorColor = T.Grape,
                     ),
+                    shape = RoundedCornerShape(18.dp),
                     modifier = Modifier.fillMaxWidth(0.8f),
                 )
             }
@@ -325,7 +337,8 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
                     for ((i, label) in listOf(S.hairGroup, S.faceGroup, S.clothesGroup).withIndex()) {
                         Box(Modifier.weight(1f).heightIn(min = 40.dp).clip(RoundedCornerShape(14.dp))
                             .background(if (part.group == i) T.Sun else Color.White)
-                            .border(2.dp, T.Ink, RoundedCornerShape(14.dp))
+                            .border(if (part.group == i) 2.dp else 1.dp, if (part.group == i) T.Grape else T.CreamLine, RoundedCornerShape(14.dp))
+                            .semantics { selectedState = part.group == i }
                             .clickable { part = when (i) { 0 -> Part.HAIR; 1 -> Part.EYES; else -> Part.TOP } }, contentAlignment = Alignment.Center) {
                             Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)) {
                                 Canvas(Modifier.size(30.dp)) { drawPartIcon(when(i) { 0 -> Part.HAIR; 1 -> Part.EYES; else -> Part.TOP }, look) }
@@ -354,7 +367,7 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
                         colors = SliderDefaults.colors(thumbColor = T.Grape, activeTrackColor = T.Grape, inactiveTrackColor = T.Cream))
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         for (value in listOf(part.range.start, (part.range.start + part.range.endInclusive) / 2f, part.range.endInclusive)) {
-                            Box(Modifier.size(84.dp).clip(RoundedCornerShape(18.dp)).background(Color.White).border(2.dp, T.Ink, RoundedCornerShape(18.dp)).clickable { look = look.adjust(part, value) }) {
+                            Box(Modifier.size(84.dp).clip(RoundedCornerShape(18.dp)).background(Color.White).border(1.dp, T.CreamLine, RoundedCornerShape(18.dp)).clickable { look = look.adjust(part, value) }) {
                                 Canvas(Modifier.fillMaxSize()) { drawCrop(look.adjust(part, value), part.crop(), 0f) }
                             }
                         }
@@ -387,7 +400,9 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
                             look = previous.first; name = previous.second; beforeRandom = null
                         }, size = 52.dp, tone = Tones.Cream, icon = app.trollfoss.ui.components.DesignIcons.Undo)
                     }
-                    BigButton(S.done.str(), onClick = { vm.saveFigure(editId, look, name) }, tone = Tones.Mint, icon = Icons.Check, modifier = Modifier.weight(1f))
+                    Spacer(Modifier.weight(1f))
+                    BigButton(S.done.str(), onClick = { vm.saveFigure(editId, look, name) }, tone = Tones.Mint,
+                        textColor = T.Ink, icon = Icons.Check, modifier = Modifier.widthIn(max = 260.dp))
                 }
             }
         }
@@ -403,9 +418,9 @@ private fun ChipHead(look: Look?, selected: Boolean, label: String, onClick: () 
                 .size(58.dp)
                 .clip(CircleShape)
                 .background(if (selected) T.Sun else Color.White)
-                .border(if (selected) 3.5.dp else 2.dp, T.Ink, CircleShape)
+                .border(if (selected) 3.dp else 1.dp, if (selected) T.Grape else T.CreamLine, CircleShape)
                 .clickable(onClick = onClick)
-                .semantics { contentDescription = label },
+                .semantics { contentDescription = label; selectedState = selected },
             contentAlignment = Alignment.Center,
         ) {
             if (look == null) {
@@ -431,9 +446,9 @@ private fun PartTab(part: Part, look: Look, selected: Boolean, onClick: () -> Un
             .size(50.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(if (selected) T.Sun else Color.White)
-            .border(if (selected) 3.dp else 2.dp, T.Ink, RoundedCornerShape(16.dp))
+            .border(if (selected) 3.dp else 1.dp, if (selected) T.Grape else T.CreamLine, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
-            .semantics { contentDescription = label },
+            .semantics { contentDescription = label; selectedState = selected },
         contentAlignment = Alignment.Center,
     ) {
         Canvas(Modifier.fillMaxSize().padding(6.dp)) { drawPartIcon(part, look) }
@@ -451,9 +466,9 @@ private fun Choice(part: Part, i: Int, look: Look, selected: Boolean, onClick: (
             .graphicsLayer { if (selected) { scaleX = 1.06f; scaleY = 1.06f } }
             .clip(shape)
             .background(if (part.color) part.swatch(i) else if (selected) T.SunTop else Color.White)
-            .border(if (selected) 4.dp else 2.dp, if (selected) T.Grape else T.Ink, shape)
+            .border(if (selected) 3.dp else 1.dp, if (selected) T.Grape else T.CreamLine, shape)
             .clickable(onClick = onClick)
-            .semantics { contentDescription = label },
+            .semantics { contentDescription = label; selectedState = selected },
     ) {
         if (!part.color) Canvas(Modifier.fillMaxSize()) { drawCrop(look.with(part, i).safe(), part.crop(), 0f) }
         else if (selected) Canvas(Modifier.fillMaxSize()) { Icons.Check(this) }

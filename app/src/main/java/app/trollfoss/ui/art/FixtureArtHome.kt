@@ -511,7 +511,7 @@ internal fun DrawScope.fxFridge(f: Fixture, u: Float, pen: Pen) {
     }
     inkedCircle(p(0.02f, -0.337f), 0.006f * u, Color(0xFFFFF6C8), pen, shade = false)
     val v = fxDoorVec(u, 0.17f, -1f, 118f)
-    fxOpenDoor(u, -0.085f, -0.352f, -0.016f, 0.17f, -1f, body, Color(0xFFEFF7FA), pen, 118f)
+    fxOpenDoor(u, FixtureDoors.fridge, body, Color(0xFFEFF7FA), pen)
     for (k in 0 until 3) {
         val y = -0.27f + k * 0.09f
         val a = p(-0.085f, y)
@@ -575,10 +575,10 @@ internal fun DrawScope.fxWardrobe(f: Fixture, u: Float, pen: Pen) {
         }
         fxInShelf(u, -0.106f, 0.106f, -0.19f, id, wood, pen, 0.009f)
     }
-    fxOpenDoor(u, -0.12f, -0.358f, -0.028f, 0.106f, -1f, body, body.darken(0.05f), pen, 128f)
+    fxOpenDoor(u, FixtureDoors.wardrobeLeft, body, body.darken(0.05f), pen)
     val lv = fxDoorVec(u, 0.106f, -1f, 128f)
     inkedCircle(Offset(-0.12f * u + lv.x * 0.85f, -0.19f * u + lv.y * 0.85f), 0.006f * u, wood, pen, shade = false)
-    fxOpenDoor(u, 0.12f, -0.358f, -0.028f, 0.106f, 1f, body, body.darken(0.05f), pen, 128f)
+    fxOpenDoor(u, FixtureDoors.wardrobeRight, body, body.darken(0.05f), pen)
     val rv = fxDoorVec(u, 0.106f, 1f, 128f)
     inkedCircle(Offset(0.12f * u + rv.x * 0.85f, -0.19f * u + rv.y * 0.85f), 0.006f * u, wood, pen, shade = false)
 }

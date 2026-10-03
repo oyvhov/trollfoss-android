@@ -140,7 +140,7 @@ internal fun DrawScope.fxOven(f: Fixture, u: Float, pen: Pen) {
     // The door swung out on its left hinge, its window facing us.
     val w = 0.17f
     val v = fxDoorVec(u, w, -1f, 115f)
-    fxOpenDoor(u, -0.085f, -0.182f, -0.022f, w, -1f, cream, cream.lighten(0.25f), pen, 115f)
+    fxOpenDoor(u, FixtureDoors.oven, cream, cream.lighten(0.25f), pen)
     fun onDoor(k: Float, y: Float) = Offset(-0.085f * u + v.x * k, y * u + v.y * k)
     val win = fxPath(onDoor(0.18f, -0.158f), onDoor(0.82f, -0.158f), onDoor(0.82f, -0.06f), onDoor(0.18f, -0.06f))
     fxFace(win, Color(0xFF3A3040), pen)

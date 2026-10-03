@@ -411,10 +411,10 @@ internal fun DrawScope.upWardrobe(f: Fixture, u: Float, pen: Pen) {
             inkedOval(Rect(sc.x - 0.026f * u, sc.y - 0.022f * u, sc.x + 0.03f * u, sc.y), if (k == 0) UpC.red else UpC.red.darken(0.1f), pen, shade = false)
         }
     }
-    fxOpenDoor(u, -0.162f, -0.447f, -0.042f, 0.152f, -1f, body, body.darken(0.05f), pen, 128f)
+    fxOpenDoor(u, FixtureDoors.upstairsLeft, body, body.darken(0.05f), pen)
     val lv = fxDoorVec(u, 0.152f, -1f, 128f)
     inkedCircle(Offset(-0.162f * u + lv.x * 0.85f, -0.24f * u + lv.y * 0.85f), 0.007f * u, UpC.brass, pen, shade = false)
-    fxOpenDoor(u, 0.162f, -0.447f, -0.042f, 0.152f, 1f, body, body.darken(0.05f), pen, 128f)
+    fxOpenDoor(u, FixtureDoors.upstairsRight, body, body.darken(0.05f), pen)
     val rv = fxDoorVec(u, 0.152f, 1f, 128f)
     inkedCircle(Offset(0.162f * u + rv.x * 0.85f, -0.24f * u + rv.y * 0.85f), 0.007f * u, UpC.brass, pen, shade = false)
 }

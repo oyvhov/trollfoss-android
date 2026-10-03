@@ -369,7 +369,7 @@ internal fun DrawScope.grFridge(f: Fixture, u: Float, pen: Pen) {
         // The shelves and a cold light.
         for (y in floatArrayOf(-0.15f, -0.27f, -0.39f)) fxInShelf(u, -0.1f, 0.1f, y, 0.12f, Color(0xFFBFE6F0), pen, 0.006f)
         grGlow(p(0f, -0.25f), 0.14f * u, pen, 0.35f, Color(0xFFE6F8FF))
-        fxOpenDoor(u, -0.1f, -0.42f, -0.03f, 0.2f, -1f, shell, shell.lighten(0.15f), pen, 120f)
+        fxOpenDoor(u, FixtureDoors.grandFridge, shell, shell.lighten(0.15f), pen)
     } else {
         // The door with a chrome handle down the side, magnets and a child's drawing.
         val door = Rect(-0.105f * u, -0.425f * u, 0.105f * u, -0.03f * u)
@@ -415,8 +415,8 @@ internal fun DrawScope.grJamCabinet(f: Fixture, u: Float, pen: Pen) {
     if (f.open) {
         fxHollow(u, -0.11f, -0.19f, 0.11f, -0.025f, 0.08f, Color(0xFFFFF4DC), pen, back = Color(0xFFD7B98A))
         fxInShelf(u, -0.11f, 0.11f, -0.11f, 0.08f, Color(0xFFC49A62), pen, 0.007f)
-        fxOpenDoor(u, -0.11f, -0.19f, -0.025f, 0.11f, -1f, wood, wood.darken(0.08f), pen, 115f)
-        fxOpenDoor(u, 0.11f, -0.19f, -0.025f, 0.11f, 1f, wood, wood.darken(0.08f), pen, 115f)
+        fxOpenDoor(u, FixtureDoors.jamLeft, wood, wood.darken(0.08f), pen)
+        fxOpenDoor(u, FixtureDoors.jamRight, wood, wood.darken(0.08f), pen)
     } else {
         for (s in 0..1) {
             val x0 = if (s == 0) -0.11f else 0.001f
