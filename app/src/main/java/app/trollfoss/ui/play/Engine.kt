@@ -73,6 +73,7 @@ import app.trollfoss.domain.World
 import app.trollfoss.domain.Vehicles
 import app.trollfoss.ui.art.Ink
 import app.trollfoss.ui.art.FixtureDoors
+import app.trollfoss.ui.art.StairDoorways
 import app.trollfoss.ui.art.TractorCab
 import app.trollfoss.ui.art.Pen
 import app.trollfoss.ui.art.drawFixtureBack
@@ -1106,7 +1107,8 @@ class Engine(
             val fy = f.y + f.shiftY
             val dx = p.x - fx
             val dy = p.y - fy
-            if (FixtureDoors.hit(f, dx, dy, pad) || f.type == FixtureType.TRACTOR && TractorCab.contains(dx, dy - f.bob, pad)) return f
+            if (FixtureDoors.hit(f, dx, dy, pad) || StairDoorways.hit(f, dx, dy, pad) ||
+                f.type == FixtureType.TRACTOR && TractorCab.contains(dx, dy - f.bob, pad)) return f
             if (p.x in (fx - f.spec.w / 2 - pad)..(fx + f.spec.w / 2 + pad) && p.y in (fy - f.spec.h - pad)..(fy + pad)) return f
         }
         return null

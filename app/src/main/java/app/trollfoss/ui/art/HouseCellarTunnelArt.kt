@@ -36,7 +36,9 @@ internal fun DrawScope.ceStairs(f: Fixture, u: Float, pen: Pen) {
     ceShadow(u, 0.84f, d)
     // The door at the top, left ajar: warm light spills down the steps.
     val door = Rect(p(-0.42f, -0.78f), p(-0.27f, -0.5f))
-    fxBox(u, -0.43f, -0.8f, -0.26f, -0.5f, 0.04f, Color(0xFFE9E1D3), pen, rad = 0.005f, z = d - 0.02f)
+    // The frame of the door is also where a tap on it counts (see [StairDoorways]).
+    val way = StairDoorways.cellar
+    fxBox(u, way.left, way.top, way.right, way.bottom, 0.04f, Color(0xFFE9E1D3), pen, rad = 0.005f, z = d - 0.02f)
     val leaf = Rect(p(-0.415f, -0.775f), p(-0.275f, -0.5f))
     drawRect(Brush.verticalGradient(listOf(Color(0xFFFFF0B8), Color(0xFFFFD27A)), startY = leaf.top, endY = leaf.bottom), leaf.topLeft, leaf.size)
     drawRect(Ink.line, leaf.topLeft, leaf.size, style = pen.thin)

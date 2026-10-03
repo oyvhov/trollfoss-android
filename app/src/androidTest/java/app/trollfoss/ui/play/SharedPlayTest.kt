@@ -479,4 +479,29 @@ class SharedPlayTest {
         assertEquals(Decor.roomAt(PlaceId.HOME, e.cam + e.visibleViewport / 2f), Decor.roomAt(PlaceId.HOME, p.x))
         assertTrue(p.x > 1.5f)
     }
+
+    private var lastPassage: Passage? = null
+
+    /** Like [host], but remembers the way between floors that was taken. */
+    private val passageHost = object : EngineHost {
+        override fun sfx(effect: Sfx, volume: Float, rate: Float) {}
+        override fun haptic() {}
+        override fun changed() {}
+        override fun secretFound(id: String) {}
+        override fun discovered(key: String) {}
+        override fun telescope() {}
+        override fun radio(on: Boolean) {}
+        override fun egg(id: String) {}
+        override fun passage(passage: Passage, arrivalX: Float) { lastPassage = passage }
+    }
+
+    @Test fun aTapOnTheGlowingDoorwayBehindTheGrandStairsGoesUpstairs() {
+        val w = WorldFactory.create(); val s = Sim(w); val place = PlaceId.MANOR_GROUND
+        val stairs = w.fixtures.getValue(WorldFactory.fixtureId(place, GroundIx.STAIRS))
+        val e = Engine(w, place, s, passageHost, false, 0f).apply { setSize(1920f, 1200f, 1.5f); focusOn(stairs.x) }
+        // The middle of the arch, above the staircase's own box: where a child taps to go up.
+        val at = Offset((stairs.x - 0.17f - e.cam) * e.u, 1200f - e.u + (stairs.y - 0.75f) * e.u)
+        e.down(1, at, 1000); e.up(1, at, 1100)
+        assertEquals("ground-stairs-up", lastPassage?.id); e.cancel()
+    }
 }

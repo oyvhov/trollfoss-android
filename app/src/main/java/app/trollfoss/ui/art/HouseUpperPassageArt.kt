@@ -98,10 +98,11 @@ internal fun DrawScope.upStairsUp(f: Fixture, u: Float, pen: Pen) {
     val depth = 0.075f
     upShadow(u, 0.84f, depth, 0.8f)
     // The doorway at the top of the stairs, in the back wall: a dark attic with a bulb and a trunk, and the light that sleeps in it.
-    val wx = 0.1f
-    val wr = 0.33f
-    val sill = -0.03f - rise * n
-    val doorTop = sill - 0.27f
+    // Shared with the touch area (see [StairDoorways]).
+    val wx = StairDoorways.ATTIC_LEFT
+    val wr = StairDoorways.ATTIC_RIGHT
+    val sill = StairDoorways.ATTIC_SILL
+    val doorTop = StairDoorways.ATTIC_TOP
     val arch = Path().apply {
         val l = q(wx, sill, 0.07f)
         val r = q(wr, sill, 0.07f)
