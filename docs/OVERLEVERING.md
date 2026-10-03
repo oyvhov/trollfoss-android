@@ -1,4 +1,22 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
+> **NYAST – GJENNOMGANG AV SPELEFLYT (2026-10-03, Codex):** Brukaren bad om heile flyten og feil/friksjon for barn.
+> Rapport: `docs/AUDIT_FLOW_2026-10-03.md`, 18 hovudsteg, 17 prioriterte funn med konkrete rettingar og godkjenningskrav.
+> Vurdert publisert 1.6.1-kjelde i eiga fersk `app.trollfoss.flowaudit`-verd. To ekte oppdrag gav nivå 2;
+> eit heilt Stjernenatt-eventyr, bygging av rom/andre etasje, lager/papirkorg/tilbakehenting, tunnel/trapper,
+> foto, foreldreside og kaldstart vart prøvde. Alle 24 stader visuelt inspiserte; 14 brukte debug-reisesnarveg.
+> Nettbrett 1920 × 1200 / 240 dpi, berre kort kontroll av tre ulike mobilflater. Ikkje alle ting/oppgåver,
+> to samtidige fingrar, lyd eller TalkBack prøvde. Ingen produktkode endra eller ny release i denne runden.
+> **Rett først:** F01 skjulte spelarar bak hytte/møblar/folk; F02 Prøv boblemaskin melder fullt i ferskt
+> Familiehus medan drag frå Møblar fungerer; F03 Riv-knappen utanfor riv-dialogen (Row/BigButton/GameText).
+> Deretter F04 husoversikt/Bygg her, F05 knapp/golvrot, F06 hjelp/rommarkering, F09 spelarrolle ved pakking,
+> F10 hint/tomme flater og F12 Gåver-fane/symbol. Høgare nivå enn 3 finst ikkje i den publiserte kjelda.
+> Kaldstart til Kartet, bokretur til Kartet, bord frå Papirkorg og radio frå Lager til Stranda fungerte.
+> Spelar-IDar/utsjånader/hus/merke er samanlikna og bevarte. Gamle private spelverder er urørte.
+> Bilete/XML: Git-ignorert `screenshots/audit-2026-10-03/`; 67 er oppstartsillustrasjon med forelda XML,
+> 95 viser Kartet trass filnamnet. Den eigne emulatoren er stoppa og skjermmål/rotasjon er tilbakeførte.
+> Rein rapportgren: `codex/child-flow-audit` i `C:\topa\.gradle-tmp\follow-worktree`.
+> Dei uferdige appendringane i hovudarbeidskopien på `codex/magic-rest` er ikkje vurderte som utgitt innhald.
+
 > **NYAST – PUBLISERT 1.6.1 (2026-10-03, Codex):** Brukaren bad «Lag en release etterpå».
 > Mjuk spelarfølgje og mindre golvrot er fletta til main og publiserte som stabil, nyaste release:
 > https://github.com/oyvhov/trollfoss-android/releases/tag/v1.6.1
