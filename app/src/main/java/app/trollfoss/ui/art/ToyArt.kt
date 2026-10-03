@@ -19,7 +19,8 @@ private val ToyDark=Color(0xFF564768)
 private val ToyPale=Color(0xFFFFF0CC)
 
 fun DrawScope.drawToyBack(f: Fixture,u: Float,pen: Pen): Boolean {
-    if(f.type==FixtureType.PICTURE && f.variant>=ToyPlay.PHOTO_BASE) {
+    if (drawCreativeBack(f,u,pen)) return true
+    if(f.type==FixtureType.PICTURE && f.variant>=ToyPlay.PHOTO_BASE && f.variant<Community.ART_BASE) {
         val r=Rect(-f.spec.w*u/2,-f.spec.h*u,f.spec.w*u/2,0f)
         inkedRound(r,0.015f*u,ToyWood,pen)
         inkedRound(Rect(r.left+0.015f*u,r.top+0.015f*u,r.right-0.015f*u,-0.015f*u),0.008f*u,Color(0xFFD3E9DD),pen)
@@ -118,6 +119,7 @@ fun DrawScope.drawToyBack(f: Fixture,u: Float,pen: Pen): Boolean {
 }
 
 fun DrawScope.drawToyFront(f:Fixture,u:Float,pen:Pen):Boolean {
+    if (drawCreativeFront(f,u,pen)) return true
     if(f.type !in ToyPlay.TYPES) return false
     if(f.type==FixtureType.PLAY_BUS || f.type==FixtureType.PLAY_TRAIN) {
         inkedRound(Rect(-0.28f*u,-0.11f*u,0.28f*u,-0.065f*u),0.016f*u,if(f.type==FixtureType.PLAY_BUS) ToyColors[3] else ToyColors[1],pen)

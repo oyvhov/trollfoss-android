@@ -90,8 +90,9 @@ fun ParentGateScreen(vm: TrollfossViewModel) {
                                 modifier = Modifier.size(72.dp, 64.dp),
                                 tone = if (k == "OK") Tones.Mint else Tones.Cream,
                                 shape = RoundedCornerShape(18.dp),
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(6.dp),
                             ) {
-                                Text(k, fontSize = 26.sp, fontWeight = FontWeight.Black, color = T.Ink)
+                                Text(k, fontSize = 26.sp, fontWeight = FontWeight.Black, color = T.Ink, maxLines=1)
                             }
                         }
                     }

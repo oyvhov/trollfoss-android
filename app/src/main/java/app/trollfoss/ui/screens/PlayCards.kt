@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.trollfoss.domain.*
 import app.trollfoss.ui.S
+import app.trollfoss.ui.SC
 import app.trollfoss.ui.TrollfossViewModel
 import app.trollfoss.ui.art.*
 import app.trollfoss.ui.components.*
@@ -26,6 +27,7 @@ private fun PlayAction.label(): Txt = when (this) {
     PlayAction.HUG -> S.playHug; PlayAction.THROW -> S.playThrow; PlayAction.NAP -> S.playNap
     PlayAction.HIDE -> S.playHide; PlayAction.READ -> S.playRead; PlayAction.STORY -> S.playStory
     PlayAction.LIGHT -> S.playLight; PlayAction.TWINKLE -> S.playTwinkle
+    PlayAction.AWAKEN -> SC.awaken;PlayAction.SECRET -> SC.secret
 }
 private fun PlayRecipe.label() = if (this == PlayRecipe.FORT) S.playFort else S.playCart
 private fun Adventure.label(): Txt = when (this) { Adventure.HAT -> S.playHats; Adventure.CAMP -> S.playCamp; Adventure.PARADE -> S.playParade }
@@ -89,13 +91,15 @@ fun PlayCards(vm: TrollfossViewModel, engine: Engine, onClose: () -> Unit) {
     TrollDialog(onClose = onClose, maxWidth = 620.dp) {
         GameText(S.playCards.str(), fontSize = if (compact) 20.sp else 26.sp, color = T.Ink)
         if (!compact) GameText(S.playOptional.str(), fontSize = 14.sp, color = T.Ink)
+        if(tab==0) FirstPlayIdeas(vm,onClose)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            for (i in 0..1) Row(Modifier.weight(1f).background(if (tab == i) T.SunTop else Color.White, RoundedCornerShape(16.dp))
+            for (i in 0..2) Row(Modifier.weight(1f).background(if (tab == i) T.SunTop else Color.White, RoundedCornerShape(16.dp))
                 .border(2.dp, T.Ink, RoundedCornerShape(16.dp)).clickable { tab = i }.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 IconCanvas(if (i == 0) BuildIcons.Hammer else Icons.Book, Modifier.size(28.dp))
-                GameText((if (i == 0) S.playBuildToys else S.playAdventures).str(), fontSize = 16.sp, color = T.Ink)
+                GameText((if (i == 0) S.playBuildToys else if(i==1) S.playAdventures else SC.together).str(), fontSize = 16.sp, color = T.Ink)
             }
         }
+        if(tab==2) CommunityCards(vm,engine,onClose)
         if (tab == 0) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             for (recipe in PlayRecipe.entries) Column(Modifier.weight(1f)
                 .background(Color.White, RoundedCornerShape(20.dp)).border(2.dp, T.Ink, RoundedCornerShape(20.dp)).padding(10.dp),
@@ -172,6 +176,12 @@ fun AdventureReminder(vm: TrollfossViewModel, engine: Engine, modifier: Modifier
     engine.playVersion
     val a = vm.sim.magic.active ?: return
     val stage = vm.sim.magic.stage(a)
+    LaunchedEffect(a, stage) {
+        if (stage >= 3) {
+            kotlinx.coroutines.delay(5000)
+            vm.sim.magic.dismissAdventure(); vm.changed()
+        }
+    }
     Row(modifier.widthIn(max = 350.dp).background(T.Cream.copy(alpha = 0.96f), RoundedCornerShape(18.dp))
         .border(2.dp,T.Ink,RoundedCornerShape(18.dp)).clickable(onClick = onClick).padding(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -180,5 +190,6 @@ fun AdventureReminder(vm: TrollfossViewModel, engine: Engine, modifier: Modifier
             GameText(a.label().str(),fontSize=14.sp,color=T.Ink)
             GameText((if (stage >= 3) S.playFinished else a.hint(stage)).str(),fontSize=12.sp,color=T.Ink,maxLines=2)
         }
+        app.trollfoss.ui.components.CloseButton({ vm.sim.magic.dismissAdventure(); vm.changed() }, size=40.dp)
     }
 }

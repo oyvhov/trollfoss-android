@@ -80,13 +80,14 @@ class WorldHistory(private val world: () -> World, private val changed: () -> Un
         fun ids(a:JSONArray)=(0 until a.length()).map { a.getInt(it) }.toSet()
         val a=ids(oldRemoved);val b=ids(afterRemoved);val current=ids(now.getJSONArray("removed")).toMutableSet()
         if(a!=b) { current.removeAll(b-a);current.addAll(a-b);now.put("removed",JSONArray(current.toList()));edited=true }
-        for(key in listOf("storage","discardedStorage","styles","play","toys","players")) if(canonical(e.before.opt(key))!=canonical(e.after.opt(key))) {
+        for(key in listOf("storage","discardedStorage","styles","play","toys","players","community")) if(canonical(e.before.opt(key))!=canonical(e.after.opt(key))) {
             now.put(key,e.before.opt(key) ?: JSONObject.NULL);edited=true
         }
         // Repair state belongs to the edited train; earned story steps and entitlement stay earned.
         fun flags(j:JSONObject)=j.getJSONArray("flags").let { a -> (0 until a.length()).map { a.getString(it) }.toSet() }
-        val oldBroken=flags(e.before).filter { it.startsWith("train:broken:") }.toSet()
-        val afterBroken=flags(e.after).filter { it.startsWith("train:broken:") }.toSet()
+        fun reversibleFlag(it:String) = it.startsWith("train:broken:") || it.startsWith("player:paused:")
+        val oldBroken=flags(e.before).filter(::reversibleFlag).toSet()
+        val afterBroken=flags(e.after).filter(::reversibleFlag).toSet()
         if(oldBroken!=afterBroken) {
             val currentFlags=flags(now).toMutableSet();currentFlags.removeAll(afterBroken-oldBroken);currentFlags.addAll(oldBroken-afterBroken)
             now.put("flags",JSONArray(currentFlags.toList()));edited=true

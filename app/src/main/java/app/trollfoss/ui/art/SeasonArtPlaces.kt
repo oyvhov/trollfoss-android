@@ -52,6 +52,7 @@ private class Feast(val back: List<D>, val front: List<D> = emptyList())
 // ------------------------------------------------------------------------------------------ Christmas
 
 private val christmas: Map<PlaceId, Feast> = mapOf(
+    PlaceId.CLOUD_ISLAND to Feast(back=listOf(star(0.4f,0.35f,0.06f,0.08f),presents(3.1f,0.85f,0.13f))),
     PlaceId.VAGSTADDALEN to Feast(
         back = listOf(presents(1.35f, 0.94f, 0.14f)),
         front = listOf(wreath(0.9f, 0.53f, 0.05f), pine(4.96f, 0.81f, 0.6f)),
@@ -135,6 +136,7 @@ private val christmas: Map<PlaceId, Feast> = mapOf(
 // ---------------------------------------------------------------------------------------------- Easter
 
 private val easter: Map<PlaceId, Feast> = mapOf(
+    PlaceId.CLOUD_ISLAND to Feast(back=listOf(egg(3.1f,0.85f,0.06f,1),tulip(0.4f,0.85f,0.13f,2))),
     PlaceId.VAGSTADDALEN to Feast(back = listOf(egg(1.4f, 0.94f, 0.055f, 1), tulip(2.64f, 0.9f, 0.12f, 2))),
     PlaceId.HOME to Feast(
         back = listOf(
@@ -206,6 +208,7 @@ private val easter: Map<PlaceId, Feast> = mapOf(
 // --------------------------------------------------------------------------------------------- Pumpkin
 
 private val pumpkins: Map<PlaceId, Feast> = mapOf(
+    PlaceId.CLOUD_ISLAND to Feast(back=listOf(pumpkin(3.1f,0.85f,0.1f,true),lantern(0.4f,0.85f,0.1f))),
     PlaceId.VAGSTADDALEN to Feast(back = listOf(pumpkin(1.38f, 0.92f, 0.1f, true), lantern(0.4f, 0.91f, 0.1f))),
     PlaceId.HOME to Feast(
         back = listOf(

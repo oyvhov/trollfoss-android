@@ -51,6 +51,7 @@ fun mapSpot(place: PlaceId): Offset = when (place) {
     // others are inside the house). The estate is wide: its lane runs left to the cave road, the secret path too.
     PlaceId.MANOR_GROUND, PlaceId.MANOR_UPPER, PlaceId.MANOR_ATTIC, PlaceId.MANOR_CELLAR, PlaceId.MANOR_GARDEN -> Offset(0.76f, 0.355f)
     PlaceId.VAGSTADDALEN -> Offset(0.94f, 0.34f)
+    PlaceId.CLOUD_ISLAND -> Offset(0.48f,0.12f)
 }
 
 /** The island extends beyond the screen; its height and landmarks keep their readable scale. */

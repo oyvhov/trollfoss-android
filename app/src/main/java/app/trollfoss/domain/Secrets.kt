@@ -12,6 +12,9 @@ data class Secret(val id: String, val place: PlaceId, val x: Float, private val 
 
 object Secrets {
     val all: List<Secret> = listOf(
+        Secret("sky_picnic", PlaceId.CLOUD_ISLAND, 1.1f, 0.74f, on=0),
+        Secret("sky_edge", PlaceId.CLOUD_ISLAND, 0.3f, 0.9f),
+        Secret("sky_telescope", PlaceId.CLOUD_ISLAND, 2.7f, 0.68f, on=1),
         Secret("valley_cabin", PlaceId.VAGSTADDALEN, 0.87f, 0.7f, inside = Vagstaddalen.CABIN, on = Vagstaddalen.CABIN),
         Secret("valley_river", PlaceId.VAGSTADDALEN, 3.65f, 0.946f),
         Secret("valley_log", PlaceId.VAGSTADDALEN, 4.35f, 0.88f, on = 6),

@@ -211,6 +211,7 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
     var look by remember { mutableStateOf(startId?.let { id -> folk.firstOrNull { it.id == id }?.look } ?: Look.random(Random.Default)) }
     var name by remember { mutableStateOf(startId?.let { id -> folk.firstOrNull { it.id == id }?.name } ?: vm.freeName(look)) }
     var part by remember { mutableStateOf(Part.HAIR) }
+    var beforeRandom by remember { mutableStateOf<Pair<Look, String>?>(null) }
     val anim = remember { PersonAnim() }
     var t by remember { mutableFloatStateOf(0f) }
     val spin = remember { Animatable(0f) }
@@ -303,6 +304,7 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     ChipHead(null, selected = editId == null, label = S.newFigure.str()) {
+                        beforeRandom = null
                         editId = null
                         look = Look.random(Random.Default)
                         name = vm.freeName(look)
@@ -310,6 +312,7 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
                     }
                     for (p in folk) {
                         ChipHead(p.look, selected = editId == p.id, label = p.name) {
+                            beforeRandom = null
                             editId = p.id
                             look = p.look
                             name = p.name
@@ -324,7 +327,10 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
                             .background(if (part.group == i) T.Sun else Color.White)
                             .border(2.dp, T.Ink, RoundedCornerShape(14.dp))
                             .clickable { part = when (i) { 0 -> Part.HAIR; 1 -> Part.EYES; else -> Part.TOP } }, contentAlignment = Alignment.Center) {
-                            Text(label.str(), color = T.Ink, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)) {
+                                Canvas(Modifier.size(30.dp)) { drawPartIcon(when(i) { 0 -> Part.HAIR; 1 -> Part.EYES; else -> Part.TOP }, look) }
+                                Text(label.str(), color = T.Ink, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            }
                         }
                     }
                 }
@@ -370,11 +376,17 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                     RoundButton(S.random.str(), onClick = {
+                        beforeRandom = look to name
                         look = Look.random(Random.Default)
                         if (editId == null) name = vm.freeName(look)
                         feedback.sfx(Sfx.MAGIC, 0.7f)
                         react(true)
                     }, size = 64.dp, tone = Tones.Grape, icon = Icons.Dice)
+                    beforeRandom?.let { previous ->
+                        RoundButton(app.trollfoss.ui.SP.undo.str(), onClick = {
+                            look = previous.first; name = previous.second; beforeRandom = null
+                        }, size = 52.dp, tone = Tones.Cream, icon = app.trollfoss.ui.components.DesignIcons.Undo)
+                    }
                     BigButton(S.done.str(), onClick = { vm.saveFigure(editId, look, name) }, tone = Tones.Mint, icon = Icons.Check, modifier = Modifier.weight(1f))
                 }
             }

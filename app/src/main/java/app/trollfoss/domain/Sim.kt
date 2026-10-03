@@ -219,6 +219,8 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     val personPlay = PersonPlay(this)
     val magic = MagicPlay(this)
     val toys = ToyPlay(this)
+    val community = Community(this)
+    val creative = CreativePlay(this)
     val playerFollow = PlayerFollow(this)
     var journal: EditJournal? = null
 
@@ -384,6 +386,8 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         }
         personPlay.catchBalls(place)
         life.step(place, dt)
+        community.step(place,dt)
+        creative.weather(place,dt)
         if (place == PlaceId.FOREST && world.night) unlock("forest_night")
     }
 
@@ -720,6 +724,9 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         when (f.type) {
             FixtureType.SALON_CHAIR -> y -= f.mode * 0.04f
             FixtureType.PLAY_LIFT -> y -= f.angle * 0.28f
+            FixtureType.PLAY_SEESAW -> y += if(spot==0) f.angle else -f.angle
+            FixtureType.PLAY_TUNNEL -> x += (f.timer/1.5f).coerceIn(0f,1f)*0.3f
+            FixtureType.PLAY_JUMP -> y -= sin((f.timer/1.5f).coerceIn(0f,1f)*3.14159f)*0.12f
             FixtureType.BOAT -> y += f.bob
             FixtureType.SLED_HILL, FixtureType.SKI_JUMP -> if (f.on) {
                 val point = ridePoint(f.type, f.angle.coerceIn(0f, 1f))
@@ -831,7 +838,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
                 f.timer -= dt
                 if (f.timer <= 0f) f.mode = 0
             }
-            FixtureType.TRACTOR, FixtureType.PLAY_BUS, FixtureType.PLAY_TRAIN -> {
+            FixtureType.TRACTOR, FixtureType.PLAY_BUS, FixtureType.PLAY_TRAIN, FixtureType.PLAY_TANDEM -> {
                 vehicles.step(place, f, dt)
             }
             FixtureType.ROCKET_SHIP -> if (f.on) {

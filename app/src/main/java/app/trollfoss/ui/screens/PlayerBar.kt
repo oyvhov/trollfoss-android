@@ -29,6 +29,7 @@ import app.trollfoss.ui.theme.T
 @Composable
 fun PlayerBar(vm: TrollfossViewModel, compact: Boolean, modifier: Modifier = Modifier) {
     vm.playersVersion
+    vm.tasksVersion // Includes packing and undo while keeping the same selected IDs.
     val team = Players.team(vm.world)
     val bring = S.recallPlayers.str()
     val edit = S.editPlayer.str()
@@ -44,7 +45,7 @@ fun PlayerBar(vm: TrollfossViewModel, compact: Boolean, modifier: Modifier = Mod
                 Canvas(Modifier.size(if (compact) 30.dp else 42.dp)) {
                     drawSpeciesThumb(person.species, Rect(0f, 0f, size.width, size.height), person.look)
                 }
-                GameText("${index + 1}", fontSize = if (compact) 12.sp else 15.sp, color = T.Ink)
+                GameText(if (Players.paused(vm.world, person)) "${index + 1} · zZ" else "${index + 1}", fontSize = if (compact) 12.sp else 15.sp, color = T.Ink)
             }
         }
     }

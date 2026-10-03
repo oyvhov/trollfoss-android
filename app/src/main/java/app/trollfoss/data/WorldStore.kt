@@ -72,6 +72,15 @@ class WorldStore(private val file: File) {
     }
 
     companion object {
+        private fun storedJson(item: Stored) = JSONObject().put("type",item.type.name).put("variant",item.variant)
+            .put("mode",item.mode).apply { item.door?.let { put("doorPlace",it.place.name);put("doorSlot",it.slot) } }
+        private fun readStored(type: FixtureType, o: JSONObject): Stored {
+            val place=enumOrNull<PlaceId>(o.optString("doorPlace"))
+            val slot=o.optInt("doorSlot",-1)
+            val door=if(place in listOf(PlaceId.MINE_GROUND,PlaceId.MINE_UPPER) && slot in 0 until Mine.SLOTS)
+                app.trollfoss.domain.RoomLink(requireNotNull(place),slot) else null
+            return Stored(type,o.optInt("variant",0),o.optInt("mode",0),door)
+        }
         private const val VERSION = 1
 
         fun encode(world: World, settings: Settings): JSONObject = JSONObject().apply {
@@ -98,6 +107,7 @@ class WorldStore(private val file: File) {
             put("found", JSONArray(world.found.toList()))
             put("unlocked", JSONArray(world.unlocked.toList()))
             put("flags", JSONArray(world.flags.toList()))
+            put("community", CommunityStore.encode(world.community))
             put("players", JSONArray(world.playerIds.toList()))
             put("toys", JSONObject().apply {
                 put("inputs", JSONObject().apply { world.toyInputs.forEach { (key,id) -> put(key,id) } })
@@ -129,8 +139,8 @@ class WorldStore(private val file: File) {
             })
             put("discoveries", JSONArray(world.discoveries.toList()))
             put("styles", JSONObject().apply { world.styles.forEach { (k, s) -> put(k, JSONArray(listOf(s.wall, s.floor))) } })
-            put("storage", JSONArray().apply { world.storage.forEach { put(JSONObject().put("type", it.type.name).put("variant", it.variant)) } })
-            put("discardedStorage", JSONArray().apply { world.discardedStorage.forEach { (index, item) -> put(JSONObject().put("index", index).put("type", item.type.name).put("variant", item.variant)) } })
+            put("storage", JSONArray().apply { world.storage.forEach { put(storedJson(it)) } })
+            put("discardedStorage", JSONArray().apply { world.discardedStorage.forEach { (index, item) -> put(storedJson(item).put("index",index)) } })
             put("stickers", JSONArray(world.stickers))
             put("eggs", JSONArray(world.eggs.toList()))
             put("tasks", JSONObject().apply {
@@ -314,7 +324,7 @@ class WorldStore(private val file: File) {
                 for (i in 0 until storage.length()) {
                     val o = storage.optJSONObject(i) ?: continue
                     val type = enumOrNull<FixtureType>(o.optString("type")) ?: continue
-                    world.storage += Stored(type, o.optInt("variant", 0))
+                    world.storage += readStored(type,o)
                 }
             }
             json.optJSONArray("stickers")?.let { s -> for (i in 0 until s.length()) world.stickers += s.optInt(i) }
@@ -322,7 +332,7 @@ class WorldStore(private val file: File) {
                 for (i in 0 until trash.length()) {
                     val o = trash.optJSONObject(i) ?: continue
                     val type = enumOrNull<FixtureType>(o.optString("type")) ?: continue
-                    world.discardedStorage += o.optInt("index", 0).coerceAtLeast(0) to Stored(type, o.optInt("variant", 0))
+                    world.discardedStorage += o.optInt("index", 0).coerceAtLeast(0) to readStored(type,o)
                 }
             }
             world.eggs += strings(json.optJSONArray("eggs"))
@@ -430,6 +440,7 @@ class WorldStore(private val file: File) {
                     if(p.id in 1..1_000_000) world.toyPhotos[p.id]=p
                 } }
             }
+            CommunityStore.decode(world,json.optJSONObject("community"))
             return Saved(world, settings)
         }
 

@@ -46,6 +46,7 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
     MINE_UPPER(10.0f, false, 0.90f, 0.07f),
     /** A quiet river valley with a small log cabin. Append new places to preserve saved ordinals. */
     VAGSTADDALEN(5.4f, true, 0.88f, 0.02f),
+    CLOUD_ISLAND(3.6f,true,0.88f,0.02f),
     ;
 
     /** True for the five places that make up the big house. */
@@ -76,6 +77,7 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
         manor -> 1500 + (ordinal - MANOR_GROUND.ordinal) * 300
         mine -> 3000 + (ordinal - MINE_YARD.ordinal) * 300
         this == VAGSTADDALEN -> 3900
+        this == CLOUD_ISLAND -> 4200
         else -> ordinal * 100
     }
     val addedFrom: Int get() = if (big) 200 else 40
@@ -652,6 +654,10 @@ object Places {
             PlaceId.MINE_YARD, PlaceId.MINE_GROUND, PlaceId.MINE_UPPER -> House.floor(id)!!.blueprint()
 
             PlaceId.VAGSTADDALEN -> Vagstaddalen.blueprint()
+            PlaceId.CLOUD_ISLAND -> PlaceSpec(id,grounds=listOf(Ground(0f,id.width,floor)),water=null,
+                fixtures=listOf(fl(FixtureType.PLAY_PICNIC,1.1f),fl(FixtureType.TELESCOPE,2.7f)),
+                things=listOf(t(ThingType.APPLE,1.1f,0.6f),t(ThingType.STAR_JAR,2.2f,0.9f)),
+                people=listOf(PersonDef(Species.PUFFIN,Look(),2.1f,0.88f)))
 
             PlaceId.HEILEBERGET -> PlaceSpec(
                 id,

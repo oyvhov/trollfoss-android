@@ -103,7 +103,7 @@ class Designer(private val sim: Sim, private val random: Random) {
             world.fixtures.remove(child.id)
         }
         world.fixtures.remove(f.id)
-        world.storage += Stored(f.type, f.variant)
+        world.storage += Stored(f.type, f.variant, if(f.type in CreativePlay.TYPES) f.mode else 0, world.community.doors.remove(f.id))
         if(f.type==FixtureType.PLAY_TRAIN) world.flags.remove("train:broken:${f.id}")
         sim.invalidate(place)
         listener.onFx(Fx.STORE, f.x, f.y - f.spec.h / 2, f)
@@ -115,6 +115,8 @@ class Designer(private val sim: Sim, private val random: Random) {
     private fun unstoreNow(place: PlaceId, index: Int, x: Float, y: Float): Fixture? {
         val item = world.storage.getOrNull(index) ?: return null
         val f = add(place, item.type, item.variant, x, y) ?: return null
+        f.mode = item.mode
+        item.door?.let { world.community.doors[f.id] = it }
         world.storage.removeAt(index)
         return f
     }

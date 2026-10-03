@@ -17,15 +17,27 @@ class ToyPlay(private val sim: Sim) {
         val probe=Fixture(-1,place,reward.type,x,place.floor)
         val neighbours=world.fixturesIn(place).filter { !it.spec.wall && it.spec.h>=0.05f && it.host<0 }
         val candidates=sequence {
-            yield(x)
-            for(i in 1..(place.width/0.18f).toInt()+1) { yield(x+i*0.18f);yield(x-i*0.18f) }
+            // Search the whole floor band, beginning near the child. A busy back wall
+            // does not mean that the open foreground is full.
+            for (depth in listOf(place.floor, PlaceId.FRONT - 0.012f, place.back + 0.015f)) {
+                yield(sim.designer.settle(place,probe,x,depth))
+                for(i in 1..(place.width/0.18f).toInt()+1) {
+                    yield(sim.designer.settle(place,probe,x+i*0.18f,depth))
+                    yield(sim.designer.settle(place,probe,x-i*0.18f,depth))
+                }
+            }
         }
-        val spot=candidates.map { sim.designer.settle(place,probe,it,place.floor) }.firstOrNull { at ->
-            neighbours.none { abs(it.y-at[1])<0.09f && abs(it.x-at[0])<(it.spec.w+probe.spec.w)/2+0.04f }
+        val spot=candidates.firstOrNull { at ->
+            neighbours.none { abs(it.y-at[1])<0.055f && abs(it.x-at[0])<(it.spec.w+probe.spec.w)/2+0.04f }
         } ?: return@edit null
         sim.designer.add(place,reward.type,0,spot[0],spot[1])
     }
     fun inputs(type: FixtureType): List<ThingType> = when(type) {
+        FixtureType.PLAY_TREE,FixtureType.PLAY_CHANNEL,FixtureType.PLAY_WATER_WHEEL,FixtureType.PLAY_CLOUD -> listOf(ThingType.BUCKET)
+        FixtureType.PLAY_REPAIR -> listOf(ThingType.SCREWDRIVER)
+        FixtureType.PLAY_CRANE,FixtureType.PLAY_CONVEYOR,FixtureType.PLAY_HOVER,FixtureType.PLAY_PORTAL -> listOf(ThingType.TEDDY)
+        FixtureType.PLAY_BUILD -> listOf(ThingType.UP_BLOCK,ThingType.UP_BLOCK,ThingType.UP_BLOCK)
+        FixtureType.PLAY_RESCUE -> listOf(ThingType.PLANK)
         FixtureType.PLAY_WINDMILL -> listOf(ThingType.HAIR_DRYER)
         FixtureType.PLAY_LAUNCHER -> listOf(ThingType.TEDDY,ThingType.BALL)
         FixtureType.PLAY_MARBLES, FixtureType.PLAY_COLORS -> listOf(ThingType.BALL)
@@ -36,7 +48,12 @@ class ToyPlay(private val sim: Sim) {
         else -> emptyList()
     }
     fun supply(f: Fixture) = sim.edit {
-        inputs(f.type).forEachIndexed { i,type -> input("${f.id}:$type",type,f.place,(f.x+(i*0.16f)-0.25f).coerceIn(0.1f,f.place.width-0.1f)) }
+        val supplied=mutableSetOf<ThingType>()
+        inputs(f.type).forEachIndexed { i,type ->
+            val key=if(supplied.add(type)) "${f.id}:$type" else "${f.id}:$type:$i"
+            val tool=input(key,type,f.place,(f.x+(i*0.16f)-0.25f).coerceIn(0.1f,f.place.width-0.1f))
+            if(type==ThingType.BUCKET && f.type in CreativePlay.TYPES && tool.mode==Mode.FREE && !tool.held) tool.used=1
+        }
     }
     private fun input(key: String,type: ThingType,place: PlaceId,x: Float): Thing {
         val old=world.bodies[world.toyInputs[key]] as? Thing
@@ -68,6 +85,7 @@ class ToyPlay(private val sim: Sim) {
         }
     }
     fun tap(f: Fixture, dx: Float, dy: Float): Boolean {
+        if(f.type in CreativePlay.TYPES) return sim.creative.tap(f)
         if(f.type !in TYPES) return false
         if(f.type==FixtureType.PLAY_BUS || f.type==FixtureType.PLAY_TRAIN && !broken(f)) return false
         sim.here=f.place
@@ -91,6 +109,7 @@ class ToyPlay(private val sim: Sim) {
         return true
     }
     fun drop(f: Fixture,t: Thing): Boolean {
+        if(f.type in CreativePlay.TYPES) return sim.creative.drop(f,t)
         if(!accepts(f,t) || t.held || world.fixtures[f.id] !== f) return false
         sim.here=f.place
         when(f.type) {
@@ -161,6 +180,7 @@ class ToyPlay(private val sim: Sim) {
         }
     }
     fun step(f: Fixture,dt: Float): Boolean {
+        if(sim.creative.step(f,dt)) return true
         if(f.type !in TYPES || Vehicles.controllable(f)) return false
         val t=(world.bodies[f.count] as? Thing)?.takeIf { it.mode==Mode.INSIDE && it.holder==f.id }
         when(f.type) {
@@ -193,7 +213,8 @@ class ToyPlay(private val sim: Sim) {
     companion object {
         const val PHOTO_BASE=10000
         val TYPES=ToyReward.entries.map { it.type }.toSet()
-        val VISIBLE_INSIDE=setOf(FixtureType.PLAY_LIFT,FixtureType.PLAY_MARBLES,FixtureType.PLAY_LAUNCHER,FixtureType.PLAY_POPCORN)
+        val VISIBLE_INSIDE=setOf(FixtureType.PLAY_LIFT,FixtureType.PLAY_MARBLES,FixtureType.PLAY_LAUNCHER,FixtureType.PLAY_POPCORN,
+            FixtureType.PLAY_CRANE,FixtureType.PLAY_CONVEYOR,FixtureType.PLAY_BUILD,FixtureType.PLAY_HOVER,FixtureType.PLAY_RESCUE)
         fun accepts(f: Fixture,t: Thing): Boolean = when(f.type) {
             FixtureType.PLAY_WINDMILL -> t.type==ThingType.HAIR_DRYER
             FixtureType.PLAY_COLORS -> t.type.variants>1 && t.type.cat !in setOf(Cat.HAT,Cat.GARMENT)
@@ -203,7 +224,7 @@ class ToyPlay(private val sim: Sim) {
             FixtureType.PLAY_POPCORN -> t.type==ThingType.PLAY_CORN
             FixtureType.PLAY_PUMP -> t.type in setOf(ThingType.BALL,ThingType.BEACH_BALL,ThingType.BUCKET,ThingType.WATERING_CAN)
             FixtureType.PLAY_TRAIN -> t.type==ThingType.PLAY_GEAR
-            else -> false
+            else -> CreativePlay.accepts(f,t)
         }
     }
 }

@@ -257,6 +257,7 @@ class World {
     /** Photographs keep the look at shutter time, including after clothes are changed. */
     val toyPhotos = linkedMapOf<Int, Person>()
     val toyInputs = linkedMapOf<String, Int>()
+    val community = CommunityState()
 
     /** Glimt the child has collected. */
     val found = linkedSetOf<String>()

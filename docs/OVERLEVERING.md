@@ -1,4 +1,38 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
+> **NYAST – SPELEFLYT OG MAGISK LEIK LOKALT KONTROLLERTE (2026-10-03):**
+> Brukaren bad om å gjennomføre gjennomgangen og gjere heile opplevinga vakker og spennande.
+> Arbeid skjer på `codex/child-flow-polish` i `C:/topa/.gradle-tmp/follow-worktree`.
+> Det tidlegare uferdige `magic-rest`-arbeidet er teke inn som kjelde, fullført vidare og testa her.
+> Hovudarbeidskopien på `C:/topa` er urørt. Ingen ny release er publisert i denne runden.
+> Sjå `FLOW_POLISH_2026-10-03.md` for F01–F17, nye nivå 4–6 / 20 leiker og kontrollstatus.
+> Endeleg debug-bygg, 466 einingstestar og lint er grøne (0 feil / 31 åtvaringar).
+> 26 Android-kontrollar grøne, med nye kontrollar av band-/festdans og ny figur i spegelen. Teikne-/dialogendringar er
+> visuelt stadfesta: runde vindauge held innhaldet innanfor ramma, og begge riv-knappane er heile på mobil.
+> Nettbrett er hovudprøva; mobil er avgrensa til foreldrelås, rom/riving, gåver og spelarval.
+> Bevarte IDar, utsjånad, hus og kunst er samanlikna etter reise, lagring og ny installasjon av testpakken.
+> Sjekk den tilhøyrande PR-en for GitHub-kontroll og flettestatus. Versjon og signeringsnøkkel er uendra.
+> PR: https://github.com/oyvhov/trollfoss-android/pull/3. Sju ekstra funn i ny leik er retta;
+> mellom anna pausar i ballongen, tilgang til magnet/skei og kartretur utan flytting av laget.
+> Nivå 7–10 er framtidsplan; ikkje påstå at desse er ferdige. Barnetest og full TalkBack-prøve står att.
+
+> **NYAST – GJENNOMGANG AV SPELEFLYT (2026-10-03, Codex):** Brukaren bad om heile flyten og feil/friksjon for barn.
+> Rapport: `docs/AUDIT_FLOW_2026-10-03.md`, 18 hovudsteg, 17 prioriterte funn med konkrete rettingar og godkjenningskrav.
+> Vurdert publisert 1.6.1-kjelde i eiga fersk `app.trollfoss.flowaudit`-verd. To ekte oppdrag gav nivå 2;
+> eit heilt Stjernenatt-eventyr, bygging av rom/andre etasje, lager/papirkorg/tilbakehenting, tunnel/trapper,
+> foto, foreldreside og kaldstart vart prøvde. Alle 24 stader visuelt inspiserte; 14 brukte debug-reisesnarveg.
+> Nettbrett 1920 × 1200 / 240 dpi, berre kort kontroll av tre ulike mobilflater. Ikkje alle ting/oppgåver,
+> to samtidige fingrar, lyd eller TalkBack prøvde. Ingen produktkode endra eller ny release i denne runden.
+> **Rett først:** F01 skjulte spelarar bak hytte/møblar/folk; F02 Prøv boblemaskin melder fullt i ferskt
+> Familiehus medan drag frå Møblar fungerer; F03 Riv-knappen utanfor riv-dialogen (Row/BigButton/GameText).
+> Deretter F04 husoversikt/Bygg her, F05 knapp/golvrot, F06 hjelp/rommarkering, F09 spelarrolle ved pakking,
+> F10 hint/tomme flater og F12 Gåver-fane/symbol. Høgare nivå enn 3 finst ikkje i den publiserte kjelda.
+> Kaldstart til Kartet, bokretur til Kartet, bord frå Papirkorg og radio frå Lager til Stranda fungerte.
+> Spelar-IDar/utsjånader/hus/merke er samanlikna og bevarte. Gamle private spelverder er urørte.
+> Bilete/XML: Git-ignorert `screenshots/audit-2026-10-03/`; 67 er oppstartsillustrasjon med forelda XML,
+> 95 viser Kartet trass filnamnet. Den eigne emulatoren er stoppa og skjermmål/rotasjon er tilbakeførte.
+> Rein rapportgren: `codex/child-flow-audit` i `C:\topa\.gradle-tmp\follow-worktree`.
+> Dei uferdige appendringane i hovudarbeidskopien på `codex/magic-rest` er ikkje vurderte som utgitt innhald.
+
 > **NYAST – PUBLISERT 1.6.1 (2026-10-03, Codex):** Brukaren bad «Lag en release etterpå».
 > Mjuk spelarfølgje og mindre golvrot er fletta til main og publiserte som stabil, nyaste release:
 > https://github.com/oyvhov/trollfoss-android/releases/tag/v1.6.1

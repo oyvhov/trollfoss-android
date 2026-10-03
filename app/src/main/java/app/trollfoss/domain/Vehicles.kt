@@ -78,6 +78,6 @@ class Vehicles(private val sim: Sim) {
 
     companion object {
         fun controllable(f: Fixture): Boolean = f.type in TYPES
-        private val TYPES = setOf(FixtureType.TRACTOR, FixtureType.BOAT, FixtureType.SUBMARINE, FixtureType.BUMPER_CAR, FixtureType.PLAY_BUS, FixtureType.PLAY_TRAIN)
+        private val TYPES = setOf(FixtureType.TRACTOR, FixtureType.BOAT, FixtureType.SUBMARINE, FixtureType.BUMPER_CAR, FixtureType.PLAY_BUS, FixtureType.PLAY_TRAIN,FixtureType.PLAY_TANDEM)
     }
 }

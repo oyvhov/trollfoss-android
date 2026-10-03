@@ -97,6 +97,11 @@ internal fun RoomNavigator(vm: TrollfossViewModel, engine: Engine, modifier: Mod
                 .border(if (on) 2.dp else 0.dp, if (on) T.Sun else Color.Transparent, RoundedCornerShape(16.dp))
                 .clickable {
                     journey?.cancel()
+                    if (place.mine && !built) {
+                        vm.sim.mine.select(place,index)
+                        vm.mineUi.open = true
+                        vm.changed()
+                    }
                     journey = scope.launch {
                         Animatable(engine.cam + engine.visibleViewport / 2f).animateTo((range.start + range.endInclusive) / 2f, tween(420)) { engine.focusOn(value) }
                         engine.selectRoom(index)

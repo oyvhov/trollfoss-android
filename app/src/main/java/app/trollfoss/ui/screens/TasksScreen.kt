@@ -67,7 +67,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun TasksScreen(vm: TrollfossViewModel) {
     vm.tasksVersion
-    var tab by remember { mutableIntStateOf(if(vm.levelGift>0) 1 else 0) }
+    var tab by remember { mutableIntStateOf(if(vm.giftsFirst || vm.levelGift>0) 1 else 0) }
     LaunchedEffect(tab) { if(tab==1) vm.dismissLevelGift() }
     var selected by remember { mutableStateOf<ToyReward?>(null) }
     val compact=androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp<520
@@ -100,17 +100,19 @@ fun TasksScreen(vm: TrollfossViewModel) {
                     }
                     GameText(SP.keepStickers.str(),fontSize=14.sp,color=Color.White)
                 } else {
-                    for(level in listOf(1,2,3)) {
+                    val levels=(listOf(Progression.level(vm.world),Progression.level(vm.world)+1) + (1..Progression.thresholds.size)).distinct().filter { it<=Progression.thresholds.size }
+                    for(level in levels) {
                         GameText((if(level==1) SP.free else SP.level(level)).str(),fontSize=20.sp,color=Color.White)
-                        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)) {
-                            for(reward in ToyReward.entries.filter { it.level==level }) Column(Modifier.weight(1f).background(T.Cream,RoundedCornerShape(20.dp)).border(2.dp,T.Ink,RoundedCornerShape(20.dp)).clickable { selected=reward }.padding(10.dp),horizontalAlignment=Alignment.CenterHorizontally) {
+                        for (rewards in ToyReward.entries.filter { it.level==level }.chunked(if (compact) 3 else 4)) Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)) {
+                            for(reward in rewards) Column(Modifier.weight(1f).background(T.Cream,RoundedCornerShape(20.dp)).border(2.dp,T.Ink,RoundedCornerShape(20.dp)).clickable { selected=reward }.padding(10.dp),horizontalAlignment=Alignment.CenterHorizontally) {
                                 ToyPicture(reward,if(compact) 64.dp else 104.dp)
                                 GameText(SP.name(reward).str(),fontSize=if(compact) 14.sp else 18.sp,color=T.Ink,maxLines=2)
                                 Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(5.dp)) {
-                                    IconCanvas(if(Progression.unlocked(vm.world,reward)) Icons.Check else Icons.Lock,Modifier.size(22.dp))
+                                    IconCanvas(if(Progression.unlocked(vm.world,reward)) Icons.Star else Icons.Lock,Modifier.size(22.dp))
                                     GameText((if(Progression.unlocked(vm.world,reward)) SP.tryIt else SP.level(level)).str(),fontSize=14.sp,color=T.Ink)
                                 }
                             }
+                            repeat((if(compact) 3 else 4)-rewards.size) { androidx.compose.foundation.layout.Spacer(Modifier.weight(1f)) }
                         }
                     }
                     Row(Modifier.fillMaxWidth().background(T.Cream,RoundedCornerShape(20.dp)).padding(14.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)) {
@@ -154,7 +156,7 @@ private fun TaskCard(vm:TrollfossViewModel,task:Task,modifier:Modifier,compact:B
         Row(horizontalArrangement=Arrangement.spacedBy(6.dp)) {
             repeat(task.need) { i -> Canvas(Modifier.size(18.dp)) { drawCircle(if(i<vm.sim.tasks.progress(task)) T.Sun else T.CreamDeep);drawCircle(Ink.line,size.minDimension/2-1.5f,style=Stroke(3f)) } }
         }
-        GameText((task.place?.let { S.place(it) } ?: S.map).str(),fontSize=14.sp,color=T.Grape)
+        GameText((task.place?.let { S.place(it) } ?: app.trollfoss.ui.SF.anywhere).str(),fontSize=14.sp,color=T.Grape)
         if(!done) Row(horizontalArrangement=Arrangement.spacedBy(10.dp)) {
             Column(horizontalAlignment=Alignment.CenterHorizontally) {
                 RoundButton(SP.help.str(),onClick={ vm.goTask(task) },size=48.dp,tone=Tones.Sea,icon=Icons.Map)

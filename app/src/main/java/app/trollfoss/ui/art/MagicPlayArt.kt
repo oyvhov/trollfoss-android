@@ -20,13 +20,13 @@ fun DrawScope.drawPlayAction(action: PlayAction, type: ThingType) {
     val s = size.minDimension
     val pen = Pen(s * 0.026f)
     val u = s * 0.67f / maxOf(type.w, type.h)
-    if (action == PlayAction.THROW || action == PlayAction.LIGHT || action == PlayAction.TWINKLE) {
+    if (action in listOf(PlayAction.THROW, PlayAction.LIGHT, PlayAction.TWINKLE, PlayAction.SECRET, PlayAction.AWAKEN)) {
         translate(s * 0.44f, s * 0.73f) { drawThing(type, 0, 0, type.w * u, type.h * u, pen) }
         if (action == PlayAction.THROW) {
             val arc = Path().apply { moveTo(s*0.12f,s*0.26f); quadraticBezierTo(s*0.65f,s*0.06f,s*0.88f,s*0.44f) }
             drawPath(arc, Ink.line, style = pen.thin)
             drawLine(Ink.line, Offset(s*0.88f,s*0.44f), Offset(s*0.87f,s*0.28f), pen.lw, StrokeCap.Round)
-        } else if (action == PlayAction.TWINKLE) {
+        } else if (action == PlayAction.TWINKLE || action == PlayAction.SECRET || action == PlayAction.AWAKEN) {
             for (p in listOf(Offset(0.82f,0.23f),Offset(0.77f,0.63f),Offset(0.32f,0.16f))) inked(starPath(p*s, s*0.095f,s*0.04f), Color(0xFFFFDC79),pen)
         } else for (i in -1..1) drawLine(Color(0xFFFFDF7F), Offset(s*0.64f,s*0.41f), Offset(s*0.9f,s*(0.41f+i*0.2f)), pen.lw*2, StrokeCap.Round)
         return

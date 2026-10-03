@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -108,8 +109,9 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
     val thumbSide = if (compact) 88.dp else 112.dp
     // Furniture dropped on the panel flies into the box: open the box, so the child sees where it went.
     var storedBefore by remember(place) { mutableIntStateOf(stored.size) }
+    var storageNotice by remember(place) { mutableStateOf<app.trollfoss.domain.Stored?>(null) }
     LaunchedEffect(stored.size) {
-        if (stored.size > storedBefore) tab = DesignTab.STORE.ordinal
+        if (stored.size > storedBefore) { tab = DesignTab.STORE.ordinal; storageNotice=stored.lastOrNull() }
         storedBefore = stored.size
     }
     val shape = RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp)
@@ -138,7 +140,7 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                 RoundButton(
                     description = when (t) { DesignTab.FURNITURE -> SM.furnish; DesignTab.WALL -> SM.wallpaper; DesignTab.FLOOR -> SM.flooring; DesignTab.STORE -> SM.storage; DesignTab.TIDY -> SM.tidy; DesignTab.TRASH -> SM.trash }.str(),
                     onClick = { tab = t.ordinal },
-                    size = if (on) 46.dp else 40.dp,
+                    size = 44.dp,
                     tone = if (on) Tones.Sun else Tones.Cream,
                     icon = when (t) {
                         DesignTab.FURNITURE -> DesignIcons.Sofa
@@ -150,16 +152,21 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                     },
                 )
                 // How many pieces wait in the box, ready to come along to another house.
-                if (t == DesignTab.STORE && stored.isNotEmpty()) {
+                val count=if(t==DesignTab.STORE) stored.size else if(t==DesignTab.TRASH) discarded.size else 0
+                if (count>0) {
                     Box(
                         Modifier.align(Alignment.TopEnd).size(20.dp).background(T.Berry, androidx.compose.foundation.shape.CircleShape).border(2.dp, T.Ink, androidx.compose.foundation.shape.CircleShape),
                         contentAlignment = Alignment.Center,
-                    ) { GameText("${stored.size}", fontSize = 11.sp, style = MaterialTheme.typography.titleMedium, color = Color.White) }
+                    ) { GameText("$count", fontSize = 11.sp, style = MaterialTheme.typography.titleMedium, color = Color.White) }
                 }
                 }
             }
         }
         if (Decor.rooms(place).size > 1) GameText(roomLabel(world, place, currentRoom).str(), fontSize = 13.sp, color = T.Ink)
+        if(storageNotice!=null && stored.any { it===storageNotice }) Row(Modifier.fillMaxWidth().background(T.Mint.copy(alpha=0.2f),RoundedCornerShape(16.dp)).padding(6.dp),verticalAlignment=Alignment.CenterVertically) {
+            GameText(app.trollfoss.ui.SF.stored.str(),Modifier.weight(1f),fontSize=13.sp,color=T.Ink)
+            RoundButton(app.trollfoss.ui.SF.bringBack.str(),onClick={ val index=world.storage.indexOfFirst { it===storageNotice };if(index>=0) engine.addFromStore(index);storageNotice=null },size=44.dp,tone=Tones.Mint,icon=DesignIcons.Undo)
+        }
         if (tab == DesignTab.FURNITURE.ordinal || tab == DesignTab.STORE.ordinal)
             GameText(S.furnitureDragHint.str(), fontSize = 12.sp, color = T.Ink)
         if (engine.placementFailed) GameText(
@@ -177,10 +184,10 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                     LazyVerticalGrid(GridCells.Fixed(2), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         itemsIndexed(items) { index, item ->
                             val reward = Decor.reward(item)
-                            val label = reward?.let { SP.name(it).str() }
+                            val label = app.trollfoss.ui.FurnitureLabels.name(item.type).str()
                             val locked = !Decor.available(world, item)
                             val hangs = item.type.spec.wall
-                            Tile(modifier = furnitureDrag(engine, item.type, item.variant, locked = locked).semantics { if (label != null) contentDescription = label }, look = TileLook.ROOM, tint = index / 2 + index % 2, feet = if (hangs) null else thumbSide * fixtureThumbFeet(item.type), onClick = {
+                            Tile(modifier = furnitureDrag(engine, item.type, item.variant, locked = locked).semantics { contentDescription = label }, look = TileLook.ROOM, tint = index / 2 + index % 2, feet = if (hangs) null else thumbSide * fixtureThumbFeet(item.type), onClick = {
                                 if (locked && reward != null) {
                                     engine.cancel(); engine.designMode = false; engine.wantedToy = reward
                                 } else if (locked) feedback.sfx(Sfx.HMM, 0.6f, 0.8f) else engine.addFurniture(item.type, item.variant)
@@ -317,7 +324,7 @@ private fun Tile(modifier: Modifier = Modifier, chosen: Boolean = false, look: T
 @Composable
 private fun furnitureDrag(engine: Engine, type: FixtureType, variant: Int, locked: Boolean = false, storeIndex: Int? = null): Modifier {
     var origin by remember { androidx.compose.runtime.mutableStateOf(Offset.Zero) }
-    val description = S.furnitureDragHint.str()
+    val description = app.trollfoss.ui.FurnitureLabels.name(type).str()+" · ${variant+1}. "+S.furnitureDragHint.str()
     return Modifier.onGloballyPositioned { origin = it.boundsInRoot().topLeft }
         .semantics { contentDescription = description }
         .pointerInput(engine, type, variant, locked, storeIndex) {

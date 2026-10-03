@@ -34,6 +34,10 @@ fun MineTravelButtons(vm: TrollfossViewModel, place: PlaceId, compact: Boolean, 
     if (ways.isEmpty()) return
     Row(modifier.background(T.Cream.copy(alpha = 0.96f), RoundedCornerShape(22.dp))
         .border(2.dp, T.Ink, RoundedCornerShape(22.dp)).padding(5.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        if(compact) Column(horizontalAlignment=Alignment.CenterHorizontally) {
+            RoundButton(SM.rooms.str(),onClick={ vm.mineUi.tab=0;vm.mineUi.open=!vm.mineUi.open },size=48.dp,tone=Tones.Sun,icon=Icons.House)
+            GameText(SM.rooms.str(),fontSize=12.sp,color=T.Ink)
+        }
         for (way in ways) {
             val label = when (way.to) {
                 PlaceId.MINE_YARD -> SM.outside

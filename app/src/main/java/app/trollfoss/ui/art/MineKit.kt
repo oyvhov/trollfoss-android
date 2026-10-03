@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.lerp
@@ -221,17 +222,28 @@ internal fun DrawScope.drawMineWindow(style: Int, kind: RoomKind?, l: Float, t: 
     val cx = (l + r) / 2f
     val glass = lerp(lerp(MineC.glass, Color(0xFF1D2A5C), dark), MineC.lit, lit)
     val frame = pen.lw * 1.2f
+    val glassShape = when (s) {
+        1 -> archPath(l, t, r, b)
+        2 -> Path().apply {
+            val rad = min(w, h) / 2f
+            val cy = (t + b) / 2f
+            addOval(Rect(cx - rad, cy - rad, cx + rad, cy + rad))
+        }
+        else -> Path().apply { addRect(Rect(l, t, r, b)) }
+    }
     when (s) {
         1 -> {
             val m = w * 0.08f
             val outer = archPath(l - m, t - m, r + m, b + m * 0.6f)
             drawPath(outer, trim)
             drawPath(outer, Ink.line, style = pen.stroke)
-            val inner = archPath(l, t, r, b)
+            val inner = glassShape
             drawPath(inner, glass)
-            if (detail > 1) windowContents(kind, l, t, r, b, lit, pen, time)
-            drawLine(Color.White, Offset(cx, t), Offset(cx, b), strokeWidth = frame)
-            drawLine(Color.White, Offset(l, t + h * 0.45f), Offset(r, t + h * 0.45f), strokeWidth = frame)
+            clipPath(inner) {
+                if (detail > 1) windowContents(kind, l, t, r, b, lit, pen, time)
+                drawLine(Color.White, Offset(cx, t), Offset(cx, b), strokeWidth = frame)
+                drawLine(Color.White, Offset(l, t + h * 0.45f), Offset(r, t + h * 0.45f), strokeWidth = frame)
+            }
             drawPath(inner, Ink.line, style = pen.thin)
             // The sill with a flower box.
             roundFill(trim, pen, l - m * 1.4f, b, r + m * 1.4f, b + h * 0.09f, h * 0.03f, thin = true)
@@ -249,7 +261,9 @@ internal fun DrawScope.drawMineWindow(style: Int, kind: RoomKind?, l: Float, t: 
             drawCircle(trim, rad * 1.18f, c)
             drawCircle(Ink.line, rad * 1.18f, c, style = pen.stroke)
             drawCircle(glass, rad, c)
-            if (detail > 1) windowContents(kind, l, t, r, b, lit, pen, time, round = true)
+            clipPath(glassShape) {
+                if (detail > 1) windowContents(kind, l, t, r, b, lit, pen, time)
+            }
             drawLine(Color.White, Offset(c.x - rad, c.y), Offset(c.x + rad, c.y), strokeWidth = frame)
             drawLine(Color.White, Offset(c.x, c.y - rad), Offset(c.x, c.y + rad), strokeWidth = frame)
             drawCircle(Ink.line, rad, c, style = pen.thin)
@@ -283,11 +297,13 @@ internal fun DrawScope.drawMineWindow(style: Int, kind: RoomKind?, l: Float, t: 
         }
     }
     // A little shine on the glass.
-    if (detail > 1 && lit < 0.5f) drawLine(Color.White.copy(alpha = 0.5f), Offset(l + w * 0.14f, t + h * 0.18f), Offset(l + w * 0.14f, t + h * 0.38f), strokeWidth = pen.lw * 1.3f, cap = StrokeCap.Round)
+    if (detail > 1 && lit < 0.5f) clipPath(glassShape) {
+        drawLine(Color.White.copy(alpha = 0.5f), Offset(l + w * 0.14f, t + h * 0.18f), Offset(l + w * 0.14f, t + h * 0.38f), strokeWidth = pen.lw * 1.3f, cap = StrokeCap.Round)
+    }
 }
 
 /** What each kind of room shows in its window: curtains, a plant, a lamp, books, stars, bunting, frost. */
-private fun DrawScope.windowContents(kind: RoomKind?, l: Float, t: Float, r: Float, b: Float, lit: Float, pen: Pen, time: Float, round: Boolean = false) {
+private fun DrawScope.windowContents(kind: RoomKind?, l: Float, t: Float, r: Float, b: Float, lit: Float, pen: Pen, time: Float) {
     val w = r - l
     val h = b - t
     val cx = (l + r) / 2f
