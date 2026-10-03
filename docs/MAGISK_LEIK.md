@@ -1,6 +1,6 @@
 # Dei 25 prioriterte løfta for Trollfoss
 
-Dato: 2026-10-02. Brukaren valde dei 25 beste ideane og bad «GO!», deretter «Go go». Dei seks første og tiltaka 7, 10, 18 og 21 er implementerte i to arbeidsrundar. Dei resterande 15 er no implementerte på `codex/child-flow-polish`, med avsluttande kontroll dokumentert i `FLOW_POLISH_2026-10-03.md`. Dette dokumentet inneber ikkje at ein ny APK er publisert.
+Status 2026-10-03: Brukaren valde dei 25 beste ideane og bad «GO!», deretter «Go go». Dei seks første og tiltaka 7, 10, 18 og 21 kom i to arbeidsrundar. Grunninnhaldet for dei resterande 15 er fullført og publisert i 1.7.0, med kontroll dokumentert i `FLOW_POLISH_2026-10-03.md` og release-/oppdateringskontroll i `OVERLEVERING.md`.
 
 ## Kva vi vil få til
 
@@ -36,7 +36,7 @@ Nivå **1–3 er aktive**, med grensene **0, 2 og 5 merke**. Gamle merke blir be
 
 **Kontrollert i andre runde:** 442 einingstestar og 18 Android-kontrollar er grøne. Bygg, lint og GitHub-kontrollen er grøne på kjelde `1cceea4`. Oppdrag, gåver, reise, omstart, figur-/leikedraging, foto på lager og den faktiske togreparasjonen er prøvde i mobil- og nettbrettformat. Kontroll og kjeldestatus står i [OVERLEVERING.md](OVERLEVERING.md). Barnetest står att, så grensene er framleis startbalanse.
 
-## Tredje til femte runde: ny leik i arbeidskjelda
+## Tredje til femte runde: ny leik i 1.7.0
 
 Nivå **4–6** legg til 12 leiker, og åtte nye frie leiker støttar resten av dei 25 løfta. Personlegdom endrar varsame små reaksjonar; kjæledyret hugsar heimstaden sin og kan sendast tilbake. Vennehandlingar sluttar ved draging. Tre instrument kan starte eit band. Fest har tre musikkval, vanleg/varmt/farga lys og gjester som kjem tilbake.
 
@@ -82,7 +82,7 @@ Den endelege kvaliteten for barn må prøvast med barn; ingen slik prøve er på
 
 ## Nivå og belønningar
 
-[PROGRESJON.md](PROGRESJON.md) er den detaljerte nivåplanen: 10 nivå, 36 nye interaktive leiker og åtte historiebelønningar. Nivå 1–6 og 20 nivåleiker er implementerte i arbeidskjelda. Nivå 7–10 og dei åtte skisserte bonusgåvene er framleis planlagde.
+[PROGRESJON.md](PROGRESJON.md) er den detaljerte nivåplanen: 10 nivå, 36 nye interaktive leiker og åtte historiebelønningar. Nivå 1–6 og 20 nivåleiker er utgitte i 1.7.0. Nivå 7–10 og dei åtte skisserte bonusgåvene er framleis planlagde.
 
 Nivå brukar dei eksisterande klistremerka: grenser **0, 2, 5, 9, 14, 20, 27, 35, 44 og 54**. Barnet betaler ikkje med merke og går aldri ned eit nivå. Gamle leiker blir ikkje låste. Historier skal kunne spelast utan å vente på eit høgt nivå, og nivåframgang skal ha fleire val av oppgåver.
 

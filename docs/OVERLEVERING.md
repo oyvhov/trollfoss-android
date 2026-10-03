@@ -1,4 +1,28 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
+> **NYAST – PUBLISERT 1.7.0 (2026-10-03, Codex):** Brukaren bad «Release».
+> PR 3 er fletta til main og publisert som stabil, nyaste release:
+> https://github.com/oyvhov/trollfoss-android/releases/tag/v1.7.0.
+> Tag/kjelde: `b397b828980d4c712bee0abff89d7856e3d5496e`, versjon 1.7.0 / kode 11.
+> Bygd frå `10516afc1df548dc6fdd9de2db8f843320783c34`; samanfletta kjelde har identisk Git-tre.
+> Éin universal APK, 3 140 054 byte, SHA-256:
+> `e4cf5672402a8736e47dc835797478aa89107c5351268342e761c0c0cff64424`.
+> Opphavleg sertifikat, app.trollfoss, min Android 26, ikkje debuggable. Mapping, hash og
+> SOURCE_COMMIT er vedlagde. Alle fire digest/storleikar og offentleg latest/nedlasting utan token er kontrollerte.
+> Arkiv: `C:/topa/dist/release-v1.7.0/`. Release-bygg, 466 einingstestar og release-lint grøne
+> (0 feil / 22 åtvaringar). Dei 26 Android-kontrollane var grøne på spelkjelda før versjonsauken.
+> GitHub kjelde (37125637288), PR (37125639853), main (37126187074) og tag (37126190511) er grøne.
+> Ekte oppdatering på eiga Release160-prøveeining: 1.6.1 / 10 → 1.7.0 / 11 via foreldresida,
+> Sjekk no, nedlasting/verifisering, Installer oppdatering, Android Update og Play Protect-skanning.
+> Play Protect gav «This app looks safe», Android gav «App installed», og installert kode 11 er stadfesta.
+> Ingen avinstallering eller tømming. Kartet opna ved kaldstart. Dei valde Hedda-/Alva-korta før/etter
+> har identiske pikslar (namn, utsjånad og klede). Skyøya og faktisk retur til Familiehuset fungerer.
+> Nettbrett 1920 × 1200 / 240 dpi var hovudprøva; mobil 2400 × 1080 / 420 dpi fekk berre kort
+> kaldstart-/Kart-kontroll. Ingen Trollfoss-krasj i krasjloggen. Bilete/XML: `screenshots/release-v1.7.0/`.
+> Skjermmål/rotasjon er tilbakeførte og den eigne emulatoren er stoppa. Private verdener og
+> den skitne hovudarbeidskopien `C:/topa` er urørte. Ingen ny signeringsnøkkel er laga.
+> Nivå 1–6 og grunninnhaldet for dei 25 løfta er no utgitt. Nivå 7–10, vidare historiebonusar,
+> barnetest og full TalkBack-/brytar-/lydkontroll står framleis att.
+
 > **NYAST – SPELEFLYT OG MAGISK LEIK LOKALT KONTROLLERTE (2026-10-03):**
 > Brukaren bad om å gjennomføre gjennomgangen og gjere heile opplevinga vakker og spennande.
 > Arbeid skjer på `codex/child-flow-polish` i `C:/topa/.gradle-tmp/follow-worktree`.

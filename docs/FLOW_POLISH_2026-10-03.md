@@ -1,6 +1,6 @@
 # Arbeidslogg: speleflyt og dei neste magiske leikene
 
-Arbeidsgren: `codex/child-flow-polish`. Grunnlag: 1.6.1 og gjennomgangen i `AUDIT_FLOW_2026-10-03.md`. Ingen ny release er publisert i denne runden.
+Arbeidsgren: `codex/child-flow-polish`. Grunnlag: 1.6.1 og gjennomgangen i `AUDIT_FLOW_2026-10-03.md`. Etter den separate bestillinga «Release» er arbeidet fletta og publisert som 1.7.0 / kode 11. Sjå `OVERLEVERING.md` for signatur, kontrollsum og gjennomført oppdatering frå 1.6.1 via appen.
 
 Dei uferdige kjeldeendringane frå `codex/magic-rest` er tekne inn i ei separat arbeidskopi. Den opphavlege, skitne arbeidskopien er urørt. Nytt innhald er fullført vidare her, med eigne teikningar, lagring og kontroll.
 

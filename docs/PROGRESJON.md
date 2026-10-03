@@ -1,6 +1,6 @@
 # Plan: nivå, oppdagingar og nye leiker i Trollfoss
 
-Status 2026-10-03: publisert 1.6.1 har nivå 1–3. Arbeidskjelda på `codex/child-flow-polish` legg til nivå 4–6, 12 nivåleiker og åtte frie leiker. Sjå `FLOW_POLISH_2026-10-03.md` for faktisk kontroll. Nivå 7–10 og dei åtte historiebonusane nedanfor er vidare utviklingsplan, ikkje utgitt innhald.
+Status 2026-10-03: publisert 1.7.0 har nivå 1–6. Utgåva legg til nivå 4–6, 12 nivåleiker og åtte frie leiker. Sjå `FLOW_POLISH_2026-10-03.md` for faktisk kontroll og `OVERLEVERING.md` for release-/oppdateringskontroll. Nivå 7–10 og dei åtte historiebonusane nedanfor er vidare utviklingsplan, ikkje utgitt innhald.
 
 ## 1. Målet
 
@@ -14,11 +14,11 @@ Behald klistremerka som allereie blir gitt for oppdrag. **Eitt ferdig biletoppdr
 
 Nivået har eit stort bilete, eit lite tal og eit kort namn. Neste gåve og dei manglande merka står rett ved sida av. Glimt og husnøklar held fram som eigne oppdagingar; dei blir ikkje obligatoriske krav til nivå. Det gjer at barnet ikkje blir fast fordi éin hemmeleg ting er vanskeleg å finne.
 
-Gamle lagringar brukar alle eksisterande klistremerke. Arbeidskjelda har no nivå 1–6: eit barn med 20 merke behaldar alle 20 og får nivå 6. Gamle opplåsingar, plasserte ting og lager blir bevarte; noko barnet allereie har, blir aldri låst igjen.
+Gamle lagringar brukar alle eksisterande klistremerke. Versjon 1.7.0 har nivå 1–6: eit barn med 20 merke behaldar alle 20 og får nivå 6. Gamle opplåsingar, plasserte ting og lager blir bevarte; noko barnet allereie har, blir aldri låst igjen.
 
 ## 3. Nivå og 36 nye interaktive ting
 
-Dette er foreslått startbalanse. Nivå 1–6 er implementerte i arbeidskjelda; nivå 7–10 er planlagde. Tabellen skildrar målbildet: den første klinkekulebana har tre vendbare renner, ikkje frie banedelar; vindmølla blir driven av fønaren, og hjelp har bilete/tekst og henting av råvarer. Animerte demonstreringar, opplesing og vidare fleirstegsoppdrag står att. Tala skal prøvast med barn før dei blir endelege. «Totalt» er alle merka barnet har, ikkje merka som skal betalast.
+Dette er foreslått startbalanse. Nivå 1–6 er utgitte i 1.7.0; nivå 7–10 er planlagde. Tabellen skildrar målbildet: den første klinkekulebana har tre vendbare renner, ikkje frie banedelar; vindmølla blir driven av fønaren, og hjelp har bilete/tekst og henting av råvarer. Animerte demonstreringar, opplesing og vidare fleirstegsoppdrag står att. Tala skal prøvast med barn før dei blir endelege. «Totalt» er alle merka barnet har, ikkje merka som skal betalast.
 
 | Nivå | Namn | Merke totalt | Nye merke frå førre nivå | Fire nye ting og det dei gjer |
 | --- | --- | ---: | ---: | --- |
