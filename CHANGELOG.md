@@ -1,5 +1,15 @@
 # Endringslogg
 
+## 1.7.0 – Skyøya og meir magisk leik
+
+- 20 nye interaktive leiker, mellom anna vippe, dokketeater, tandem, kran, transportband, portal, kunststaffeli og redningsleik. Nivå 4–6 gir fire nye gåver kvar, og neste gåve og oppdragshjelp er lettare å finne.
+- Reis til Skyøya med sengballongen. Nye vennehandlingar, personlegdommar, kjæledyr, levande bamse, band og gjestefest gir meir å gjere saman.
+- Lag stempelkunst og tapet, dyrk eple, reparer lys og oppdag hemmelege eigenskapar i magnet, paraply og skei. Kunst, reparasjonar og dyr sin heimstad blir lagra.
+- Lettare romval og husbygging, førehandsvising av det valde huset, tydelegare oppdragshjelp, mindre knapp- og golvrot, og reine foto med førehandsvising før lagring.
+- Spelarar er synlege ved ankomst. Ein spelar i sekken tek pause og kan hentast tilbake med same utsjånad. Kartretur til gjeldande stad bevarer posisjonane.
+- Lager viser stadfesting og direkte tilbakehenting. Riv-dialogen får plass på mobil, og runde vindauge held gardiner og dekorasjon innanfor glaset.
+- Betre treffområde, figurval, oppdagingsbok og skjermlesarhandlingar. Eksisterande figurar, klede, ting, hus og opptente rettar blir bevarte.
+
 ## 1.6.1 – Mjukare følgje og ryddigare rom
 
 - Valde spelarar går mjukt med medan barnet sveipar eller vel eit anna rom. Dei held avstand, bremsar roleg og blir synlege framfor møblane.
