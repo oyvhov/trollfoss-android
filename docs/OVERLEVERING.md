@@ -6,11 +6,13 @@
 > Hovudarbeidskopien på `C:/topa` er urørt. Ingen ny release er publisert i denne runden.
 > Sjå `FLOW_POLISH_2026-10-03.md` for F01–F17, nye nivå 4–6 / 20 leiker og kontrollstatus.
 > Endeleg debug-bygg, 466 einingstestar og lint er grøne (0 feil / 31 åtvaringar).
-> 24 Android-kontrollar grøne før siste reine teikne-/dialogfinpuss. Desse siste endringane er
+> 26 Android-kontrollar grøne, med nye kontrollar av band-/festdans og ny figur i spegelen. Teikne-/dialogendringar er
 > visuelt stadfesta: runde vindauge held innhaldet innanfor ramma, og begge riv-knappane er heile på mobil.
 > Nettbrett er hovudprøva; mobil er avgrensa til foreldrelås, rom/riving, gåver og spelarval.
 > Bevarte IDar, utsjånad, hus og kunst er samanlikna etter reise, lagring og ny installasjon av testpakken.
 > Sjekk den tilhøyrande PR-en for GitHub-kontroll og flettestatus. Versjon og signeringsnøkkel er uendra.
+> PR: https://github.com/oyvhov/trollfoss-android/pull/3. Sju ekstra funn i ny leik er retta;
+> mellom anna pausar i ballongen, tilgang til magnet/skei og kartretur utan flytting av laget.
 > Nivå 7–10 er framtidsplan; ikkje påstå at desse er ferdige. Barnetest og full TalkBack-prøve står att.
 
 > **NYAST – GJENNOMGANG AV SPELEFLYT (2026-10-03, Codex):** Brukaren bad om heile flyten og feil/friksjon for barn.

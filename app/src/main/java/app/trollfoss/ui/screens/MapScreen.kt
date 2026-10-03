@@ -99,8 +99,8 @@ fun MapScreen(vm: TrollfossViewModel) {
     }
     val from = vm.place.mapPlace
     val riders = remember(vm.place, vm.generation, vm.playersVersion) {
-        val team = app.trollfoss.domain.Players.team(vm.world)
-        (team.ifEmpty { vm.world.people().filter { it.species == Species.FOLK && it.place == vm.place }.take(3) }).map { it.look }
+        val team = app.trollfoss.domain.Players.activeTeam(vm.world)
+        (if (vm.world.playerIds.isNotEmpty()) team else vm.world.people().filter { it.species == Species.FOLK && it.place == vm.place }.take(3)).map { it.look }
     }
     val scroll = rememberScrollState()
 
@@ -113,7 +113,7 @@ fun MapScreen(vm: TrollfossViewModel) {
         LaunchedEffect(mapWidth, from) { scroll.scrollTo(centered(from)) }
         fun fly(place: PlaceId) {
             if(target!=null) return
-            if(place==from) { vm.travel(vm.place); return }
+            if(place==from) { vm.back(); return }
             target=place
             vm.sfx(Sfx.WHOOSH,0.8f)
             scope.launch {

@@ -553,7 +553,7 @@ class Engine(
             a.lookY += (ly - a.lookY) * min(1f, dt * 7f)
 
             // Dancing to the radio.
-            a.dance = if (a.cheer > 0f || (discoOn && a.pose == Pose.STAND) || (radio != null && a.pose == Pose.STAND && p.resting && abs(p.x - radio.x) < 1.6f)) {
+            a.dance = if (sim.community.dances(p) || a.cheer > 0f || (discoOn && a.pose == Pose.STAND) || (radio != null && a.pose == Pose.STAND && p.resting && abs(p.x - radio.x) < 1.6f)) {
                 time * 2.07f * PI.toFloat() + 0.001f
             } else {
                 0f

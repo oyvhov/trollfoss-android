@@ -12,6 +12,25 @@ import org.junit.runner.RunWith
 /** Run on Android: exercises the real pointer engine used by children sharing the screen. */
 @RunWith(AndroidJUnit4::class)
 class SharedPlayTest {
+    @Test fun bandAndPartyDanceSurviveTheCompleteFrameAndStopWhenPlayEnds() {
+        val w=World();val s=Sim(w)
+        val people=Community.INSTRUMENTS.mapIndexed { i,type ->
+            w.addPerson(Species.FOLK,Look(),1f,PlaceId.HOME,0.7f+i*0.3f,0.95f).also { p ->
+                val t=w.addThing(type,0,p.place,p.x,p.y);s.give(p,t,Part.HAND)
+            }
+        }
+        val e=Engine(w,PlaceId.HOME,s,host,false,0f).apply { setSize(1920f,1200f,1.5f) }
+        assertTrue(s.community.startBand(people.map { it.id }))
+        repeat(60) { e.update(0.016f) }
+        people.forEach { assertTrue(it.anim.dance>0f) }
+        s.community.stopBand();e.update(0.016f)
+        people.forEach { assertEquals(0f,it.anim.dance,0f) }
+        assertTrue(s.community.startParty(PlaceId.HOME,1f,people.map { it.id },2,1))
+        e.update(0.016f);people.forEach { assertTrue(it.anim.dance>0f) }
+        assertTrue(s.community.endParty());e.update(0.016f)
+        people.forEach { assertEquals(0f,it.anim.dance,0f) }
+        e.cancel()
+    }
     @Test fun draggingAPlayerAlongTheScreenEdgeLetsTheOtherWalkAlongWithoutStealingTheLeader() {
         val w = World(); val place = PlaceId.MANOR_GROUND; val s = Sim(w)
         val leader = w.addPerson(Species.FOLK, Look(), 1f, place, 1.5f, 0.9f)

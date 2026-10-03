@@ -12,7 +12,7 @@ import kotlin.math.sin
 
 object CreativeArt {
     var state=CommunityState()
-    var people: Map<Int,Person> = emptyMap()
+    var bodies: Map<Int,Body> = emptyMap()
     var place=PlaceId.HOME
 }
 object CreativeIcons {
@@ -109,7 +109,7 @@ fun DrawScope.drawCreativeBack(f:Fixture,u:Float,pen:Pen):Boolean {
         }
         FixtureType.PLAY_MIRROR -> {
             box(-0.16f,-0.46f,0.16f,-0.025f,ToyColors[4]);box(-0.125f,-0.42f,0.125f,-0.065f,Color(0xFFBCE5F3))
-            CreativeArt.people[f.count]?.let { p -> clipRect(-0.12f*u,-0.41f*u,0.12f*u,-0.06f*u) { translate(0f,-0.065f*u) { drawPerson(p.species,p.look,p.anim.pose,p.anim,0.29f*u,pen) } } }
+            (CreativeArt.bodies[f.count] as? Person)?.let { p -> clipRect(-0.12f*u,-0.41f*u,0.12f*u,-0.06f*u) { translate(0f,-0.065f*u) { drawPerson(p.species,p.look,p.anim.pose,p.anim,0.29f*u,pen) } } }
             line(-0.105f,-0.14f,0.075f,-0.38f,Color.White,pen.lw*1.5f)
         }
         FixtureType.PLAY_HOVER -> {

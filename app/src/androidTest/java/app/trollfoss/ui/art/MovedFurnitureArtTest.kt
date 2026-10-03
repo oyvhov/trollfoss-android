@@ -12,11 +12,30 @@ import app.trollfoss.domain.Fixture
 import app.trollfoss.domain.FixtureType
 import app.trollfoss.domain.PlaceId
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertFalse
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class MovedFurnitureArtTest {
+    @Test fun mirrorReflectsAFigureAddedAfterTheSceneWasCreated() {
+        val world=app.trollfoss.domain.World()
+        CreativeArt.bodies=world.bodies
+        val f=Fixture(-1,PlaceId.HOME,FixtureType.PLAY_MIRROR,0f,0f).apply { count=world.nextId }
+        val image=Bitmap.createBitmap(220,220,Bitmap.Config.ARGB_8888)
+        fun render():IntArray {
+            image.eraseColor(android.graphics.Color.TRANSPARENT)
+            CanvasDrawScope().draw(Density(1f),LayoutDirection.Ltr,Canvas(image.asImageBitmap()),Size(220f,220f)) {
+                drawContext.transform.translate(110f,200f);drawToyBack(f,260f,Pen(2f))
+            }
+            return IntArray(220*220).also { image.getPixels(it,0,220,0,0,220,220) }
+        }
+        try {
+            val empty=render()
+            world.addPerson(app.trollfoss.domain.Species.FOLK,app.trollfoss.domain.Look(),1f,PlaceId.HOME,0f,0.9f)
+            assertFalse(empty.contentEquals(render()))
+        } finally { CreativeArt.bodies=emptyMap();image.recycle() }
+    }
     @Test fun levelToysHaveTheirOwnArtInEveryPlace() {
         val image=Bitmap.createBitmap(220,220,Bitmap.Config.ARGB_8888)
         val scope=CanvasDrawScope()

@@ -102,6 +102,8 @@ class Community(private val sim: Sim) {
     }
     fun stopBand() { state.band.clear() }
     fun instrument(p:Person)=world.worn(p,Slot.HAND)?.type?.takeIf { it in INSTRUMENTS }
+    fun dances(p: Person): Boolean = !p.held && p.mode == Mode.FREE && p.anim.pose == Pose.STAND &&
+        (p.id in state.band && instrument(p) != null || state.partyPlace == p.place && state.guests.any { it.id == p.id })
     fun startParty(place: PlaceId, x: Float, ids: List<Int>, music: Int, lights: Int): Boolean = sim.edit {
         if(state.guests.isNotEmpty() || place.mine && place!=PlaceId.MINE_YARD && !world.mine.standing(place,Mine.slotAt(x))) return@edit false
         val guests=ids.distinct().take(8).mapNotNull { world.bodies[it] as? Person }.filter { !it.held && it.species==Species.FOLK }
@@ -176,10 +178,10 @@ class Community(private val sim: Sim) {
         if(beat>=0.6f) {
             beat=0f
             state.band.toList().mapNotNull { world.bodies[it] as? Person }.filter { !it.held && it.place==place && it.anim.pose!=Pose.LIE }.forEach { p ->
-                instrument(p)?.let { type -> p.anim.dance=1f;p.anim.face=Face.GRIN;p.anim.faceTime=1f;sim.listener.onFx(if(type==ThingType.DRUM) Fx.DRUM else if(type==ThingType.GUITAR) Fx.STRUM else Fx.SING,p.x,p.y-p.h/2,param=p.id) }
+                instrument(p)?.let { type -> p.anim.face=Face.GRIN;p.anim.faceTime=1f;sim.listener.onFx(if(type==ThingType.DRUM) Fx.DRUM else if(type==ThingType.GUITAR) Fx.STRUM else Fx.SING,p.x,p.y-p.h/2,param=p.id) }
             }
             if(state.partyPlace==place) state.guests.mapNotNull { world.bodies[it.id] as? Person }.filter { !it.held && it.place==place && it.anim.pose!=Pose.LIE }.forEach { p ->
-                p.anim.nextWalk=3f;p.anim.dance=if(state.partyMusic==0) 0.4f else 1f
+                p.anim.nextWalk=3f
                 if(state.partyLights>0) sim.listener.onFx(Fx.SPARKLE,p.x,p.y-p.h,param=p.id)
             }
         }

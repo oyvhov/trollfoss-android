@@ -8,6 +8,7 @@ object Players {
 
     fun team(world: World): List<Person> = world.playerIds.mapNotNull { world.bodies[it] as? Person }
         .filter { it.species == Species.FOLK }
+    fun activeTeam(world: World): List<Person> = team(world).filterNot { paused(world, it) }
 
     fun toggle(world: World, person: Person) {
         if (world.bodies[person.id] !== person || person.species != Species.FOLK) return
@@ -30,9 +31,9 @@ object Players {
         return true
     }
 
-    /** Bring everyone, including a seated or packed figure, into the visible arrival area. */
+    /** Bring the active team into the visible arrival area; paused figures keep their place in the bag. */
     fun arrive(world: World, to: PlaceId, x: Float, y: Float = Float.NaN) {
-        val people = team(world).filterNot { paused(world, it) }
+        val people = activeTeam(world)
         for ((i, person) in people.withIndex()) {
             val spread = (i - (people.size - 1) / 2f) * 0.25f
             var cx = (x + spread).coerceIn(0.2f, to.width - 0.2f)

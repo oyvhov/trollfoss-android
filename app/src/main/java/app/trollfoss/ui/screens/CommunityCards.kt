@@ -41,7 +41,7 @@ fun CommunityCards(vm:TrollfossViewModel,engine:Engine,onClose:()->Unit) {
     var mode by remember { mutableIntStateOf(0) }
     var redraw by remember { mutableIntStateOf(0) }
     var failed by remember { mutableStateOf(false) }
-    var chosen by remember { mutableStateOf(Players.team(vm.world).map { it.id }.take(2).toSet()) }
+    var chosen by remember { mutableStateOf(Players.activeTeam(vm.world).map { it.id }.take(2).toSet()) }
     var music by remember { mutableIntStateOf(0) };var lights by remember { mutableIntStateOf(0) }
     redraw
     val here=vm.world.people().filter { it.place==vm.place && it.species==Species.FOLK && it.mode!=Mode.BAG }
@@ -57,11 +57,12 @@ fun CommunityCards(vm:TrollfossViewModel,engine:Engine,onClose:()->Unit) {
     }
     if(mode==0) {
         if(failed) GameText(SP.noSpace.str(),color=T.Ink,fontSize=16.sp)
-        for(row in listOf(SC.choose to 1,SC.pets to 2,SC.band to 3,SC.party to 4,SC.art to 5,SC.weather to 6,SC.sky to 7,SC.rescue to 8).chunked(2)) Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)) {
+        for(row in listOf(SC.choose to 1,SC.pets to 2,SC.band to 3,SC.party to 4,SC.art to 5,SC.weather to 6,SC.sky to 7,SC.rescue to 8,SC.secretThings to 9).chunked(2)) Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)) {
             for((label,id) in row) Row(Modifier.weight(1f).background(T.CreamDeep,RoundedCornerShape(18.dp)).clickable { mode=id;failed=false }.padding(12.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-                IconCanvas(when(id) { 3 -> CreativeIcons.Music;5 -> CreativeIcons.Paint;6 -> Icons.Gear;7 -> Icons.Map;else -> Icons.Friends },Modifier.size(40.dp))
+                IconCanvas(when(id) { 3 -> CreativeIcons.Music;5 -> CreativeIcons.Paint;6 -> CreativeIcons.Weather;7 -> Icons.Map;9 -> Icons.Star;else -> Icons.Friends },Modifier.size(40.dp))
                 GameText(label.str(),fontSize=16.sp,color=T.Ink,maxLines=2)
             }
+            if(row.size==1) Spacer(Modifier.weight(1f))
         }
         if(vm.world.community.returnPlace!=null) Row(verticalAlignment=Alignment.CenterVertically) {
             RoundButton(SC.returnTo.str(),onClick={ val state=vm.world.community;val to=state.returnPlace ?: return@RoundButton;val x=state.returnX;state.returnPlace=null;after();onClose();vm.travelPlayCard(to,x) },tone=Tones.Sea,icon=Icons.Map)
@@ -92,7 +93,7 @@ fun CommunityCards(vm:TrollfossViewModel,engine:Engine,onClose:()->Unit) {
             }
             2 -> {
                 GameText(SC.petHint.str(),color=T.Ink)
-                val owner=first ?: Players.team(vm.world).firstOrNull()
+                val owner=first ?: Players.activeTeam(vm.world).firstOrNull()
                 val pets=vm.world.people().filter { it.species in Community.PETS }
                 PeopleChoices(pets,setOfNotNull(owner?.let { vm.world.community.pets[it.id] })) { p -> owner?.let { failed=!vm.sim.community.choosePet(it,p);after();if(!failed) onClose() } }
                 RoundButton(SC.petHome.str(),onClick={ owner?.let { vm.sim.community.choosePet(it,null);after() } },tone=Tones.Berry,icon=CreativeIcons.Home)
@@ -151,6 +152,14 @@ fun CommunityCards(vm:TrollfossViewModel,engine:Engine,onClose:()->Unit) {
                     },tone=Tones.Sea,icon=Icons.Map)
                 }
             }
+            9 -> {
+                GameText(SC.secretThingsHint.str(),color=T.Ink,fontSize=17.sp)
+                Row(horizontalArrangement=Arrangement.spacedBy(12.dp)) {
+                    for(type in listOf(ThingType.MAGNET,ThingType.GR_UMBRELLA,ThingType.SPOON))
+                        CachedThumb("secret-kit:$type",72.dp) { drawThingThumb(type,0,Rect(0f,0f,size.width,size.height)) }
+                }
+                BigButton(S.playKit.str(),onClick={ kit("secrets",listOf(ThingType.MAGNET,ThingType.GR_UMBRELLA,ThingType.SPOON,ThingType.PLAY_GEAR)) },tone=Tones.Mint,icon=Icons.Bag)
+            }
         }
     }
 }
@@ -159,9 +168,10 @@ private fun Set<Int>.takeLastSet(n:Int)=toList().takeLast(n).toSet()
 @Composable
 fun ArtEditor(vm:TrollfossViewModel,engine:Engine,onClose:()->Unit) {
     val id=remember { vm.sim.community.newArt() }
+    var committed by remember(id) { mutableStateOf(false) }
     DisposableEffect(id) {
         onDispose {
-            if(vm.world.community.art[id].isNullOrEmpty()) vm.world.community.art.remove(id)
+            if(!committed && vm.world.community.art.remove(id)!=null) vm.changed()
         }
     }
     var shape by remember { mutableIntStateOf(0) };var color by remember { mutableIntStateOf(0) };var revision by remember { mutableIntStateOf(0) }
@@ -185,9 +195,9 @@ fun ArtEditor(vm:TrollfossViewModel,engine:Engine,onClose:()->Unit) {
         })
     }) { revision;drawArtwork(marks,Rect(0f,0f,size.width,size.height),Pen(2f)) }
     Row(horizontalArrangement=Arrangement.spacedBy(14.dp)) {
-        RoundButton(SC.artUndo.str(),onClick={ vm.sim.edit { vm.world.community.art[id]?.removeLastOrNull() };vm.changed();revision++ },tone=Tones.Berry,icon=Icons.Bag)
-        RoundButton(SC.hang.str(),onClick={ full=vm.sim.community.hangArt(id,vm.place,engine.cam+engine.visibleViewport/2)==null;vm.changed();if(!full) onClose() },tone=Tones.Mint,icon=Icons.Check)
-        if(Decor.decoratable(vm.place)) RoundButton(SC.wallpaper.str(),onClick={ vm.sim.edit { val key=Decor.key(vm.place,Decor.roomAt(vm.place,engine.cam+engine.visibleViewport/2));vm.world.community.wallArt[key]=id;vm.world.styles[key]=(vm.world.styles[key] ?: RoomStyle()).copy(wall=1) };vm.changed();onClose() },tone=Tones.Sea,icon=CreativeIcons.Paint)
+        RoundButton(SC.artUndo.str(),onClick={ vm.sim.edit { vm.world.community.art[id]?.removeLastOrNull() };vm.changed();revision++ },enabled=marks.isNotEmpty(),tone=Tones.Berry,icon=Icons.Bag)
+        RoundButton(SC.hang.str(),onClick={ full=vm.sim.community.hangArt(id,vm.place,engine.cam+engine.visibleViewport/2)==null;committed=!full;vm.changed();if(!full) onClose() },enabled=marks.isNotEmpty(),tone=Tones.Mint,icon=Icons.Check)
+        if(Decor.decoratable(vm.place)) RoundButton(SC.wallpaper.str(),onClick={ vm.sim.edit { val key=Decor.key(vm.place,Decor.roomAt(vm.place,engine.cam+engine.visibleViewport/2));vm.world.community.wallArt[key]=id;vm.world.styles[key]=(vm.world.styles[key] ?: RoomStyle()).copy(wall=1) };committed=true;vm.changed();onClose() },enabled=marks.isNotEmpty(),tone=Tones.Sea,icon=CreativeIcons.Paint)
     }
     if(full) GameText(SP.noSpace.str(),color=T.Ink)
 }

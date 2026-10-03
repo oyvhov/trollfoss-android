@@ -36,7 +36,7 @@ Runde og boga vindauge i Mitt hus avgrensar no gardiner, måne, stjerner og lys 
 
 ## Kontroll
 
-- Endeleg debug-bygg og 466 einingstestar grøne. 24 Android-kontrollar grøne, mellom anna to samtidige fingrar, spelarvandring, rommerking ved kamerakanten og teikning av alle nye leiker. Dei siste reine endringane i vindauge/dialogmål er bygde og visuelt kontrollerte separat.
+- Debug-bygg og 466 einingstestar grøne. 26 Android-kontrollar grøne, mellom anna to samtidige fingrar, spelarvandring, rommerking ved kamerakanten, band-/festdans gjennom ei heil spelramme, spegling av nyoppretta figurar og teikning av alle nye leiker. Reine illustrasjons- og dialogendringar er i tillegg kontrollerte visuelt.
 - Endeleg lint: 0 feil, 31 åtvaringar. Sjå den tilhøyrande PR-en for GitHub-kontroll og flettestatus.
 - Eiga fersk `app.trollfoss.flowpolish`-verd. Ingen private lagringar er brukte eller endra.
 - Nettbrett 1920 × 1200 / 240 dpi: to spelarar, krone og seng gjennom faktisk draging, nivå 2, henting av boblemaskin, foto-førehandsvising/lagring, kaldstart til Kart og ballongreise til Skyøya.
@@ -46,6 +46,12 @@ Runde og boga vindauge i Mitt hus avgrensar no gardiner, måne, stjerner og lys 
 - Samanlikning av lagringsfiler stadfestar same spelar-IDar og utsjånad, identisk hus og uendra første kunstverk etter reiser/omstart/ny testinstallasjon. Det andre kunstverket er lagt til utan å overskrive det første. Dette er ikkje ein OTA-releaseprøve.
 - Bilete/XML i Git-ignorert `C:/topa/screenshots/polish-2026-10-03/`. Dette er målretta kontroll av endringane; den tidlegare rapporten dokumenterer heile grunnflyten og alle dei 24 opphavlege stadene.
 - Ingen barnetest er utført. Oppdragsbalanse, opplesing og full tilgjengelegheitsprøve må ikkje omtalast som ferdig dokumenterte.
+
+## Ekstra gjennomgang av ny leik
+
+Sju konkrete feil frå den automatiske kodegjennomgangen er vurderte og retta: dans vart overskriven av spelmotoren, pausa figurar var med i ballongbiletet, magnet/skei mangla normal tilgang, nye figurar mangla i spegelen, festmusikk kunne bli med til feil stad, avbrotne kunstutkast vart liggjande, og trykk på gjeldande kartstad flytta laget. Aktivt lag er no skilt frå det lagra spelarvalet; musikk blir vald frå gjeldande stad, og spegelen les den levande figurlista. «Ting med hemmelegheiter» hentar dei faktiske tinga og eit tannhjul å prøve magneten på.
+
+Tillegg på nettbrett: henting av det nye settet, avbrot av ei teikning med stempel (to tidlegare kunstverk stod att, utan nytt utkast), og Kart → gjeldande stad (begge spelarposisjonane og modus uendra). Nye automatiske kontrollar stadfestar synleg dans og refleksjon etter at ein ny figur er laga.
 
 ## Avgrensingar og vidare arbeid
 

@@ -453,6 +453,8 @@ object SC {
     val buildRoom=Txt("Bygg eit rom i Mitt hus først.","Bygg et rom i Mitt hus først.")
     val enter=Txt("Opne den hemmelege døra","Åpne den hemmelige døra")
     val secret=Txt("Prøv den løynde eigenskapen","Prøv den skjulte egenskapen")
+    val secretThings=Txt("Ting med hemmelegheiter","Ting med hemmeligheter")
+    val secretThingsHint=Txt("Hent magnet, paraply og skei. Trykk på dei og prøv stjerneknappen!","Hent magnet, paraply og skje. Trykk på dem og prøv stjerneknappen!")
     val awaken=Txt("Tryll bamsen levande – eller tilbake","Tryll bamsen levende – eller tilbake")
     val weather=Txt("Vêrleik","Værlek")
     val wind=Txt("Vind","Vind")

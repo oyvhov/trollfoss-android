@@ -159,7 +159,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         syncFromWorld()
         applySettings()
         if (Players.CHOSEN !in world.flags) screen = navigation.open(Screen.Players)
-        if (Players.team(world).any { it.place != place || it.mode == Mode.BAG }) {
+        if (Players.activeTeam(world).any { it.place != place || it.mode == Mode.BAG }) {
             Players.arrive(world, place, arrivalCenter(place))
         }
     }
@@ -222,7 +222,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         val restored=history.undo() ?: return
         world=restored;sim=Sim(world);sim.journal=history;wireTasks()
         if(world.place==PlaceId.MINE_GROUND && !world.mine.started || world.place==PlaceId.MINE_UPPER && !world.mine.upperBuilt) world.place=PlaceId.MINE_YARD
-        if(Players.team(world).any { it.place!=world.place }) Players.arrive(world,world.place,arrivalCenter(world.place))
+        if(Players.activeTeam(world).any { it.place!=world.place }) Players.arrive(world,world.place,arrivalCenter(world.place))
         engine=null;generation++;syncFromWorld();playersVersion++;changed()
         sfx(Sfx.MAGIC,0.65f)
     }
@@ -314,7 +314,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         app.trollfoss.ui.art.MineView.house = world.mine
         app.trollfoss.ui.art.ToyArt.photos=world.toyPhotos
         app.trollfoss.ui.art.CreativeArt.state=world.community
-        app.trollfoss.ui.art.CreativeArt.people=world.people().associateBy { it.id }
+        app.trollfoss.ui.art.CreativeArt.bodies=world.bodies
         return Engine(world, place, sim, this, motion, start).also {
             pendingFocus?.let { x -> it.focusOn(x); pendingFocus = null }
             it.season = season
@@ -384,6 +384,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         engine?.cancel()
         Players.arrive(world, to, pendingFocus ?: arrivalCenter(to))
         sim.community.follow(to)
+        if (place != to) radioOn = false
         world.place = to
         place = to
         screen = navigation.arrive(Screen.Play)
@@ -393,6 +394,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
             pendingFocus = null
         }
         sfx(Sfx.WHOOSH, 0.7f)
+        updateMusic()
         scheduleSave()
     }
 
@@ -576,7 +578,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     /** Bumps with every change of Mitt hus; the panel and its buttons follow it. */
     var mineVersion by mutableIntStateOf(0)
         private set
-    private var partyMusic = false
+    private var partyActive = false
 
     override fun changed() {
         weather = world.weather
@@ -588,8 +590,8 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         mineVersion = world.mine.version
         mineUi.version = mineVersion
         val party = world.mine.party != null || world.community.partyPlace == place
-        if (party != partyMusic) {
-            partyMusic = party
+        if (party != partyActive) {
+            partyActive = party
             updateMusic()
         }
         houseKeys = HouseKeys.found(world)
@@ -625,7 +627,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
                 1 -> MusicTheme.RADIO
                 else -> MusicTheme.STAGE
             }
-            (radioOn || partyMusic) && screen == Screen.Play -> MusicTheme.RADIO
+            (radioOn || world.mine.party != null && place.mine) && screen == Screen.Play -> MusicTheme.RADIO
             night && place != PlaceId.SPACE && place != PlaceId.UNDERWATER && place != PlaceId.STAGE -> MusicTheme.NIGHT
             else -> when (place) {
                 PlaceId.HOME -> MusicTheme.HOME
