@@ -1,5 +1,8 @@
 package app.trollfoss.ui.play
 
+import androidx.compose.ui.graphics.Path
+import app.trollfoss.ui.art.ToyColors
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +33,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import app.trollfoss.audio.Sfx
 import app.trollfoss.domain.Anatomy
+import app.trollfoss.domain.Community
+import app.trollfoss.domain.CreativePlay
 import app.trollfoss.domain.Body
 import app.trollfoss.domain.Decor
 import app.trollfoss.domain.Face
@@ -256,7 +261,8 @@ class Engine(
 
     /** Centres the camera on [x]; applied at once if the size is known, otherwise at the first layout. */
     fun focusOn(x: Float) {
-        chosenRoom = null
+        chosenRoom = Decor.roomAt(place,x)
+        visibleRoom = chosenRoom!!
         if (widthPx > 1f) {
             cam = x - visibleViewport / 2f
             clampCam()
@@ -712,7 +718,7 @@ class Engine(
 
     /** Leaves in autumn, blossom in spring and fireflies on summer evenings, drifting through outdoor scenes. */
     private fun seasonParticles(dt: Float) {
-        if (!motion || !place.outdoor || place == PlaceId.UNDERWATER || particles.count > 200) return
+        if (!motion || !place.outdoor || place in listOf(PlaceId.UNDERWATER,PlaceId.CLOUD_ISLAND) || particles.count > 200) return
         if (world.weather == Weather.RAIN) return
         when (season) {
             Season.AUTUMN -> if (random.nextFloat() < dt * 1.8f) {
@@ -884,6 +890,28 @@ class Engine(
             host.changed()
         }
         } finally { sim.journal?.end() }
+    }
+
+    fun accessiblePlay(id: Int): Boolean {
+        val person=world.bodies[id] as? Person ?: return false
+        if(person.held || person.place!=place || hidden(person)) return false
+        focusOn(person.x);tapBody(person);return true
+    }
+
+    fun accessibleFixture(id:Int):Boolean {
+        val f=world.fixtures[id]?.takeIf { it.place==place } ?: return false
+        if(grabs.isNotEmpty()) return false
+        focusOn(f.x)
+        when {
+            f.type in ToyPlay.TYPES && (!Vehicles.controllable(f) || sim.toys.broken(f)) -> toyFixtureId=f.id
+            f.type in listOf(FixtureType.PLAY_FORT,FixtureType.PLAY_CART) -> playFixtureId=f.id
+            else -> {
+                sim.edit { sim.tap(place,f,0f,-f.spec.h/2) }
+                if(Vehicles.controllable(f)) vehicleId=f.id
+                host.changed()
+            }
+        }
+        return true
     }
 
     fun packPerson(p: Person) {
@@ -1098,14 +1126,15 @@ class Engine(
         if (bagOpen) trayHit(at)?.let { return Target.FromBag(it) }
         val p = toScene(at)
         val list = drawList()
-        for (i in list.indices.reversed()) {
+        // Prefer the actual picture before a neighbour's generous touch margin.
+        for (precise in listOf(true, false)) for (i in list.indices.reversed()) {
             val b = list[i]
             // A second finger cannot take the first child's figure or its held belongings.
             if (grabs.values.any { heldBody(it)?.id == b.id }) continue
             if (b is Person) {
-                for (t in world.carried(b)) if (grabs.values.none { heldBody(it)?.id == t.id } && hitCarried(b, t, p)) return Target.Hold(t)
+                for (t in world.carried(b)) if (grabs.values.none { heldBody(it)?.id == t.id } && hitCarried(b, t, p, precise)) return Target.Hold(t)
             }
-            if (hit(b, p)) return Target.Hold(b)
+            if (hit(b, p, precise)) return Target.Hold(b)
         }
         // Figures and loose objects keep working while the furniture panel is open.
         if (designMode) fixtureAt(p)?.let { f ->
@@ -1118,23 +1147,24 @@ class Engine(
 
     private val minTouch get() = units(dp(26f))
 
-    private fun hit(b: Body, p: Offset): Boolean {
+    private fun hit(b: Body, p: Offset, precise: Boolean = false): Boolean {
+        val touch = if (precise) 0f else minTouch
         if (b is Person) {
-            val half = max(b.w * 0.55f, minTouch)
+            val half = max(b.w * 0.55f, touch)
             return when (b.anim.pose) {
                 Pose.LIE -> p.x in (b.x - b.h * 0.55f)..(b.x + b.h * 0.55f) && p.y in (b.y - b.w * 1.1f)..(b.y + 0.02f)
                 Pose.SIT -> p.x in (b.x - half)..(b.x + half) && p.y in (b.y - b.h * 0.9f)..(b.y + b.h * 0.12f)
                 else -> p.x in (b.x - half)..(b.x + half) && p.y in (b.y - b.anim.hop - b.h * (if (b.species.pet) 1.1f else 1.05f))..(b.y + 0.015f)
             }
         }
-        val half = max(b.w * 0.5f, minTouch)
-        val tall = max(b.h, minTouch * 1.6f)
+        val half = max(b.w * 0.5f, touch)
+        val tall = max(b.h, touch * 1.6f)
         return p.x in (b.x - half)..(b.x + half) && p.y in (b.y - tall - 0.01f)..(b.y + 0.015f)
     }
 
-    private fun hitCarried(p: Person, t: Thing, at: Offset): Boolean {
+    private fun hitCarried(p: Person, t: Thing, at: Offset, precise: Boolean = false): Boolean {
         val c = carriedCenter(p, t)
-        val r = max(max(t.w, t.h) * carriedScale(p, t) * 0.5f, minTouch * 0.8f)
+        val r = max(max(t.w, t.h) * carriedScale(p, t) * 0.5f, if(precise) 0f else minTouch * 0.8f)
         return hypot(at.x - c.x, at.y - c.y) < r
     }
 
@@ -1169,7 +1199,10 @@ class Engine(
             body.place = place
             // Brought along from somewhere else: the task board may be waiting for it.
             if (body is Thing) sim.tasks.record(app.trollfoss.domain.Deed.BROUGHT, place, body.type)
-            if (body is Person) world.carried(body).forEach { it.place = place }
+            if (body is Person) {
+                Players.resume(world,body)
+                world.carried(body).forEach { it.place = place }
+            }
             val p = toScene(g.finger)
             body.x = p.x
             body.y = p.y + body.h * 0.5f
@@ -2273,6 +2306,10 @@ class Engine(
     }
 
     private fun bodyKey(b: Body): Float {
+        // A player's free figure stays readable among taller neighbours. Seated figures
+        // keep the furniture's normal depth so blankets and vehicle sides still cover them.
+        if (b is Person && b.id in world.playerIds && b.mode == Mode.FREE && b.inside < 0 &&
+            b.restOwner < 0 && b.y >= PlaceId.FRONT - 0.035f) return PlaceId.FRONT + 0.001f
         if(b.mode==Mode.INSIDE && world.fixtures[b.holder]?.type in ToyPlay.VISIBLE_INSIDE) world.fixtures[b.holder]?.let { return fixtureKey(it)+0.0006f }
         if (b.mode == Mode.SEATED) world.fixtures[b.holder]?.let { f ->
             // Riders on the carousel go far to near as it turns.
@@ -2313,6 +2350,9 @@ class Engine(
         return false
     }
 
+    var photoMode = false
+    var guidance: app.trollfoss.domain.Task? = null
+
     fun draw(scope: DrawScope, text: TextMeasurer) = with(scope) {
         runPending()
         if (size.width != widthPx || size.height != heightPx) setSize(size.width, size.height, density)
@@ -2329,7 +2369,7 @@ class Engine(
         drawWeather(weather)
         withTransform({ translate(0f, top) }) { drawLightning() }
         drawFlights()
-        drawBag(text, pen)
+        if (!photoMode) drawBag(text, pen)
         cataloguePreview?.let { f ->
             translate((f.x - cam) * u, top + f.y * u) {
                 drawFixtureBack(f, u, pen)
@@ -2337,7 +2377,7 @@ class Engine(
             }
         }
         if (flash > 0f) drawRect(Color.White.copy(alpha = flash * 0.85f))
-        drawNameTagsLate(text)
+        if (!photoMode) drawNameTagsLate(text)
         with(sprites) { finish() }
     }
 
@@ -2351,6 +2391,30 @@ class Engine(
         closeDriving()
         sprites.clear()
         sprites.graphics = null
+    }
+
+    private fun DrawScope.drawGuidance(lw: Float) {
+        val task = guidance?.takeUnless { sim.tasks.done(it) } ?: return
+        val fixture = world.fixturesIn(place).firstOrNull { it.type == task.fixture }
+        val person = world.bodiesIn(place).filterIsInstance<Person>().filter {
+            !it.held && !hidden(it) && (it.species == task.species || (task.id == "crown" || fixture?.spec?.spots?.isNotEmpty()==true) && it.species == Species.FOLK)
+        }.minByOrNull { (if(it.id in world.playerIds) 0f else place.width)+abs(it.x-centerX()) }
+        val target = fixture?.let { Offset(it.x, it.y - it.spec.h * 0.55f) }
+            ?: person?.let { Offset(it.x, it.y - it.h * (if (task.id == "crown") 0.95f else 0.55f)) }
+            ?: return
+        val end = Offset(sx(target.x), sy(target.y))
+        val pulse = if (motion) 1f + sin(time * 3f) * 0.12f else 1f
+        drawCircle(Color(0xFFFFD86A).copy(alpha=0.8f), u*0.045f*pulse, end, style=Stroke(lw*1.5f))
+        val input = world.bodies[world.toyInputs["task:${task.id}"]] as? Thing
+        val source:Body=if(input!=null) input else if(fixture?.spec?.spots?.isNotEmpty()==true) person ?: return else return
+        if (source.place != place || source.mode != Mode.FREE || source.held) return
+        val start = Offset(sx(source.x), sy(source.y - source.h/2))
+        drawLine(Color.White.copy(alpha=0.65f), start, end, lw*1.4f, StrokeCap.Round,
+            pathEffect=androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(lw*2,lw*3)))
+        val progress = if (motion) (time % 2.6f / 1.8f).coerceIn(0f,1f) else 0.5f
+        val finger = start + (end-start)*progress
+        drawCircle(Color.White, u*0.015f, finger)
+        drawCircle(Ink.line, u*0.015f, finger, style=Stroke(lw))
     }
 
     private var lateText: List<Body> = emptyList()
@@ -2401,6 +2465,7 @@ class Engine(
         val t0 = System.nanoTime()
         sprites.frame()
         if (skip and 1 == 0) timed(0) { drawPlaceBack(place, cam, u, pen, Decor.styles(world, place)) }
+        drawPartyLights(lw)
         drawShootingStar()
 
         // One list for furniture, glimt and bodies, sorted back to front.
@@ -2453,17 +2518,27 @@ class Engine(
         if (skip and 8 == 0) timed(3) { drawPlaceFront(place, cam, u, pen) }
         timed(4) {
             disco()?.let { drawDisco(it) }
-            drawHints(lw)
-            for (b in list) if (b is Person && !b.held) drawBubbles(b, pen)
+            if (!photoMode) {
+                drawHints(lw)
+                drawGuidance(lw)
+                for (b in list) if (b is Person && !b.held) drawBubbles(b, pen)
+            }
         }
 
-        drawPreviews(lw)
+        if (!photoMode) drawPreviews(lw)
         for (b in list) if (b.held) {
             drawShadow(b)
             drawBody(b, pen)
         }
 
         timed(5) { particles.draw(this, u, cam, lw) }
+        for(bond in sim.community.bonds) {
+            val a=world.bodies[bond.a] as? Person ?: continue
+            val b=world.bodies[bond.b] as? Person ?: continue
+            if(a.place!=place || b.place!=place || a.held || b.held) continue
+            val y=minOf(a.y-a.h*0.35f,b.y-b.h*0.35f)
+            drawLine(Color(0xFFFFCEA9),Offset(sx(a.x),sy(y)),Offset(sx(b.x),sy(y)),u*0.018f,StrokeCap.Round)
+        }
         for (bubble in sim.toys.bubbles) {
             val center=Offset(sx(bubble.x),sy(bubble.y))
             drawCircle(Color(0xFFCDEEF5).copy(alpha=0.45f),u*0.026f,center)
@@ -2702,7 +2777,7 @@ class Engine(
 
     /** Stamps a cached picture of [f]'s [layer] (0 back, 1 front); false when it must be drawn live. */
     private fun DrawScope.stampFixture(f: Fixture, layer: Int, pen: Pen, empty: Boolean): Boolean {
-        if (!empty || f.anim > 0.01f || f.lift > 0f || f.type in LIVE_FIXTURES || f.type==FixtureType.PLAY_LIFT || f.type==FixtureType.PLAY_WINDMILL || (f.on && f.type in LIVE_WHEN_ON)) return false
+        if (!empty || f.anim > 0.01f || f.lift > 0f || f.type in LIVE_FIXTURES || f.type in CreativePlay.TYPES || f.type==FixtureType.PICTURE && f.variant>=Community.ART_BASE || f.type==FixtureType.PLAY_LIFT || f.type==FixtureType.PLAY_WINDMILL || (f.on && f.type in LIVE_WHEN_ON)) return false
         val look = FixtureLook(f.type, f.variant, layer, f.open, f.on, f.mode, f.count, (pen.night * 10f).toInt(), pen.weather, (pen.rainbow * 5f).toInt(), u.toInt())
         val w = f.spec.w * u
         val h = f.spec.h * u
@@ -2918,6 +2993,26 @@ class Engine(
     }
 
     /** Coloured spots sweeping over walls and floor from the spinning disco ball. */
+    private fun DrawScope.drawPartyLights(lw: Float) {
+        val party=world.community
+        if(party.partyPlace!=place || party.partyLights==0) return
+        val guests=party.guests.mapNotNull { world.bodies[it.id] }.filter { it.place==place }
+        if(guests.isEmpty()) return
+        val center=guests.map { it.x }.average().toFloat()
+        val colors=if(party.partyLights==1) listOf(Color(0xFFFFD681)) else ToyColors
+        val y=sy(0.26f)
+        drawLine(Ink.line,Offset(sx(center-0.85f),y),Offset(sx(center+0.85f),y),lw)
+        repeat(9) { i ->
+            val x=sx(center-0.8f+i*0.2f)
+            val color=colors[i%colors.size]
+            val sway=if(motion) sin(time*0.7f+i)*0.012f*u else 0f
+            val cone=Path().apply { moveTo(x,y);lineTo(x-u*0.12f+sway,sy(0.97f));lineTo(x+u*0.12f+sway,sy(0.97f));close() }
+            drawPath(cone,color.copy(alpha=0.09f))
+            drawCircle(Ink.line,u*0.018f,Offset(x,y+u*0.024f))
+            drawCircle(color,u*0.014f,Offset(x,y+u*0.024f))
+        }
+    }
+
     private fun DrawScope.drawDisco(ball: Fixture) {
         drawRect(Color(0xFF1B1036).copy(alpha = 0.28f), Offset(0f, -top), Size(size.width, size.height + top))
         val colors = listOf(T.Berry, T.Sun, T.Sea, T.Mint, T.Grape, Color(0xFFFF9F43))

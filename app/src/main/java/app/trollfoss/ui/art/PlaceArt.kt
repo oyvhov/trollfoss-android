@@ -14,6 +14,7 @@ import app.trollfoss.domain.RoomStyle
  * and a floor (1..8), where 0 keeps the place's own look. Only indoor places that can be decorated use them.
  */
 fun DrawScope.drawPlaceBack(place: PlaceId, cam: Float, u: Float, pen: Pen, styles: List<RoomStyle> = emptyList()) {
+    CreativeArt.place=place
     val st = Stage(cam, u, size.width, size.height, place.width)
     when (place) {
         PlaceId.BEACH -> beachBack(st, pen)
@@ -21,6 +22,7 @@ fun DrawScope.drawPlaceBack(place: PlaceId, cam: Float, u: Float, pen: Pen, styl
         PlaceId.MOUNTAIN -> mountainBack(st, pen)
         PlaceId.HEILEBERGET -> bergBack(st, pen)
         PlaceId.VAGSTADDALEN -> valleyBack(st, pen)
+        PlaceId.CLOUD_ISLAND -> cloudIslandBack(cam,u,pen)
         PlaceId.HOME -> homeBack(st, pen, styles)
         PlaceId.CAFE -> cafeBack(st, pen, styles)
         PlaceId.SALON -> salonBack(st, pen, styles)

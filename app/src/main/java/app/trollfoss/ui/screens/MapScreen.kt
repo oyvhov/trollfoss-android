@@ -1,4 +1,5 @@
 package app.trollfoss.ui.screens
+import androidx.compose.foundation.background
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -58,6 +59,8 @@ import app.trollfoss.domain.PersonAnim
 import app.trollfoss.ui.S
 import app.trollfoss.ui.Screen
 import app.trollfoss.ui.TrollfossViewModel
+import app.trollfoss.ui.art.cloudPuff
+import app.trollfoss.ui.art.drawBalloon
 import app.trollfoss.ui.art.Ink
 import app.trollfoss.ui.art.Pen
 import app.trollfoss.ui.art.drawIslandMapLive
@@ -101,13 +104,28 @@ fun MapScreen(vm: TrollfossViewModel) {
     }
     val scroll = rememberScrollState()
 
-    BoxWithConstraints(Modifier.fillMaxSize()) {
+    BoxWithConstraints(Modifier.fillMaxSize().background(T.Night).padding(bottom=88.dp)) {
         val viewportWidth = constraints.maxWidth
         val w = maxWidth * MAP_WIDTH_FACTOR
         val h = maxHeight
         val mapWidth = with(LocalDensity.current) { w.roundToPx() }
         fun centered(place: PlaceId) = (mapSpot(place).x * mapWidth - viewportWidth / 2f).toInt().coerceIn(0, mapWidth - viewportWidth)
         LaunchedEffect(mapWidth, from) { scroll.scrollTo(centered(from)) }
+        fun fly(place: PlaceId) {
+            if(target!=null) return
+            if(place==from) { vm.travel(vm.place); return }
+            target=place
+            vm.sfx(Sfx.WHOOSH,0.8f)
+            scope.launch {
+                flight.snapTo(0f)
+                launch { scroll.animateScrollTo(centered(place),tween(if(motion) 1400 else 1)) }
+                flight.animateTo(1f,tween(if(motion) 1400 else 1,easing=FastOutSlowInEasing))
+                vm.landBalloon(place)
+            }
+        }
+        LaunchedEffect(Unit) {
+            vm.balloonDestination?.let { vm.balloonDestination=null;fly(it) }
+        }
         // The still scenery is drawn once into a bitmap (off the main thread); each frame draws only what moves.
         // The secret path from the cellar of Storhuset to Trollhola shows once all five golden keys are found.
         val tunnel = remember(vm.generation, vm.houseKeys) { HouseKeys.TUNNEL in vm.world.flags }
@@ -118,6 +136,12 @@ fun MapScreen(vm: TrollfossViewModel) {
         Canvas(Modifier.fillMaxSize().graphicsLayer()) {
             val pen = Pen(max(1.4f, size.height * 0.0034f), t, if (vm.night) 1f else 0f, vm.weather, season = vm.season, festival = vm.festival)
             drawIslandMapLive(pen, target ?: from, t, mapLayer.value)
+            val cloud=mapSpot(PlaceId.CLOUD_ISLAND)
+            val c=Offset(cloud.x*size.width,cloud.y*size.height-size.height*0.045f)
+            val r=size.height*0.035f
+            cloudPuff(c,r*1.2f,Color(0xFFFFFAEF),pen)
+            inkedRound(Rect(c.x-r*1.3f,c.y,c.x+r*1.3f,c.y+r*0.3f),r*0.2f,Color(0xFF94C9A5),pen)
+
             val yawn = (t - yawnAt) / 2.4f
             if (yawn in 0f..1f) {
                 val open = sin(yawn * Math.PI.toFloat())
@@ -172,19 +196,7 @@ fun MapScreen(vm: TrollfossViewModel) {
                     .size(140.dp, 110.dp)
                     .semantics { contentDescription = label; role = Role.Button }
                     .clickable(remember { MutableInteractionSource() }, indication = null) {
-                        if (target != null) return@clickable
-                        if (place == from) {
-                            vm.back()
-                            return@clickable
-                        }
-                        target = place
-                        vm.sfx(Sfx.WHOOSH, 0.8f)
-                        scope.launch {
-                            flight.snapTo(0f)
-                            launch { scroll.animateScrollTo(centered(place), tween(if (motion) 1400 else 1)) }
-                            flight.animateTo(1f, tween(if (motion) 1400 else 1, easing = FastOutSlowInEasing))
-                            vm.travel(place)
-                        }
+                        fly(place)
                     },
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom,
@@ -196,56 +208,13 @@ fun MapScreen(vm: TrollfossViewModel) {
         }
 
         CloseButton({ vm.back() }, Modifier.align(Alignment.TopStart).padding(16.dp))
-        Row(Modifier.align(Alignment.BottomStart).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(Modifier.align(Alignment.BottomStart).offset(y=88.dp).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             RoundButton(S.book.str(), onClick = { vm.open(Screen.Book) }, tone = Tones.Grape, icon = Icons.Book)
             RoundButton(S.workshop.str(), onClick = { vm.open(Screen.Creator(null)) }, tone = Tones.Grape, icon = Icons.Workshop)
             RoundButton(S.players.str(), onClick = { vm.open(Screen.Players) }, tone = Tones.Mint, icon = Icons.Friends)
         }
         RoundButton(S.parents.str(), onClick = { vm.open(Screen.ParentGate) }, modifier = Modifier.align(Alignment.TopEnd).padding(16.dp), size = 52.dp, tone = Tones.Cream, icon = Icons.Gear)
-        ProgressButton(vm,Modifier.align(Alignment.BottomEnd).padding(16.dp))
+        ProgressButton(vm,Modifier.align(Alignment.BottomEnd).offset(y=88.dp).padding(16.dp))
         GameText(S.mapDrag.str(), modifier = Modifier.align(Alignment.TopCenter).padding(top = 16.dp), fontSize = 14.sp, color = Color.White)
-    }
-}
-
-/** A flying iron bed: mattress, pillows and passengers suspended beneath the balloon. */
-fun DrawScope.drawBalloon(c: Offset, r: Float, pen: Pen, riders: List<Look> = emptyList()) {
-    val envelope = Path().apply {
-        moveTo(c.x, c.y + r * 0.95f)
-        cubicTo(c.x - r * 1.3f, c.y + r * 0.3f, c.x - r * 1.1f, c.y - r * 1.1f, c.x, c.y - r * 1.1f)
-        cubicTo(c.x + r * 1.1f, c.y - r * 1.1f, c.x + r * 1.3f, c.y + r * 0.3f, c.x, c.y + r * 0.95f)
-        close()
-    }
-    drawPath(envelope, Color(0xFFD2443A))
-    clipPath(envelope) {
-        for (i in -2..2 step 2) {
-            drawOval(Color(0xFFFFC83D), Offset(c.x + i * r * 0.38f - r * 0.16f, c.y - r * 1.2f), androidx.compose.ui.geometry.Size(r * 0.32f, r * 2.4f))
-        }
-        drawOval(Color.White.copy(alpha = 0.3f), Offset(c.x - r * 0.7f, c.y - r * 0.9f), androidx.compose.ui.geometry.Size(r * 0.5f, r * 0.7f))
-    }
-    drawPath(envelope, Ink.line, style = Stroke(pen.lw))
-    val bed = Rect(c.x - r * 1.08f, c.y + r * 1.27f, c.x + r * 1.08f, c.y + r * 1.57f)
-    for (side in floatArrayOf(-1f, 1f)) {
-        drawLine(Ink.line, Offset(c.x + side * r * 0.6f, c.y + r * 0.6f), Offset(c.x + side * r, bed.top), strokeWidth = pen.lw)
-        drawLine(Color(0xFFF2DEAC), Offset(c.x + side * r * 0.6f, c.y + r * 0.6f), Offset(c.x + side * r, bed.top), strokeWidth = pen.lw * 0.45f)
-    }
-    inkedRound(bed, r * 0.12f, Color(0xFFFFF3D8), pen)
-    for (i in 0..1) inkedRound(Rect(c.x - r * 0.9f + i * r * 1.25f, bed.top - r * 0.16f, c.x - r * 0.4f + i * r * 1.25f, bed.top + r * 0.02f), r * 0.08f, Color.White, pen)
-    val a = PersonAnim().apply { face = app.trollfoss.domain.Face.HAPPY; wave = if (riders.size == 1) 1f else 0f }
-    for ((i, look) in riders.withIndex()) {
-        val x = c.x + (i - (riders.size - 1) / 2f) * r * (1.65f / riders.size.coerceAtLeast(3))
-        translate(x, bed.top + r * 0.1f) { drawPerson(Species.FOLK, look, Pose.SIT, a, r * 0.88f, Pen(pen.lw * 0.5f, pen.t), seed = i.toFloat()) }
-    }
-    inkedRound(Rect(bed.left + r * 0.1f, bed.top + r * 0.12f, bed.right - r * 0.1f, bed.bottom), r * 0.06f, Color(0xFF68A4CB), pen)
-    for (i in -3..3) drawLine(Color(0xFFE9F2F8), Offset(c.x + i * r * 0.27f, bed.top + r * 0.15f), Offset(c.x + i * r * 0.27f, bed.bottom), strokeWidth = pen.lw * 0.6f)
-    // Curved iron headboard and footboard, with little brass knobs.
-    for (side in floatArrayOf(-1f, 1f)) {
-        val x = c.x + side * r * 1.08f
-        val rail = Path().apply {
-            moveTo(x, bed.bottom + r * 0.13f); lineTo(x, bed.top - r * 0.46f)
-            quadraticTo(x - side * r * 0.08f, bed.top - r * 0.75f, x - side * r * 0.34f, bed.top - r * 0.46f)
-            lineTo(x - side * r * 0.34f, bed.bottom)
-        }
-        drawPath(rail, Ink.line, style = Stroke(pen.lw * 1.4f, cap = androidx.compose.ui.graphics.StrokeCap.Round))
-        inkedCircle(Offset(x, bed.top - r * 0.46f), r * 0.055f, Color(0xFFFFC83D), pen, shade = false)
     }
 }

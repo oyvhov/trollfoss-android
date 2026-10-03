@@ -20,6 +20,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.Role
+import app.trollfoss.ui.SF
+import app.trollfoss.ui.components.BigButton
+import app.trollfoss.ui.components.Icons
+import app.trollfoss.ui.components.Tones
+import app.trollfoss.ui.components.TrollDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -85,7 +94,7 @@ fun BookScreen(vm: TrollfossViewModel) {
             .background(Brush.verticalGradient(listOf(Color(0xFF3B2F7A), Color(0xFF1D1A4A)))),
     ) {
         Column(Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.padding(end=60.dp).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                 GameText(S.book.str(), fontSize = 30.sp, style = MaterialTheme.typography.headlineLarge)
                 Box(Modifier.size(12.dp))
                 for (t in Tab.entries) {
@@ -128,6 +137,7 @@ private fun TabChip(label: String, selected: Boolean, onClick: () -> Unit) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SecretsPage(vm: TrollfossViewModel) {
+    var selectedSecret by remember { mutableStateOf<app.trollfoss.domain.Secret?>(null) }
     FlowRow(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(end = 60.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -147,12 +157,14 @@ private fun SecretsPage(vm: TrollfossViewModel) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                GameText(S.place(place).str(), fontSize = 16.sp, style = MaterialTheme.typography.titleLarge, color = Color.White)
+                GameText(S.place(place).str(), fontSize = 16.sp, style = MaterialTheme.typography.titleLarge, color = T.Ink)
                 // Three stars fit in a row; the floors of the big house may have more, and then they wrap.
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     for (s in secrets) {
                         val got = s.id in vm.world.found
-                        Canvas(Modifier.size(36.dp)) {
+                        val hintLabel = "${SF.lookHere.str()}: ${S.place(place).str()}"
+                        Canvas(Modifier.size(40.dp).semantics { contentDescription=hintLabel }
+                            .clickable(role=Role.Button) { selectedSecret=s }) {
                             val star = starPath(center, size.minDimension * 0.46f, size.minDimension * 0.2f)
                             if (got) {
                                 drawPath(star, T.Sun)
@@ -165,6 +177,15 @@ private fun SecretsPage(vm: TrollfossViewModel) {
                     }
                 }
             }
+        }
+    }
+    selectedSecret?.let { secret ->
+        TrollDialog(onClose={ selectedSecret=null }) {
+            GameText(S.place(secret.place).str(), fontSize=26.sp, color=T.Ink)
+            val f=vm.world.fixtures[secret.place.idBase + maxOf(secret.on,secret.inside)]
+            if(f!=null) CachedThumb("secret:${f.type}",100.dp) { drawFixtureThumb(f.type,f.variant,Rect(Offset.Zero,size)) }
+            GameText((if(secret.inside>=0) SF.openHere else if(secret.event) SF.exploreHere else SF.lookHere).str(),color=T.Ink,fontSize=18.sp)
+            BigButton(S.playGo.str(), onClick={ selectedSecret=null;vm.travelPlayCard(secret.place,f?.x ?: secret.x) },tone=Tones.Sea,icon=Icons.Map)
         }
     }
 }
@@ -220,6 +241,7 @@ private fun StickersPage(vm: TrollfossViewModel) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RecipesPage(vm: TrollfossViewModel) {
+    var selectedRecipe by remember { mutableStateOf<Recipe?>(null) }
     FlowRow(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(end = 60.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -231,10 +253,25 @@ private fun RecipesPage(vm: TrollfossViewModel) {
                 Modifier
                     .size(236.dp, 86.dp)
                     .clip(RoundedCornerShape(20.dp))
-                    .background(if (known) T.Cream else T.NightTop)
-                    .border(2.5.dp, T.Ink, RoundedCornerShape(20.dp)),
+                    .background(T.Cream)
+                    .border(2.5.dp, T.Ink, RoundedCornerShape(20.dp))
+                    .clickable(role=Role.Button) { selectedRecipe=r },
             ) {
                 Canvas(Modifier.fillMaxSize().padding(8.dp)) { drawRecipe(r, known) }
+            }
+        }
+    }
+    selectedRecipe?.let { recipe ->
+        TrollDialog(onClose={ selectedRecipe=null }) {
+            GameText(SF.recipe.str(),fontSize=26.sp,color=T.Ink)
+            Canvas(Modifier.size(380.dp,100.dp)) { drawRecipe(recipe,true) }
+            val fixture=vm.world.fixtures.values.sortedBy { if(it.place==vm.place) 0 else 1 }.firstOrNull { it.type==recipe.machine }
+            if(fixture!=null) {
+                GameText(S.place(fixture.place).str(),fontSize=18.sp,color=T.Ink)
+                BigButton(S.playGo.str(),onClick={ vm.goRecipe(recipe,fixture);selectedRecipe=null },tone=Tones.Sea,icon=Icons.Map)
+            } else {
+                GameText(SF.recipeMissing.str(),fontSize=18.sp,color=T.Ink)
+                BigButton(app.trollfoss.ui.SM.furnish.str(),onClick={ selectedRecipe=null;vm.open(app.trollfoss.ui.Screen.Play);vm.engine?.designMode=true },tone=Tones.Berry,icon=DesignIcons.Sofa)
             }
         }
     }
@@ -243,7 +280,7 @@ private fun RecipesPage(vm: TrollfossViewModel) {
 /** Ingredients, the machine and the result in a row; unknown recipes show only shadows. */
 private fun DrawScope.drawRecipe(r: Recipe, known: Boolean) {
     val pen = Pen(max(1.5f, size.height * 0.03f))
-    val slot = size.height * 0.8f
+    val slot = minOf(size.height * 0.8f, size.width / (r.inputs.size + 2.65f))
     val silhouette = Paint().apply { colorFilter = ColorFilter.tint(Color(0xFF16133F), BlendMode.SrcIn) }
     fun item(type: ThingType, variant: Int, x: Float, dim: Boolean) {
         val k = slot / max(type.w, type.h)
@@ -255,7 +292,7 @@ private fun DrawScope.drawRecipe(r: Recipe, known: Boolean) {
     }
     var x = slot * 0.5f
     for ((i, input) in r.inputs.withIndex()) {
-        item(input, 0, x, !known)
+        item(input, 0, x, false)
         x += slot * (if (i < r.inputs.size - 1) 0.85f else 0.75f)
     }
     // The machine, small.
@@ -286,6 +323,10 @@ private fun PhotosPage(vm: TrollfossViewModel) {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        if(vm.photos.isEmpty()) Column(horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(18.dp)) {
+            GameText(SF.photoEmpty.str(),fontSize=24.sp,color=Color.White)
+            BigButton(S.camera.str(),onClick={ vm.open(app.trollfoss.ui.Screen.Play) },tone=Tones.Sea,icon=Icons.Camera)
+        }
         for (file in vm.photos) {
             val bitmap = remember(file) {
                 runCatching { BitmapFactory.decodeFile(file.path, BitmapFactory.Options().apply { inSampleSize = 4 })?.asImageBitmap() }.getOrNull()

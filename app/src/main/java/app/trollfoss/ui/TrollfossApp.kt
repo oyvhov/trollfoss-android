@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -73,7 +74,9 @@ fun TrollfossApp(vm: TrollfossViewModel) {
         BackHandler(enabled = vm.screen != Screen.Play) { vm.back() }
         Box(Modifier.fillMaxSize().background(T.Night)) {
             // The play screen stays underneath so the world keeps its place; others slide over it.
-            PlayScreen(vm)
+            Box(if (vm.screen == Screen.Play) Modifier else Modifier.clearAndSetSemantics { }) {
+                PlayScreen(vm)
+            }
             AnimatedContent(
                 targetState = vm.screen,
                 transitionSpec = {

@@ -32,8 +32,13 @@ fun ToyRewardDetails(vm:TrollfossViewModel,reward:ToyReward,onClose:()->Unit) {
             ToyPicture(reward,92.dp)
             GameText(SP.use(reward.type).str(),fontSize=17.sp,color=T.Ink)
             if(Progression.unlocked(vm.world,reward)) {
-                RoundButton(SP.tryIt.str(),onClick={ full=!vm.tryToy(reward);if(!full) onClose() },tone=Tones.Mint,icon=Icons.Check)
-                if(full) GameText(SP.noSpace.str(),fontSize=16.sp,color=T.Ink)
+                BigButton(SP.tryIt.str(),onClick={ full=!vm.tryToy(reward);if(!full) onClose() },tone=Tones.Mint,icon=Icons.Star)
+                if(full) {
+                    GameText(SP.noSpace.str(),fontSize=16.sp,color=T.Ink)
+                    BigButton(app.trollfoss.ui.SM.furnish.str(),onClick={
+                        onClose(); vm.open(app.trollfoss.ui.Screen.Play); vm.engine?.designMode=true
+                    },tone=Tones.Cream,icon=DesignIcons.Sofa)
+                }
             } else if(reward==ToyReward.TRAIN) {
                 GameText(SP.trainStep(vm.sim.toys.trainStage).str(),fontSize=18.sp,color=T.Ink)
                 RoundButton(S.playGo.str(),onClick={
@@ -58,6 +63,8 @@ fun ToyRewardDetails(vm:TrollfossViewModel,reward:ToyReward,onClose:()->Unit) {
 
 @Composable
 fun ToyControls(vm:TrollfossViewModel,engine:Engine,f:Fixture) {
+    if(f.type==FixtureType.PLAY_DOOR) { DoorControl(vm,engine,f);return }
+    if(f.type==FixtureType.PLAY_ART) { TrollDialog(onClose={ engine.toyFixtureId=-1 }) { ArtEditor(vm,engine) { engine.toyFixtureId=-1 } };return }
     var redraw by remember(f.id) { mutableIntStateOf(0) }
     var noFriend by remember(f.id) { mutableStateOf(false) }
     val reward=ToyReward.entries.first { it.type==f.type }
@@ -108,20 +115,20 @@ fun ToyControls(vm:TrollfossViewModel,engine:Engine,f:Fixture) {
 fun ProgressButton(vm:TrollfossViewModel,modifier:Modifier=Modifier) {
     val level=Progression.level(vm.world)
     Row(modifier.background(T.Cream,RoundedCornerShape(28.dp)).padding(horizontal=10.dp,vertical=5.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-        RoundButton(SP.gifts.str(),onClick={ vm.open(app.trollfoss.ui.Screen.Tasks) },size=48.dp,tone=Tones.Sun,icon=DesignIcons.Tasks)
+        RoundButton(SP.gifts.str(),onClick=vm::openGifts,size=48.dp,tone=Tones.Sun,icon=Icons.Star)
         Column {
             GameText(SP.level(level).str(),fontSize=16.sp,color=T.Ink)
-            GameText((if(level<3) SP.missing(Progression.missing(vm.world)) else SP.allReady).str(),fontSize=12.sp,color=T.Ink)
+            GameText((if(level<Progression.thresholds.size) SP.missing(Progression.missing(vm.world)) else SP.allReady).str(),fontSize=12.sp,color=T.Ink)
             LevelDots(vm)
         }
-        ToyPicture(ToyReward.entries.first { it.level==minOf(3,level+1) },48.dp)
+        ToyPicture(ToyReward.entries.first { it.level==minOf(Progression.thresholds.size,level+1) },48.dp)
     }
 }
 
 @Composable
 fun LevelDots(vm:TrollfossViewModel) {
     val level=Progression.level(vm.world)
-    if(level>=3) return
+    if(level>=Progression.thresholds.size) return
     val from=Progression.thresholds[level-1]
     Row(horizontalArrangement=Arrangement.spacedBy(5.dp)) {
         repeat(Progression.thresholds[level]-from) { i -> Canvas(Modifier.size(15.dp)) {
@@ -133,7 +140,7 @@ fun LevelDots(vm:TrollfossViewModel) {
 
 @Composable
 fun LevelGiftCard(vm:TrollfossViewModel,modifier:Modifier=Modifier) {
-    Row(modifier.background(T.Cream,RoundedCornerShape(24.dp)).clickable { vm.open(app.trollfoss.ui.Screen.Tasks) }.padding(12.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+    Row(modifier.background(T.Cream,RoundedCornerShape(24.dp)).clickable { vm.openGifts() }.padding(12.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)) {
         Column(horizontalAlignment=Alignment.CenterHorizontally) {
             GameText(SP.newGifts.str(),fontSize=18.sp,color=T.Ink)
             Row { for(reward in ToyReward.entries.filter { it.level==vm.levelGift }) ToyPicture(reward,52.dp) }

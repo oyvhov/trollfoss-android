@@ -4,7 +4,7 @@ package app.trollfoss.domain
 data class RoomStyle(val wall: Int = 0, val floor: Int = 0)
 
 /** Furniture put away in the home designer's store, ready to be placed again. */
-data class Stored(val type: FixtureType, val variant: Int)
+data class Stored(val type: FixtureType, val variant: Int, val mode: Int = 0, val door: RoomLink? = null)
 
 /** Something the catalogue offers: a piece of furniture and, for special pieces, the stickers it takes. */
 data class CatalogueItem(val type: FixtureType, val variant: Int = 0, val stickers: Int = 0)

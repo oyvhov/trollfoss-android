@@ -26,7 +26,8 @@ class PlayersTest {
         assertEquals(Mode.BAG, p.mode)
         assertNull(p.place)
         assertFalse(p.held)
-        assertFalse(p.id in world.playerIds)
+        assertTrue(p.id in world.playerIds)
+        assertTrue(Players.paused(world,p))
         assertTrue(world.mine.guests.none { it.id == p.id })
         val saved = WorldStore.decode(WorldStore.encode(world, Settings())).world
         val recovered = saved.bodies[p.id] as Person
@@ -38,8 +39,8 @@ class PlayersTest {
         assertEquals(Mode.FREE, recovered.mode)
         assertEquals(PlaceId.BEACH, recovered.place)
         assertEquals(PlaceId.BEACH, saved.worn(recovered, Slot.HEAD)?.place)
-        assertFalse(recovered.id in saved.playerIds)
-        Players.toggle(saved, recovered)
+        assertTrue(recovered.id in saved.playerIds)
+        assertFalse(Players.paused(saved,recovered))
         Players.arrive(saved, PlaceId.HOME, 1f)
         assertSame(recovered, Players.team(saved).single())
         assertEquals(PlaceId.HOME, recovered.place)

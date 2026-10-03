@@ -232,7 +232,32 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         val f=sim.toys.claim(reward,to,x) ?: return false
         sim.toys.supply(f);changed();travelPlayCard(to,f.x);return true
     }
+    var guidedTask by mutableStateOf<Task?>(null)
+    var giftsFirst by mutableStateOf(false)
+    fun openGifts() { open(Screen.Tasks); giftsFirst = true }
+    fun goRecipe(recipe: app.trollfoss.domain.Recipe, fixture: app.trollfoss.domain.Fixture) {
+        mineUi.open=false;engine?.designMode=false
+        sim.edit {
+            recipe.inputs.forEachIndexed { i, type ->
+                val key="recipe:${recipe.key}:$i"
+                val old=world.bodies[world.toyInputs[key]] as? app.trollfoss.domain.Thing
+                val thing=old?.takeIf { it.type==type && it.used==0 }
+                    ?: world.addThing(type,0,fixture.place,fixture.x,PlaceId.FRONT-0.03f).also { world.toyInputs[key]=it.id }
+                if(!thing.held && thing.mode in listOf(Mode.FREE,Mode.BAG)) {
+                    thing.place=fixture.place;thing.mode=Mode.FREE;thing.holder=-1;thing.inside=-1
+                    thing.restOwner=-2;thing.resting=false;thing.vx=0f;thing.vy=0f
+                    thing.x=(fixture.x-0.35f+i*0.15f).coerceIn(0.1f,fixture.place.width-0.1f)
+                    thing.y=PlaceId.FRONT-0.03f;thing.ground=thing.y
+                }
+            }
+        }
+        changed();travelPlayCard(fixture.place,fixture.x)
+    }
+
     fun goTask(task:Task) {
+        mineUi.open = false
+        engine?.designMode = false
+        guidedTask = task
         val to=task.place ?: place
         val fixture=world.fixturesIn(to).firstOrNull { it.type==task.fixture }
         val x=fixture?.x ?: world.people().firstOrNull { it.place==to && it.species==task.species }?.x ?: 1.15f
@@ -288,6 +313,8 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         val start = cams[place] ?: defaultCam(place)
         app.trollfoss.ui.art.MineView.house = world.mine
         app.trollfoss.ui.art.ToyArt.photos=world.toyPhotos
+        app.trollfoss.ui.art.CreativeArt.state=world.community
+        app.trollfoss.ui.art.CreativeArt.people=world.people().associateBy { it.id }
         return Engine(world, place, sim, this, motion, start).also {
             pendingFocus?.let { x -> it.focusOn(x); pendingFocus = null }
             it.season = season
@@ -317,6 +344,25 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     var passageStamp by mutableIntStateOf(0)
         private set
     private var pendingFocus: Float? = null
+    var balloonDestination: PlaceId? = null
+    fun flyTo(to: PlaceId) {
+        balloonDestination = to
+        open(Screen.Map)
+    }
+    fun landBalloon(to: PlaceId) {
+        if(place==PlaceId.CLOUD_ISLAND && to==world.community.returnPlace) {
+            val x=world.community.returnX
+            world.community.returnPlace=null
+            travelPlayCard(to,x)
+            return
+        }
+        if(to==PlaceId.CLOUD_ISLAND && place!=to) {
+            world.community.returnPlace=place
+            world.community.returnX=engine?.let { it.cam+it.visibleViewport/2 } ?: 1f
+        }
+        travel(to)
+    }
+
 
     fun travelPlayCard(to: PlaceId, x: Float = 1.15f) {
         pendingFocus = x
@@ -337,9 +383,15 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         if (!to.mine) sim.mine.endParty()
         engine?.cancel()
         Players.arrive(world, to, pendingFocus ?: arrivalCenter(to))
+        sim.community.follow(to)
         world.place = to
         place = to
         screen = navigation.arrive(Screen.Play)
+        // A trip within the same place reuses its engine; consume the focus here too.
+        engine?.takeIf { it.place == to }?.let { current ->
+            pendingFocus?.let(current::focusOn)
+            pendingFocus = null
+        }
         sfx(Sfx.WHOOSH, 0.7f)
         scheduleSave()
     }
@@ -348,9 +400,11 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         if (to != PlaceId.MINE_GROUND && to != PlaceId.MINE_UPPER) return
         pendingFocus = slot.coerceIn(0, app.trollfoss.domain.Mine.SLOTS - 1) * app.trollfoss.domain.Mine.SLOT_W + 1f
         travel(to)
+        engine?.takeIf { it.place==to }?.selectRoom(slot)
     }
 
     fun open(target: Screen) {
+        if (target == Screen.Tasks) giftsFirst = false
         if (target != Screen.Play) engine?.cancel()
         screen = navigation.open(target)
         updateMusic()
@@ -387,7 +441,9 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun recallPlayer(person: Person) {
         if (person.id !in world.playerIds) return
+        Players.resume(world, person)
         engine?.invite(person)
+        playersVersion++
         scheduleSave()
     }
 
@@ -523,6 +579,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     private var partyMusic = false
 
     override fun changed() {
+        weather = world.weather
         val ids = world.playerIds.toList()
         if (ids != visiblePlayerIds) {
             visiblePlayerIds = ids
@@ -530,7 +587,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         }
         mineVersion = world.mine.version
         mineUi.version = mineVersion
-        val party = world.mine.party != null
+        val party = world.mine.party != null || world.community.partyPlace == place
         if (party != partyMusic) {
             partyMusic = party
             updateMusic()
@@ -563,6 +620,11 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     private fun updateMusic() {
         val theme = when {
             screen == Screen.Map -> MusicTheme.MAP
+            world.community.partyPlace==place && screen==Screen.Play -> when(world.community.partyMusic) {
+                0 -> MusicTheme.CAFE
+                1 -> MusicTheme.RADIO
+                else -> MusicTheme.STAGE
+            }
             (radioOn || partyMusic) && screen == Screen.Play -> MusicTheme.RADIO
             night && place != PlaceId.SPACE && place != PlaceId.UNDERWATER && place != PlaceId.STAGE -> MusicTheme.NIGHT
             else -> when (place) {
@@ -575,6 +637,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
                 PlaceId.MOUNTAIN -> MusicTheme.PARK
                 PlaceId.FARM -> MusicTheme.FARM
                 PlaceId.SPACE -> MusicTheme.SPACE
+                PlaceId.CLOUD_ISLAND -> MusicTheme.SPACE
                 PlaceId.TIVOLI -> MusicTheme.TIVOLI
                 PlaceId.SHOP -> MusicTheme.SHOP
                 PlaceId.DOCTOR -> MusicTheme.DOCTOR

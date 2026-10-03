@@ -232,7 +232,8 @@ internal class GroundCover(
 
     private fun build(u: Float): Geo {
         val w = x1 - x0
-        val n = max(6, (w * 16f * density).toInt())
+        // Keep the walking strip clear; seasonal colour gathers beside the play area.
+        val n = max(2, (w * 16f * density * if (y0 > 0.93f) 0.12f else 0.38f).toInt())
         val litter = Array(4) { ArrayList<Offset>(n * 2) }
         val flowers = Array(5) { ArrayList<Offset>(n) }
         val hearts = ArrayList<Offset>(n * 2)

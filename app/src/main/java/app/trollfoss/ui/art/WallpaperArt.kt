@@ -389,6 +389,17 @@ private fun DrawScope.drawLayers(p: Pattern) {
  * at ([ox], [oy]) and [scale] pixels per unit.
  */
 internal fun DrawScope.drawWallpaper(index: Int, left: Float, top: Float, right: Float, bottom: Float, ox: Float, oy: Float, scale: Float) {
+    val place=CreativeArt.place
+    val room=app.trollfoss.domain.Decor.roomAt(place,(left-ox)/scale+0.1f)
+    val custom=CreativeArt.state.wallArt[app.trollfoss.domain.Decor.key(place,room)]?.let { CreativeArt.state.art[it] }
+    if(custom!=null && right>left && bottom>top) {
+        clipRect(left,top,right,bottom) {
+            drawRect(Color(0xFFFFF4DB),Offset(left,top),Size(right-left,bottom-top))
+            val from=floor((left-ox)/scale).toInt()
+            val to=ceil((right-ox)/scale).toInt()
+            for(i in from..to) drawArtwork(custom,Rect(ox+i*scale,oy+0.08f*scale,ox+(i+1)*scale,oy+0.78f*scale),Pen(scale*0.003f))
+        };return
+    }
     if (right <= left || bottom <= top || index !in 1..WALLPAPERS) return
     val p = wallPattern(index)
     clipRect(left, top, right, bottom) {

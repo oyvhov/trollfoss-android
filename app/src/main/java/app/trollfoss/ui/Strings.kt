@@ -43,6 +43,7 @@ object SP {
         ToyReward.PUMP -> Txt("Leikepumpe","Lekepumpe")
         ToyReward.CAMERA -> Txt("Vennekamera","Vennekamera")
         ToyReward.TRAIN -> Txt("Leiketog","Leketog")
+        else -> SC.toyName(t.type)
     }
     fun trainStep(stage:Int):Txt=when(stage) {
         0 -> Txt("Finn tannhjulet ved toget i Andre høgda.","Finn tannhjulet ved toget i Andre etasje.")
@@ -61,7 +62,7 @@ object SP {
         FixtureType.PLAY_POPCORN -> Txt("Dra maisen til vogna. Så blir han popcorn til vennene!","Dra maisen til vogna. Så blir den popcorn til vennene!")
         FixtureType.PLAY_PUMP -> Txt("Dra ballen til pumpa: større ball! Ei bøtte får vatn.","Dra ballen til pumpa: større ball! En bøtte får vann.")
         FixtureType.PLAY_CAMERA -> Txt("Set ein venn ved kameraet. Trykk Bruk: eit bilete til veggen!","Sett en venn ved kameraet. Trykk Bruk: et bilde til veggen!")
-        else -> Txt("Prøv leika!","Prøv leken!")
+        else -> SC.toyUse(type)
     }
     fun taskHint(task:Task):Txt=when(task.id) {
         "feed_horse" -> Txt("Dra gulrota til hesten.","Dra gulroten til hesten.")
@@ -172,6 +173,7 @@ object S {
         PlaceId.MINE_GROUND -> txt("Mitt hus")
         PlaceId.MINE_UPPER -> txt("Mitt hus, oppe", "Mitt hus, oppe")
         PlaceId.VAGSTADDALEN -> txt("Vagstaddalen", "Vagstaddalen")
+        PlaceId.CLOUD_ISLAND -> txt("Skyøya", "Skyøya")
     }
 
     val map = txt("Kart")
@@ -413,4 +415,108 @@ object S {
     val cellarTunnel = txt("Gruvetunnelen til Trollhola", "Gruvetunnelen til Trollhula")
     val cellarSockMonster = txt("Sokkemonsteret")
     val cellarKeyHint = txt("Sokkemonsteret har ei gylden nøkkel i magen.", "Sokkemonsteret har en gylden nøkkel i magen.")
+}
+
+/** Creative play, relationships and every label on the new picture controls. */
+object SC {
+    val back=Txt("Tilbake","Tilbake")
+    val rain=Txt("Regn","Regn")
+    val together=Txt("Venner og fantasi","Venner og fantasi")
+    val choose=Txt("Vel ein venn","Velg en venn")
+    val needTwo=Txt("Set to venner nær kvarandre på golvet.","Sett to venner nær hverandre på gulvet.")
+    val personalities=Txt("Slik likar eg å leike","Slik liker jeg å leke")
+    val pets=Txt("Dyrevenn","Dyrevenn")
+    val petHome=Txt("Send dyret heim","Send dyret hjem")
+    val petHint=Txt("Vel same dyr som skal bli med. Dra det når du vil.","Velg samme dyr som skal bli med. Dra det når du vil.")
+    val band=Txt("Band","Band")
+    val bandHint=Txt("Gi gitar, tromme og mikrofon til tre venner. Vel dei og start!","Gi gitar, tromme og mikrofon til tre venner. Velg dem og start!")
+    val instruments=Txt("Hent instrument","Hent instrumenter")
+    val start=Txt("Start","Start")
+    val stop=Txt("Stopp","Stopp")
+    val party=Txt("Lag fest","Lag fest")
+    val guests=Txt("Vel gjester","Velg gjester")
+    val music=Txt("Musikk","Musikk")
+    val lights=Txt("Lys","Lys")
+    val food=Txt("Hent festmat","Hent festmat")
+    val endParty=Txt("Avslutt festen","Avslutt festen")
+    val noGuests=Txt("Vel minst ein gjest. Gi bandvennene instrument først.","Velg minst en gjest. Gi bandvennene instrumenter først.")
+    val sky=Txt("Sengballongen til Skyøya","Sengeballongen til Skyøya")
+    val skyHint=Txt("Vel stopp ved Skyøya. Venner, dyr og bagasje blir med. Piknik og kikkert ventar!","Velg stopp ved Skyøya. Venner, dyr og bagasje blir med. Piknik og kikkert venter!")
+    val returnTo=Txt("Tilbake til start","Tilbake til start")
+    val art=Txt("Lag kunst","Lag kunst")
+    val artHint=Txt("Trykk eller dra på arket. Vel farge og form.","Trykk eller dra på arket. Velg farge og form.")
+    val hang=Txt("Heng på veggen","Heng på veggen")
+    val wallpaper=Txt("Bruk som tapet","Bruk som tapet")
+    val artUndo=Txt("Ta vekk siste stempel","Ta bort siste stempel")
+    val shape=Txt("Form","Form")
+    val door=Txt("Vel det hemmelege rommet","Velg det hemmelige rommet")
+    val buildRoom=Txt("Bygg eit rom i Mitt hus først.","Bygg et rom i Mitt hus først.")
+    val enter=Txt("Opne den hemmelege døra","Åpne den hemmelige døra")
+    val secret=Txt("Prøv den løynde eigenskapen","Prøv den skjulte egenskapen")
+    val awaken=Txt("Tryll bamsen levande – eller tilbake","Tryll bamsen levende – eller tilbake")
+    val weather=Txt("Vêrleik","Værlek")
+    val wind=Txt("Vind","Vind")
+    val snow=Txt("Form snø","Form snø")
+    val waterHint=Txt("Fyll bøtta ved pumpa. Sett rennene tett, med høgre ende nedover.","Fyll bøtta ved pumpa. Sett rennene tett, med høyre ende nedover.")
+    val obstacle=Txt("Bygg hinderbane","Bygg hinderbane")
+    val rescue=Txt("Hjelp over bekken","Hjelp over bekken")
+    val rescueHint=Txt("Vel bru, båt eller ein venn. Flytt til høgre side for å hjelpe blomen.","Velg bro, båt eller en venn. Flytt til høyre side for å hjelpe blomsten.")
+    val bridge=Txt("Hent planke til bru","Hent planke til bro")
+    val boat=Txt("Hent båt","Hent båt")
+    val saved=Txt("Dette blir verande i verda di.","Dette blir værende i verden din.")
+    fun trait(t:app.trollfoss.domain.Temperament)=when(t) {
+        app.trollfoss.domain.Temperament.PLAYFUL -> Txt("Leiken","Leken")
+        app.trollfoss.domain.Temperament.CALM -> Txt("Roleg","Rolig")
+        app.trollfoss.domain.Temperament.CURIOUS -> Txt("Nysgjerrig","Nysgjerrig")
+    }
+    fun friend(a:app.trollfoss.domain.FriendAction)=when(a) {
+        app.trollfoss.domain.FriendAction.HUG -> Txt("Klem","Klem")
+        app.trollfoss.domain.FriendAction.HIGH_FIVE -> Txt("High five","High five")
+        app.trollfoss.domain.FriendAction.HOLD_HANDS -> Txt("Halde hender","Holde hender")
+    }
+    fun toyName(t:FixtureType):Txt=when(t) {
+        FixtureType.PLAY_SEESAW -> Txt("Vennevippe","Vennevippe")
+        FixtureType.PLAY_PUPPETS -> Txt("Dokketeater","Dukketeater")
+        FixtureType.PLAY_TANDEM -> Txt("Tandemsykkel","Tandemsykkel")
+        FixtureType.PLAY_PICNIC -> Txt("Piknikkorg","Piknikkurv")
+        FixtureType.PLAY_CRANE -> Txt("Leikekran","Lekekran")
+        FixtureType.PLAY_CONVEYOR -> Txt("Transportband","Transportbånd")
+        FixtureType.PLAY_BUILD -> Txt("Byggjebord","Byggebord")
+        FixtureType.PLAY_CHANNEL -> Txt("Vassrenne","Vannrenne")
+        FixtureType.PLAY_MIRROR -> Txt("Tryllespegel","Tryllespeil")
+        FixtureType.PLAY_HOVER -> Txt("Svevepute","Svevepute")
+        FixtureType.PLAY_CLOUD -> Txt("Vêrglas","Værglass")
+        FixtureType.PLAY_PORTAL -> Txt("Portalring","Portalring")
+        FixtureType.PLAY_TREE -> Txt("Mitt epletre","Mitt epletre")
+        FixtureType.PLAY_REPAIR -> Txt("Lys å reparere","Lys å reparere")
+        FixtureType.PLAY_DOOR -> Txt("Hemmeleg bokhylledør","Hemmelig bokhylledør")
+        FixtureType.PLAY_TUNNEL -> Txt("Leiketunnel","Leketunnel")
+        FixtureType.PLAY_JUMP -> Txt("Mjukt hopp","Mykt hopp")
+        FixtureType.PLAY_WATER_WHEEL -> Txt("Vasshjul","Vannhjul")
+        FixtureType.PLAY_ART -> Txt("Kunststaffeli","Kunststaffeli")
+        FixtureType.PLAY_RESCUE -> Txt("Blomen over bekken","Blomsten over bekken")
+        else -> Txt("Leike","Leke")
+    }
+    fun toyUse(t:FixtureType):Txt=when(t) {
+        FixtureType.PLAY_SEESAW -> Txt("Set ein venn i kvar ende. Trykk Bruk for å vippe.","Sett en venn i hver ende. Trykk Bruk for å vippe.")
+        FixtureType.PLAY_PUPPETS -> Txt("Set vennene i teatret. Start dokkene – publikum ler!","Sett vennene i teatret. Start dukkene – publikum ler!")
+        FixtureType.PLAY_TANDEM -> Txt("To venner kan sykle med pilene. Trykk på sykkelen for ringjeklokke.","To venner kan sykle med pilene. Trykk på sykkelen for ringeklokke.")
+        FixtureType.PLAY_PICNIC -> Txt("Trykk for å opne korga. Set oppi venner og legg mat på duken.","Trykk for å åpne kurven. Sett oppi venner og legg mat på duken.")
+        FixtureType.PLAY_CRANE -> Txt("Dra ei ting til kroken. Bruk løftar, flyttar og set ned.","Dra en ting til kroken. Bruk løfter, flytter og setter ned.")
+        FixtureType.PLAY_CONVEYOR -> Txt("Dra ei ting til bandet. Bruk startar, stoppar og vender.","Dra en ting til båndet. Bruk starter, stopper og snur.")
+        FixtureType.PLAY_BUILD -> Txt("Dra tre klossar til bordet. Bruk gjer dei til ei køyrbar vogn. Delane kan hentast att.","Dra tre klosser til bordet. Bruk gjør dem til en kjørbar vogn. Delene kan hentes tilbake.")
+        FixtureType.PLAY_CHANNEL -> waterHint
+        FixtureType.PLAY_MIRROR -> Txt("Set ein venn framfor spegelen. Bruk speglar figuren og skiftar uttrykk ei lita stund.","Sett en venn foran speilet. Bruk speiler figuren og endrer uttrykk en liten stund.")
+        FixtureType.PLAY_HOVER -> Txt("Dra ei ting til puta. Bruk løftar henne – og senkar igjen.","Dra en ting til puta. Bruk løfter den – og senker igjen.")
+        FixtureType.PLAY_CLOUD -> Txt("Dra ei bøtte med vatn til glaset. Skyregnet vatnar tre i nærleiken.","Dra en bøtte med vann til glasset. Skyregnet vanner trær i nærheten.")
+        FixtureType.PLAY_PORTAL -> Txt("Set ut to ringar med same farge. Dra ei ting inn eller set ein venn ved ringen og trykk Bruk.","Sett ut to ringer med samme farge. Dra en ting inn eller sett en venn ved ringen og trykk Bruk.")
+        FixtureType.PLAY_TREE -> Txt("Vatn treet tre gonger. Det veks og blir ståande. Trykk på det store treet for eple.","Vann treet tre ganger. Det vokser og blir stående. Trykk på det store treet for eple.")
+        FixtureType.PLAY_REPAIR -> Txt("Dra skrutrekkaren til lyset. No kan det slåast av og på.","Dra skrutrekkeren til lyset. Nå kan det slås av og på.")
+        FixtureType.PLAY_DOOR -> Txt("Kople bokhylla til eit rom du har bygd. Ei tydeleg knapp tek deg tilbake.","Koble bokhylla til et rom du har bygd. En tydelig knapp tar deg tilbake.")
+        FixtureType.PLAY_TUNNEL,FixtureType.PLAY_JUMP -> Txt("Flytt delane som du vil. Dra ein venn til tunnelen eller hoppet og sjå kva som skjer.","Flytt delene som du vil. Dra en venn til tunnelen eller hoppet og se hva som skjer.")
+        FixtureType.PLAY_WATER_WHEEL -> Txt("Vatn frå bøtta eller rennene driv hjulet.","Vann fra bøtta eller rennene driver hjulet.")
+        FixtureType.PLAY_ART -> artHint
+        FixtureType.PLAY_RESCUE -> rescueHint
+        else -> Txt("Prøv leika!","Prøv leken!")
+    }
 }

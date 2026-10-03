@@ -252,7 +252,7 @@ private fun RoomsTab(vm: TrollfossViewModel, engine: Engine, place: PlaceId, til
                 if (tile >= 100.dp) CachedThumb("mine:kind:${kind.name}", tile) { drawKindThumb(kind) }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Column(Modifier.width(tile), horizontalAlignment = Alignment.CenterHorizontally) {
-                        RoundButton(SM.playInRoom.str(), onClick = { vm.mineUi.open = false; engine.selectRoom(selected) }, size = 48.dp, tone = Tones.Mint, icon = Icons.Friends)
+                        RoundButton(SM.playInRoom.str(), onClick = { vm.mineUi.open = false;vm.travelMineRoom(place,selected) }, size = 48.dp, tone = Tones.Mint, icon = Icons.Friends)
                         GameText(SM.playInRoom.str(), fontSize = 11.sp, color = T.Ink, maxLines = 2)
                     }
                     val next = Mine.buildable(h, place).firstOrNull()
@@ -311,7 +311,7 @@ private fun FloorTab(vm: TrollfossViewModel, place: PlaceId, tile: Dp) {
     val h = remember(vm.mineVersion) { vm.world.mine }
     val can = Mine.canBuildUpper(h)
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)) {
-        CachedThumb("mine:floors:${h.upperBuilt}", tile - 24.dp) { drawFloorsThumb(h.upperBuilt) }
+        CachedThumb("mine:floors:${h.shape}:${h.upperBuilt}:${h.wall}:${h.roof}", tile - 24.dp) { drawHouseThumb(h) }
         when {
             h.upperBuilt -> {
                 GameText(SM.floorReady.str(), fontSize = 18.sp, color = T.Ink)
@@ -489,18 +489,19 @@ private fun Arrow(up: Boolean) {
 @Composable
 fun DemolishDialog(vm: TrollfossViewModel) {
     val h = vm.world.mine
+    val compact = vm.engine?.compact == true
     val place = h.askPlace
     val slot = h.askDemolish
     val kind = h.kind(place, slot) ?: run { vm.sim.mine.cancelDemolish(); return }
     app.trollfoss.ui.components.TrollDialog(onClose = { vm.sim.mine.cancelDemolish(); vm.changed() }, maxWidth = 440.dp) {
-        app.trollfoss.ui.components.GameText(SM.tearDown.str(), fontSize = 26.sp, style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
+        app.trollfoss.ui.components.GameText(SM.tearDown.str(), fontSize = if (compact) 22.sp else 26.sp, style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            CachedThumb("mine:kind:${kind.name}", 120.dp) { drawKindThumb(kind) }
-            IconCanvas(BuildIcons.Smash, Modifier.size(70.dp))
-            IconCanvas(app.trollfoss.ui.components.DesignIcons.Box, Modifier.size(70.dp))
+            CachedThumb("mine:kind:${kind.name}", if (compact) 60.dp else 120.dp) { drawKindThumb(kind) }
+            IconCanvas(BuildIcons.Smash, Modifier.size(if (compact) 42.dp else 70.dp))
+            IconCanvas(app.trollfoss.ui.components.DesignIcons.Box, Modifier.size(if (compact) 42.dp else 70.dp))
         }
         app.trollfoss.ui.components.GameText(SM.tearDownBody.str(), fontSize = 16.sp, style = androidx.compose.material3.MaterialTheme.typography.bodyLarge)
-        Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             app.trollfoss.ui.components.BigButton(SM.tearDownNo.str(), onClick = { vm.sim.mine.cancelDemolish(); vm.changed() }, tone = Tones.Mint, icon = Icons.Check)
             app.trollfoss.ui.components.BigButton(SM.tearDownYes.str(), onClick = { vm.sim.mine.demolish(place, slot); vm.changed() }, tone = Tones.Berry, icon = BuildIcons.Smash)
         }

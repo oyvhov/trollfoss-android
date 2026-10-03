@@ -34,7 +34,7 @@ object PlayConnections {
 
     /** Bring the existing friend, with their clothes and belongings. Never create a duplicate. */
     fun invite(sim: Sim, p: Person, to: PlaceId, x: Float): Boolean {
-        if (sim.world.bodies[p.id] !== p) return false
+        if (sim.world.bodies[p.id] !== p || p.held) return false
         var cx = x.coerceIn(p.w / 2f + 0.03f, to.width - p.w / 2f - 0.03f)
         if (to == PlaceId.MINE_GROUND || to == PlaceId.MINE_UPPER) {
             if ((0 until Mine.SLOTS).none { sim.world.mine.standing(to, it) }) return false
@@ -46,7 +46,8 @@ object PlayConnections {
         if (band == null) return false
         val inset = minOf(p.w / 2f, (band.x2 - band.x1) / 2f)
         cx = cx.coerceIn(band.x1 + inset, band.x2 - inset)
-        House.moveTo(sim.world, p, to, cx)
+        House.moveTo(sim.world, p, to, cx, PlaceId.FRONT - 0.012f)
+        Players.resume(sim.world, p)
         sim.world.mine.guests.removeAll { it.id == p.id }
         p.held = false
         p.rot = 0f
@@ -56,7 +57,7 @@ object PlayConnections {
         p.anim.nameTag = 2.2f
         p.z = sim.world.nextZ()
         // Ground bands keep invited friends on a bank, including in the valley.
-        p.ground = to.floor
+        p.ground = p.y
         sim.updatePose(p)
         return true
     }

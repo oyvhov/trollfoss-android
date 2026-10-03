@@ -11,7 +11,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
@@ -38,6 +38,7 @@ import app.trollfoss.ui.theme.T
 fun PlayersScreen(vm: TrollfossViewModel) {
     vm.playersVersion
     val team = Players.team(vm.world)
+    var friendsOpen by remember { mutableStateOf(false) }
     val compact = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp < 520
     Column(Modifier.fillMaxSize().background(T.Cream).padding(if (compact) 12.dp else 24.dp),
         verticalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 12.dp)) {
@@ -50,9 +51,12 @@ fun PlayersScreen(vm: TrollfossViewModel) {
             RoundButton(S.newFigure.str(), { vm.open(Screen.Creator(null)) },
                 size = if (compact) 44.dp else 56.dp, tone = Tones.Grape, icon = Icons.Workshop)
             Spacer(Modifier.width(12.dp))
+            RoundButton(S.friendsHere.str(), { friendsOpen = true },
+                size = if (compact) 44.dp else 56.dp, tone = Tones.Mint, icon = Icons.House)
+            Spacer(Modifier.width(12.dp))
             CloseButton(vm::back, size = if (compact) 44.dp else 56.dp)
         }
-        if (team.isNotEmpty()) Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        Row(Modifier.fillMaxWidth().height(if (compact) 52.dp else 68.dp).horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             team.forEachIndexed { index, person ->
                 Row(Modifier.background(T.Sun, RoundedCornerShape(18.dp)).padding(horizontal = 10.dp, vertical = 4.dp),
@@ -83,7 +87,9 @@ fun PlayersScreen(vm: TrollfossViewModel) {
                         drawSpeciesThumb(person.species, Rect(0f, 0f, size.width, size.height), person.look)
                     }
                     GameText(person.name, fontSize = 14.sp, maxLines = 1)
-                    if (index >= 0) GameText("${S.playerNumber.str()} ${index + 1} ✓", fontSize = 12.sp)
+                    Box(Modifier.height(20.dp),contentAlignment=Alignment.Center) {
+                        if(index>=0) GameText("${S.playerNumber.str()} ${index + 1} ✓",fontSize=12.sp)
+                    }
                 }
             }
         }
@@ -96,4 +102,7 @@ fun PlayersScreen(vm: TrollfossViewModel) {
             }, size = if (compact) 44.dp else 60.dp, tone = Tones.Mint, icon = Icons.Check)
         }
     }
+    if (friendsOpen) FriendsPanel(vm.world, vm.place,
+        onInvite = { vm.engine?.invite(it) }, onPack = { vm.engine?.packPerson(it) },
+        onClose = { friendsOpen = false })
 }

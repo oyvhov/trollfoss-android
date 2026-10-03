@@ -1,5 +1,7 @@
 package app.trollfoss.ui.screens
 
+import app.trollfoss.ui.art.drawBalloon
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
@@ -17,6 +19,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -53,6 +56,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import app.trollfoss.domain.Secrets
 import app.trollfoss.domain.Weather
 import app.trollfoss.ui.S
@@ -82,6 +89,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
     val density = LocalDensity.current.density
     val layer = rememberGraphicsLayer()
     var capturePhoto by remember { mutableStateOf(false) }
+    var photoPreview by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
     val scope = rememberCoroutineScope()
     val compact = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp < 520
 
@@ -139,9 +147,28 @@ fun PlayScreen(vm: TrollfossViewModel) {
         else -> 0.dp
     }
     Box(Modifier.fillMaxSize()) {
+        val sceneLabel=S.place(place).str()
+        val findLabel=S.recallPlayers.str()
+        val helpLabel=app.trollfoss.ui.SF.hint.str()
+        val playLabel=S.playCards.str()
+        engine.visibleRoom // Refresh alternative actions when the camera enters another room.
+        val fixtureActions=vm.world.fixturesIn(place).filter { kotlin.math.abs(it.x-(engine.cam+engine.visibleViewport/2))<engine.visibleViewport/2+0.1f }.take(12).map { f ->
+            val name=app.trollfoss.ui.FurnitureLabels.name(f.type).str()
+            CustomAccessibilityAction(name) { engine.accessibleFixture(f.id) }
+        }
         Canvas(
             Modifier
                 .fillMaxSize()
+                .semantics {
+                    contentDescription=sceneLabel
+                    customActions=listOf(
+                        CustomAccessibilityAction(findLabel) { vm.recallPlayers();true },
+                        CustomAccessibilityAction(helpLabel) { vm.open(Screen.Tasks);true },
+                        CustomAccessibilityAction(playLabel) { playCardsOpen=true;true },
+                    ) + vm.world.people().filter { it.place==place && it.name.isNotBlank() }.take(12).map { p ->
+                        CustomAccessibilityAction(p.name) { engine.accessiblePlay(p.id) }
+                    } + fixtureActions
+                }
                 .drawWithContent {
                     if (capturePhoto) {
                         layer.record { this@drawWithContent.drawContent() }
@@ -166,6 +193,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
         ) {
             tick.longValue
             engine.setSize(size.width, size.height, density, panelWidth.toPx())
+            engine.guidance = vm.guidedTask
             engine.draw(this, text)
         }
 
@@ -210,13 +238,11 @@ fun PlayScreen(vm: TrollfossViewModel) {
             }
         }
 
-        RoundButton(S.friends.str(), onClick = { engine.cancel(); friendsOpen = true }, size = btn, tone = Tones.Mint,
-            modifier = Modifier.align(Alignment.TopStart).padding(start = edge + (btn + gap) * 2, top = edge), icon = Icons.Friends)
         RoundButton(S.players.str(), onClick = { vm.open(Screen.Players) }, size = btn, tone = Tones.Sun,
-            modifier = Modifier.align(Alignment.TopStart).padding(start = edge + (btn + gap) * 3, top = edge), icon = Icons.Friends)
+            modifier = Modifier.align(Alignment.TopStart).padding(start = edge + (btn + gap) * 2, top = edge), icon = Icons.Friends)
         PlayerBar(vm, compact, Modifier.align(Alignment.TopStart).padding(start = edge, top = edge + btn + 6.dp))
         if(vm.canUndo) RoundButton(app.trollfoss.ui.SP.undo.str(),onClick=vm::undoEdit,size=btn,tone=Tones.Sun,
-            modifier=Modifier.align(Alignment.TopStart).padding(start=edge+(btn+gap)*4,top=edge),icon=DesignIcons.Undo)
+            modifier=Modifier.align(Alignment.BottomStart).padding(start=edge, bottom=edge+btn+8.dp),icon=DesignIcons.Undo)
 
         if (place == app.trollfoss.domain.PlaceId.LAB) {
             var tunnelLabelVisible by remember(place) { mutableStateOf(false) }
@@ -233,13 +259,14 @@ fun PlayScreen(vm: TrollfossViewModel) {
             scope.launch {
                 if (!capturePhoto) {
                     capturePhoto = true
+                    engine.photoMode = true
                     try {
                         // Capture one complete frame; ordinary play avoids an extra recording layer.
                         withFrameNanos { }
                         withFrameNanos { }
-                        vm.savePhoto(layer.toImageBitmap())
+                        photoPreview = layer.toImageBitmap()
                         engine.photoFlash()
-                    } finally { capturePhoto = false }
+                    } finally { capturePhoto = false; engine.photoMode = false }
                 }
             }
             Unit
@@ -267,7 +294,6 @@ fun PlayScreen(vm: TrollfossViewModel) {
                 RoundButton(S.camera.str(), onClick = { photo() }, tone = Tones.Cream, tapSound = false, icon = Icons.Camera)
             }
             Row(Modifier.align(Alignment.BottomStart).padding(edge), horizontalArrangement = Arrangement.spacedBy(gap)) {
-                RoundButton(S.workshop.str(), onClick = { vm.open(Screen.Creator(null)) }, tone = Tones.Grape, icon = Icons.Workshop)
                 if (place.mine) RoundButton(app.trollfoss.ui.SM.build.str(), onClick = { mineUi.open = !mineUi.open }, tone = if (mineUi.open) Tones.Sun else Tones.Mint, icon = BuildIcons.Hammer)
                 if (place.mine) RoundButton(app.trollfoss.ui.SM.paint.str(), onClick = {
                     mineUi.tab = 2; mineUi.open = true
@@ -306,7 +332,6 @@ fun PlayScreen(vm: TrollfossViewModel) {
                     RoundButton(if (vm.night) S.day.str() else S.night.str(), onClick = { vm.toggleNight() }, size = small, tone = Tones.Night, icon = if (vm.night) Icons.Sun else Icons.Moon)
                     RoundButton(S.weather.str(), onClick = { vm.cycleWeather() }, size = small, tone = Tones.Cream, icon = weatherIcon)
                     RoundButton(S.camera.str(), onClick = { menuOpen = false; photo() }, size = small, tone = Tones.Cream, tapSound = false, icon = Icons.Camera)
-                    RoundButton(S.workshop.str(), onClick = { menuOpen = false; vm.open(Screen.Creator(null)) }, size = small, tone = Tones.Grape, icon = Icons.Workshop)
                     if (place.mine) RoundButton(app.trollfoss.ui.SM.build.str(), onClick = { menuOpen = false; mineUi.open = !mineUi.open }, size = small, tone = if (mineUi.open) Tones.Sun else Tones.Mint, icon = BuildIcons.Hammer)
                     if (place.mine) RoundButton(app.trollfoss.ui.SM.paint.str(), onClick = {
                         menuOpen = false; mineUi.tab = 2; mineUi.open = true
@@ -319,6 +344,10 @@ fun PlayScreen(vm: TrollfossViewModel) {
             if (compact) Modifier.align(Alignment.TopCenter).padding(top = 8.dp)
             else Modifier.align(Alignment.TopStart).padding(start = edge + (btn + gap) * 4, top = 8.dp))
         if (!compact) RoomNavigator(vm, engine, Modifier.align(Alignment.TopCenter).padding(top = 100.dp, start = 20.dp, end = 20.dp))
+        if(place==app.trollfoss.domain.PlaceId.CLOUD_ISLAND) Column(Modifier.align(Alignment.TopCenter).padding(top=if(compact) 8.dp else 100.dp),horizontalAlignment=Alignment.CenterHorizontally) {
+            RoundButton(app.trollfoss.ui.SC.returnTo.str(),onClick={ vm.flyTo(vm.world.community.returnPlace ?: app.trollfoss.domain.PlaceId.HOME) },size=48.dp,tone=Tones.Sea,icon={ drawBalloon(androidx.compose.ui.geometry.Offset(size.width/2,size.height*0.35f),size.minDimension*0.24f,app.trollfoss.ui.art.Pen(size.minDimension*0.025f)) })
+            GameText(app.trollfoss.ui.SC.returnTo.str(),fontSize=14.sp,color=T.Ink)
+        }
         if (!engine.designMode) {
             RoundButton(app.trollfoss.ui.SM.furnish.str(), onClick = { menuOpen = false; engine.closeDriving(); engine.designMode = true },
                 modifier = Modifier.align(Alignment.BottomEnd).padding(end = if (compact) 78.dp else 108.dp, bottom = edge),
@@ -344,9 +373,15 @@ fun PlayScreen(vm: TrollfossViewModel) {
             }
         }
         if (!engine.designMode && !builderOpen && engine.vehicle == null) RoundButton(S.playCards.str(), onClick = {
+            vm.world.flags += "play:ideas-seen";vm.scheduleSave()
             engine.cancel(); playCardsOpen = true
-        }, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = edge), size = btn, tone = Tones.Sun, icon = Icons.Star)
-        if (!engine.designMode && !builderOpen && !place.big) AdventureReminder(vm, engine,
+        }, modifier = Modifier.align(Alignment.TopStart).padding(start = edge + (btn + gap) * 3, top = edge), size = btn, tone = Tones.Sun, icon = Icons.Star)
+        if("play:ideas-seen" !in vm.world.flags && !builderOpen && !engine.designMode && vm.screen==Screen.Play) {
+            GameText(app.trollfoss.ui.SF.hint.str(),fontSize=12.sp,color=T.Ink,
+                modifier=Modifier.align(Alignment.TopStart).padding(start=edge+(btn+gap)*3,top=edge+btn+4.dp)
+                    .background(T.Cream,RoundedCornerShape(12.dp)).padding(6.dp))
+        }
+        if (!engine.designMode && !builderOpen && !place.big && vm.guidedTask==null) AdventureReminder(vm, engine,
             Modifier.align(Alignment.TopCenter).padding(top = if (compact) 70.dp else 150.dp)) {
             engine.cancel(); playCardsOpen = true
         }
@@ -387,7 +422,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
             if (compact) {
                 BuildHint(pointDown = false, modifier = Modifier.align(Alignment.TopEnd).padding(top = edge + btn + 6.dp + 48.dp, end = edge))
             } else {
-                BuildHint(pointDown = true, modifier = Modifier.align(Alignment.BottomStart).padding(bottom = edge + btn + 8.dp, start = edge + (btn + gap) - 10.dp))
+                BuildHint(pointDown = true, modifier = Modifier.align(Alignment.BottomStart).padding(bottom = edge + btn + 8.dp, start = edge))
             }
         }
         if (place.mine && mine.askDemolish >= 0) DemolishDialog(vm)
@@ -395,6 +430,24 @@ fun PlayScreen(vm: TrollfossViewModel) {
         PlaceBanner(place.let { S.place(it).str() }, key = place)
 
         TaskBanner(vm)
+
+        vm.guidedTask?.takeUnless { vm.sim.tasks.done(it) }?.let { task ->
+            Row(Modifier.align(Alignment.TopCenter).padding(top=if(compact) 66.dp else 194.dp)
+                .background(T.Cream, RoundedCornerShape(22.dp)).padding(8.dp),
+                verticalAlignment=Alignment.CenterVertically, horizontalArrangement=Arrangement.spacedBy(10.dp)) {
+                CachedThumb("guide:${task.id}", 50.dp) { drawTaskPicture(task) }
+                GameText(app.trollfoss.ui.SP.taskHint(task).str(), fontSize=15.sp, color=T.Ink)
+                app.trollfoss.ui.components.CloseButton({ vm.guidedTask=null }, size=40.dp)
+            }
+        }
+        photoPreview?.let { bitmap ->
+            app.trollfoss.ui.components.TrollDialog(onClose={ photoPreview=null }, maxWidth=680.dp) {
+                androidx.compose.foundation.Image(bitmap, contentDescription=S.photos.str(),
+                    modifier=Modifier.size(540.dp, 270.dp), contentScale=androidx.compose.ui.layout.ContentScale.Fit)
+                app.trollfoss.ui.components.BigButton(app.trollfoss.ui.SF.keepPhoto.str(), onClick={ vm.savePhoto(bitmap);photoPreview=null }, tone=Tones.Mint, icon=Icons.Check)
+                app.trollfoss.ui.components.BigButton(app.trollfoss.ui.SF.retake.str(), onClick={ photoPreview=null }, tone=Tones.Cream, icon=Icons.Camera)
+            }
+        }
 
         if (vm.telescopeOpen) TelescopeView(night = vm.night, onClose = { vm.telescopeOpen = false })
     }

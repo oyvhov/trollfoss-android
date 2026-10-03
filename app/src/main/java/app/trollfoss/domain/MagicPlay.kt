@@ -3,10 +3,11 @@ package app.trollfoss.domain
 import kotlin.math.abs
 import kotlin.math.hypot
 
-enum class PlayAction { HUG, THROW, NAP, HIDE, READ, STORY, LIGHT, TWINKLE }
+enum class PlayAction { HUG, THROW, NAP, HIDE, READ, STORY, LIGHT, TWINKLE, AWAKEN, SECRET }
 enum class PlayRecipe(val fixture: FixtureType, val parts: List<ThingType>) {
     FORT(FixtureType.PLAY_FORT, listOf(ThingType.AT_SHEET_HAT, ThingType.PILLOW)),
     CART(FixtureType.PLAY_CART, listOf(ThingType.PLANK, ThingType.TIRE, ThingType.TIRE)),
+    BLOCK_CART(FixtureType.PLAY_CART,listOf(ThingType.UP_BLOCK,ThingType.UP_BLOCK,ThingType.UP_BLOCK)),
 }
 data class PlayAssembly(val recipe: PlayRecipe, val parts: List<Int>)
 enum class Adventure(val place: PlaceId, val reward: ThingType) {
@@ -21,12 +22,18 @@ class MagicPlay(private val sim: Sim) {
         private set
     val active: Adventure? get() = Adventure.entries.firstOrNull { "adventure:active:${it.name}" in world.flags }
     private val world get() = sim.world
+    fun dismissAdventure() {
+        world.flags.removeAll { it.startsWith("adventure:active:") }
+        revision++
+    }
     private data class Grip(val fixture: Int, val side: Int, var x: Float)
     private val grips = mutableMapOf<Long, Grip>()
     private val reactionAt = mutableMapOf<Int, Float>()
 
     fun actions(t: Thing): List<PlayAction> = when (t.type) {
-        ThingType.PILLOW, ThingType.TEDDY -> listOf(PlayAction.HUG, PlayAction.THROW, PlayAction.NAP)
+        ThingType.PILLOW -> listOf(PlayAction.HUG, PlayAction.THROW, PlayAction.NAP)
+        ThingType.TEDDY -> listOf(PlayAction.HUG,PlayAction.THROW,PlayAction.NAP,PlayAction.AWAKEN)
+        ThingType.GR_UMBRELLA,ThingType.MAGNET,ThingType.SPOON -> listOf(PlayAction.SECRET,PlayAction.THROW)
         ThingType.AT_SHEET_HAT -> listOf(PlayAction.HIDE, PlayAction.NAP)
         ThingType.BOOK -> listOf(PlayAction.READ, PlayAction.STORY)
         ThingType.AT_FLASHLIGHT -> listOf(PlayAction.LIGHT, PlayAction.TWINKLE)
@@ -43,6 +50,8 @@ class MagicPlay(private val sim: Sim) {
             !it.held && it.species == Species.FOLK && abs(it.x - t.x) < 0.8f && abs(it.y - t.y) < 0.45f
         }.minByOrNull { abs(it.x - t.x) }
         when (action) {
+            PlayAction.AWAKEN -> return sim.community.awaken(t,p)
+            PlayAction.SECRET -> return sim.creative.secret(t)
             PlayAction.THROW -> {
                 val hand = owner?.let { Anatomy.at(it, Part.HAND) }
                 if (hand != null) { t.x = hand[0]; t.y = hand[1] }
@@ -193,9 +202,13 @@ class MagicPlay(private val sim: Sim) {
         }
         for (p in world.bodiesIn(place).filterIsInstance<Person>()) {
             if (p.held || p.anim.pose == Pose.LIE || abs(p.x - x) > 0.85f || abs(p.y - y) > 0.6f || sim.time - (reactionAt[p.id] ?: -10f) < 0.8f) continue
-            reactionAt[p.id] = sim.time; p.anim.face = face; p.anim.faceTime = 2.4f
+            reactionAt[p.id] = sim.time; p.anim.face = if(sim.community.trait(p)==Temperament.CALM) Face.GRIN else face; p.anim.faceTime = 2.4f
             p.anim.lookX = (x - p.x).coerceIn(-1f, 1f); p.anim.walkTo = Float.NaN; p.anim.nextWalk = 3f
-            if (face == Face.LAUGH) { p.anim.tickle = 1.3f; p.anim.hopV = 0.45f } else p.anim.wave = 1.2f
+            when(sim.community.trait(p)) {
+                Temperament.PLAYFUL -> if(face==Face.LAUGH) { p.anim.tickle=1.3f;p.anim.hopV=0.45f } else p.anim.wave=1.2f
+                Temperament.CALM -> p.anim.wave=0.4f
+                Temperament.CURIOUS -> { p.anim.face=Face.OOH;p.anim.tilt=0.1f;p.anim.say=1;p.anim.sayTime=1.5f }
+            }
         }
     }
 

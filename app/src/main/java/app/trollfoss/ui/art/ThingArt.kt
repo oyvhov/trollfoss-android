@@ -27,6 +27,16 @@ import kotlin.math.sqrt
  * flight). Hats are drawn as they sit on a head; glasses are centred in their box.
  */
 fun DrawScope.drawThing(type: ThingType, variant: Int, used: Int, w: Float, h: Float, pen: Pen, cook: Float = 0f) {
+    if(type==ThingType.MAGNET || type==ThingType.SPOON) {
+        if(type==ThingType.SPOON) {
+            inkedRound(Rect(-w*0.2f,-h*0.6f,w*0.2f,0f),w*0.16f,Color(0xFFB0BAC9),pen)
+            inkedOval(Rect(-w*0.48f,-h,w*0.48f,-h*0.48f),Color(0xFFDDE4EB),pen)
+        } else {
+            inkedRound(Rect(-w/2,-h,w/2,0f),w*0.22f,Color(0xFFEF736F),pen)
+            inkedRound(Rect(-w*0.24f,-h*1.05f,w*0.24f,-h*0.25f),w*0.1f,Color(0xFFFFF1CA),pen)
+            for(side in listOf(-1f,1f)) inkedRound(Rect(side*w*0.35f-w*0.14f,-h,side*w*0.35f+w*0.14f,-h*0.75f),w*0.04f,Color(0xFFB0BAC9),pen)
+        };return
+    }
     val bites = if (type.cat == Cat.FOOD && type.bites > 0 && type != ThingType.SPACE_FOOD) used.coerceIn(0, 3) else 0
     val warm = if ((type.cat == Cat.FOOD || type.cat == Cat.DRINK) && cook > 0f) (cook / 2f).coerceIn(0f, 1f) else 0f
     if (bites == 0 && warm == 0f) {

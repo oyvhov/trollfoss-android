@@ -191,10 +191,11 @@ class SharedPlayTest {
         e.up(1, bag, 1400)
         assertEquals(Mode.BAG, p.mode)
         assertNull(p.place)
-        assertTrue(world.playerIds.isEmpty())
+        assertTrue(p.id in world.playerIds)
+        assertTrue(Players.paused(world,p))
         assertSame(p, world.bodies[p.id])
     }
-    @Test fun explicitPackRemovesPersonFromRoomAndTeamButInviteBringsSameFigureBack() {
+    @Test fun explicitPackPausesPlayerAndInviteBringsSameFigureBack() {
         val world = World()
         val p = world.addPerson(Species.FOLK, Look(), 1f, PlaceId.HOME, 0.7f, 0.9f, "A")
         Players.toggle(world, p)
@@ -204,13 +205,15 @@ class SharedPlayTest {
         assertEquals(1, e.bagCount)
         assertEquals(Mode.BAG, p.mode)
         assertNull(p.place)
-        assertTrue(world.playerIds.isEmpty())
+        assertTrue(p.id in world.playerIds)
+        assertTrue(Players.paused(world,p))
         Players.arrive(world, PlaceId.BEACH, 1f)
         assertEquals(Mode.BAG, p.mode)
         e.invite(p)
         assertEquals(PlaceId.HOME, p.place)
         assertEquals(Mode.FREE, p.mode)
-        assertFalse(p.id in world.playerIds)
+        assertTrue(p.id in world.playerIds)
+        assertFalse(Players.paused(world,p))
     }
     private val host = object : EngineHost {
         override fun sfx(effect: Sfx, volume: Float, rate: Float) {}
@@ -226,6 +229,16 @@ class SharedPlayTest {
 
     private fun engine(world: World) = Engine(world, PlaceId.HOME, Sim(world), host, false, 0f)
         .apply { setSize(1920f, 1200f, 1.5f) }
+
+    @Test fun focusingAnEndRoomKeepsItsLabelWhenCameraCannotCenterIt() {
+        val e=engine(World())
+        e.focusOn(0.4f)
+        e.setSize(1920f,1200f,1.5f)
+        assertEquals(0,e.visibleRoom)
+        e.focusOn(PlaceId.HOME.width-0.3f)
+        e.setSize(1920f,1200f,1.5f)
+        assertEquals(Decor.rooms(PlaceId.HOME).lastIndex,e.visibleRoom)
+    }
     private fun finger(e: Engine, p: Person) = Offset((p.x - e.cam) * e.u, 1200f - e.u + (p.y - p.h / 2f) * e.u)
 
     @Test fun twoFingersCanMoveDifferentFiguresAndReleaseIndependently() {

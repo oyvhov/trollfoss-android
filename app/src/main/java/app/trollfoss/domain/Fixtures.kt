@@ -167,6 +167,9 @@ enum class FixtureType {
     SECRET_NOOK, PLAY_FORT, PLAY_CART,
     PLAY_BUBBLES, PLAY_WINDMILL, PLAY_BUS, PLAY_LAUNCHER, PLAY_MARBLES, PLAY_COLORS,
     PLAY_LIFT, PLAY_POPCORN, PLAY_PUMP, PLAY_CAMERA, PLAY_TRAIN,
+    PLAY_SEESAW, PLAY_PUPPETS, PLAY_TANDEM, PLAY_PICNIC, PLAY_CRANE, PLAY_CONVEYOR, PLAY_BUILD,
+    PLAY_CHANNEL, PLAY_MIRROR, PLAY_HOVER, PLAY_CLOUD, PLAY_PORTAL,
+    PLAY_TREE, PLAY_REPAIR, PLAY_DOOR, PLAY_TUNNEL, PLAY_JUMP, PLAY_WATER_WHEEL, PLAY_ART, PLAY_RESCUE,
     ;
 
     val spec: FixtureSpec get() = specs.getValue(this)
@@ -179,6 +182,26 @@ enum class FixtureType {
         private fun seat(dx: Float, dy: Float) = SpotSpec(dx, dy, Pose.SIT)
 
         private fun build(type: FixtureType): FixtureSpec = when (type) {
+            PLAY_SEESAW -> FixtureSpec(0.65f,0.18f,spots=listOf(seat(-0.25f,-0.1f),seat(0.25f,-0.1f)))
+            PLAY_PUPPETS -> FixtureSpec(0.52f,0.48f,front=true,spots=listOf(seat(-0.12f,-0.04f),seat(0.12f,-0.04f)))
+            PLAY_TANDEM -> FixtureSpec(0.60f,0.25f,front=true,spots=listOf(seat(-0.12f,-0.13f),seat(0.12f,-0.13f)))
+            PLAY_PICNIC -> FixtureSpec(0.68f,0.09f,spots=listOf(seat(-0.24f,-0.03f),seat(-0.08f,-0.03f),seat(0.08f,-0.03f),seat(0.24f,-0.03f)),surfaces=listOf(SurfaceSpec(-0.32f,0.32f,-0.06f)))
+            PLAY_CRANE -> FixtureSpec(0.62f,0.53f,dropZone=RRect(-0.36f,-0.58f,0.36f,0f))
+            PLAY_CONVEYOR -> FixtureSpec(0.65f,0.14f,dropZone=RRect(-0.38f,-0.3f,0.38f,0f))
+            PLAY_BUILD -> FixtureSpec(0.42f,0.22f,dropZone=RRect(-0.26f,-0.4f,0.26f,0f))
+            PLAY_CHANNEL -> FixtureSpec(0.50f,0.18f,dropZone=RRect(-0.3f,-0.28f,0.3f,0f))
+            PLAY_MIRROR -> FixtureSpec(0.33f,0.46f)
+            PLAY_HOVER -> FixtureSpec(0.32f,0.12f,dropZone=RRect(-0.2f,-0.3f,0.2f,0f))
+            PLAY_CLOUD -> FixtureSpec(0.27f,0.36f,dropZone=RRect(-0.18f,-0.45f,0.18f,0f))
+            PLAY_PORTAL -> FixtureSpec(0.35f,0.46f,dropZone=RRect(-0.25f,-0.55f,0.25f,0f))
+            PLAY_TREE -> FixtureSpec(0.28f,0.43f,dropZone=RRect(-0.18f,-0.48f,0.18f,0f))
+            PLAY_REPAIR -> FixtureSpec(0.38f,0.36f,dropZone=RRect(-0.22f,-0.44f,0.22f,0f))
+            PLAY_DOOR -> FixtureSpec(0.4f,0.49f)
+            PLAY_TUNNEL -> FixtureSpec(0.45f,0.3f,spots=listOf(seat(-0.14f,-0.02f)))
+            PLAY_JUMP -> FixtureSpec(0.38f,0.2f,spots=listOf(seat(0f,-0.08f)))
+            PLAY_WATER_WHEEL -> FixtureSpec(0.3f,0.37f,dropZone=RRect(-0.2f,-0.44f,0.2f,0f))
+            PLAY_ART -> FixtureSpec(0.32f,0.43f)
+            PLAY_RESCUE -> FixtureSpec(0.68f,0.17f,dropZone=RRect(-0.4f,-0.3f,0.4f,0f))
             PLAY_BUS, PLAY_TRAIN -> FixtureSpec(0.58f, 0.29f, front = true,
                 spots = listOf(seat(-0.12f, -0.09f), seat(0.12f, -0.09f)),
                 surfaces = listOf(SurfaceSpec(-0.20f, 0.20f, -0.09f)))
