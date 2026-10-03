@@ -27,6 +27,8 @@
 > med to skjermformat. Éin oppstart gav ANR på vindaugsfokus medan slutt-lint køyrde; årsaka er ikkje
 > fastslått. Etter omstart var kontrollane og seinare kaldstart responsive. Ingen ytelsesprøve på fysisk eining.
 > Testpakken er avinstallert, eigen emulator stoppa og skjermmål, tettleik og rotasjonsinnstillingar tilbakeførte.
+> Mellombels planlogg i Git-ignorert `.superpowers/sdd/2026-10-03-legg-bort-og-skattar/` ligg att:
+> automatisk godkjenningskontroll avviste slettinga med «blocked by policy», også med kontrollert, eksakt sti.
 > **Ikkje gjort:** ingen push, PR, release, versjonsendring eller barnetest av denne runden. Runde to
 > (knappar, menyar, symbol) ventar til brukaren har sett barnet bruke dette.
 > `C:\topa` står framleis på `codex/magic-rest` med gammalt, ukommittert arbeid som er urørt.
