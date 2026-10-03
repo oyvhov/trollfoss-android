@@ -1,5 +1,15 @@
 # Endringslogg
 
+## Neste – Legg bort og skattar
+
+- Hjørnet ved sekken veks når barnet løftar noko. Slepp der legg ting og figurar i sekken og møblar på lager, utan at møbelpanelet må vere ope. Kantane ber framleis kameraet vidare til neste rom.
+- Ny skattekiste med glasfront, gratis i Møblar på alle stader, og éi står klar i soverommet i Familiehuset. Lokket spretter opp når barnet kjem nær med ein ting, og kvar femte skatt får kista til å rape glitter.
+- Diamantar, myntar og perler forsvinn ikkje lenger av seg sjølv. Loftskista gir berre det det er plass til, og hostar støv når ho er tom.
+- Døropninga øvst i trappene i Storhuset kan trykkjast på, slik trappa kan.
+- Eit trykk som ikkje treffer noko, får det næraste skapet, maskina, køyretøyet eller trappa til å vippe og lyse eit augeblikk.
+- Møbelpanelet lukkar seg sjølv når barnet har flytta to ting eller figurar på rad.
+- Like møblar i Lager og Papirkorg blir viste som eitt kort med eit tal.
+
 ## 1.7.1 – Betre trykk og rolegare figurmenyar
 
 - Kjøleskap, garderobar og fleire skap i Storhuset kan lukkast ved trykk på den synlege opne døra. Mat i skapet kan framleis dragast ut.

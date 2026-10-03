@@ -1,6 +1,6 @@
 # Legg bort og skattar Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Let a six-year-old put things, furniture and figures away with one gesture, collect treasure in a safe place, get between floors by tapping what looks like the way, and see equal stored furniture as one card with a count.
 
@@ -66,7 +66,7 @@ All paths under `domain/`, `data/` and `ui/` are relative to `app/src/main/java/
 - Consumes: `Stored(type, variant, mode, door)` (a data class in `domain/Decor.kt`), `world.storage: ArrayList<Stored>`, `world.discardedStorage: ArrayList<Pair<Int, Stored>>`, `Engine.addFromStore(index)`, `Engine.discardFromStore(index)`, `Engine.restoreStorage(index)`.
 - Produces: `data class StoreStack(val item: Stored, val count: Int, val index: Int)`, `StoreStacks.of(storage: List<Stored>): List<StoreStack>`, `StoreStacks.ofDiscarded(discarded: List<Pair<Int, Stored>>): List<StoreStack>`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```kotlin
 package app.trollfoss.domain
@@ -117,12 +117,12 @@ class StoreStacksTest {
 }
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.domain.StoreStacksTest" -Plain`
 Expected: compilation fails with `Unresolved reference: StoreStacks`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `app/src/main/java/app/trollfoss/domain/StoreStacks.kt`:
 
@@ -149,11 +149,11 @@ object StoreStacks {
 }
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run the command from Step 2. Expected: `BUILD SUCCESSFUL`, 5 tests passed.
 
-- [ ] **Step 5: Show stacks in the panel**
+- [x] **Step 5: Show stacks in the panel**
 
 In `ui/screens/DesignerPanel.kt`, replace the grid of the `DesignTab.STORE` branch (the `LazyVerticalGrid` that starts with `itemsIndexed(stored) { index, item ->`) with:
 
@@ -213,12 +213,12 @@ private fun CountBadge(count: Int, modifier: Modifier = Modifier) {
 }
 ```
 
-- [ ] **Step 6: Build and run the JVM tests of the designer**
+- [x] **Step 6: Build and run the JVM tests of the designer**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.domain.StoreStacksTest --tests app.trollfoss.domain.DesignerTest :app:assembleDebug" -Plain`
 Expected: `BUILD SUCCESSFUL`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add app/src/main/java/app/trollfoss/domain/StoreStacks.kt app/src/main/java/app/trollfoss/ui/screens/DesignerPanel.kt app/src/test/java/app/trollfoss/domain/StoreStacksTest.kt
@@ -245,7 +245,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 - Consumes: `Thing.mode`, `Thing.inside` (the id of the furniture it lies in, or -1), `Thing.held`, `Thing.z` (a `Long`, higher is newer), `Sim.MAX_THINGS` (70), `HouseAtticRules.MAX_COINS` (18), `HouseAtticRules.MAX_GEMS` (6).
 - Produces: `Treasure.TYPES: Set<ThingType>`, `Treasure.isTreasure(t: Thing): Boolean`, `Treasure.loose(world: World, place: PlaceId, type: ThingType): Int`, `Treasure.oldestToDrop(things: List<Thing>, keep: Thing?, spare: (Thing) -> Boolean = { false }): Thing?`, and three new `Fx` values used by later tasks: `Fx.TREASURE_IN`, `Fx.TREASURE_PARTY`, `Fx.TREASURE_EMPTY`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `app/src/test/java/app/trollfoss/domain/TreasureTest.kt`:
 
@@ -340,12 +340,12 @@ Add these three tests to the end of `app/src/test/java/app/trollfoss/domain/Hous
     }
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.domain.TreasureTest --tests app.trollfoss.domain.HouseAtticTest" -Plain`
 Expected: compilation fails with `Unresolved reference: Treasure`.
 
-- [ ] **Step 3: Add `Treasure` and the new effects**
+- [x] **Step 3: Add `Treasure` and the new effects**
 
 `app/src/main/java/app/trollfoss/domain/Treasure.kt`:
 
@@ -387,7 +387,7 @@ add
     TREASURE_IN, TREASURE_PARTY, TREASURE_EMPTY,
 ```
 
-- [ ] **Step 4: Use it in the four place caps**
+- [x] **Step 4: Use it in the four place caps**
 
 `domain/Sim.kt`, `capPlace`: replace the line that starts with `val oldest = things.filter {` with
 
@@ -413,7 +413,7 @@ add
         if (type in Treasure.TYPES) return
 ```
 
-- [ ] **Step 5: Change the attic rules**
+- [x] **Step 5: Change the attic rules**
 
 `domain/HouseAtticRules.kt`, in `mapTable`, replace
 
@@ -463,7 +463,7 @@ with
 
 Leave `trim` itself in place: toys, costumes and books still use it.
 
-- [ ] **Step 6: Give the three new effects a sound and a picture**
+- [x] **Step 6: Give the three new effects a sound and a picture**
 
 `ui/play/Engine.kt`, in `onFx`, add these branches to the `when (fx)` (next to `Fx.STORE ->`):
 
@@ -486,16 +486,16 @@ Leave `trim` itself in place: toys, costumes and books still use it.
             }
 ```
 
-- [ ] **Step 7: Run the tests to verify they pass**
+- [x] **Step 7: Run the tests to verify they pass**
 
 Run the command from Step 2. Expected: `BUILD SUCCESSFUL`. The existing test `the treasure map leads to a gem, and the chest showers coins` must still pass.
 
-- [ ] **Step 8: Run all JVM tests**
+- [x] **Step 8: Run all JVM tests**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest" -Plain`
 Expected: `BUILD SUCCESSFUL`. If a test of the garden, ground floor or cellar counted on a gem or coin going in a puff, change that test to expect the treasure to stay and say so in the commit message.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add app/src/main/java/app/trollfoss/domain/Treasure.kt app/src/main/java/app/trollfoss/domain/Sim.kt app/src/main/java/app/trollfoss/domain/HouseGroundRules.kt app/src/main/java/app/trollfoss/domain/HouseGardenRules.kt app/src/main/java/app/trollfoss/domain/HouseCellarRules.kt app/src/main/java/app/trollfoss/domain/HouseAtticRules.kt app/src/main/java/app/trollfoss/ui/play/Engine.kt app/src/test/java/app/trollfoss/domain/TreasureTest.kt app/src/test/java/app/trollfoss/domain/HouseAtticTest.kt
@@ -524,7 +524,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 - Consumes: `Fx.TREASURE_IN`, `Fx.TREASURE_PARTY` (Task 2); `FixtureSpec(w, h, container, glass, surfaces, dropZone)`; `SurfaceSpec(x1, x2, dy, interior, closedOnly)`; `Sim.invalidate(place)`; `Fixture.timer` (not saved, free for this type); `Sim.settle(place)` gives every thing lying on an interior shelf its `inside` again after loading.
 - Produces: `FixtureType.TREASURE_BOX`; `Sim.treasure: TreasureBox` with `holds(f: Fixture): List<Thing>`, `tap(place, f)`, `step(place, dt)`, `put(place, f, t): Boolean`, `landed(t: Thing, owner: Int)`, `arrange(f): List<Thing>`, `refuse(place, f)`; constants `TreasureBox.REACH = 0.25f`, `TreasureBox.LINGER = 1.2f`, `TreasureBox.PARTY = 5`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `app/src/test/java/app/trollfoss/domain/TreasureBoxTest.kt`:
 
@@ -662,12 +662,12 @@ class TreasureBoxTest {
 }
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.domain.TreasureBoxTest" -Plain`
 Expected: compilation fails with `Unresolved reference: TREASURE_BOX`.
 
-- [ ] **Step 3: Add the type and its spec**
+- [x] **Step 3: Add the type and its spec**
 
 `domain/Fixtures.kt`: in `enum class FixtureType`, after the line `PLAY_TREE, PLAY_REPAIR, PLAY_DOOR, PLAY_TUNNEL, PLAY_JUMP, PLAY_WATER_WHEEL, PLAY_ART, PLAY_RESCUE,` and before the `;`, add
 
@@ -694,7 +694,7 @@ In the `when` of `build` in the same file, next to `TOY_BOX -> FixtureSpec(`, ad
             )
 ```
 
-- [ ] **Step 4: Add the rules**
+- [x] **Step 4: Add the rules**
 
 Append to `domain/Treasure.kt` (and add `import kotlin.math.hypot` under the `package` line):
 
@@ -825,7 +825,7 @@ class TreasureBox(private val sim: Sim) {
 }
 ```
 
-- [ ] **Step 5: Hook the rules into `Sim`**
+- [x] **Step 5: Hook the rules into `Sim`**
 
 `domain/Sim.kt`:
 
@@ -859,7 +859,7 @@ In `fun dropInto(place: PlaceId, f: Fixture, t: Thing): Boolean`, after the line
         if (f.type == FixtureType.TREASURE_BOX) return treasure.put(place, f, t)
 ```
 
-- [ ] **Step 6: Keep a full box out of the store**
+- [x] **Step 6: Keep a full box out of the store**
 
 `domain/Designer.kt`, in `canStore`, after the line `if (!sim.movable(f)) return false` add
 
@@ -875,7 +875,7 @@ In `storeNow`, replace the line `if (!canStore(place, f)) return false` with
         if (!canStore(place, f)) return false
 ```
 
-- [ ] **Step 7: Catalogue and label**
+- [x] **Step 7: Catalogue and label**
 
 `domain/Decor.kt`, in `catalogue(place)`: change `return toys + when {` to
 
@@ -890,7 +890,7 @@ In `storeNow`, replace the line `if (!canStore(place, f)) return false` with
         FixtureType.TREASURE_BOX to Txt("Skattekiste","Skattekiste"),
 ```
 
-- [ ] **Step 8: Draw the box**
+- [x] **Step 8: Draw the box**
 
 `app/src/main/java/app/trollfoss/ui/art/TreasureBoxArt.kt`:
 
@@ -970,7 +970,7 @@ In the second `when (f.type)` (the front layer), after the line `FixtureType.DIS
 
 If `darken`, `lighten`, `starPath` or `fxBox` do not resolve, they live in `ui/art/Ink.kt` and `ui/art/FixtureArt.kt` in the same package; `fxChest` in `ui/art/FixtureArtHome.kt` uses all four the same way.
 
-- [ ] **Step 9: Show the landing ring over the box**
+- [x] **Step 9: Show the landing ring over the box**
 
 `ui/play/Engine.kt`, in `private fun accepts(f: Fixture, t: Thing): Boolean`, change the first line from
 
@@ -984,17 +984,17 @@ to
     private fun accepts(f: Fixture, t: Thing): Boolean = PlayInteractions.accepts(f, t) || f.type == FixtureType.TREASURE_BOX ||
 ```
 
-- [ ] **Step 10: Run the tests to verify they pass**
+- [x] **Step 10: Run the tests to verify they pass**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.domain.TreasureBoxTest :app:assembleDebug" -Plain`
 Expected: `BUILD SUCCESSFUL`, 10 tests passed.
 
-- [ ] **Step 11: Run all JVM tests**
+- [x] **Step 11: Run all JVM tests**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest" -Plain`
 Expected: `BUILD SUCCESSFUL`. A test that lists every furniture type in a catalogue, or checks that every `FixtureType` has a label or art, may need `TREASURE_BOX` added to its expectations.
 
-- [ ] **Step 12: Commit**
+- [x] **Step 12: Commit**
 
 ```bash
 git add app/src/main/java/app/trollfoss/domain/Fixtures.kt app/src/main/java/app/trollfoss/domain/Treasure.kt app/src/main/java/app/trollfoss/domain/Sim.kt app/src/main/java/app/trollfoss/domain/Designer.kt app/src/main/java/app/trollfoss/domain/Decor.kt app/src/main/java/app/trollfoss/ui/FurnitureLabels.kt app/src/main/java/app/trollfoss/ui/art/TreasureBoxArt.kt app/src/main/java/app/trollfoss/ui/art/FixtureArt.kt app/src/main/java/app/trollfoss/ui/play/Engine.kt app/src/test/java/app/trollfoss/domain/TreasureBoxTest.kt
@@ -1017,7 +1017,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 - Consumes: `FixtureType.TREASURE_BOX` (Task 3), `Designer.add(place, type, variant, x, y): Fixture?` (null when the place is full), `Decor.rooms(PlaceId.HOME)` (the first range is the bedroom), `PlaceId.FRONT`, `world.flags`, `world.storage`.
 - Produces: `TreasureStart.FLAG = "layout:treasure-box:1"`, `TreasureStart.upgrade(world: World, sim: Sim = …)`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `app/src/test/java/app/trollfoss/domain/TreasureStartTest.kt`:
 
@@ -1084,12 +1084,12 @@ class TreasureStartTest {
 }
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.domain.TreasureStartTest" -Plain`
 Expected: compilation fails with `Unresolved reference: TreasureStart`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Append to `domain/Treasure.kt`:
 
@@ -1128,16 +1128,16 @@ object TreasureStart {
             app.trollfoss.domain.TreasureStart.upgrade(world)
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run the command from Step 2. Expected: `BUILD SUCCESSFUL`, 4 tests passed.
 
-- [ ] **Step 5: Run all JVM tests**
+- [x] **Step 5: Run all JVM tests**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest" -Plain`
 Expected: `BUILD SUCCESSFUL`. A test that counts the furniture of Familiehuset in a new world, or the free furniture slots there, now sees one more piece: raise its expected number by one and say so in the commit message. Do not weaken any other assertion.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add app/src/main/java/app/trollfoss/domain/Treasure.kt app/src/main/java/app/trollfoss/domain/WorldFactory.kt app/src/main/java/app/trollfoss/data/WorldStore.kt app/src/test/java/app/trollfoss/domain/TreasureStartTest.kt
@@ -1164,7 +1164,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 - Consumes: `FX_DX`, `FX_DY` (`internal const` in `ui/art/FixtureArt.kt`, the oblique projection), `FixtureDoors.hit` (the pattern this follows).
 - Produces: `internal data class Doorway(left, top, right, bottom)` with `contains(x, y, margin)`; `StairDoorways.hall`, `StairDoorways.cellar`, `StairDoorways.attic`, `StairDoorways.of(f: Fixture): Doorway?`, `StairDoorways.hit(f: Fixture, x: Float, y: Float, margin: Float): Boolean`; constants `HALL_Z`, `ATTIC_Z`, `ATTIC_LEFT`, `ATTIC_RIGHT`, `ATTIC_SILL`, `ATTIC_TOP`. Coordinates are scene units from the bottom centre of the fixture, y negative upwards.
 
-- [ ] **Step 1: Write the failing JVM test**
+- [x] **Step 1: Write the failing JVM test**
 
 `app/src/test/java/app/trollfoss/ui/art/StairDoorwaysTest.kt`:
 
@@ -1215,12 +1215,12 @@ class StairDoorwaysTest {
 }
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.ui.art.StairDoorwaysTest" -Plain`
 Expected: compilation fails with `Unresolved reference: StairDoorways`.
 
-- [ ] **Step 3: Write the shared geometry**
+- [x] **Step 3: Write the shared geometry**
 
 `app/src/main/java/app/trollfoss/ui/art/StairDoorways.kt`:
 
@@ -1269,11 +1269,11 @@ internal object StairDoorways {
 }
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run the command from Step 2. Expected: `BUILD SUCCESSFUL`, 5 tests passed.
 
-- [ ] **Step 5: Let the art read the same numbers**
+- [x] **Step 5: Let the art read the same numbers**
 
 `ui/art/HouseGroundHallArt.kt`, in `grStairs`, replace the whole `run { … }` block under the comment `// The doorway up to the first floor behind the landing, warm with light from above.` with
 
@@ -1326,7 +1326,7 @@ with
 
 The pictures must not change: the new numbers equal the old ones (`-0.03 - 0.0625 * 8 = -0.53`, `-0.53 - 0.27 = -0.80`).
 
-- [ ] **Step 6: Count the doorway as part of the staircase**
+- [x] **Step 6: Count the doorway as part of the staircase**
 
 `ui/play/Engine.kt`: add the import `import app.trollfoss.ui.art.StairDoorways` next to the import of `FixtureDoors`. In `fixtureAt`, replace
 
@@ -1341,7 +1341,7 @@ with
                 f.type == FixtureType.TRACTOR && TractorCab.contains(dx, dy - f.bob, pad)) return f
 ```
 
-- [ ] **Step 7: Add the Android test**
+- [x] **Step 7: Add the Android test**
 
 In `app/src/androidTest/java/app/trollfoss/ui/play/SharedPlayTest.kt`, add inside the class:
 
@@ -1377,7 +1377,7 @@ The Android tests run in Task 9, when the emulator is up. Here, only compile the
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.ui.art.StairDoorwaysTest :app:assembleDebug :app:assembleDebugAndroidTest" -Suffix .leggbort -Plain`
 Expected: `BUILD SUCCESSFUL`.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add app/src/main/java/app/trollfoss/ui/art/StairDoorways.kt app/src/main/java/app/trollfoss/ui/art/HouseGroundHallArt.kt app/src/main/java/app/trollfoss/ui/art/HouseCellarTunnelArt.kt app/src/main/java/app/trollfoss/ui/art/HouseUpperPassageArt.kt app/src/main/java/app/trollfoss/ui/play/Engine.kt app/src/test/java/app/trollfoss/ui/art/StairDoorwaysTest.kt app/src/androidTest/java/app/trollfoss/ui/play/SharedPlayTest.kt
@@ -1402,7 +1402,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 - Consumes: `Designer.store(place, f): Boolean` (false when the piece may not be stored; a treasure box with finds then opens by itself, Task 3), `intoBag(body)`, `letGo(f)`, `Icons.Bag`, `DesignIcons.Box` (both `DrawScope.() -> Unit`).
 - Produces: `enum class AwayPicture { BAG, CRATE }`; `AwayCorner.DRAW = 1.6f`, `AwayCorner.HIT = 2.4f`, `AwayCorner.BAG_ONLY = 1.4f`, `AwayCorner.GROW = 0.18f`, `AwayCorner.reach(fromScene: Boolean): Float`, `AwayCorner.contains(fingerX, fingerY, centerX, centerY, bagRadius, fromScene): Boolean`, `AwayCorner.picture(bodies: Int, furniture: Int): AwayPicture?`, `AwayCorner.nearMiss(fingerX, fingerY, width, height): Boolean`; on `Engine`: `val away: AwayPicture?`, `val overAway: Boolean`, `val bagAt: Offset`.
 
-- [ ] **Step 1: Write the failing JVM test**
+- [x] **Step 1: Write the failing JVM test**
 
 `app/src/test/java/app/trollfoss/ui/play/AwayCornerTest.kt`:
 
@@ -1451,12 +1451,12 @@ class AwayCornerTest {
 }
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.ui.play.AwayCornerTest" -Plain`
 Expected: compilation fails with `Unresolved reference: AwayCorner`.
 
-- [ ] **Step 3: Write `AwayCorner`**
+- [x] **Step 3: Write `AwayCorner`**
 
 `app/src/main/java/app/trollfoss/ui/play/AwayCorner.kt`:
 
@@ -1504,11 +1504,11 @@ object AwayCorner {
 }
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run the command from Step 2. Expected: `BUILD SUCCESSFUL`, 4 tests passed.
 
-- [ ] **Step 5: Add the Android tests**
+- [x] **Step 5: Add the Android tests**
 
 In `app/src/androidTest/java/app/trollfoss/ui/play/SharedPlayTest.kt`, add inside the class (it already has `host`, `engine(world)` and `finger(e, p)`):
 
@@ -1594,7 +1594,7 @@ In `app/src/androidTest/java/app/trollfoss/ui/play/SharedPlayTest.kt`, add insid
 
 They do not compile yet (`bagAt`, `away`, `overAway` are missing). They run in Task 9.
 
-- [ ] **Step 6: Give the engine the corner's state**
+- [x] **Step 6: Give the engine the corner's state**
 
 `ui/play/Engine.kt`. Add the import `import app.trollfoss.ui.components.DesignIcons` next to the import of `Icons`.
 
@@ -1649,7 +1649,7 @@ In `update`, after the line `moveFurniture(dt)` add
         updateAway(dt)
 ```
 
-- [ ] **Step 7: Keep the camera still inside the corner**
+- [x] **Step 7: Keep the camera still inside the corner**
 
 In `update`, replace
 
@@ -1686,7 +1686,7 @@ with
 
 Everything from `clampCam()` down to the closing `} else if (grabs.values.none { … }) {` stays as it is.
 
-- [ ] **Step 8: Route the let-go**
+- [x] **Step 8: Route the let-go**
 
 In `updatePreviews`, replace
 
@@ -1762,7 +1762,7 @@ In `cancel`, after the line `grabs.clear()` add
         overAway = false
 ```
 
-- [ ] **Step 9: Draw the grown bag and the crate**
+- [x] **Step 9: Draw the grown bag and the crate**
 
 In `drawBag`, replace the first two lines of the function body
 
@@ -1810,7 +1810,7 @@ with
         }
 ```
 
-- [ ] **Step 10: Hide the furniture button while the corner is awake**
+- [x] **Step 10: Hide the furniture button while the corner is awake**
 
 `ui/screens/PlayScreen.kt`: replace
 
@@ -1827,12 +1827,12 @@ with
             RoundButton(app.trollfoss.ui.SM.furnish.str(), onClick = { menuOpen = false; engine.closeDriving(); engine.designMode = true },
 ```
 
-- [ ] **Step 11: Build**
+- [x] **Step 11: Build**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.ui.play.AwayCornerTest :app:assembleDebug :app:assembleDebugAndroidTest" -Suffix .leggbort -Plain`
 Expected: `BUILD SUCCESSFUL`.
 
-- [ ] **Step 12: Commit**
+- [x] **Step 12: Commit**
 
 ```bash
 git add app/src/main/java/app/trollfoss/ui/play/AwayCorner.kt app/src/main/java/app/trollfoss/ui/play/Engine.kt app/src/main/java/app/trollfoss/ui/screens/PlayScreen.kt app/src/test/java/app/trollfoss/ui/play/AwayCornerTest.kt app/src/androidTest/java/app/trollfoss/ui/play/SharedPlayTest.kt
@@ -1854,7 +1854,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 - Consumes: `House.passageAt(f): Passage?`, `House.usable(world, passage): Boolean`, `FixtureSpec.container`, `FixtureSpec.machine` (`Machine.NONE` when none), `Vehicles.controllable(f)`, `Fixture.top` (`y - spec.h`), `Fixture.shiftX`.
 - Produces: `TapHint.REACH = 0.35f`, `TapHint.SECONDS = 0.6f`, `TapHint.PAUSE = 1.5f`, `TapHint.answers(world, f): Boolean`, `TapHint.distance(f, x, y): Float`, `TapHint.nearest(world, place, x, y): Fixture?`; on `Engine`: `val hintedFixture: Int` (the id of the furniture hinting now, or -1).
 
-- [ ] **Step 1: Write the failing JVM test**
+- [x] **Step 1: Write the failing JVM test**
 
 `app/src/test/java/app/trollfoss/domain/TapHintTest.kt`:
 
@@ -1913,12 +1913,12 @@ class TapHintTest {
 }
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.domain.TapHintTest" -Plain`
 Expected: compilation fails with `Unresolved reference: TapHint`.
 
-- [ ] **Step 3: Write `TapHint`**
+- [x] **Step 3: Write `TapHint`**
 
 `app/src/main/java/app/trollfoss/domain/TapHint.kt`:
 
@@ -1963,11 +1963,11 @@ object TapHint {
 }
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run the command from Step 2. Expected: `BUILD SUCCESSFUL`, 5 tests passed.
 
-- [ ] **Step 5: Add the Android test**
+- [x] **Step 5: Add the Android test**
 
 In `SharedPlayTest.kt`, inside the class:
 
@@ -1987,7 +1987,7 @@ In `SharedPlayTest.kt`, inside the class:
     }
 ```
 
-- [ ] **Step 6: Wire the hint into the engine**
+- [x] **Step 6: Wire the hint into the engine**
 
 `ui/play/Engine.kt`. Add the import `import app.trollfoss.domain.TapHint` with the other domain imports.
 
@@ -2060,12 +2060,12 @@ with
                 drawTapHint(lw)
 ```
 
-- [ ] **Step 7: Build**
+- [x] **Step 7: Build**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.domain.TapHintTest :app:assembleDebug :app:assembleDebugAndroidTest" -Suffix .leggbort -Plain`
 Expected: `BUILD SUCCESSFUL`.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add app/src/main/java/app/trollfoss/domain/TapHint.kt app/src/main/java/app/trollfoss/ui/play/Engine.kt app/src/test/java/app/trollfoss/domain/TapHintTest.kt app/src/androidTest/java/app/trollfoss/ui/play/SharedPlayTest.kt
@@ -2091,7 +2091,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 - Consumes: `drag(e, from, to)`, `at(e, x, y)`, `finger(e, p)` in `SharedPlayTest` (Task 6 added the first two).
 - Produces: `class PanelIdle(limit: Int = 2)` with `decorating()` and `played(): Boolean`; on `Engine`: `fun panelTouched()`, `fun closeDesigner()`; `Engine.designMode` keeps its name and type (`Boolean`, readable and writable, observed by Compose).
 
-- [ ] **Step 1: Write the failing JVM test**
+- [x] **Step 1: Write the failing JVM test**
 
 `app/src/test/java/app/trollfoss/ui/play/PanelIdleTest.kt`:
 
@@ -2127,12 +2127,12 @@ class PanelIdleTest {
 }
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.ui.play.PanelIdleTest" -Plain`
 Expected: compilation fails with `Unresolved reference: PanelIdle`.
 
-- [ ] **Step 3: Write `PanelIdle`**
+- [x] **Step 3: Write `PanelIdle`**
 
 `app/src/main/java/app/trollfoss/ui/play/PanelIdle.kt`:
 
@@ -2160,11 +2160,11 @@ class PanelIdle(private val limit: Int = 2) {
 }
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run the command from Step 2. Expected: `BUILD SUCCESSFUL`, 3 tests passed.
 
-- [ ] **Step 5: Add the Android tests**
+- [x] **Step 5: Add the Android tests**
 
 In `SharedPlayTest.kt`, inside the class:
 
@@ -2200,7 +2200,7 @@ In `SharedPlayTest.kt`, inside the class:
     }
 ```
 
-- [ ] **Step 6: Wire the counter into the engine**
+- [x] **Step 6: Wire the counter into the engine**
 
 `ui/play/Engine.kt`: replace
 
@@ -2256,7 +2256,7 @@ In the furniture branch of `upNow` (changed in Task 6), add as its first line af
                 panelIdle.decorating()
 ```
 
-- [ ] **Step 7: Tell the engine about touches on the panel**
+- [x] **Step 7: Tell the engine about touches on the panel**
 
 `ui/screens/DesignerPanel.kt`: in the modifier chain of the root `Column`, after the line `.onGloballyPositioned { engine.storeZone = it.boundsInRoot() }` add
 
@@ -2291,12 +2291,12 @@ with
             })
 ```
 
-- [ ] **Step 8: Build**
+- [x] **Step 8: Build**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.ui.play.PanelIdleTest :app:assembleDebug :app:assembleDebugAndroidTest" -Suffix .leggbort -Plain`
 Expected: `BUILD SUCCESSFUL`.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add app/src/main/java/app/trollfoss/ui/play/PanelIdle.kt app/src/main/java/app/trollfoss/ui/play/Engine.kt app/src/main/java/app/trollfoss/ui/screens/DesignerPanel.kt app/src/main/java/app/trollfoss/ui/screens/PlayScreen.kt app/src/test/java/app/trollfoss/ui/play/PanelIdleTest.kt app/src/androidTest/java/app/trollfoss/ui/play/SharedPlayTest.kt
@@ -2317,12 +2317,12 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 - Consumes: everything from Tasks 1–8.
 - Produces: a green build, green Android tests, screenshots, and documents that say what is done and what is not.
 
-- [ ] **Step 1: Run every JVM test, lint and both builds**
+- [x] **Step 1: Run every JVM test, lint and both builds**
 
 Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest" -Suffix .leggbort -Plain`
 Expected: `BUILD SUCCESSFUL`, 0 lint errors. Note the number of unit tests and lint warnings for the handover text (1.7.1 had 467 unit tests and 31 lint warnings in debug).
 
-- [ ] **Step 2: Start the tablet emulator and run the Android tests**
+- [x] **Step 2: Start the tablet emulator and run the Android tests**
 
 Make sure no other emulator runs (`adb devices`); stop the phone emulator first if it does.
 
@@ -2330,7 +2330,7 @@ Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-Trollf
 Then: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:connectedDebugAndroidTest" -Suffix .leggbort -Plain`
 Expected: `BUILD SUCCESSFUL`; 1.7.1 had 32 Android tests, this plan adds 9 (one in Task 5, five in Task 6, one in Task 7, two in Task 8). A failing test is a finding: read it, fix the code or the test's geometry, and run again. Do not delete a test to get green.
 
-- [ ] **Step 3: Look at it on the tablet (1920 × 1200 / 240 dpi)**
+- [x] **Step 3: Look at it on the tablet (1920 × 1200 / 240 dpi)**
 
 The package is `app.trollfoss.leggbort`; private worlds in `app.trollfoss` and `app.trollfoss.debug` are never touched.
 
@@ -2357,11 +2357,11 @@ Go through this list with real drags and taps, and save a screenshot of each wit
 14. Switch to bokmål on the parents' page: the catalogue label reads «Skattekiste».
 15. Close the app completely and start it again: the box, its gems and the store are as they were.
 
-- [ ] **Step 4: A short look on the phone (2400 × 1080 / 420 dpi)**
+- [x] **Step 4: A short look on the phone (2400 × 1080 / 420 dpi)**
 
 Stop the tablet emulator, then: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-TrollfossEmulator.ps1`, install and start as in Step 3. Check items 2, 3, 5, 8 and 10 of the list. The grown bag must not cover the «more» button or the room buttons.
 
-- [ ] **Step 5: Put the emulators back**
+- [x] **Step 5: Put the emulators back**
 
 Uninstall the test package and stop the emulator that was started:
 
@@ -2373,7 +2373,7 @@ adb emu kill
 
 If a screen size or density override was set by a script, reset it first with `adb shell wm size reset` and `adb shell wm density reset`.
 
-- [ ] **Step 6: Write the documents**
+- [x] **Step 6: Write the documents**
 
 `CHANGELOG.md`: add under the first line `# Endringslogg`, before `## 1.7.1`:
 
@@ -2416,7 +2416,7 @@ vaknar ved løft, og eit trykk som ikkje treffer noko, får det næraste som sva
 > `C:\topa` står framleis på `codex/magic-rest` med gammalt, ukommittert arbeid som er urørt.
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add CHANGELOG.md docs/DESIGN.md docs/OVERLEVERING.md
@@ -2425,6 +2425,12 @@ git commit -m "Document the put-away corner, the treasure box and the hints [ski
 Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 8: Hand over**
+- [x] **Step 8: Hand over**
 
 Tell the user what was built, what was seen on tablet and phone, and what could not be checked. Do not push, open a pull request or make a release unless the user asks.
+
+## Fullført 2026-10-04
+
+Alle ni oppgåver er utførte i `claude/legg-bort`. Endeleg kontroll: 511 JVM-testar og 47 Android-testar grøne, begge debug-APK-ar bygde, lint 0 feil / 31 åtvaringar. Fire funn frå fersk sluttgjennomgang er retta og prøvde med feilande testar før retting.
+
+Dei praktiske kontrollane er utførte med ekte trykk og drag i den separate prøvepakken. Eiga native Tunet_Ascii vart brukt i begge skjermformat fordi JellyBin-emulatoren ikkje kunne nåast. Prøveemulatoren og skjerminnstillingane er rydda tilbake. Éin oppstart-ANR og dei konkrete avgrensingane er dokumenterte i `docs/OVERLEVERING.md`; ingen barnetest eller publisering er gjort.

@@ -1,4 +1,36 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
+
+> **NYAST – LEGG BORT OG SKATTAR (2026-10-04, Codex, lokalt og ikkje utgjeve):** Alle ni oppgåvene
+> i `docs/superpowers/plans/2026-10-03-legg-bort-og-skattar.md` er ferdige. Grein `claude/legg-bort` i
+> `C:\topa\.claude\worktrees\legg-bort`, frå publisert 1.7.1. Spec: `docs/superpowers/specs/`.
+> Sekken veks og viser open sekk eller kasse ved løft; ting og figurar går i sekken og møblar på lager.
+> Ny gratis skattekiste med glasfront på alle stader, med éi startgåve i Familiehuset. Lokket svarar på
+> nærleik, skattane ligg på hyller, kvar femte får glitter, og ei kiste med innhald kan ikkje lagrast.
+> Diamantar, myntar og perler blir ikkje automatisk sletta; loftskista gir berre ledige funn og hostar
+> støv med ein møll når ho er tom. Trykkbare trappeopningar, korte hint ved bomtrykk, automatisk lukking
+> av møbelpanelet etter to flyttingar, og like lagermøblar viste som eitt kort med tal er også ferdige.
+> **Kontroll:** 511 einingstestar og 47 Android-testar grøne, begge debug-APK-ar bygde; lint 0 feil / 31
+> åtvaringar. Fersk sluttgjennomgang fann fire feil som er retta med testar som først feila og så vart grøne:
+> panelet ventar på andre pågåande fingerrørsler; synleg ope kistelokk tek imot trykk og langt trykk;
+> skattar ligg på hylla også utan tyngdekraft og under vatn; synlege kantar av trappehol kan trykkjast på.
+> **Visuell prøve:** faktisk løft, slepp, pakking av ball/figur/møbel, uthenting av figur, grupperte lagerkort
+> med uthenting/papirkorg/tilbakeføring, kamerafølging utanfor hjørnet og stillstand inni, fem skattar bak glas,
+> avvist lagring av fylt kiste, bomtrykk-hint, panelet etter éin og to flyttingar, trappene hall–oppe–loft og
+> kjellar–hall, loftskistestøv og bevarte funn, bokmål gjennom foreldresida og «Skattekiste» i katalogen.
+> Kaldstart bevarte kista, plasseringa, dei fem originale diamantane og lageret. Mobil fekk den korte
+> prøva av løft/pakking, stol til lager, automatisk lokk/glitter/glas og Storhuset via kartet og døropninga.
+> Prøvene brukte eiga pakke `app.trollfoss.leggbort` og ei kontrollert, mellombels prøveverd; private verdener
+> vart ikkje lesne, endra eller tømde. Bilete/lagringskontroll: Git-ignorert `screenshots/legg-bort/`.
+> Gode kontrollbilete er mellom anna 12–24, 45–53, 57–61, 64, 67–68, 72–77, 87–89 og 93–98.
+> **Avgrensingar:** den separate JellyBin-emulatoren kunne ikkje nåast. Eigen native `Tunet_Ascii` vart brukt
+> i begge skjermformat: nettbrett 1920 × 1200 / 240 dpi og mobil 2400 × 1080 / 420 dpi. Dette er éin AVD
+> med to skjermformat. Éin oppstart gav ANR på vindaugsfokus medan slutt-lint køyrde; årsaka er ikkje
+> fastslått. Etter omstart var kontrollane og seinare kaldstart responsive. Ingen ytelsesprøve på fysisk eining.
+> Testpakken er avinstallert, eigen emulator stoppa og skjermmål, tettleik og rotasjonsinnstillingar tilbakeførte.
+> **Ikkje gjort:** ingen push, PR, release, versjonsendring eller barnetest av denne runden. Runde to
+> (knappar, menyar, symbol) ventar til brukaren har sett barnet bruke dette.
+> `C:\topa` står framleis på `codex/magic-rest` med gammalt, ukommittert arbeid som er urørt.
+
 > **NYAST – PUBLISERT 1.7.1 (2026-10-03, Codex):** Brukaren bad «Lag ny release».
 > PR 4 er fletta, og stabil 1.7.1 / kode 12 er publisert som nyaste release:
 > https://github.com/oyvhov/trollfoss-android/releases/tag/v1.7.1.

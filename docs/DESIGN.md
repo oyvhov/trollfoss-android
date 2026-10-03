@@ -164,6 +164,12 @@ vekk) og **kosten** som ryddar heile staden: kvar ting flyg heim i ein glitrande
 leiken havnar i hittegodskista, rusk forsvinn i ein puff. Søppelbøtta et rusk og rapar, og
 robotstøvsugaren tuslar langs rommet og slurpar opp det som ligg på golvet.
 
+**Legg bort-hjørnet:** når barnet løftar ein ting, ein figur eller eit møbel, veks sekken nede til høgre.
+Slepp der legg ting og figurar i sekken og møblar på lager, utan at møbelpanelet er ope. Skjermkantane
+ber framleis kameraet vidare. **Skattekista** har glasfront og tek imot alt barnet samlar; diamantar,
+myntar og perler forsvinn aldri av seg sjølv. Hint kjem berre i augeblinken barnet prøver noko: hjørnet
+vaknar ved løft, og eit trykk som ikkje treffer noko, får det næraste som svarar på trykk til å vippe og lyse.
+
 **Oppdragstavla** (utklippstavla øvst til venstre, med tal for kor mange som står att) har tre
 biletoppdrag om gongen – bak ei kake, ta pariserhjulet over toppen, røntg nokon, nys hatten av
 nokon. Kvart oppdrag gir eit klistremerke til albumet i oppdagingsboka; når alle tre er gjort,
