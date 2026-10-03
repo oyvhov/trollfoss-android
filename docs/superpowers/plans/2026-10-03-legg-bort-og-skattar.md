@@ -1148,4 +1148,1283 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 
 ---
 
-PLAN-PART-2
+### Task 5: The doorway on a staircase can be tapped
+
+**Files:**
+- Create: `app/src/main/java/app/trollfoss/ui/art/StairDoorways.kt`
+- Modify: `app/src/main/java/app/trollfoss/ui/art/HouseGroundHallArt.kt` (`grStairs`, the `run { … }` block near line 46)
+- Modify: `app/src/main/java/app/trollfoss/ui/art/HouseCellarTunnelArt.kt` (`ceStairs`, near line 40)
+- Modify: `app/src/main/java/app/trollfoss/ui/art/HouseUpperPassageArt.kt` (`upStairsUp`, near line 104)
+- Modify: `app/src/main/java/app/trollfoss/ui/play/Engine.kt` (`fixtureAt`, near line 1102)
+- Test: `app/src/test/java/app/trollfoss/ui/art/StairDoorwaysTest.kt`, `app/src/androidTest/java/app/trollfoss/ui/play/SharedPlayTest.kt`
+
+**Background:** the touch area of a `STAIRCASE` is its spec box, 0.84 wide and 0.58 high. Three staircases paint a doorway above that box: the arch behind the grand stairs in the hall, the lit door at the top of the cellar stairs, and the little door to the attic on the first floor. A child taps the doorway and nothing happens. The other staircases (the two stairwells in the floor, both stairs of Mitt hus) and both ends of the secret tunnel were checked: what they paint lies inside their boxes, so they need no change.
+
+**Interfaces:**
+- Consumes: `FX_DX`, `FX_DY` (`internal const` in `ui/art/FixtureArt.kt`, the oblique projection), `FixtureDoors.hit` (the pattern this follows).
+- Produces: `internal data class Doorway(left, top, right, bottom)` with `contains(x, y, margin)`; `StairDoorways.hall`, `StairDoorways.cellar`, `StairDoorways.attic`, `StairDoorways.of(f: Fixture): Doorway?`, `StairDoorways.hit(f: Fixture, x: Float, y: Float, margin: Float): Boolean`; constants `HALL_Z`, `ATTIC_Z`, `ATTIC_LEFT`, `ATTIC_RIGHT`, `ATTIC_SILL`, `ATTIC_TOP`. Coordinates are scene units from the bottom centre of the fixture, y negative upwards.
+
+- [ ] **Step 1: Write the failing JVM test**
+
+`app/src/test/java/app/trollfoss/ui/art/StairDoorwaysTest.kt`:
+
+```kotlin
+package app.trollfoss.ui.art
+
+import app.trollfoss.domain.Fixture
+import app.trollfoss.domain.FixtureType
+import app.trollfoss.domain.PlaceId
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+/** The doorway painted on a staircase belongs to the staircase: a tap on it is a tap on the stairs. */
+class StairDoorwaysTest {
+    private fun stairs(place: PlaceId, variant: Int = 0) = Fixture(1, place, FixtureType.STAIRCASE, 0f, 0f, variant)
+
+    @Test fun `the glowing arch behind the grand stairs lies above the box of the stairs and is part of them`() {
+        val f = stairs(PlaceId.MANOR_GROUND)
+        assertTrue("above the box", -0.75f < -f.spec.h)
+        assertTrue(StairDoorways.hit(f, -0.17f, -0.75f, 0f))
+        assertFalse(StairDoorways.hit(f, 0.30f, -0.75f, 0f))
+    }
+
+    @Test fun `the lit door at the top of the cellar stairs is part of them`() {
+        val f = stairs(PlaceId.MANOR_CELLAR)
+        assertTrue(StairDoorways.hit(f, -0.34f, -0.70f, 0f))
+        assertFalse(StairDoorways.hit(f, 0.20f, -0.70f, 0f))
+    }
+
+    @Test fun `the little door to the attic is part of the stairs up, not of the stairwell down`() {
+        assertTrue(StairDoorways.hit(stairs(PlaceId.MANOR_UPPER, variant = 1), 0.25f, -0.70f, 0f))
+        assertNull(StairDoorways.of(stairs(PlaceId.MANOR_UPPER, variant = 0)))
+    }
+
+    @Test fun `stairs without a painted doorway and other furniture have none`() {
+        assertNull(StairDoorways.of(stairs(PlaceId.MANOR_ATTIC)))
+        assertNull(StairDoorways.of(stairs(PlaceId.MINE_GROUND, variant = 2)))
+        assertNull(StairDoorways.of(Fixture(1, PlaceId.MANOR_GROUND, FixtureType.LIFT, 0f, 0f)))
+    }
+
+    @Test fun `the margin widens the doorway a little`() {
+        val f = stairs(PlaceId.MANOR_CELLAR)
+        assertFalse(StairDoorways.hit(f, -0.44f, -0.70f, 0f))
+        assertTrue(StairDoorways.hit(f, -0.44f, -0.70f, 0.012f))
+    }
+}
+```
+
+- [ ] **Step 2: Run the test to verify it fails**
+
+Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.ui.art.StairDoorwaysTest" -Plain`
+Expected: compilation fails with `Unresolved reference: StairDoorways`.
+
+- [ ] **Step 3: Write the shared geometry**
+
+`app/src/main/java/app/trollfoss/ui/art/StairDoorways.kt`:
+
+```kotlin
+package app.trollfoss.ui.art
+
+import app.trollfoss.domain.Fixture
+import app.trollfoss.domain.FixtureType
+import app.trollfoss.domain.PlaceId
+
+/** A doorway painted on a staircase, in scene units from the bottom centre of the fixture (y is negative upwards). */
+internal data class Doorway(val left: Float, val top: Float, val right: Float, val bottom: Float) {
+    fun contains(x: Float, y: Float, margin: Float): Boolean =
+        x in (left - margin)..(right + margin) && y in (top - margin)..(bottom + margin)
+}
+
+/**
+ * The same numbers describe both the painted doorway of a staircase and its touch area, the way
+ * [FixtureDoors] does for cupboard doors: a child taps the door it wants to go through, not the steps.
+ */
+internal object StairDoorways {
+    /** Storstova: the arch in the wall behind the landing of the grand stairs, [HALL_Z] deep. */
+    const val HALL_Z = 0.26f
+    val hall = Doorway(-0.4f + FX_DX * HALL_Z, -0.85f + FX_DY * HALL_Z, -0.2f + FX_DX * HALL_Z, -0.52f + FX_DY * HALL_Z)
+
+    /** The cellar: the lit door at the top of the wooden flight. */
+    val cellar = Doorway(-0.43f, -0.80f, -0.26f, -0.50f)
+
+    /** The first floor: the little door up to the attic, in the wall [ATTIC_Z] deep. */
+    const val ATTIC_Z = 0.07f
+    const val ATTIC_LEFT = 0.1f
+    const val ATTIC_RIGHT = 0.33f
+    const val ATTIC_SILL = -0.53f
+    const val ATTIC_TOP = -0.80f
+    val attic = Doorway(ATTIC_LEFT + FX_DX * ATTIC_Z, ATTIC_TOP - 0.02f + FX_DY * ATTIC_Z, ATTIC_RIGHT + FX_DX * ATTIC_Z, ATTIC_SILL + FX_DY * ATTIC_Z)
+
+    fun of(f: Fixture): Doorway? = when {
+        f.type != FixtureType.STAIRCASE -> null
+        f.place == PlaceId.MANOR_GROUND -> hall
+        f.place == PlaceId.MANOR_CELLAR -> cellar
+        f.place == PlaceId.MANOR_UPPER && f.variant == 1 -> attic
+        else -> null
+    }
+
+    fun hit(f: Fixture, x: Float, y: Float, margin: Float): Boolean = of(f)?.contains(x, y, margin) == true
+}
+```
+
+- [ ] **Step 4: Run the test to verify it passes**
+
+Run the command from Step 2. Expected: `BUILD SUCCESSFUL`, 5 tests passed.
+
+- [ ] **Step 5: Let the art read the same numbers**
+
+`ui/art/HouseGroundHallArt.kt`, in `grStairs`, replace the whole `run { … }` block under the comment `// The doorway up to the first floor behind the landing, warm with light from above.` with
+
+```kotlin
+    // The doorway up to the first floor behind the landing, warm with light from above. Its place is shared
+    // with the touch area (see [StairDoorways]): a tap on the doorway is a tap on the stairs.
+    run {
+        val door = StairDoorways.hall
+        val arch = archPath(door.left * u, door.right * u, door.bottom * u, (door.bottom - 0.16f) * u, door.top * u)
+        drawPath(arch, Brush.verticalGradient(listOf(Color(0xFF3A2A4A), Color(0xFFFFD98A)), startY = door.top * u, endY = door.bottom * u))
+        drawPath(arch, Ink.line, style = pen.stroke)
+        drawPath(arch, GrC.ivory, style = Stroke(0.012f * u))
+        drawPath(arch, Ink.line, style = pen.thin)
+        grGlow(Offset((door.left + door.right) / 2f * u, (door.bottom - 0.08f) * u), 0.16f * u, pen, 0.18f)
+    }
+```
+
+`ui/art/HouseCellarTunnelArt.kt`, in `ceStairs`, replace the line
+
+```kotlin
+    fxBox(u, -0.43f, -0.8f, -0.26f, -0.5f, 0.04f, Color(0xFFE9E1D3), pen, rad = 0.005f, z = d - 0.02f)
+```
+
+with
+
+```kotlin
+    // The frame of the door is also where a tap on it counts (see [StairDoorways]).
+    val way = StairDoorways.cellar
+    fxBox(u, way.left, way.top, way.right, way.bottom, 0.04f, Color(0xFFE9E1D3), pen, rad = 0.005f, z = d - 0.02f)
+```
+
+`ui/art/HouseUpperPassageArt.kt`, in `upStairsUp`, replace the four lines
+
+```kotlin
+    val wx = 0.1f
+    val wr = 0.33f
+    val sill = -0.03f - rise * n
+    val doorTop = sill - 0.27f
+```
+
+with
+
+```kotlin
+    // Shared with the touch area (see [StairDoorways]).
+    val wx = StairDoorways.ATTIC_LEFT
+    val wr = StairDoorways.ATTIC_RIGHT
+    val sill = StairDoorways.ATTIC_SILL
+    val doorTop = StairDoorways.ATTIC_TOP
+```
+
+The pictures must not change: the new numbers equal the old ones (`-0.03 - 0.0625 * 8 = -0.53`, `-0.53 - 0.27 = -0.80`).
+
+- [ ] **Step 6: Count the doorway as part of the staircase**
+
+`ui/play/Engine.kt`: add the import `import app.trollfoss.ui.art.StairDoorways` next to the import of `FixtureDoors`. In `fixtureAt`, replace
+
+```kotlin
+            if (FixtureDoors.hit(f, dx, dy, pad) || f.type == FixtureType.TRACTOR && TractorCab.contains(dx, dy - f.bob, pad)) return f
+```
+
+with
+
+```kotlin
+            if (FixtureDoors.hit(f, dx, dy, pad) || StairDoorways.hit(f, dx, dy, pad) ||
+                f.type == FixtureType.TRACTOR && TractorCab.contains(dx, dy - f.bob, pad)) return f
+```
+
+- [ ] **Step 7: Add the Android test**
+
+In `app/src/androidTest/java/app/trollfoss/ui/play/SharedPlayTest.kt`, add inside the class:
+
+```kotlin
+    private var lastPassage: Passage? = null
+
+    /** Like [host], but remembers the way between floors that was taken. */
+    private val passageHost = object : EngineHost {
+        override fun sfx(effect: Sfx, volume: Float, rate: Float) {}
+        override fun haptic() {}
+        override fun changed() {}
+        override fun secretFound(id: String) {}
+        override fun discovered(key: String) {}
+        override fun telescope() {}
+        override fun radio(on: Boolean) {}
+        override fun egg(id: String) {}
+        override fun passage(passage: Passage, arrivalX: Float) { lastPassage = passage }
+    }
+
+    @Test fun aTapOnTheGlowingDoorwayBehindTheGrandStairsGoesUpstairs() {
+        val w = WorldFactory.create(); val s = Sim(w); val place = PlaceId.MANOR_GROUND
+        val stairs = w.fixtures.getValue(WorldFactory.fixtureId(place, GroundIx.STAIRS))
+        val e = Engine(w, place, s, passageHost, false, 0f).apply { setSize(1920f, 1200f, 1.5f); focusOn(stairs.x) }
+        // The middle of the arch, above the staircase's own box: where a child taps to go up.
+        val at = Offset((stairs.x - 0.17f - e.cam) * e.u, 1200f - e.u + (stairs.y - 0.75f) * e.u)
+        e.down(1, at, 1000); e.up(1, at, 1100)
+        assertEquals("ground-stairs-up", lastPassage?.id); e.cancel()
+    }
+```
+
+The Android tests run in Task 9, when the emulator is up. Here, only compile them:
+
+Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.ui.art.StairDoorwaysTest :app:assembleDebug :app:assembleDebugAndroidTest" -Suffix .leggbort -Plain`
+Expected: `BUILD SUCCESSFUL`.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add app/src/main/java/app/trollfoss/ui/art/StairDoorways.kt app/src/main/java/app/trollfoss/ui/art/HouseGroundHallArt.kt app/src/main/java/app/trollfoss/ui/art/HouseCellarTunnelArt.kt app/src/main/java/app/trollfoss/ui/art/HouseUpperPassageArt.kt app/src/main/java/app/trollfoss/ui/play/Engine.kt app/src/test/java/app/trollfoss/ui/art/StairDoorwaysTest.kt app/src/androidTest/java/app/trollfoss/ui/play/SharedPlayTest.kt
+git commit -m "Let a tap on the doorway of a staircase take the stairs
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
+```
+
+---
+
+### Task 6: The put-away corner
+
+**Files:**
+- Create: `app/src/main/java/app/trollfoss/ui/play/AwayCorner.kt`
+- Modify: `app/src/main/java/app/trollfoss/ui/play/Engine.kt` (state near line 188, `update` near lines 341–369, `updatePreviews` near line 418, `upNow` near line 859, `cancel` near line 1115, `drop` near line 1273, `intoBag` near line 1327, `drawBag` near line 3310)
+- Modify: `app/src/main/java/app/trollfoss/ui/screens/PlayScreen.kt` (the furnish button, near line 351)
+- Test: `app/src/test/java/app/trollfoss/ui/play/AwayCornerTest.kt`, `app/src/androidTest/java/app/trollfoss/ui/play/SharedPlayTest.kt`
+
+**Background:** the outer 8 % of the screen on each side already moves the camera while something is held, so the edge cannot mean «put away». The bag sits in the bottom right corner, drawn by the engine (`drawBag`), with a touch circle of `bagRadius * 1.4`. On a tablet at 1920 × 1200 and density 1.5 the bag has radius 57 px and its centre is at (1833, 1113). Furniture can today only be stored over the open side panel (`storeZone`).
+
+**Interfaces:**
+- Consumes: `Designer.store(place, f): Boolean` (false when the piece may not be stored; a treasure box with finds then opens by itself, Task 3), `intoBag(body)`, `letGo(f)`, `Icons.Bag`, `DesignIcons.Box` (both `DrawScope.() -> Unit`).
+- Produces: `enum class AwayPicture { BAG, CRATE }`; `AwayCorner.DRAW = 1.6f`, `AwayCorner.HIT = 2.4f`, `AwayCorner.BAG_ONLY = 1.4f`, `AwayCorner.GROW = 0.18f`, `AwayCorner.reach(fromScene: Boolean): Float`, `AwayCorner.contains(fingerX, fingerY, centerX, centerY, bagRadius, fromScene): Boolean`, `AwayCorner.picture(bodies: Int, furniture: Int): AwayPicture?`, `AwayCorner.nearMiss(fingerX, fingerY, width, height): Boolean`; on `Engine`: `val away: AwayPicture?`, `val overAway: Boolean`, `val bagAt: Offset`.
+
+- [ ] **Step 1: Write the failing JVM test**
+
+`app/src/test/java/app/trollfoss/ui/play/AwayCornerTest.kt`:
+
+```kotlin
+package app.trollfoss.ui.play
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+/** The corner by the bag where things, figures and furniture are put away. */
+class AwayCornerTest {
+    // Tablet numbers: a bag of radius 57 px with its centre at (1833, 1113).
+    private val cx = 1833f
+    private val cy = 1113f
+    private val r = 57f
+
+    @Test fun `the corner reaches further for what comes from the scene than for what comes out of the bag`() {
+        assertEquals(AwayCorner.HIT, AwayCorner.reach(fromScene = true), 0f)
+        assertEquals(AwayCorner.BAG_ONLY, AwayCorner.reach(fromScene = false), 0f)
+        assertTrue(AwayCorner.BAG_ONLY < AwayCorner.DRAW && AwayCorner.DRAW < AwayCorner.HIT)
+    }
+
+    @Test fun `a finger up and to the left of the bag is in the corner only for what comes from the scene`() {
+        // 106 px from the centre: outside the bag's own 80 px, inside the grown corner's 137 px.
+        assertTrue(AwayCorner.contains(cx - 75f, cy - 75f, cx, cy, r, fromScene = true))
+        assertFalse(AwayCorner.contains(cx - 75f, cy - 75f, cx, cy, r, fromScene = false))
+        assertFalse(AwayCorner.contains(cx - 233f, cy, cx, cy, r, fromScene = true))
+        assertTrue(AwayCorner.contains(cx, cy, cx, cy, r, fromScene = false))
+    }
+
+    @Test fun `things and figures get the bag, furniture alone gets the crate, nothing held gets nothing`() {
+        assertEquals(AwayPicture.BAG, AwayCorner.picture(bodies = 1, furniture = 0))
+        assertEquals(AwayPicture.BAG, AwayCorner.picture(bodies = 1, furniture = 1))
+        assertEquals(AwayPicture.CRATE, AwayCorner.picture(bodies = 0, furniture = 2))
+        assertNull(AwayCorner.picture(bodies = 0, furniture = 0))
+    }
+
+    @Test fun `a near miss is the lower right quarter of the screen`() {
+        assertTrue(AwayCorner.nearMiss(1500f, 900f, 1920f, 1200f))
+        assertFalse(AwayCorner.nearMiss(900f, 900f, 1920f, 1200f))
+        assertFalse(AwayCorner.nearMiss(1500f, 500f, 1920f, 1200f))
+    }
+}
+```
+
+- [ ] **Step 2: Run the test to verify it fails**
+
+Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.ui.play.AwayCornerTest" -Plain`
+Expected: compilation fails with `Unresolved reference: AwayCorner`.
+
+- [ ] **Step 3: Write `AwayCorner`**
+
+`app/src/main/java/app/trollfoss/ui/play/AwayCorner.kt`:
+
+```kotlin
+package app.trollfoss.ui.play
+
+import kotlin.math.hypot
+
+/** What the corner by the bag offers while something is held: the bag for things and figures, a crate for furniture. */
+enum class AwayPicture { BAG, CRATE }
+
+/**
+ * The put-away corner. The screen edges carry the camera along, so «away» lives where the bag already is:
+ * while the child holds something from the scene the bag grows, and whatever is let go inside goes into the
+ * bag (things, figures) or the store (furniture). No panel has to be open.
+ */
+object AwayCorner {
+    /** How much bigger the bag is drawn while something is held. */
+    const val DRAW = 1.6f
+
+    /** The touch radius in bag radii, for what was lifted from the scene. */
+    const val HIT = 2.4f
+
+    /** The bag's own touch radius: what comes out of the bag tray keeps it, so a tap in the tray still takes a thing out. */
+    const val BAG_ONLY = 1.4f
+
+    /** Seconds the bag takes to grow and to shrink back. */
+    const val GROW = 0.18f
+
+    fun reach(fromScene: Boolean): Float = if (fromScene) HIT else BAG_ONLY
+
+    fun contains(fingerX: Float, fingerY: Float, centerX: Float, centerY: Float, bagRadius: Float, fromScene: Boolean): Boolean =
+        hypot(fingerX - centerX, fingerY - centerY) < bagRadius * reach(fromScene)
+
+    /** Null while nothing from the scene is held; the crate only when everything held is furniture. */
+    fun picture(bodies: Int, furniture: Int): AwayPicture? = when {
+        bodies > 0 -> AwayPicture.BAG
+        furniture > 0 -> AwayPicture.CRATE
+        else -> null
+    }
+
+    /** Furniture let go outside the corner but in the lower right quarter of the screen: the corner wobbles once, as a hint. */
+    fun nearMiss(fingerX: Float, fingerY: Float, width: Float, height: Float): Boolean =
+        fingerX > width * 0.5f && fingerY > height * 0.5f
+}
+```
+
+- [ ] **Step 4: Run the test to verify it passes**
+
+Run the command from Step 2. Expected: `BUILD SUCCESSFUL`, 4 tests passed.
+
+- [ ] **Step 5: Add the Android tests**
+
+In `app/src/androidTest/java/app/trollfoss/ui/play/SharedPlayTest.kt`, add inside the class (it already has `host`, `engine(world)` and `finger(e, p)`):
+
+```kotlin
+    // ------------------------------------------------------------------ the put-away corner
+
+    /** Up and to the left of the bag: outside its own small circle, inside the grown corner. */
+    private fun cornerOf(e: Engine) = Offset(e.bagAt.x - 75f, e.bagAt.y - 75f)
+
+    private fun at(e: Engine, x: Float, y: Float) = Offset((x - e.cam) * e.u, 1200f - e.u + y * e.u)
+
+    private fun drag(e: Engine, from: Offset, to: Offset) {
+        e.down(1, from, 1000)
+        e.move(1, Offset((from.x + to.x) / 2f, (from.y + to.y) / 2f), 1050)
+        repeat(3) { e.update(0.016f) }
+        e.move(1, to, 1100)
+        repeat(3) { e.update(0.016f) }
+        e.up(1, to, 1200)
+    }
+
+    @Test fun aThingLetGoInTheGrownCornerGoesInTheBagWithThePanelShut() {
+        val w = World()
+        val t = w.addThing(ThingType.BALL, 0, PlaceId.HOME, 1.0f, 0.9f)
+        val e = engine(w); repeat(30) { e.update(0.016f) }
+        drag(e, at(e, t.x, t.y - t.h / 2f), cornerOf(e))
+        assertEquals(Mode.BAG, t.mode); e.cancel()
+    }
+
+    @Test fun aFigureLetGoInTheGrownCornerGoesInTheBag() {
+        val w = World()
+        val p = w.addPerson(Species.FOLK, Look(), 1f, PlaceId.HOME, 1.0f, 0.9f, "A")
+        val e = engine(w); repeat(30) { e.update(0.016f) }
+        drag(e, finger(e, p), cornerOf(e))
+        assertEquals(Mode.BAG, p.mode); e.cancel()
+    }
+
+    @Test fun furnitureHeldAndLetGoInTheCornerGoesToTheStoreWithThePanelShut() {
+        val w = World(); val s = Sim(w); val place = PlaceId.HOME
+        val f = s.designer.add(place, FixtureType.STOOL, 0, 1.0f, 0.9f)!!
+        val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        e.down(1, at(e, f.x, f.y - f.spec.h / 2f), 1000)
+        repeat(40) { e.update(0.016f) }                // a long press lifts the stool
+        assertEquals(AwayPicture.CRATE, e.away)
+        e.move(1, cornerOf(e), 1700); repeat(3) { e.update(0.016f) }
+        assertTrue(e.overAway)
+        e.up(1, cornerOf(e), 1800)
+        assertNull(w.fixtures[f.id])
+        assertEquals(FixtureType.STOOL, w.storage.single().type)
+        repeat(20) { e.update(0.016f) }
+        assertNull("the corner sleeps again", e.away); e.cancel()
+    }
+
+    @Test fun aTreasureBoxWithFindsInItStaysInTheRoomWhenLetGoInTheCorner() {
+        val w = World(); val s = Sim(w); val place = PlaceId.HOME
+        val f = s.designer.add(place, FixtureType.TREASURE_BOX, 0, 1.0f, 0.9f)!!
+        val gem = w.addThing(ThingType.GEM, 0, place, f.x, f.y - 0.1f)
+        assertTrue(s.dropInto(place, f, gem))
+        val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        // Hold the box by its lid, above the glass, so the finger is on the furniture and not on the gem.
+        e.down(1, at(e, f.x + 0.12f, f.y - f.spec.h + 0.004f), 1000)
+        repeat(40) { e.update(0.016f) }
+        e.move(1, cornerOf(e), 1700); repeat(3) { e.update(0.016f) }
+        e.up(1, cornerOf(e), 1800)
+        assertTrue(w.fixtures[f.id] === f)
+        assertTrue(w.storage.isEmpty())
+        assertEquals(listOf(gem), s.treasure.holds(f)); e.cancel()
+    }
+
+    @Test fun insideTheCornerTheCameraStaysPutAndAboveItTheEdgeStillCarriesTheCameraAlong() {
+        val w = World()
+        val t = w.addThing(ThingType.BALL, 0, PlaceId.HOME, 1.0f, 0.9f)
+        val e = engine(w); repeat(30) { e.update(0.016f) }
+        e.down(1, at(e, t.x, t.y - t.h / 2f), 1000)
+        e.move(1, Offset(1900f, e.bagAt.y), 1100)      // at the right edge, but inside the corner
+        val before = e.cam
+        repeat(30) { e.update(0.016f) }
+        assertEquals(before, e.cam, 0.0001f)
+        e.move(1, Offset(1900f, 300f), 1200)           // at the right edge, well above the corner
+        repeat(30) { e.update(0.016f) }
+        assertTrue(e.cam > before + 0.2f); e.cancel()
+    }
+```
+
+They do not compile yet (`bagAt`, `away`, `overAway` are missing). They run in Task 9.
+
+- [ ] **Step 6: Give the engine the corner's state**
+
+`ui/play/Engine.kt`. Add the import `import app.trollfoss.ui.components.DesignIcons` next to the import of `Icons`.
+
+After the lines
+
+```kotlin
+    /** A piece of furniture is being dragged over the panel. */
+    var overStore by mutableStateOf(false)
+```
+
+add
+
+```kotlin
+
+    /** The put-away corner is awake: something from the scene is held, and the bag has grown to take it. */
+    var away by mutableStateOf<AwayPicture?>(null)
+        private set
+
+    /** What is held hovers over the put-away corner. */
+    var overAway by mutableStateOf(false)
+        private set
+    private var awayGrow = 0f
+    private var awayWobble = 0f
+```
+
+After the line `private val bagCenter get() = Offset(geometry.right - bagMargin - bagRadius, heightPx - bagMargin - bagRadius)` add
+
+```kotlin
+
+    /** The centre of the bag on screen. */
+    val bagAt: Offset get() = bagCenter
+
+    /** Lifted from the scene (not pulled out of the bag tray): the grown corner is for these. */
+    private fun fromScene(g: Grab): Boolean = g.target is Target.Hold || g.target is Target.Furniture
+
+    /** The finger of [g] is where a let-go means «put away». */
+    private fun onBag(g: Grab): Boolean =
+        AwayCorner.contains(g.finger.x, g.finger.y, bagCenter.x, bagCenter.y, bagRadius, fromScene(g))
+
+    private fun updateAway(dt: Float) {
+        val carrying = grabs.values.filter { it.moved && fromScene(it) }
+        away = AwayCorner.picture(carrying.count { it.target is Target.Hold }, carrying.count { it.target is Target.Furniture })
+        overAway = carrying.any(::onBag)
+        awayGrow = if (away != null) min(1f, awayGrow + dt / AwayCorner.GROW) else max(0f, awayGrow - dt / AwayCorner.GROW)
+        awayWobble = max(0f, awayWobble - dt * 2.5f)
+    }
+```
+
+In `update`, after the line `moveFurniture(dt)` add
+
+```kotlin
+        updateAway(dt)
+```
+
+- [ ] **Step 7: Keep the camera still inside the corner**
+
+In `update`, replace
+
+```kotlin
+        if (grabs.values.any { it.moved && (heldBody(it) != null || it.target is Target.Furniture) }) {
+            val edge = grabs.values.filter { it.moved && (heldBody(it) != null || it.target is Target.Furniture) }.map { it.finger.x }
+            // With the designer panel open, the right edge is where the panel starts; over the panel
+            // itself the camera stays put, so furniture can be dropped into the store.
+            val panel = if (designMode) storeZone else null
+            val right = panel?.left?.minus(dp(36f)) ?: (widthPx * 0.92f)
+            for (x in edge) {
+                if (x < widthPx * 0.08f) cam -= 1.3f * dt
+                if (x > right && (panel == null || x < panel.left)) cam += 1.3f * dt
+            }
+```
+
+with
+
+```kotlin
+        val carrying = grabs.values.filter { it.moved && (heldBody(it) != null || it.target is Target.Furniture) }
+        if (carrying.isNotEmpty()) {
+            // With the designer panel open, the right edge is where the panel starts; over the panel
+            // itself the camera stays put, so furniture can be dropped into the store.
+            val panel = if (designMode) storeZone else null
+            val right = panel?.left?.minus(dp(36f)) ?: (widthPx * 0.92f)
+            for (g in carrying) {
+                // In the put-away corner the camera stays put too, so what is held can be let go there.
+                if (onBag(g)) continue
+                val x = g.finger.x
+                if (x < widthPx * 0.08f) cam -= 1.3f * dt
+                if (x > right && (panel == null || x < panel.left)) cam += 1.3f * dt
+            }
+```
+
+Everything from `clampCam()` down to the closing `} else if (grabs.values.none { … }) {` stays as it is.
+
+- [ ] **Step 8: Route the let-go**
+
+In `updatePreviews`, replace
+
+```kotlin
+            if (hypot(g.finger.x - bagCenter.x, g.finger.y - bagCenter.y) < bagRadius * 1.4f) continue
+```
+
+with
+
+```kotlin
+            if (onBag(g)) continue
+```
+
+In `drop`, replace
+
+```kotlin
+        val fingerOnBag = hypot(g.finger.x - bagCenter.x, g.finger.y - bagCenter.y) < bagRadius * 1.4f
+```
+
+with
+
+```kotlin
+        val fingerOnBag = onBag(g)
+```
+
+In `upNow`, replace the furniture branch
+
+```kotlin
+            g.target is Target.Furniture -> {
+                val f = (g.target as Target.Furniture).fixture
+                overStore = false
+                if (storeZone?.contains(at) == true && sim.designer.store(place, f)) {
+                    designVersion++
+                    host.changed()
+                } else {
+                    letGo(f)
+                }
+            }
+```
+
+with
+
+```kotlin
+            g.target is Target.Furniture -> {
+                val f = (g.target as Target.Furniture).fixture
+                overStore = false
+                // Over the open panel, or in the put-away corner with no panel at all: into the store.
+                val inCorner = onBag(g)
+                if ((storeZone?.contains(at) == true || inCorner) && sim.designer.store(place, f)) {
+                    designVersion++
+                    if (inCorner) particles.burst(PKind.SPARK, units(bagCenter.x) + cam, units(bagCenter.y - top), 8, 0.4f)
+                    host.changed()
+                } else {
+                    letGo(f)
+                    // It could not be stored, or it nearly got there: the corner wobbles once to show where «away» is.
+                    if (inCorner || AwayCorner.nearMiss(at.x, at.y, widthPx, heightPx)) awayWobble = 1f
+                }
+            }
+```
+
+In `intoBag`, replace the line `if (body is Person) Players.pack(world, body) else {` with
+
+```kotlin
+        // A figure says goodbye on its way into the bag.
+        if (body is Person) voice(body, Sfx.GIGGLE, 0.7f)
+        if (body is Person) Players.pack(world, body) else {
+```
+
+In `cancel`, after the line `grabs.clear()` add
+
+```kotlin
+        away = null
+        overAway = false
+```
+
+- [ ] **Step 9: Draw the grown bag and the crate**
+
+In `drawBag`, replace the first two lines of the function body
+
+```kotlin
+        val c = bagCenter
+        val r = bagRadius
+```
+
+with
+
+```kotlin
+        // While something from the scene is held the bag grows up and to the left, clear of the screen edge.
+        val grow = if (motion) awayGrow else if (away != null) 1f else 0f
+        val r = bagRadius * (1f + (AwayCorner.DRAW - 1f) * grow)
+        val c = Offset(bagCenter.x - (r - bagRadius), bagCenter.y - (r - bagRadius))
+```
+
+Replace the block
+
+```kotlin
+        val wobble = if (bag.isNotEmpty() && motion) sin(time * 3f) * 3f else 0f
+        drawCircle(T.SunDeep, r, Offset(c.x, c.y + dp(5f)))
+        drawCircle(Brush.verticalGradient(if (bagOpen) listOf(T.Mint, T.MintDeep) else listOf(T.SunTop, T.Sun), c.y - r, c.y + r), r, c)
+        drawCircle(Ink.line, r, c, style = Stroke(dp(2.2f)))
+        rotate(wobble, c) {
+            inset(c.x - r * 0.62f, c.y - r * 0.66f, size.width - (c.x + r * 0.62f), size.height - (c.y + r * 0.58f)) { Icons.Bag(this) }
+        }
+```
+
+with
+
+```kotlin
+        val wobble = (if (bag.isNotEmpty() && motion) sin(time * 3f) * 3f else 0f) +
+            (if (motion) sin(awayWobble * 20f) * 12f * awayWobble else 0f)
+        // What is held is over the corner: the whole touch area lights up.
+        if (overAway) drawCircle(T.SunTop.copy(alpha = 0.35f), bagRadius * AwayCorner.HIT, bagCenter)
+        drawCircle(T.SunDeep, r, Offset(c.x, c.y + dp(5f)))
+        drawCircle(Brush.verticalGradient(if (bagOpen || overAway) listOf(T.Mint, T.MintDeep) else listOf(T.SunTop, T.Sun), c.y - r, c.y + r), r, c)
+        drawCircle(Ink.line, r, c, style = Stroke(dp(2.2f)))
+        rotate(wobble, c) {
+            inset(c.x - r * 0.62f, c.y - r * 0.66f, size.width - (c.x + r * 0.62f), size.height - (c.y + r * 0.58f)) {
+                // Furniture goes to the store: the corner shows a crate instead of the bag.
+                if (away == AwayPicture.CRATE) DesignIcons.Box(this) else Icons.Bag(this)
+            }
+        }
+```
+
+- [ ] **Step 10: Hide the furniture button while the corner is awake**
+
+`ui/screens/PlayScreen.kt`: replace
+
+```kotlin
+        if (!engine.designMode) {
+            RoundButton(app.trollfoss.ui.SM.furnish.str(), onClick = { menuOpen = false; engine.closeDriving(); engine.designMode = true },
+```
+
+with
+
+```kotlin
+        // The grown put-away corner takes the place of the furniture button while something is held.
+        if (!engine.designMode && engine.away == null) {
+            RoundButton(app.trollfoss.ui.SM.furnish.str(), onClick = { menuOpen = false; engine.closeDriving(); engine.designMode = true },
+```
+
+- [ ] **Step 11: Build**
+
+Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.ui.play.AwayCornerTest :app:assembleDebug :app:assembleDebugAndroidTest" -Suffix .leggbort -Plain`
+Expected: `BUILD SUCCESSFUL`.
+
+- [ ] **Step 12: Commit**
+
+```bash
+git add app/src/main/java/app/trollfoss/ui/play/AwayCorner.kt app/src/main/java/app/trollfoss/ui/play/Engine.kt app/src/main/java/app/trollfoss/ui/screens/PlayScreen.kt app/src/test/java/app/trollfoss/ui/play/AwayCornerTest.kt app/src/androidTest/java/app/trollfoss/ui/play/SharedPlayTest.kt
+git commit -m "Put things, figures and furniture away in the corner by the bag
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
+```
+
+---
+
+### Task 7: A missed tap makes the nearest answering furniture wobble and glow
+
+**Files:**
+- Create: `app/src/main/java/app/trollfoss/domain/TapHint.kt`
+- Modify: `app/src/main/java/app/trollfoss/ui/play/Engine.kt` (`tapScene` near line 1567, a new `drawTapHint` next to `drawHints` near line 3051, its call near line 2540)
+- Test: `app/src/test/java/app/trollfoss/domain/TapHintTest.kt`, `app/src/androidTest/java/app/trollfoss/ui/play/SharedPlayTest.kt`
+
+**Interfaces:**
+- Consumes: `House.passageAt(f): Passage?`, `House.usable(world, passage): Boolean`, `FixtureSpec.container`, `FixtureSpec.machine` (`Machine.NONE` when none), `Vehicles.controllable(f)`, `Fixture.top` (`y - spec.h`), `Fixture.shiftX`.
+- Produces: `TapHint.REACH = 0.35f`, `TapHint.SECONDS = 0.6f`, `TapHint.PAUSE = 1.5f`, `TapHint.answers(world, f): Boolean`, `TapHint.distance(f, x, y): Float`, `TapHint.nearest(world, place, x, y): Fixture?`; on `Engine`: `val hintedFixture: Int` (the id of the furniture hinting now, or -1).
+
+- [ ] **Step 1: Write the failing JVM test**
+
+`app/src/test/java/app/trollfoss/domain/TapHintTest.kt`:
+
+```kotlin
+package app.trollfoss.domain
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import kotlin.random.Random
+
+/** A tap that hit nothing: the nearest furniture that would have answered shows itself. */
+class TapHintTest {
+    private val place = PlaceId.HOME
+
+    @Test fun `distance is zero inside the box of a piece and grows outside it`() {
+        val f = Fixture(1, place, FixtureType.CHEST, 1f, 0.9f)      // 0.18 wide, 0.10 high
+        assertEquals(0f, TapHint.distance(f, 1f, 0.85f), 0.0001f)
+        assertEquals(0.1f, TapHint.distance(f, 1.19f, 0.85f), 0.0001f)
+        assertEquals(0.2f, TapHint.distance(f, 1f, 0.6f), 0.0001f)
+    }
+
+    @Test fun `the nearest furniture that answers a tap is found within reach, and nothing beyond it`() {
+        val w = World(); val s = Sim(w)
+        val chest = s.designer.add(place, FixtureType.CHEST, 0, 1.0f, 0.9f)!!
+        assertSame(chest, TapHint.nearest(w, place, chest.x + 0.3f, chest.y - 0.3f))
+        assertNull(TapHint.nearest(w, place, chest.x + 0.6f, chest.y - 0.3f))
+    }
+
+    @Test fun `furniture that does nothing when tapped never hints`() {
+        val w = World(); val s = Sim(w)
+        val rug = s.designer.add(place, FixtureType.RUG, 0, 1.0f, 0.9f)!!
+        assertFalse(TapHint.answers(w, rug))
+        assertNull(TapHint.nearest(w, place, rug.x, rug.y - 0.2f))
+    }
+
+    @Test fun `of two pieces the nearer one answers`() {
+        val w = World(); val s = Sim(w)
+        val near = s.designer.add(place, FixtureType.CHEST, 0, 1.0f, 0.9f)!!
+        val far = s.designer.add(place, FixtureType.TOY_BOX, 0, 1.6f, 0.9f)!!
+        assertSame(near, TapHint.nearest(w, place, near.x + 0.15f, near.y - 0.2f))
+        assertSame(far, TapHint.nearest(w, place, far.x - 0.15f, far.y - 0.2f))
+    }
+
+    @Test fun `stairs, cupboards, machines and vehicles answer`() {
+        val w = WorldFactory.create(Random(1))
+        val stairs = w.fixtures.getValue(WorldFactory.fixtureId(PlaceId.MANOR_GROUND, GroundIx.STAIRS))
+        assertTrue(TapHint.answers(w, stairs))
+        assertTrue(TapHint.answers(w, w.fixturesIn(PlaceId.HOME).first { it.type == FixtureType.WARDROBE }))
+        assertTrue(TapHint.answers(w, w.fixturesIn(PlaceId.HOME).first { it.type == FixtureType.STOVE }))
+        assertTrue(TapHint.answers(w, w.fixturesIn(PlaceId.FARM).first { it.type == FixtureType.TRACTOR }))
+    }
+}
+```
+
+- [ ] **Step 2: Run the test to verify it fails**
+
+Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.domain.TapHintTest" -Plain`
+Expected: compilation fails with `Unresolved reference: TapHint`.
+
+- [ ] **Step 3: Write `TapHint`**
+
+`app/src/main/java/app/trollfoss/domain/TapHint.kt`:
+
+```kotlin
+package app.trollfoss.domain
+
+import kotlin.math.hypot
+import kotlin.math.max
+
+/**
+ * A hint in the moment: when a tap hits nothing, the nearest piece of furniture that would have answered
+ * wobbles and glows for a blink. Nothing is shown before the child tries, and nothing stays afterwards.
+ */
+object TapHint {
+    /** How far from a missed tap a piece may be and still answer, in scene units. */
+    const val REACH = 0.35f
+
+    /** Seconds the glow lasts. */
+    const val SECONDS = 0.6f
+
+    /** Seconds before the next hint may come. */
+    const val PAUSE = 1.5f
+
+    /** Furniture that does something when tapped: usable ways between floors, cupboards, machines and vehicles. */
+    fun answers(world: World, f: Fixture): Boolean =
+        House.passageAt(f)?.let { House.usable(world, it) } == true ||
+            f.spec.container != null || f.spec.machine != Machine.NONE || Vehicles.controllable(f)
+
+    /** How far the point lies from the box of [f]; 0 inside it. */
+    fun distance(f: Fixture, x: Float, y: Float): Float {
+        val fx = f.x + f.shiftX
+        val dx = max(0f, max(fx - f.spec.w / 2f - x, x - (fx + f.spec.w / 2f)))
+        val dy = max(0f, max(f.top - y, y - f.y))
+        return hypot(dx, dy)
+    }
+
+    fun nearest(world: World, place: PlaceId, x: Float, y: Float): Fixture? =
+        world.fixturesIn(place).filter { answers(world, it) }
+            .map { it to distance(it, x, y) }
+            .filter { it.second <= REACH }
+            .minByOrNull { it.second }?.first
+}
+```
+
+- [ ] **Step 4: Run the test to verify it passes**
+
+Run the command from Step 2. Expected: `BUILD SUCCESSFUL`, 5 tests passed. If `STOVE` has no `machine` in its spec in this source, use `FixtureType.FRIDGE` (a `container`) in that assertion instead; the rule under test is unchanged.
+
+- [ ] **Step 5: Add the Android test**
+
+In `SharedPlayTest.kt`, inside the class:
+
+```kotlin
+    @Test fun aTapThatHitsNothingMakesTheNearestChestAnswerForAMoment() {
+        val w = World(); val s = Sim(w); val place = PlaceId.HOME
+        val chest = s.designer.add(place, FixtureType.CHEST, 0, 1.0f, 0.9f)!!
+        val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        fun tap(x: Float, y: Float, time: Long) { val o = at(e, x, y); e.down(1, o, time); e.up(1, o, time + 80) }
+        tap(chest.x + 0.3f, chest.y - 0.3f, 1000)
+        assertEquals(chest.id, e.hintedFixture)
+        repeat(50) { e.update(0.016f) }                 // 0.8 s later the hint is over
+        assertEquals(-1, e.hintedFixture)
+        repeat(60) { e.update(0.016f) }
+        tap(chest.x + 0.9f, chest.y - 0.3f, 4000)       // nothing within reach
+        assertEquals(-1, e.hintedFixture); e.cancel()
+    }
+```
+
+- [ ] **Step 6: Wire the hint into the engine**
+
+`ui/play/Engine.kt`. Add the import `import app.trollfoss.domain.TapHint` with the other domain imports.
+
+After the lines
+
+```kotlin
+    private var hint: Wish? = null
+    private var hintUntil = 0f
+```
+
+add
+
+```kotlin
+
+    /** The furniture that answers a tap which hit nothing (see [TapHint]). */
+    private var tapHintId = -1
+    private var tapHintUntil = 0f
+    private var tapHintNext = 0f
+
+    /** The id of the furniture hinting right now, or -1. */
+    val hintedFixture: Int get() = if (time < tapHintUntil) tapHintId else -1
+```
+
+In `tapScene`, replace the last line
+
+```kotlin
+        particles.burst(PKind.SPARK, p.x, p.y, 4, 0.25f, 0.008f, Color.White)
+```
+
+with
+
+```kotlin
+        particles.burst(PKind.SPARK, p.x, p.y, 4, 0.25f, 0.008f, Color.White)
+        // Nothing was there. If something close by would have answered, it shows itself for a blink.
+        if (time >= tapHintNext) TapHint.nearest(world, place, p.x, p.y)?.let { f ->
+            f.anim = 1f
+            tapHintId = f.id
+            tapHintUntil = time + TapHint.SECONDS
+            tapHintNext = time + TapHint.PAUSE
+            host.sfx(Sfx.CHIME, 0.35f, 1.3f)
+        }
+```
+
+Add this function right before `private fun DrawScope.drawHints(lw: Float) {`:
+
+```kotlin
+    /** The glow round the furniture that answers a missed tap. */
+    private fun DrawScope.drawTapHint(lw: Float) {
+        if (time >= tapHintUntil) return
+        val f = world.fixtures[tapHintId]?.takeIf { it.place == place } ?: return
+        val fade = min(1f, (tapHintUntil - time) / 0.25f)
+        val pulse = if (motion) 1f + sin(time * 14f) * 0.06f else 1f
+        val c = Offset(sx(f.x + f.shiftX), sy(f.y - f.spec.h / 2f))
+        val r = max(f.spec.w, f.spec.h) * 0.6f * u * pulse
+        glow(listOf(T.SunTop.copy(alpha = 0.5f * fade), Color.Transparent), c, r * 1.4f)
+        drawCircle(Color.White.copy(alpha = 0.85f * fade), r, c, style = Stroke(lw * 2f))
+    }
+```
+
+At the call site (near line 2540), replace
+
+```kotlin
+                drawHints(lw)
+```
+
+with
+
+```kotlin
+                drawHints(lw)
+                drawTapHint(lw)
+```
+
+- [ ] **Step 7: Build**
+
+Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.domain.TapHintTest :app:assembleDebug :app:assembleDebugAndroidTest" -Suffix .leggbort -Plain`
+Expected: `BUILD SUCCESSFUL`.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add app/src/main/java/app/trollfoss/domain/TapHint.kt app/src/main/java/app/trollfoss/ui/play/Engine.kt app/src/test/java/app/trollfoss/domain/TapHintTest.kt app/src/androidTest/java/app/trollfoss/ui/play/SharedPlayTest.kt
+git commit -m "Hint at the nearest answering furniture when a tap hits nothing
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
+```
+
+---
+
+### Task 8: The furniture panel steps aside by itself
+
+**Files:**
+- Create: `app/src/main/java/app/trollfoss/ui/play/PanelIdle.kt`
+- Modify: `app/src/main/java/app/trollfoss/ui/play/Engine.kt` (`designMode` near line 182, `upNow` near line 857)
+- Modify: `app/src/main/java/app/trollfoss/ui/screens/DesignerPanel.kt` (the modifier of the root `Column`, near line 121)
+- Modify: `app/src/main/java/app/trollfoss/ui/screens/PlayScreen.kt` (the `onClose` of `DesignerPanel`, near line 401)
+- Test: `app/src/test/java/app/trollfoss/ui/play/PanelIdleTest.kt`, `app/src/androidTest/java/app/trollfoss/ui/play/SharedPlayTest.kt`
+
+**Background:** since 1.3.0 things and figures can be moved while the furniture panel is open, at the user's request. That stays. The panel now closes when the child has clearly gone back to playing: two things or figures lifted and let go in a row, with no furniture and no touch on the panel in between.
+
+**Interfaces:**
+- Consumes: `drag(e, from, to)`, `at(e, x, y)`, `finger(e, p)` in `SharedPlayTest` (Task 6 added the first two).
+- Produces: `class PanelIdle(limit: Int = 2)` with `decorating()` and `played(): Boolean`; on `Engine`: `fun panelTouched()`, `fun closeDesigner()`; `Engine.designMode` keeps its name and type (`Boolean`, readable and writable, observed by Compose).
+
+- [ ] **Step 1: Write the failing JVM test**
+
+`app/src/test/java/app/trollfoss/ui/play/PanelIdleTest.kt`:
+
+```kotlin
+package app.trollfoss.ui.play
+
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+/** The furniture panel steps aside when the child has gone back to playing. */
+class PanelIdleTest {
+    @Test fun `two things or figures in a row close the panel, one does not`() {
+        val idle = PanelIdle()
+        assertFalse(idle.played())
+        assertTrue(idle.played())
+    }
+
+    @Test fun `furniture or a touch on the panel in between starts the count again`() {
+        val idle = PanelIdle()
+        assertFalse(idle.played())
+        idle.decorating()
+        assertFalse(idle.played())
+        assertTrue(idle.played())
+    }
+
+    @Test fun `after the panel has closed the count starts from nothing`() {
+        val idle = PanelIdle()
+        idle.played(); idle.played()
+        idle.decorating()
+        assertFalse(idle.played())
+    }
+}
+```
+
+- [ ] **Step 2: Run the test to verify it fails**
+
+Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.ui.play.PanelIdleTest" -Plain`
+Expected: compilation fails with `Unresolved reference: PanelIdle`.
+
+- [ ] **Step 3: Write `PanelIdle`**
+
+`app/src/main/java/app/trollfoss/ui/play/PanelIdle.kt`:
+
+```kotlin
+package app.trollfoss.ui.play
+
+/**
+ * Counts play in the scene while the furniture panel is open. Moving one figure in the middle of decorating
+ * is still decorating; [limit] things or figures in a row, with no furniture and no touch on the panel in
+ * between, means the child has gone back to playing and the panel is in the way.
+ */
+class PanelIdle(private val limit: Int = 2) {
+    private var lifts = 0
+
+    /** The child touched the panel or moved furniture: still decorating. */
+    fun decorating() {
+        lifts = 0
+    }
+
+    /** A thing or a figure was moved. True when the panel should step aside. */
+    fun played(): Boolean {
+        lifts++
+        return lifts >= limit
+    }
+}
+```
+
+- [ ] **Step 4: Run the test to verify it passes**
+
+Run the command from Step 2. Expected: `BUILD SUCCESSFUL`, 3 tests passed.
+
+- [ ] **Step 5: Add the Android tests**
+
+In `SharedPlayTest.kt`, inside the class:
+
+```kotlin
+    private fun nudge(e: Engine, from: Offset) = drag(e, from, Offset(from.x + 120f, from.y - 60f))
+
+    @Test fun theFurniturePanelStepsAsideAfterTwoThingsOrFiguresInARowButNotAfterOne() {
+        val w = World()
+        val p = w.addPerson(Species.FOLK, Look(), 1f, PlaceId.HOME, 0.7f, 0.9f, "A")
+        val t = w.addThing(ThingType.BALL, 0, PlaceId.HOME, 1.5f, 0.9f)
+        val e = engine(w); repeat(30) { e.update(0.016f) }
+        e.designMode = true
+        nudge(e, finger(e, p))
+        assertTrue("one moved figure is still decorating", e.designMode)
+        repeat(30) { e.update(0.016f) }
+        nudge(e, at(e, t.x, t.y - t.h / 2f))
+        assertFalse(e.designMode); e.cancel()
+    }
+
+    @Test fun movingFurnitureInBetweenKeepsTheFurniturePanelOpen() {
+        val w = World(); val s = Sim(w); val place = PlaceId.HOME
+        val p = w.addPerson(Species.FOLK, Look(), 1f, place, 0.7f, 0.9f, "A")
+        val stool = s.designer.add(place, FixtureType.STOOL, 0, 1.6f, 0.9f)!!
+        val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        repeat(30) { e.update(0.016f) }
+        e.designMode = true
+        nudge(e, finger(e, p))
+        repeat(30) { e.update(0.016f) }
+        nudge(e, at(e, stool.x, stool.y - stool.spec.h / 2f))      // with the panel open a plain drag moves furniture
+        repeat(30) { e.update(0.016f) }
+        nudge(e, finger(e, p))
+        assertTrue(e.designMode); e.cancel()
+    }
+```
+
+- [ ] **Step 6: Wire the counter into the engine**
+
+`ui/play/Engine.kt`: replace
+
+```kotlin
+    /** The home designer is open: furniture moves with a plain drag, and the panel below takes it away. */
+    var designMode by mutableStateOf(false)
+```
+
+with
+
+```kotlin
+    private val panelIdle = PanelIdle()
+    private var designModeState by mutableStateOf(false)
+
+    /** The home designer is open: furniture moves with a plain drag, and the panel below takes it away. */
+    var designMode: Boolean
+        get() = designModeState
+        set(value) {
+            if (value != designModeState) panelIdle.decorating()
+            designModeState = value
+        }
+
+    /** The child touched the furniture panel: still decorating. */
+    fun panelTouched() = panelIdle.decorating()
+
+    /** Closes the furniture panel, the way its red X does. */
+    fun closeDesigner() {
+        designMode = false
+        storeZone = null
+        host.changed()
+    }
+```
+
+In `upNow`, replace
+
+```kotlin
+            body != null && body.held -> drop(g, body, vx, vy)
+```
+
+with
+
+```kotlin
+            body != null && body.held -> {
+                drop(g, body, vx, vy)
+                // Playing, not decorating: after two things or figures in a row the furniture panel steps aside.
+                if (designMode && g.target is Target.Hold && panelIdle.played()) closeDesigner()
+            }
+```
+
+In the furniture branch of `upNow` (changed in Task 6), add as its first line after `val f = (g.target as Target.Furniture).fixture`:
+
+```kotlin
+                panelIdle.decorating()
+```
+
+- [ ] **Step 7: Tell the engine about touches on the panel**
+
+`ui/screens/DesignerPanel.kt`: in the modifier chain of the root `Column`, after the line `.onGloballyPositioned { engine.storeZone = it.boundsInRoot() }` add
+
+```kotlin
+            // Any finger on the panel means the child is still decorating (see Engine.panelTouched).
+            .pointerInput(engine) {
+                awaitPointerEventScope {
+                    while (true) {
+                        awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Initial)
+                        engine.panelTouched()
+                    }
+                }
+            }
+```
+
+`ui/screens/PlayScreen.kt`: replace
+
+```kotlin
+            DesignerPanel(engine, vm.world, place, onClose = {
+                engine.designMode = false
+                engine.storeZone = null
+                vm.scheduleSave()
+            })
+```
+
+with
+
+```kotlin
+            DesignerPanel(engine, vm.world, place, onClose = {
+                engine.closeDesigner()
+                vm.scheduleSave()
+            })
+```
+
+- [ ] **Step 8: Build**
+
+Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest --tests app.trollfoss.ui.play.PanelIdleTest :app:assembleDebug :app:assembleDebugAndroidTest" -Suffix .leggbort -Plain`
+Expected: `BUILD SUCCESSFUL`.
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add app/src/main/java/app/trollfoss/ui/play/PanelIdle.kt app/src/main/java/app/trollfoss/ui/play/Engine.kt app/src/main/java/app/trollfoss/ui/screens/DesignerPanel.kt app/src/main/java/app/trollfoss/ui/screens/PlayScreen.kt app/src/test/java/app/trollfoss/ui/play/PanelIdleTest.kt app/src/androidTest/java/app/trollfoss/ui/play/SharedPlayTest.kt
+git commit -m "Let the furniture panel step aside when the child goes back to playing
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
+```
+
+---
+
+### Task 9: Whole-build check, a look on tablet and phone, and the documents
+
+**Files:**
+- Modify: `CHANGELOG.md`, `docs/DESIGN.md`, `docs/OVERLEVERING.md`
+- Screenshots go to the git-ignored folder `screenshots/legg-bort/`.
+
+**Interfaces:**
+- Consumes: everything from Tasks 1–8.
+- Produces: a green build, green Android tests, screenshots, and documents that say what is done and what is not.
+
+- [ ] **Step 1: Run every JVM test, lint and both builds**
+
+Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest" -Suffix .leggbort -Plain`
+Expected: `BUILD SUCCESSFUL`, 0 lint errors. Note the number of unit tests and lint warnings for the handover text (1.7.1 had 467 unit tests and 31 lint warnings in debug).
+
+- [ ] **Step 2: Start the tablet emulator and run the Android tests**
+
+Make sure no other emulator runs (`adb devices`); stop the phone emulator first if it does.
+
+Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-TrollfossTablet.ps1`
+Then: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Locked.ps1 -Tasks ":app:connectedDebugAndroidTest" -Suffix .leggbort -Plain`
+Expected: `BUILD SUCCESSFUL`; 1.7.1 had 32 Android tests, this plan adds 9 (one in Task 5, five in Task 6, one in Task 7, two in Task 8). A failing test is a finding: read it, fix the code or the test's geometry, and run again. Do not delete a test to get green.
+
+- [ ] **Step 3: Look at it on the tablet (1920 × 1200 / 240 dpi)**
+
+The package is `app.trollfoss.leggbort`; private worlds in `app.trollfoss` and `app.trollfoss.debug` are never touched.
+
+```powershell
+adb install -r app\build\outputs\apk\debug\app-debug.apk
+adb shell am start -n app.trollfoss.leggbort/app.trollfoss.MainActivity --es place home
+```
+
+Go through this list with real drags and taps, and save a screenshot of each with `adb exec-out screencap -p > screenshots\legg-bort\NN-name.png`:
+
+1. Familiehuset, bedroom: the treasure box stands on the floor, is not half inside the bed or the wardrobe, and its glass shows through. If it stands badly, change the `0.62f` and `PlaceId.FRONT - 0.01f` in `TreasureStart.upgrade` and run `TreasureStartTest` again.
+2. Lift a ball: the bag grows and the furniture button disappears. Let go: both return.
+3. Let the ball go in the grown corner with the panel shut: it is in the bag.
+4. Lift a figure and let it go in the corner: it is in the bag and can be dragged out again.
+5. Long-press a chair, carry it to the corner: the corner shows a crate and lights up; let go and it is in the store. Open the panel: the store shows it.
+6. Store three equal flower pots: one card with a «3». Take one out: «2». Delete one: the recycling box shows it.
+7. Carry a figure along the floor to the right edge above the corner: the camera follows. Inside the corner it stands still.
+8. Hold a gem near the treasure box: the lid lifts. Let go over it: the gem lies on a shelf, visible through the glass after the lid falls. Five gems: the box wobbles and burps.
+9. Try to carry the full box to the corner: it stays, opens and wobbles.
+10. Storhuset (reached by the map): tap the glowing doorway behind the grand stairs: the view goes upstairs. Tap the little door to the attic on the first floor, and the lit door of the cellar stairs from the cellar: both work.
+11. The attic: open the chest until it coughs dust and a moth flies out; no gem or coin goes in a puff.
+12. Tap the wall beside a cupboard: the cupboard wobbles and glows for a blink, and not again within a second and a half.
+13. Open the furniture panel, move one figure (the panel stays), then a ball (the panel closes). The furniture button opens it again.
+14. Switch to bokmål on the parents' page: the catalogue label reads «Skattekiste».
+15. Close the app completely and start it again: the box, its gems and the store are as they were.
+
+- [ ] **Step 4: A short look on the phone (2400 × 1080 / 420 dpi)**
+
+Stop the tablet emulator, then: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Start-TrollfossEmulator.ps1`, install and start as in Step 3. Check items 2, 3, 5, 8 and 10 of the list. The grown bag must not cover the «more» button or the room buttons.
+
+- [ ] **Step 5: Put the emulators back**
+
+Uninstall the test package and stop the emulator that was started:
+
+```powershell
+adb uninstall app.trollfoss.leggbort
+adb uninstall app.trollfoss.leggbort.test
+adb emu kill
+```
+
+If a screen size or density override was set by a script, reset it first with `adb shell wm size reset` and `adb shell wm density reset`.
+
+- [ ] **Step 6: Write the documents**
+
+`CHANGELOG.md`: add under the first line `# Endringslogg`, before `## 1.7.1`:
+
+```markdown
+
+## Neste – Legg bort og skattar
+
+- Hjørnet ved sekken veks når barnet løftar noko. Slepp der legg ting og figurar i sekken og møblar på lager, utan at møbelpanelet må vere ope. Kantane ber framleis kameraet vidare til neste rom.
+- Ny skattekiste med glasfront, gratis i Møblar på alle stader, og éi står klar i soverommet i Familiehuset. Lokket spretter opp når barnet kjem nær med ein ting, og kvar femte skatt får kista til å rape glitter.
+- Diamantar, myntar og perler forsvinn ikkje lenger av seg sjølv. Loftskista gir berre det det er plass til, og hostar støv når ho er tom.
+- Døropninga øvst i trappene i Storhuset kan trykkjast på, slik trappa kan.
+- Eit trykk som ikkje treffer noko, får det næraste skapet, maskina, køyretøyet eller trappa til å vippe og lyse eit augeblikk.
+- Møbelpanelet lukkar seg sjølv når barnet har flytta to ting eller figurar på rad.
+- Like møblar i Lager og Papirkorg blir viste som eitt kort med eit tal.
+```
+
+`docs/DESIGN.md`: in §4 «Samhandling – verbet er «dra»», add this paragraph after the paragraph that starts with `**Heimedesignaren**`:
+
+```markdown
+**Legg bort-hjørnet:** når barnet løftar ein ting, ein figur eller eit møbel, veks sekken nede til høgre.
+Slepp der legg ting og figurar i sekken og møblar på lager, utan at møbelpanelet er ope. Skjermkantane
+ber framleis kameraet vidare. **Skattekista** har glasfront og tek imot alt barnet samlar; diamantar,
+myntar og perler forsvinn aldri av seg sjølv. Hint kjem berre i augeblinken barnet prøver noko: hjørnet
+vaknar ved løft, og eit trykk som ikkje treffer noko, får det næraste som svarar på trykk til å vippe og lyse.
+```
+
+`docs/OVERLEVERING.md`: add a new block at the very top, under the heading line, in the same style as the blocks below it. Fill in the real numbers and findings from Steps 1–4; do not copy numbers from this plan:
+
+```markdown
+> **NYAST – LEGG BORT OG SKATTAR (<dato>, Claude, lokalt og ikkje utgjeve):** Første runde av «Destiller og test»,
+> bygd på det brukaren har sett ein seksåring gjere på nettbrett. Grein `claude/legg-bort` i
+> `C:\topa\.claude\worktrees\legg-bort`, frå publisert 1.7.1. Spec og plan: `docs/superpowers/`.
+> Legg bort-hjørne ved sekken, skattekiste med glasfront, skattar som aldri forsvinn, trykkbare døropningar
+> i trappene i Storhuset, hint ved bomtrykk, møbelpanel som lukkar seg sjølv og like møblar som eitt kort med tal.
+> **Kontroll:** <tal> einingstestar og <tal> Android-testar grøne; lint <tal> feil / <tal> åtvaringar.
+> Sett på nettbrett 1920 × 1200 / 240 dpi og kort på mobil 2400 × 1080 / 420 dpi, i eiga pakke
+> `app.trollfoss.leggbort`. Bilete: Git-ignorert `screenshots/legg-bort/`. <kva som vart funne og retta>.
+> **Ikkje gjort:** ingen release, ingen versjonsendring, ingen barnetest av denne runden. Runde to
+> (knappar, menyar, symbol) ventar til brukaren har sett barnet bruke dette.
+> `C:\topa` står framleis på `codex/magic-rest` med gammalt, ukommittert arbeid som er urørt.
+```
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add CHANGELOG.md docs/DESIGN.md docs/OVERLEVERING.md
+git commit -m "Document the put-away corner, the treasure box and the hints [skip ci]
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
+```
+
+- [ ] **Step 8: Hand over**
+
+Tell the user what was built, what was seen on tablet and phone, and what could not be checked. Do not push, open a pull request or make a release unless the user asks.
