@@ -400,8 +400,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
             modifier = Modifier.align(Alignment.CenterEnd),
         ) {
             DesignerPanel(engine, vm.world, place, onClose = {
-                engine.designMode = false
-                engine.storeZone = null
+                engine.closeDesigner()
                 vm.scheduleSave()
             })
         }

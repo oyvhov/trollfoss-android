@@ -610,4 +610,34 @@ class SharedPlayTest {
         tap(chest.x + 0.9f, chest.y - 0.3f, 4000)       // nothing within reach
         assertEquals(-1, e.hintedFixture); e.cancel()
     }
+
+    private fun nudge(e: Engine, from: Offset) = drag(e, from, Offset(from.x + 120f, from.y - 60f))
+
+    @Test fun theFurniturePanelStepsAsideAfterTwoThingsOrFiguresInARowButNotAfterOne() {
+        val w = World()
+        val p = w.addPerson(Species.FOLK, Look(), 1f, PlaceId.HOME, 0.7f, 0.9f, "A")
+        val t = w.addThing(ThingType.BALL, 0, PlaceId.HOME, 1.5f, 0.9f)
+        val e = engine(w); repeat(30) { e.update(0.016f) }
+        e.designMode = true
+        nudge(e, finger(e, p))
+        assertTrue("one moved figure is still decorating", e.designMode)
+        repeat(30) { e.update(0.016f) }
+        nudge(e, at(e, t.x, t.y - t.h / 2f))
+        assertFalse(e.designMode); e.cancel()
+    }
+
+    @Test fun movingFurnitureInBetweenKeepsTheFurniturePanelOpen() {
+        val w = World(); val s = Sim(w); val place = PlaceId.HOME
+        val p = w.addPerson(Species.FOLK, Look(), 1f, place, 0.7f, 0.9f, "A")
+        val stool = s.designer.add(place, FixtureType.STOOL, 0, 1.6f, 0.9f)!!
+        val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        repeat(30) { e.update(0.016f) }
+        e.designMode = true
+        nudge(e, finger(e, p))
+        repeat(30) { e.update(0.016f) }
+        nudge(e, at(e, stool.x, stool.y - stool.spec.h / 2f))      // with the panel open a plain drag moves furniture
+        repeat(30) { e.update(0.016f) }
+        nudge(e, finger(e, p))
+        assertTrue(e.designMode); e.cancel()
+    }
 }

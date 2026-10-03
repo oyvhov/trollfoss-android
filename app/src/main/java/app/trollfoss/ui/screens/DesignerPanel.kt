@@ -122,6 +122,15 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
             .fillMaxHeight()
             .width(playPanelWidth(compact, designer = true))
             .onGloballyPositioned { engine.storeZone = it.boundsInRoot() }
+            // Any finger on the panel means the child is still decorating (see Engine.panelTouched).
+            .pointerInput(engine) {
+                awaitPointerEventScope {
+                    while (true) {
+                        awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Initial)
+                        engine.panelTouched()
+                    }
+                }
+            }
             .clip(shape)
             .background(if (glow > 0.01f) androidx.compose.ui.graphics.lerp(T.Cream, T.SunTop, glow) else T.Cream.copy(alpha = 0.97f))
             .border(3.dp, T.Ink, shape)

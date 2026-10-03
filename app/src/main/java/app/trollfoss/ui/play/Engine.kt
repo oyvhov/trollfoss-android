@@ -181,8 +181,26 @@ class Engine(
     var bagOpen by mutableStateOf(false)
     var emptyBagHint: String = ""
 
+    private val panelIdle = PanelIdle()
+    private var designModeState by mutableStateOf(false)
+
     /** The home designer is open: furniture moves with a plain drag, and the panel below takes it away. */
-    var designMode by mutableStateOf(false)
+    var designMode: Boolean
+        get() = designModeState
+        set(value) {
+            if (value != designModeState) panelIdle.decorating()
+            designModeState = value
+        }
+
+    /** The child touched the furniture panel: still decorating. */
+    fun panelTouched() = panelIdle.decorating()
+
+    /** Closes the furniture panel, the way its red X does. */
+    fun closeDesigner() {
+        designMode = false
+        storeZone = null
+        host.changed()
+    }
 
     /** Screen area of the designer panel; furniture let go over it goes into the store. */
     var storeZone: Rect? = null
@@ -897,10 +915,15 @@ class Engine(
             return
         }
         when {
-            body != null && body.held -> drop(g, body, vx, vy)
+            body != null && body.held -> {
+                drop(g, body, vx, vy)
+                // Playing, not decorating: after two things or figures in a row the furniture panel steps aside.
+                if (designMode && g.target is Target.Hold && panelIdle.played()) closeDesigner()
+            }
             g.target is Target.Pan -> { camV = -vx }
             g.target is Target.Furniture -> {
                 val f = (g.target as Target.Furniture).fixture
+                panelIdle.decorating()
                 overStore = false
                 // Over the open panel, or in the put-away corner with no panel at all: into the store.
                 val inCorner = onBag(g)
