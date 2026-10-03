@@ -522,7 +522,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: `Fx.TREASURE_IN`, `Fx.TREASURE_PARTY` (Task 2); `FixtureSpec(w, h, container, glass, surfaces, dropZone)`; `SurfaceSpec(x1, x2, dy, interior, closedOnly)`; `Sim.invalidate(place)`; `Fixture.timer` (not saved, free for this type); `Sim.settle(place)` gives every thing lying on an interior shelf its `inside` again after loading.
-- Produces: `FixtureType.TREASURE_BOX`; `Sim.treasure: TreasureBox` with `holds(f: Fixture): List<Thing>`, `tap(place, f)`, `step(place, dt)`, `put(place, f, t): Boolean`, `landed(place, t, owner: Int)`, `arrange(f): List<Thing>`, `refuse(place, f)`; constants `TreasureBox.REACH = 0.25f`, `TreasureBox.LINGER = 1.2f`, `TreasureBox.PARTY = 5`.
+- Produces: `FixtureType.TREASURE_BOX`; `Sim.treasure: TreasureBox` with `holds(f: Fixture): List<Thing>`, `tap(place, f)`, `step(place, dt)`, `put(place, f, t): Boolean`, `landed(t: Thing, owner: Int)`, `arrange(f): List<Thing>`, `refuse(place, f)`; constants `TreasureBox.REACH = 0.25f`, `TreasureBox.LINGER = 1.2f`, `TreasureBox.PARTY = 5`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1965,7 +1965,7 @@ object TapHint {
 
 - [ ] **Step 4: Run the test to verify it passes**
 
-Run the command from Step 2. Expected: `BUILD SUCCESSFUL`, 5 tests passed. If `STOVE` has no `machine` in its spec in this source, use `FixtureType.FRIDGE` (a `container`) in that assertion instead; the rule under test is unchanged.
+Run the command from Step 2. Expected: `BUILD SUCCESSFUL`, 5 tests passed.
 
 - [ ] **Step 5: Add the Android test**
 
