@@ -1,5 +1,13 @@
 # Endringslogg
 
+## 1.6.1 – Mjukare følgje og ryddigare rom
+
+- Valde spelarar går mjukt med medan barnet sveipar eller vel eit anna rom. Dei held avstand, bremsar roleg og blir synlege framfor møblane.
+- Når eit barn dreg sin figur langs skjermkanten, kan dei andre gå med. Ein halden figur blir verande under barnet sin kontroll.
+- Valde spelarar vandrar ikkje av garde på eiga hand etterpå. Sovande figurar og køyretøypassasjerar blir verande under panorering, og ubygde rom blir ikkje brukte som snarveg.
+- Urørte småting frå det opphavlege romoppsettet får heim i eksisterande kasser, skap og på hyller. Dei kan hentast fram att, og ryddeknappen bruker dei nye heimane.
+- Oppdateringa bevarer barnet sine flytta ting og eigne hus, figurar, klede, lager og opptente rettar.
+
 ## 1.6.0 – Leik, eventyr og nivå
 
 - Leikekort for pute/bamse, laken, bok og lykt med fleire handlingar, og synlege reaksjonar frå venner i nærleiken.
