@@ -1,4 +1,11 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
+> **NYAST – KART UTAN BOTNFELT (2026-10-03):** Brukaren melde at den mørke rada under
+> kartknappane tok for mykje plass på mobil. `codex/map-full-height` fjernar den faste 88 dp-rada.
+> Kartet fyller heile skjermen; knappane ligg over kartet, med 56 dp knappar og 8 dp kant på korte
+> skjermar. Stadnamna held avstand til den målte knapperada. Dei flytta kystnamna har eigne 48 dp
+> treffområde som ikkje strekkjer seg opp i dalen. Sjå PR-en for endeleg bygg- og skjermkontroll.
+> Endringa er ikkje med i publisert 1.7.0. Arbeid i den reine arbeidskopien `C:/topa/.gradle-tmp/follow-worktree`.
+
 > **NYAST – PUBLISERT 1.7.0 (2026-10-03, Codex):** Brukaren bad «Release».
 > PR 3 er fletta til main og publisert som stabil, nyaste release:
 > https://github.com/oyvhov/trollfoss-android/releases/tag/v1.7.0.

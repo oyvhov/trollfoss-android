@@ -1,5 +1,4 @@
 package app.trollfoss.ui.screens
-import androidx.compose.foundation.background
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -15,6 +14,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.offset
@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -42,6 +43,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -104,7 +106,12 @@ fun MapScreen(vm: TrollfossViewModel) {
     }
     val scroll = rememberScrollState()
 
-    BoxWithConstraints(Modifier.fillMaxSize().background(T.Night).padding(bottom=88.dp)) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val compact = maxHeight < 500.dp
+        val edge = if (compact) 8.dp else 16.dp
+        val buttonSize = if (compact) 56.dp else 64.dp
+        var controlsHeightPx by remember { mutableIntStateOf(0) }
+        val controlsHeight = if (controlsHeightPx > 0) with(LocalDensity.current) { controlsHeightPx.toDp() } else 96.dp
         val viewportWidth = constraints.maxWidth
         val w = maxWidth * MAP_WIDTH_FACTOR
         val h = maxHeight
@@ -190,10 +197,13 @@ fun MapScreen(vm: TrollfossViewModel) {
         for (place in PlaceId.entries.filter { it.onMap }.sortedBy { if (it == PlaceId.MANOR_GROUND) 0 else 1 }) {
             val spot = mapSpot(place)
             val label = mapLabel(place).str()
+            // Coastal labels move up on short screens; their hit areas must not cover the valley above.
+            val markerHeight = if (spot.y > 0.75f) 48.dp else 110.dp
             Column(
                 Modifier
-                    .offset(x = w * spot.x - 70.dp, y = h * spot.y - 52.dp)
-                    .size(140.dp, 110.dp)
+                    // Keep coastal labels above the floating controls without shrinking the map.
+                    .offset(x = w * spot.x - 70.dp, y = (h * spot.y + 58.dp - markerHeight).coerceAtMost((h - controlsHeight - 8.dp - markerHeight).coerceAtLeast(0.dp)))
+                    .size(140.dp, markerHeight)
                     .semantics { contentDescription = label; role = Role.Button }
                     .clickable(remember { MutableInteractionSource() }, indication = null) {
                         fly(place)
@@ -208,13 +218,19 @@ fun MapScreen(vm: TrollfossViewModel) {
         }
 
         CloseButton({ vm.back() }, Modifier.align(Alignment.TopStart).padding(16.dp))
-        Row(Modifier.align(Alignment.BottomStart).offset(y=88.dp).padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            RoundButton(S.book.str(), onClick = { vm.open(Screen.Book) }, tone = Tones.Grape, icon = Icons.Book)
-            RoundButton(S.workshop.str(), onClick = { vm.open(Screen.Creator(null)) }, tone = Tones.Grape, icon = Icons.Workshop)
-            RoundButton(S.players.str(), onClick = { vm.open(Screen.Players) }, tone = Tones.Mint, icon = Icons.Friends)
+        Row(
+            Modifier.align(Alignment.BottomCenter).fillMaxWidth().onSizeChanged { controlsHeightPx = it.height }.padding(edge),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 12.dp)) {
+                RoundButton(S.book.str(), onClick = { vm.open(Screen.Book) }, size = buttonSize, tone = Tones.Grape, icon = Icons.Book)
+                RoundButton(S.workshop.str(), onClick = { vm.open(Screen.Creator(null)) }, size = buttonSize, tone = Tones.Grape, icon = Icons.Workshop)
+                RoundButton(S.players.str(), onClick = { vm.open(Screen.Players) }, size = buttonSize, tone = Tones.Mint, icon = Icons.Friends)
+            }
+            ProgressButton(vm)
         }
         RoundButton(S.parents.str(), onClick = { vm.open(Screen.ParentGate) }, modifier = Modifier.align(Alignment.TopEnd).padding(16.dp), size = 52.dp, tone = Tones.Cream, icon = Icons.Gear)
-        ProgressButton(vm,Modifier.align(Alignment.BottomEnd).offset(y=88.dp).padding(16.dp))
         GameText(S.mapDrag.str(), modifier = Modifier.align(Alignment.TopCenter).padding(top = 16.dp), fontSize = 14.sp, color = Color.White)
     }
 }
