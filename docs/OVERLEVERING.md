@@ -1,4 +1,27 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
+> **NYAST – PUBLISERT 1.7.1 (2026-10-03, Codex):** Brukaren bad «Lag ny release».
+> PR 4 er fletta, og stabil 1.7.1 / kode 12 er publisert som nyaste release:
+> https://github.com/oyvhov/trollfoss-android/releases/tag/v1.7.1.
+> Kjelde/tag: `008ef08321c16ddda4091ce1e55f9b495ccc3ff2`. Bygd frå `f74a213fdac149e335966275d24713808efd4c45`,
+> med identisk Git-tre etter fletting. Éin universal APK, 3 140 054 byte, SHA-256:
+> `ea3776e816a3f56d27643d24aea145f2a78826bd5b4a8f9c98e77adfcb60fb92`.
+> Opphavleg sertifikat, app.trollfoss, min Android 26, ikkje debuggable. Mapping, hash og
+> SOURCE_COMMIT er vedlagde. Alle fire GitHub-storleikar/digest og offentleg latest/nedlasting utan token er kontrollerte.
+> Signert release-bygg, 467 einingstestar og release-lint grøne (0 feil / 22 åtvaringar).
+> Dei 32 Android-kontrollane var grøne på spelkjelda før versjonsauken. GitHub kjelde/PR
+> (37134011847 / 37134013619), main (37134617762) og tag (37134621542) er grøne.
+> Ekte oppdatering på eiga Release160-prøveeining: 1.7.0 / 11 → 1.7.1 / 12 gjennom foreldresida,
+> nedlasting/verifisering, Installer oppdatering, Android Update og Play Protect. Skanning gav
+> «This app looks safe», Android gav «App installed», og installert kode 12 er stadfesta.
+> Ingen avinstallering eller tømming. Kaldstart opnar Kartet. Hedda og Alva er framleis valde med
+> same hår, utsjånad og klede; dei nye figurkorta er visuelt kontrollerte. Nettbrett var hovudprøva,
+> mobil fekk berre kort kaldstart-/kartkontroll. Før oppdateringa gav 1.7.0 og fleire systemappar
+> ANR under tung emulatoroppstart; prøveverda vart ikkje nullstilt. Ingen nye ANR eller krasj er
+> registrerte under kontrollen av den installerte 1.7.1. Bilete/XML: `screenshots/release-v1.7.1/`.
+> Arkiv: `C:/topa/dist/release-v1.7.1/`. Eigen emulator er stoppa med skjermmål/rotasjon tilbakeførte.
+> Hovudarbeidskopien og private verdener er urørte. Ingen ny signeringsnøkkel.
+> Neste designprioritet står i DESIGN_REVIEW_2026-10-03.md; dør-/traktorarbeidet står i INTERACTION_FIXES_2026-10-03.md.
+
 > **NYAST – DØRER OG TRAKTOR PÅ SCENA (2026-10-03):** Opne skapdører og traktortaket låg
 > utanfor dei gamle treffområda. Teikning og trykk bruker no delte geometridata; ting bak
 > tek ikkje trykk frå traktoren/døra framfor. Mat, førar og figurar framfor er framleis dragbare.
