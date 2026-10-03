@@ -371,8 +371,8 @@ internal fun DrawScope.grSideboard(f: Fixture, u: Float, pen: Pen) {
             }
             if (k == 1) drawPath(fxDisc2(b.x, b.y - 0.014f * u, 0.014f * u, 0.009f * u), GrC.brass, style = pen.thin)
         }
-        fxOpenDoor(u, -0.15f, doorT, doorB, 0.15f, -1f, wood, wood.darken(0.1f), pen, 118f)
-        fxOpenDoor(u, 0.15f, doorT, doorB, 0.15f, 1f, wood, wood.darken(0.1f), pen, 118f)
+        fxOpenDoor(u, FixtureDoors.sideboardLeft, wood, wood.darken(0.1f), pen)
+        fxOpenDoor(u, FixtureDoors.sideboardRight, wood, wood.darken(0.1f), pen)
     } else {
         for (s in 0..1) {
             val x0 = if (s == 0) -0.15f else 0.002f

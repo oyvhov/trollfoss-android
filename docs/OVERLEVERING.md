@@ -1,4 +1,11 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
+> **NYAST – DØRER OG TRAKTOR PÅ SCENA (2026-10-03):** Opne skapdører og traktortaket låg
+> utanfor dei gamle treffområda. Teikning og trykk bruker no delte geometridata; ting bak
+> tek ikkje trykk frå traktoren/døra framfor. Mat, førar og figurar framfor er framleis dragbare.
+> Sjå `INTERACTION_FIXES_2026-10-03.md`. 467 JVM- og 32 Android-kontrollar grøne, debug-bygg
+> og lint grøne (0 feil / 31 åtvaringar). Faktisk flytting via Lager og taktrykk prøvd på Scena.
+> Same reine arbeidskopi og PR 4 som designarbeidet; ingen ny APK-release.
+
 > **NYAST – DESIGNGJENNOMGANG OG FIGURMENYAR (2026-10-03):** Brukaren bad om betre design.
 > Fersk gjennomgang av kart, Familiehuset, spelarval, figurverkstad og gåver er dokumentert i
 > `DESIGN_REVIEW_2026-10-03.md`. Spelarvalet har større figurar, rein tekst, rolege kortrammer,

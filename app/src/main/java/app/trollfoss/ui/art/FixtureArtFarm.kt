@@ -104,7 +104,7 @@ internal fun DrawScope.fxTractor(f: Fixture, u: Float, pen: Pen) {
         fxBox(u, -0.11f, -0.19f, -0.03f, -0.178f, 0.1f, dark.lighten(0.1f), pen, rad = 0.004f)
         // Near cab posts and the roof with a beacon.
         for (x in floatArrayOf(-0.2f, 0.045f)) capsule(q(x, -0.14f, 0.02f), q(x, -0.47f, 0.02f), 0.008f * u, dark, pen)
-        fxBox(u, -0.225f, -0.49f, 0.07f, -0.47f, 0.2f, red, pen, rad = 0.004f)
+        fxBox(u, TractorCab.LEFT, TractorCab.TOP, TractorCab.RIGHT, -0.47f, TractorCab.DEPTH, red, pen, rad = 0.004f)
         val beacon = q(-0.08f, -0.49f, 0.1f)
         fxCyl(beacon.x, beacon.y, beacon.y - 0.016f * u, 0.009f * u, 0.007f * u, FxC.flame2, pen)
         if (f.on) fxGlow(Offset(beacon.x, beacon.y - 0.01f * u), 0.04f * u, FxC.flame2, 0.4f + 0.4f * sin(t * 8f))

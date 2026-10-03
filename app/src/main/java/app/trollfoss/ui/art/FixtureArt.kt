@@ -446,6 +446,9 @@ internal fun DrawScope.fxInShelf(u: Float, l: Float, r: Float, y: Float, d: Floa
  * for a door hinged on the left (it swings out to the left) and +1 for one hinged on the right.
  * [angle] in degrees; the inside of the door faces us.
  */
+internal fun DrawScope.fxOpenDoor(u: Float, door: DoorPanel, color: Color, inside: Color, pen: Pen): Path =
+    fxOpenDoor(u, door.hinge, door.top, door.bottom, door.width, door.side, color, inside, pen, door.angle)
+
 internal fun DrawScope.fxOpenDoor(u: Float, hx: Float, t: Float, b: Float, w: Float, side: Float, color: Color, inside: Color, pen: Pen, angle: Float = 125f): Path {
     val v = fxDoorVec(u, w, side, angle)
     val ox = v.x

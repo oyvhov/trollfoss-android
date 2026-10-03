@@ -72,6 +72,8 @@ import app.trollfoss.domain.WishKind
 import app.trollfoss.domain.World
 import app.trollfoss.domain.Vehicles
 import app.trollfoss.ui.art.Ink
+import app.trollfoss.ui.art.FixtureDoors
+import app.trollfoss.ui.art.TractorCab
 import app.trollfoss.ui.art.Pen
 import app.trollfoss.ui.art.drawFixtureBack
 import app.trollfoss.ui.art.drawFixtureFront
@@ -1097,11 +1099,14 @@ class Engine(
     }
 
     /** The front-most piece of furniture under a scene point. */
-    private fun fixtureAt(p: Offset): Fixture? {
-        for (f in world.fixturesIn(place).sortedByDescending { fixtureKey(it) }) {
+    private fun fixtureAt(p: Offset, pad: Float = 0.012f): Fixture? {
+        // Reverse the stable drawing order too: newly placed furniture wins equal depths.
+        for (f in world.fixturesIn(place).sortedBy { fixtureKey(it) }.asReversed()) {
             val fx = f.x + f.shiftX
             val fy = f.y + f.shiftY
-            val pad = 0.012f
+            val dx = p.x - fx
+            val dy = p.y - fy
+            if (FixtureDoors.hit(f, dx, dy, pad) || f.type == FixtureType.TRACTOR && TractorCab.contains(dx, dy - f.bob, pad)) return f
             if (p.x in (fx - f.spec.w / 2 - pad)..(fx + f.spec.w / 2 + pad) && p.y in (fy - f.spec.h - pad)..(fy + pad)) return f
         }
         return null
@@ -1126,9 +1131,22 @@ class Engine(
         if (bagOpen) trayHit(at)?.let { return Target.FromBag(it) }
         val p = toScene(at)
         val list = drawList()
+        val front = fixtureAt(p, pad = 0f)
+        val coversBodies = front != null && (Vehicles.controllable(front) ||
+            FixtureDoors.hit(front, p.x - front.x - front.shiftX, p.y - front.y - front.shiftY, 0f))
         // Prefer the actual picture before a neighbour's generous touch margin.
         for (precise in listOf(true, false)) for (i in list.indices.reversed()) {
             val b = list[i]
+            if (!precise && front != null) {
+                // Keep generous targets for food on the shelves, but not on the door outside them.
+                val inContainer = b.inside == front.id && front.spec.container?.contains(
+                    p.x - front.x - front.shiftX, p.y - front.y - front.shiftY) == true
+                val rider = b.mode == Mode.SEATED && b.holder == front.id
+                if (!inContainer && !rider) continue
+            }
+            // The visible cab/door wins over loose objects behind it, but never a driver
+            // or a child standing in front. Contents inside an open fridge remain pickable.
+            if (coversBodies && front != null && !b.held && bodyKey(b) < fixtureKey(front)) continue
             // A second finger cannot take the first child's figure or its held belongings.
             if (grabs.values.any { heldBody(it)?.id == b.id }) continue
             if (b is Person) {
