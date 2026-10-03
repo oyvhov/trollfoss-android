@@ -145,3 +145,24 @@ class TreasureBox(private val sim: Sim) {
         val ROWS = floatArrayOf(-0.015f, -0.07f, -0.125f)
     }
 }
+
+/** The one-time gift: a treasure box in the bedroom of Familiehuset, for new worlds and for old saves alike. */
+object TreasureStart {
+    const val FLAG = "layout:treasure-box:1"
+
+    /**
+     * Adds the box unless the world has had its gift, or already holds a box (standing somewhere or in the
+     * store). A full bedroom leaves the flag unset, so the next load tries again; the box is in the catalogue too.
+     */
+    fun upgrade(world: World, sim: Sim = Sim(world).apply { tasks.recording = false }) {
+        if (FLAG in world.flags) return
+        val has = world.fixtures.values.any { it.type == FixtureType.TREASURE_BOX } ||
+            world.storage.any { it.type == FixtureType.TREASURE_BOX }
+        if (!has) {
+            val bedroom = Decor.rooms(PlaceId.HOME).first()
+            val x = bedroom.start + (bedroom.endInclusive - bedroom.start) * 0.62f
+            sim.designer.add(PlaceId.HOME, FixtureType.TREASURE_BOX, 0, x, PlaceId.FRONT - 0.01f) ?: return
+        }
+        world.flags += FLAG
+    }
+}

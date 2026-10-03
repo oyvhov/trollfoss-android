@@ -24,6 +24,8 @@ class WorldHistoryTest {
     }
     @Test fun nestedAssemblyUndoRestoresOriginalPartsAndKeepsBagReward() {
         var w=World();val s=Sim(w);val h=WorldHistory({ w });s.journal=h
+        // This minimal test world has already had its gift; loading undo must not add unrelated furniture.
+        w.flags += TreasureStart.FLAG
         s.magic.kit(PlayRecipe.FORT,PlaceId.HOME,1.2f)
         val ids=w.playKits.getValue(PlayRecipe.FORT);ids.forEach { w.bodies[it]!!.x=1.2f }
         h.begin(ids.last());val f=s.magic.combine(w.bodies[ids.last()] as Thing)!!
