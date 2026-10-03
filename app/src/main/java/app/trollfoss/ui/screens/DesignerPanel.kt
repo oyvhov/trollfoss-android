@@ -224,14 +224,18 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                             IconCanvas(DesignIcons.Box, Modifier.size(96.dp))
                         }
                     } else {
+                        val stacks = remember(stored) { app.trollfoss.domain.StoreStacks.of(stored) }
                         LazyVerticalGrid(GridCells.Fixed(2), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            itemsIndexed(stored) { index, item ->
+                            itemsIndexed(stacks) { _, stack ->
+                                val item = stack.item
                                 // In the store the furniture just stands there, on a pale pad with no frame round it.
                                 Box {
-                                Tile(modifier = furnitureDrag(engine, item.type, item.variant, storeIndex = index), look = TileLook.SOFT, feet = if (item.type.spec.wall) null else thumbSide * fixtureThumbFeet(item.type), onClick = { engine.addFromStore(index) }) {
+                                Tile(modifier = furnitureDrag(engine, item.type, item.variant, storeIndex = stack.index), look = TileLook.SOFT, feet = if (item.type.spec.wall) null else thumbSide * fixtureThumbFeet(item.type), onClick = { engine.addFromStore(stack.index) }) {
                                     FurnitureThumb(item.type, item.variant, place, false)
                                 }
-                                RoundButton(SM.deleteStored.str(), onClick = { engine.discardFromStore(index) },
+                                // Several of the same: one card, and how many.
+                                if (stack.count > 1) CountBadge(stack.count, Modifier.align(Alignment.TopEnd).padding(2.dp))
+                                RoundButton(SM.deleteStored.str(), onClick = { engine.discardFromStore(stack.index) },
                                     modifier = Modifier.align(Alignment.BottomEnd).padding(2.dp), size = 40.dp,
                                     tone = Tones.Cream, icon = DesignIcons.Bin)
                                 }
@@ -244,13 +248,19 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                 }
                 DesignTab.TRASH -> {
                     if (discarded.isEmpty()) GameText(SM.emptyTrash.str(), fontSize = 16.sp, color = T.Ink)
-                    else LazyVerticalGrid(GridCells.Fixed(2), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        itemsIndexed(discarded) { index, removed ->
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Tile(look = TileLook.SOFT, onClick = { engine.restoreStorage(index) }) {
-                                    FurnitureThumb(removed.second.type, removed.second.variant, place, false)
+                    else {
+                        val stacks = remember(discarded) { app.trollfoss.domain.StoreStacks.ofDiscarded(discarded) }
+                        LazyVerticalGrid(GridCells.Fixed(2), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            itemsIndexed(stacks) { _, stack ->
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Box {
+                                        Tile(look = TileLook.SOFT, onClick = { engine.restoreStorage(stack.index) }) {
+                                            FurnitureThumb(stack.item.type, stack.item.variant, place, false)
+                                        }
+                                        if (stack.count > 1) CountBadge(stack.count, Modifier.align(Alignment.TopEnd).padding(2.dp))
+                                    }
+                                    RoundButton(SM.restoreStored.str(), onClick = { engine.restoreStorage(stack.index) }, size = 40.dp, tone = Tones.Mint, icon = DesignIcons.Undo)
                                 }
-                                RoundButton(SM.restoreStored.str(), onClick = { engine.restoreStorage(index) }, size = 40.dp, tone = Tones.Mint, icon = DesignIcons.Undo)
                             }
                         }
                     }
@@ -377,4 +387,13 @@ private fun FurnitureThumb(type: FixtureType, variant: Int, place: PlaceId, lock
     CachedThumb("fixture:$type:$variant", if (compact) 88.dp else 112.dp, Modifier.graphicsLayer { alpha = if (locked) 0.45f else 1f }) {
         drawFixtureThumb(type, variant, Rect(0f, 0f, size.width, size.height))
     }
+}
+
+/** How many equal pieces one card stands for. */
+@Composable
+private fun CountBadge(count: Int, modifier: Modifier = Modifier) {
+    Box(
+        modifier.size(26.dp).background(T.Berry, androidx.compose.foundation.shape.CircleShape).border(2.dp, T.Ink, androidx.compose.foundation.shape.CircleShape),
+        contentAlignment = Alignment.Center,
+    ) { GameText("$count", fontSize = 13.sp, style = MaterialTheme.typography.titleMedium, color = Color.White) }
 }
