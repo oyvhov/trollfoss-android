@@ -708,4 +708,3 @@ class SharedPlayTest {
         assertTrue(e.designMode); e.cancel()
     }
 }
-
