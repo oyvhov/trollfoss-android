@@ -1,4 +1,32 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
+> **NYAST – PUBLISERT 1.6.1 (2026-10-03, Codex):** Brukaren bad «Lag en release etterpå».
+> Mjuk spelarfølgje og mindre golvrot er fletta til main og publiserte som stabil, nyaste release:
+> https://github.com/oyvhov/trollfoss-android/releases/tag/v1.6.1
+> Kjelde/tag: `ca0454e03b602365a5ec6e0ad91050c7b3683c98`, versjon 1.6.1 / kode 10.
+> Bygd frå `244e3170a928ff3c209539686da3101af991bece`; samanfletta kjelde har identisk Git-tre.
+> Éin universal APK, 3 074 518 byte. SHA-256:
+> `5f1508d677e06763e2099b8ef9a6f7894e638f66e0efb8c58498c8de2a567e9f`.
+> Same opphavlege sertifikat, app.trollfoss, min Android 26, ikkje debuggable. Mapping, hash og
+> SOURCE_COMMIT er vedlagde. Alle fire vedlegg sine digest/storleikar og offentleg nedlasting er
+> kontrollerte; offentleg release-liste/latest og APK vart henta utan token. Arkiv: `dist/release-v1.6.1/`.
+> Release-bygg/test/lint grøne: 455 einingstestar, 0 lint-feil / 22 åtvaringar. Dei 23 Android-testane
+> og den lengre følgje-/lagringsprøva var grøne på spelkjelda før den reine versjonsauken.
+> GitHub kjelde (37112058187), PR 2 (37112219697), main (37112753267) og tag (37112756290) grøne.
+> Ekte oppdatering på eiga Release160-prøveeining: publisert 1.6.0 / 9 → 1.6.1 / 10 gjennom
+> foreldresida, Sjekk no, nedlasting/verifisering, Installer oppdatering og Android Update.
+> Første forsøk vart avbrote då prøveopninga kom medan Play Protect-dialogen var open. Eit nytt
+> Installer/Update-forsøk gav «App installed», og installert pakke vart stadfesta til kode 10.
+> Ingen avinstallering eller tømming. Kartet opna ved kaldstart. Hedda og Alva var framleis valde;
+> spelarvalskjermen før/etter har identiske pikselbilete (utsjånad og klede bevarte).
+> Nettbrett 1920 × 1200 / 240 dpi: faktisk sveip frå stove til kjøken i Familiehuset, begge gjekk med.
+> Mobil 2400 × 1080 / 420 dpi: berre kort oppstart-/Kart-kontroll. Ingen Trollfoss-krasj i krasjloggen.
+> Bilete: Git-ignorert `screenshots/release-v1.6.1/`. Skjermmål/rotasjon er tilbakeførte og emulatoren
+> vi starta er stoppa. Den private Tunet_Ascii-eininga og den opphavlege debug-verda er urørte.
+> **Restarbeid:** Dei uferdige Community/CreativePlay/cloud/nivå-endringane i `C:\topa` på
+> `codex/magic-rest` er ikkje med i 1.6.1 og er framleis ikkje fullt validerte. Ikkje påstå at alle 25
+> løft eller høgare nivå er ferdige. Den reine release-kjelda ligg i den administrerte arbeidskopien
+> `C:\topa\.gradle-tmp\follow-worktree`; der står no berre ein dokumentasjonsgren etter release.
+
 > **NYAST – MJUK SPELARFØLGJE OG MINDRE GOLVROT (2026-10-03, Codex):**
 > Brukaren bad om betre flyt når fleire spelarar blir med kameraet, mindre smårot i romma og lite
 > mobiltesting. Ferdige endringar på `codex/smooth-player-follow`, bygd isolert frå `main`.
