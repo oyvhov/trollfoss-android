@@ -1,4 +1,35 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
+> **NYAST – MJUK SPELARFØLGJE OG MINDRE GOLVROT (2026-10-03, Codex):**
+> Brukaren bad om betre flyt når fleire spelarar blir med kameraet, mindre smårot i romma og lite
+> mobiltesting. Ferdige endringar på `codex/smooth-player-follow`, bygd isolert frå `main`.
+> Arbeidskopi: `C:\topa\.gradle-tmp\follow-worktree` (kopling til eit administrert Codex-worktree).
+> `PlayerFollow` erstattar gruppeflytting etter panorering med ei gåtur medan barnet sveipar:
+> mjuk akselerasjon/brems, avgrensa steg, stabil rekkjefølgje og separate plassar. Romval gir same
+> gåtur; små sveip lèt synlege figurar stå. Også draging av ein spelar langs skjermkanten får vennene
+> til å gå med. Ein halden figur blir ikkje stolen, og hindrar ikkje den andre i å gå med.
+> Sovande figurar og køyretøypassasjerar blir verande; ubygde rom er ingen snarveg. På fast golv går
+> figurane mjukt fram i golvbandet, framfor stolar og sofaer. Stegrytme og utslag avtek ved stopp.
+> Valde spelarar vandrar ikkje på eiga hand etterpå; ønskje og reaksjonar er framleis aktive.
+> Same figur-ID-ar, klede og handhaldne ting blir bevarte; ingen kopiar eller ny ankomst under sveip.
+> `StarterLayout` samlar urørte småting frå innandørsoppsettet i eksisterande skap/kasser og på
+> hyller. Det blir ikkje sletta noko, fulle flater blir ikkje fylte vidare, og nye heimar blir lagra så
+> ryddeknappen bruker dei. Éin oppgraderingsrunde med `layout:small-things:1`; flytta, haldne, brukte,
+> pakka, borne og heimlause nye ting samt Mitt hus blir bevarte. Nye stader får det ryddigare oppsettet.
+> **Kontroll:** 455 einingstestar og 23 Android-testar grøne på siste kjelde. Debug-APK,
+> Android-test-APK og lint grøne gjennom byggelåsen: 0 lint-feil / 31 åtvaringar.
+> Eiga prøvepakke `app.trollfoss.follow`, nettbrett 1920 × 1200 / 240 dpi: faktisk sveip med Hedda 25
+> og Alva 45, mjuk gåtur, framfor møblane, avstand ca. 0,28, lagring og verkeleg omstart utan endra
+> posisjon/utsjånad. Video og bilete: Git-ignorert `screenshots/follow/`. Prøveverda viser m.a. to
+> klossar i leikekassa, leikebil i kista på loftet, sokk ved kleskorga og skiftenøkkel på arbeidsbenken.
+> Android-testen tek den same klossen ut att frå eit ope skap med dei verkelege gripefunksjonane.
+> Mobil 2400 × 1080 / 420 dpi fekk berre kort oppstart-/skjermkontroll. Ingen krasj eller ANR.
+> Skjermmål og rotasjon er tilbakeførte; emulatoren vi starta er stoppa. Produksjonspakken og den
+> opphavlege debug-verda er urørte. Ingen ny APK-release i denne runden; versjon framleis 1.6.0 / 9.
+> **Pågåande magi:** `C:\topa` er framleis på `codex/magic-rest` med uferdige, ikkje-committa
+> Community/CreativePlay/cloud/nivå-endringar frå før. Følgje/rydding er òg kopiert inn der.
+> Magiforsøket har ikkje grøn full validering; ikkje publiser det eller påstå at resten av dei 25 løfta
+> er ferdige. Fullfør og kontroller desse endringane før den tidlegare bestilte neste store releasen.
+
 > **NYAST – PUBLISERT 1.6.0 (2026-10-02, Codex):** Brukaren bad «Publiser».
 > Begge magirundane er fletta til main og publiserte som stabil, nyaste GitHub-release:
 > https://github.com/oyvhov/trollfoss-android/releases/tag/v1.6.0

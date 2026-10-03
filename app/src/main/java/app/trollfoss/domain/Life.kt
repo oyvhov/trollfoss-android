@@ -167,6 +167,9 @@ class Life(private val sim: Sim, private val random: Random) {
      */
     private fun walk(place: PlaceId, p: Person, dt: Float) {
         val a = p.anim
+        if (a.following) return
+        // The child's chosen figures stay where they are put; wishes and reactions still run.
+        if (p.id in world.playerIds) return
         val folk = p.species == Species.FOLK
         if (p.mode == Mode.SEATED) {
             a.still = 0f

@@ -35,6 +35,7 @@ object WorldFactory {
         addFixtures(world)
         val sim = Sim(world).apply { tasks.recording=false }
         for (place in PlaceId.entries) populate(world, sim, place, random)
+        world.flags += StarterLayout.FLAG
         world.bodies.values.forEach { it.age = 10f }
         return world
     }
@@ -74,6 +75,7 @@ object WorldFactory {
         sim.settle(place)
         // Where each thing lies now is its home, for tidying up later.
         for (t in loose) remember(world, t)
+        StarterLayout.tidyPlace(world, place)
     }
 
     /** Makes the spot where [t] rests its home: on its furniture (following it if moved) or on the floor. */

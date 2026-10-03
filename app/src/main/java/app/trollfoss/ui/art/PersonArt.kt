@@ -83,8 +83,9 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
     val dancing = a.dance > 0f
     // Walking: feet lift in turn and the hands swing the other way, frontal so it reads as a waddle.
     val walking = pose == Pose.STAND && !a.walkTo.isNaN() && !dancing
-    val stepL = if (walking) kotlin.math.max(0f, sin(a.walkPhase * PI.toFloat())) else 0f
-    val stepR = if (walking) kotlin.math.max(0f, -sin(a.walkPhase * PI.toFloat())) else 0f
+    val stride = if (a.following) (a.followSpeed / 0.6f).coerceIn(0f, 1f) else 1f
+    val stepL = if (walking) kotlin.math.max(0f, sin(a.walkPhase * PI.toFloat())) * stride else 0f
+    val stepR = if (walking) kotlin.math.max(0f, -sin(a.walkPhase * PI.toFloat())) * stride else 0f
     val bob = when {
         dancing -> -abs(sin(a.dance)) * 0.03f
         pose == Pose.STAND -> breath * 0.004f

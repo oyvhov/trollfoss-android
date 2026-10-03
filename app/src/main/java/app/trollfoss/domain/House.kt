@@ -206,6 +206,8 @@ object House {
         p.inside = -1
         p.anim.pose = Pose.STAND
         p.anim.walkTo = Float.NaN
+        p.anim.following = false
+        p.anim.followSpeed = 0f
         p.anim.goalFixture = -1
         p.anim.goal = 0
         p.anim.auto = 0

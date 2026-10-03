@@ -12,6 +12,96 @@ import org.junit.runner.RunWith
 /** Run on Android: exercises the real pointer engine used by children sharing the screen. */
 @RunWith(AndroidJUnit4::class)
 class SharedPlayTest {
+    @Test fun draggingAPlayerAlongTheScreenEdgeLetsTheOtherWalkAlongWithoutStealingTheLeader() {
+        val w = World(); val place = PlaceId.MANOR_GROUND; val s = Sim(w)
+        val leader = w.addPerson(Species.FOLK, Look(), 1f, place, 1.5f, 0.9f)
+        val friend = w.addPerson(Species.FOLK, Look(), 1f, place, 0.7f, 0.9f)
+        w.playerIds += listOf(leader.id, friend.id)
+        val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        val from = finger(e, leader); val edge = Offset(1850f, from.y)
+        e.down(1, from, 1000); e.move(1, edge, 1100)
+        var last = friend.x
+        repeat(140) {
+            e.update(0.016f); assertTrue(leader.held); assertFalse(leader.anim.following)
+            assertTrue(kotlin.math.abs(friend.x-last) <= PlayerFollow.MAX_SPEED*0.016f + 0.0001f)
+            last = friend.x
+        }
+        assertTrue(e.cam > 2f); assertTrue(friend.x > 1.5f)
+        e.up(1, edge, 3500); assertFalse(leader.held); e.cancel()
+    }
+
+    @Test fun aCollectedStarterObjectCanBeDraggedOutOfItsBoxWithTheSameIdentity() {
+        val w = World(); WorldFactory.addFixtures(w)
+        val t = w.addThing(ThingType.UP_BLOCK, 3, PlaceId.HOME, 0.75f, 0.9f)
+        WorldFactory.remember(w,t); StarterLayout.upgrade(w)
+        val s = Sim(w); s.settle(PlaceId.HOME)
+        val box = w.fixtures[t.inside]!!; s.tap(PlaceId.HOME,box,0f,0f)
+        val e = Engine(w,PlaceId.HOME,s,host,false,0f).apply { setSize(1920f,1200f,1.5f) }
+        val from = Offset((t.x-e.cam)*e.u,1200f-e.u+(t.y-t.h/2f)*e.u)
+        e.down(1,from,1000); e.move(1,from+Offset(450f,-120f),1100)
+        repeat(20) { e.update(0.016f) }
+        assertTrue(t.held); assertEquals(-1,t.inside); assertSame(t,w.bodies[t.id])
+        e.up(1,from+Offset(450f,-120f),1600)
+        assertFalse(t.held); assertEquals(3,t.variant); e.cancel()
+    }
+
+    @Test fun swipingWithTwoPlayersWalksBeforeReleaseAndNeverTeleportsOnPhoneOrTablet() {
+        for ((width, height, density) in listOf(Triple(2400f, 1080f, 2.625f), Triple(1920f, 1200f, 1.5f))) {
+            val w = World(); val place = PlaceId.MANOR_GROUND; val s = Sim(w)
+            val a = w.addPerson(Species.FOLK, Look(), 1f, place, 0.7f, 0.9f)
+            val b = w.addPerson(Species.FOLK, Look(hair = 6), 1f, place, 1.1f, 0.9f)
+            w.playerIds += listOf(a.id, b.id)
+            val e = Engine(w, place, s, host, false, 0f).apply { setSize(width, height, density) }
+            val from = Offset(width * 0.85f, height - e.u + e.u * 0.20f)
+            e.down(10, from, 1000)
+            var ax = a.x; var bx = b.x
+            fun frame() {
+                e.update(0.016f)
+                assertTrue(kotlin.math.abs(a.x - ax) <= PlayerFollow.MAX_SPEED * 0.016f + 0.0001f)
+                assertTrue(kotlin.math.abs(b.x - bx) <= PlayerFollow.MAX_SPEED * 0.016f + 0.0001f)
+                ax = a.x; bx = b.x
+            }
+            repeat(40) { i -> e.move(10, from - Offset(e.u * (i + 1) * 0.05f, 0f), 1016L + i * 16L); frame() }
+            assertTrue(a.x > 0.7f); assertTrue(b.x > 1.1f) // They follow during the swipe.
+            val to = from - Offset(e.u * 2f, 0f)
+            e.up(10, to, 1650)
+            repeat(300) { frame() }
+            assertTrue(a.x > e.cam); assertTrue(b.x < e.cam + e.visibleViewport)
+            assertTrue(b.x - a.x > 0.24f); assertFalse(a.anim.following); assertFalse(b.anim.following)
+            assertSame(a, w.bodies[a.id]); assertSame(b, w.bodies[b.id])
+            e.cancel()
+        }
+    }
+
+    @Test fun swipingWithASecondFingerDoesNotWaitForOrReleaseTheHeldPlayersFigure() {
+        val w = World(); val place = PlaceId.MANOR_GROUND; val s = Sim(w)
+        val a = w.addPerson(Species.FOLK, Look(), 1f, place, 1f, 0.9f)
+        val b = w.addPerson(Species.FOLK, Look(), 1f, place, 1.4f, 0.9f)
+        w.playerIds += listOf(a.id, b.id)
+        val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        val hand = finger(e, a)
+        e.down(1, hand, 1000); e.move(1, hand + Offset(20f, -30f), 1100)
+        val sky = Offset(1600f, 400f); e.down(2, sky, 1200)
+        repeat(40) { i -> e.move(2, sky - Offset(e.u * (i + 1) * 0.05f, 0f), 1216L + i * 16L); e.update(0.016f); assertTrue(a.held) }
+        e.up(2, sky - Offset(e.u * 2f, 0f), 1900)
+        repeat(180) { e.update(0.016f); assertTrue(a.held) }
+        assertFalse(a.anim.following); assertTrue(b.x > 2f); assertTrue(e.touching)
+        e.cancel(); assertFalse(a.held)
+    }
+
+    @Test fun choosingAnotherRoomDoesNotStealTheOtherChildsHeldFigure() {
+        val w = World(); val place = PlaceId.MANOR_GROUND; val s = Sim(w)
+        val a = w.addPerson(Species.FOLK, Look(), 1f, place, 0.7f, 0.9f)
+        val b = w.addPerson(Species.FOLK, Look(), 1f, place, 1.4f, 0.9f)
+        w.playerIds += listOf(a.id, b.id)
+        val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        val hand = finger(e, a); e.down(1, hand, 1000); e.move(1, hand + Offset(20f, -30f), 1100)
+        val bx = b.x; e.selectRoom(2)
+        assertTrue(a.held); assertEquals(bx, b.x, 0f)
+        repeat(240) { e.update(0.016f); assertTrue(a.held) }
+        assertTrue(b.x > bx + 1f); e.cancel()
+    }
+
     @Test fun explicitPackingAndInvitingEachHaveAnUndoEntry() {
         var w=World();val s=Sim(w);val p=w.addPerson(Species.FOLK,Look(),1f,PlaceId.HOME,0.7f,0.9f)
         w.playerIds+=p.id
@@ -241,13 +331,16 @@ class SharedPlayTest {
         }
         val e = engine(world)
         e.selectRoom(3)
+        assertEquals(0.7f, people[0].x, 0f)
+        assertEquals(1.2f, people[1].x, 0f)
+        repeat(250) { e.update(0.016f) }
         people.forEach { assertEquals(3, Decor.roomAt(PlaceId.HOME, it.x)) }
         assertEquals(Mode.WORN, hat.mode)
         assertEquals(people[0].id, hat.holder)
         assertEquals(PlaceId.HOME, hat.place)
     }
 
-    @Test fun panningToAnotherRoomBringsThePlayersAfterTheCameraSettles() {
+    @Test fun panningToAnotherRoomBringsThePlayersIntoTheViewedRoomWithoutAnArrival() {
         val world = World()
         val p = world.addPerson(Species.FOLK, Look(), 1f, PlaceId.HOME, 0.7f, 0.9f)
         Players.toggle(world, p)

@@ -145,7 +145,7 @@ class Engine(
     var visibleRoom by mutableIntStateOf(0)
         private set
     private var chosenRoom: Int? = null
-    private var bringTeamAfterPan = false
+    private var followSaveTime = 0f
 
     /** Screen pixels above scene y = 0; the place art fills them with more sky or wall. */
     private val top: Float get() = heightPx - u
@@ -272,9 +272,7 @@ class Engine(
         chosenRoom = index
         visibleRoom = index
         if (Players.team(world).isNotEmpty() && canBringPlayers(index)) {
-            cancel()
-            Players.arrive(world, place, (range.start + range.endInclusive) / 2f)
-            host.changed()
+            sim.playerFollow.navigate(place, cam, visibleViewport, index)
         }
     }
 
@@ -311,6 +309,7 @@ class Engine(
 
         for (f in world.fixturesIn(place)) if (f.type == FixtureType.MAILBOX) f.mode = if (sim.giftWaiting()) 1 else 0
         val wasDriving = vehicle?.on == true
+        sim.playerFollow.view(cam, visibleViewport)
         sim.step(place, dt)
         if (wasDriving && vehicle?.on != true) host.changed()
 
@@ -340,6 +339,7 @@ class Engine(
         }
 
         // A thing carried to the screen edge takes the camera with it.
+        val cameraBeforeEdge = cam
         if (grabs.values.any { it.moved && (heldBody(it) != null || it.target is Target.Furniture) }) {
             val edge = grabs.values.filter { it.moved && (heldBody(it) != null || it.target is Target.Furniture) }.map { it.finger.x }
             // With the designer panel open, the right edge is where the panel starts; over the panel
@@ -351,6 +351,9 @@ class Engine(
                 if (x > right && (panel == null || x < panel.left)) cam += 1.3f * dt
             }
             clampCam()
+            if (!designMode && cam != cameraBeforeEdge && grabs.values.any {
+                (heldBody(it) as? Person)?.id in world.playerIds
+            }) sim.playerFollow.navigate(place, cam, visibleViewport)
         } else if (grabs.values.none { it.target is Target.Pan && it.moved }) {
             cam += camV * dt
             camV *= exp(-3.5f * dt)
@@ -358,26 +361,18 @@ class Engine(
         }
 
         shake *= exp(-7f * dt)
-        if (bringTeamAfterPan && abs(camV) < 0.08f && grabs.isEmpty()) {
-            val team = Players.team(world)
-            if (team.none { it.held }) {
-                val center = centerX()
-                val nextRoom = Decor.roomAt(place, center)
-                if (canBringPlayers(nextRoom) && team.any {
-                    it.place != place || it.x !in (cam + it.w / 2f)..(cam + visibleViewport - it.w / 2f) ||
-                        Decor.roomAt(place, it.x) != nextRoom
-                }) {
-                    Players.arrive(world, place, center)
-                    host.changed()
-                }
-                bringTeamAfterPan = false
-            }
-        }
         vehicle?.takeIf { it.on && grabs.isEmpty() }?.let { f ->
             val margin = visibleViewport * 0.28f
             if (f.x < cam + margin) cam = f.x - margin
             if (f.x > cam + visibleViewport - margin) cam = f.x - visibleViewport + margin
             clampCam()
+        }
+        sim.playerFollow.view(cam, visibleViewport)
+        followSaveTime += dt
+        if (sim.playerFollow.dirty && followSaveTime >= 0.5f) {
+            sim.playerFollow.acknowledge()
+            followSaveTime = 0f
+            host.changed()
         }
         updatePreviews()
         updatePeople(dt)
@@ -815,6 +810,7 @@ class Engine(
             chosenRoom = null
             cam -= dx / u
             clampCam()
+            sim.playerFollow.navigate(place, cam, visibleViewport)
         }
     }
 
@@ -851,7 +847,7 @@ class Engine(
         }
         when {
             body != null && body.held -> drop(g, body, vx, vy)
-            g.target is Target.Pan -> { camV = -vx; bringTeamAfterPan = true }
+            g.target is Target.Pan -> { camV = -vx }
             g.target is Target.Furniture -> {
                 val f = (g.target as Target.Furniture).fixture
                 overStore = false
@@ -1086,7 +1082,8 @@ class Engine(
     fun cancel() {
         sim.magic.cancel()
         playThingId = -1; playFixtureId = -1; toyFixtureId = -1
-        bringTeamAfterPan = false
+        sim.playerFollow.cancel()
+        camV = 0f
         cancelCatalogueDrag()
         closeDriving()
         for (g in grabs.values) heldBody(g)?.takeIf { it.held && it.place == place }?.let { drop(g, it, 0f, 0f) }
@@ -2516,10 +2513,11 @@ class Engine(
                 val walking = !a.walkTo.isNaN()
                 // Sture glides instead of stepping: no hop, a slow drift and a gentle bob in the air.
                 val ghost = b.species == Species.GHOST
-                val step = if (walking && !ghost) abs(sin(a.walkPhase * PI.toFloat())) * b.h * 0.07f else 0f
+                val stride = if (a.following) (a.followSpeed / 0.6f).coerceIn(0f, 1f) else 1f
+                val step = if (walking && !ghost) abs(sin(a.walkPhase * PI.toFloat())) * b.h * 0.07f * stride else 0f
                 val bob = (if (a.pose == Pose.FLOAT) sin(time * 1.6f + b.id) * 0.008f else 0f) - step +
                     (if (ghost && motion && a.pose == Pose.STAND) FigurarFx.hover(time, b.id, b.h) else 0f)
-                val sway = if (ghost) (if (walking) sin(time * 2.2f + b.id) * 3.5f else 0f) else if (walking) sin(a.walkPhase * PI.toFloat()) * 4f else 0f
+                val sway = if (ghost) (if (walking) sin(time * 2.2f + b.id) * 3.5f else 0f) else if (walking) sin(a.walkPhase * PI.toFloat()) * 4f * stride else 0f
                 translate(sx(b.x), sy(b.y - a.hop + bob)) {
                     val spin = if (a.spin > 0f) (1f - a.spin) * 360f * (if (b.id % 2 == 0) 1f else -1f) else 0f
                     val giggle = if (a.tickle > 0f) sin(time * 38f) * 7f * min(1f, a.tickle) else 0f
