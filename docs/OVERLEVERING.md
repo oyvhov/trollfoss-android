@@ -1,4 +1,13 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
+> **NYAST – DESIGNGJENNOMGANG OG FIGURMENYAR (2026-10-03):** Brukaren bad om betre design.
+> Fersk gjennomgang av kart, Familiehuset, spelarval, figurverkstad og gåver er dokumentert i
+> `DESIGN_REVIEW_2026-10-03.md`. Spelarvalet har større figurar, rein tekst, rolege kortrammer,
+> tydeleg lagmarkering og tomt-lag-hint. Verkstaden har lys spegelramme og same valfargar.
+> Arbeidet held fram på `codex/map-full-height` i den reine arbeidskopien; PR 4 omfattar også dette.
+> Debug-bygg og 467 einingstestar grøne; endeleg lint/CI står i PR-en. Nettbrett visuelt kontrollert,
+> berre kort kontroll av dei to endra skjermane på mobil. Ingen ny release eller endra lagringsformat.
+> Neste designprioritet: kartnamn/stadmarkør, rolegare romknappar, neste gåve synleg før samlinga.
+
 > **NYAST – KART UTAN BOTNFELT (2026-10-03):** Brukaren melde at den mørke rada under
 > kartknappane tok for mykje plass på mobil. `codex/map-full-height` fjernar den faste 88 dp-rada.
 > Kartet fyller heile skjermen; knappane ligg over kartet, med 56 dp knappar og 8 dp kant på korte
