@@ -1,6 +1,6 @@
 # Endringslogg
 
-## Neste – Legg bort og skattar
+## 1.8.0 – Legg bort og skattar
 
 - Hjørnet ved sekken veks når barnet løftar noko. Slepp der legg ting og figurar i sekken og møblar på lager, utan at møbelpanelet må vere ope. Kantane ber framleis kameraet vidare til neste rom.
 - Ny skattekiste med glasfront, gratis i Møblar på alle stader, og éi står klar i soverommet i Familiehuset. Lokket spretter opp når barnet kjem nær med ein ting, og kvar femte skatt får kista til å rape glitter.
