@@ -1,6 +1,33 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
-> **NYAST – LEGG BORT OG SKATTAR (2026-10-04, Codex, lokalt og ikkje utgjeve):** Alle ni oppgåvene
+> **NYAST – PUBLISERT 1.8.0 (2026-10-04, Codex):** Brukaren bad om ny release etter ferdig plan.
+> PR 5 er fletta, og stabil 1.8.0 / kode 13 er publisert som nyaste release:
+> https://github.com/oyvhov/trollfoss-android/releases/tag/v1.8.0.
+> Kjelde/tag: `726408c316473486a7aea3d0819803619ab8ddf5`. Bygd frå `e59ba34733819de94f7a93c818a478fdf4f7de50`,
+> med identisk Git-tre etter fletting. Éin universal APK, 3 156 438 byte, SHA-256:
+> `5136184240a9a3fbb5df54fbf01397abd6224c61b9f9e71c7e7c516e2a678613`.
+> Opphavleg Trollfoss-sertifikat, app.trollfoss, min Android 26, ikkje debuggable. Mapping, hash og
+> SOURCE_COMMIT er vedlagde. Alle fire filstorleikar og digest i kladden er kontrollerte; offentleg
+> release-liste, latest og nedlasting av alle fire filer utan token stemmer med det lokale arkivet.
+> Signert release-bygg og 511 einingstestar grøne, release-lint 0 feil / 22 åtvaringar. Dei 47 Android-testane
+> og dei grundige visuelle prøvene var grøne på spelkjelda før versjonsauken, sjå avsnittet under.
+> GitHub kjelde/PR (37184180502 / 37184183603), main (37184681295) og tag (37184684185) er grøne.
+> Ekte oppdatering på fersk, eiga `TrollfossRelease180`-prøveeining: publisert 1.7.1 / 12 → 1.8.0 / 13
+> gjennom Kart → foreldreport → Sjekk no → Last ned → Installer oppdatering → Android Update.
+> Appen verifiserte nedlastinga; Play Protect gav «This app looks safe», Android gav «App installed»,
+> og installert versjon/kode er stadfesta. Ingen avinstallering eller tømming mellom utgåvene.
+> Etter kaldstart er Hedda og Alva framleis valde, med same hår og klede. Flyttinga av Hedda i stova
+> og dei gamle møblane er visuelt bevarte. Den nye glasfrontkista står i soverommet etter oppdateringa.
+> Nettbrett 1920 × 1200 / 240 dpi var hovudprøva; mobil 2400 × 1080 / 420 dpi fekk kaldstart,
+> kart, Familiehuset, spelarar, Meir-menyen og løft av kista med den store lagerkassa i hjørnet.
+> Andre kaldstart gav framleis berre éi gåvekiste. Dette er éin eigen AVD i to skjermformat.
+> Ingen krasj eller ANR vart registrert under denne release-prøva. Ingen prøve på fysisk eining eller barnetest.
+> Bilete/XML: Git-ignorert `screenshots/release-v1.8.0/`; arkiv: `dist/release-v1.8.0/` i arbeidskopien
+> `C:\topa\.claude\worktrees\legg-bort`. Arbeidet ligg på `codex/release-1.8.0`; featuregreina er bevart.
+> Eigen emulator er stoppa; skjermmål, tettleik og rotasjonsinnstillingar er tilbakeførte.
+> Private spelverdener og gammalt ukommittert arbeid i `C:\topa` er urørte. Runde to ventar framleis på barnetest.
+
+> **ARBEIDET FØR RELEASE – LEGG BORT OG SKATTAR (2026-10-04, Codex):** Alle ni oppgåvene
 > i `docs/superpowers/plans/2026-10-03-legg-bort-og-skattar.md` er ferdige. Grein `claude/legg-bort` i
 > `C:\topa\.claude\worktrees\legg-bort`, frå publisert 1.7.1. Spec: `docs/superpowers/specs/`.
 > Sekken veks og viser open sekk eller kasse ved løft; ting og figurar går i sekken og møblar på lager.
@@ -29,7 +56,7 @@
 > Testpakken er avinstallert, eigen emulator stoppa og skjermmål, tettleik og rotasjonsinnstillingar tilbakeførte.
 > Mellombels planlogg i Git-ignorert `.superpowers/sdd/2026-10-03-legg-bort-og-skattar/` ligg att:
 > automatisk godkjenningskontroll avviste slettinga med «blocked by policy», også med kontrollert, eksakt sti.
-> **Ikkje gjort:** ingen push, PR, release, versjonsendring eller barnetest av denne runden. Runde to
+> **Ikkje gjort før release-oppdraget over:** ingen push, PR, release, versjonsendring eller barnetest. Runde to
 > (knappar, menyar, symbol) ventar til brukaren har sett barnet bruke dette.
 > `C:\topa` står framleis på `codex/magic-rest` med gammalt, ukommittert arbeid som er urørt.
 
