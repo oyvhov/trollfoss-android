@@ -1,5 +1,38 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – PUBLISERT 1.9.0 (2026-10-04, Codex):** Brukaren bad «Release» etter kart-/sekk-/menyendringa.
+> PR 6 er fletta, og stabil 1.9.0 / kode 14 er publisert som nyaste release:
+> https://github.com/oyvhov/trollfoss-android/releases/tag/v1.9.0.
+> Inneheld det nye kartet, sekk med 12 plassar og biletkategoriar i høgremenyen som er skildra under.
+> Sluttgjennomgangen retta dessutan tilbakeføring til gamle store sekkar, reserverte plassar medan
+> ein annan finger dreg ut eit ting, eingongsopning av lageret, skjermlesarpiler og nøyaktige vatntreff.
+> Kjelde/tag: `a677eead12dd68050d841d43f9fe4e8785604252`. Bygd frå
+> `92603f64ea0d99a3090cfbeecc6f09e6206c3a4b`, med identisk Git-tre etter fletting.
+> Éin universal APK, 3 156 438 byte, SHA-256:
+> `8e1e8da21f6521b987ca1f7d5851d57017da98abc079d9dbe02db17c2e319175`.
+> Opphavleg Trollfoss-sertifikat, app.trollfoss, min Android 26, ikkje debuggable. Mapping, hash og
+> SOURCE_COMMIT er vedlagde. Alle fire filstorleikar og digest i kladden er kontrollerte; offentleg
+> release-liste, latest og nedlasting av alle fire filer utan token stemmer med det lokale arkivet.
+> Signert release-bygg, 519 einingstestar og 56 Android-testar grøne; release-lint 0 feil / 22 åtvaringar.
+> GitHub kjelde/PR (37222398796 / 37222402001), main (37222983734) og tag (37223027754) er grøne.
+> Ekte oppdatering på eiga `TrollfossRelease180`-prøveeining: publisert 1.8.0 / 13 → 1.9.0 / 14 gjennom
+> foreldresida → Sjekk no → Last ned oppdatering → Installer oppdatering → Android Update.
+> Appen stadfesta nedlastinga, Play Protect gav «This app looks safe», og Android gav «App installed».
+> Installert versjon/kode er kontrollert; ingen avinstallering eller tømming mellom utgåvene.
+> Heile spelarvalskjermen har identiske pikslar før/etter: Hedda og Alva er valde med same hår og klede.
+> Den pakka gitaren og dei gamle møblane er bevarte; glasfrontkista står framleis i soverommet.
+> Release-APK er prøvd med kaldstart, kart utan X, dag/natt, regn/snø/sol, sidepil og møbelkategoriar.
+> Ein stol vart faktisk dregen frå katalogen og lagt på lager; sekken hadde framleis berre gitaren.
+> Mobilprøva etter ny kaldstart viste stor gitar i sekken og éin stol på separat lager, med brukbare menyval.
+> Nettbrett 1920 × 1200 / 240 dpi og mobil 2400 × 1080 / 420 dpi: éin eigen AVD i to format.
+> Ingen produksjonskrasj eller ANR i dei bevarte loggane frå denne emulatoroppstarten.
+> Ingen prøve på fysisk eining eller barnetest. Dei grundigare native featureprøvene står under.
+> Bilete/XML/loggar: Git-ignorert `screenshots/release-v1.9.0/`; arkiv: `dist/release-v1.9.0/` i
+> `C:\topa\.claude\worktrees\legg-bort`. Grein `codex/release-1.9.0`; featuregreina er bevart.
+> Prøvepakkane er avinstallerte, eigen emulator stoppa og skjerm-/rotasjons-/animasjonsinnstillingar
+> tilbakeførte. Produksjonsappen 1.9.0 og prøveverda er bevarte på den eigne AVD-en.
+> Private spelverdener og gammalt ukommittert arbeid i `C:\topa` er urørte. Runde to ventar på barnetest.
+
 > **NYAST – KART, SEKK OG HØGREMENY (2026-10-04, Codex):** Brukaren melde feil på kartet og i
 > sekken/høgremenyen etter 1.8.0, og bad om eit meir spennande kart med animasjonar.
 > Ferdig lokalt på `codex/map-and-play-menu` i `C:\topa\.claude\worktrees\legg-bort`.
