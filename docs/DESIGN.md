@@ -217,7 +217,8 @@ viser hjørnet ei lagerkasse med talet på lagra møblar, og etter lagring kan l
   Fontane er pakka lokalt med SIL OFL-lisensane, med full teikndekning for mellom anna æ/ø/å.
   `GameText` brukar Nunito under 20 sp og eit fint blekkomriss på lys tekst
   (7,5 % av tekststorleiken, avgrensa til 0,8–4,5 dp). Mørke skilt er utan omriss.
-  Stadskilta på kartet held namna synlege, med kremfarga kant og svak skugge; vald stad har farge.
+  Stadskilta på kartet held namna synlege, med svak kremfarga kant og diskret skugge.
+  Vald stad får ein lys pastell av stadfargen, og trykk gir litt meir farge. Treffområdet er det same.
 * **Spelarmerking:** `PlayerPalette` gir spelaren same farge i valkort, portrett og scene:
   gul, lys lilla, lys blå, lys grøn, lys rosa, så om att. Nummeret skil også spelarane.
   I scena kjem ein liten ring og nummer fram under berøring og i 1,8 sekund etterpå eller etter

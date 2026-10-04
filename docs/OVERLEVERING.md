@@ -1,6 +1,6 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
-> **NYAST – DESIGNFORBETRINGAR FERDIGE LOKALT (2026-10-04, Codex):** Brukaren bad om å
+> **NYAST – 1.10.0 KLAR FOR PUBLISERING (2026-10-04, Codex):** Brukaren bad om å
 > gjennomføre tilrådingane frå den vedlagde designguiden. Rein arbeidskopi frå `origin/main`
 > (7b32c87), grein `codex/playful-polish`, i
 > `C:\Users\Øyvind\.codex\worktrees\playful-polish\topa`. Nunito/Fredoka er pakka lokalt med
@@ -13,7 +13,13 @@
 > åtvaringar. Nynorsk, bokmål og rørsle av er kontrollerte visuelt, og katten er prøvd med faktiske
 > skjermdrag. Skjermbilete/loggar i `screenshots/playful-polish/`, eiga prøve-APK i
 > `dist/playful-polish/`. Sjå `docs/PLAYFUL_POLISH.md` for detaljar, hash og avgrensingar.
-> Ingen release, versjonsauke, push eller GitHub CI. Nyaste offentlege utgåve er framleis 1.9.0.
+> Brukaren bad deretter om mildare namneboksar på karta og ein kjapp release utan alle testar på nytt.
+> Kartskilta har no tynnare kant, svakare skugge og pastell på vald stad; kontrollert på mobil og nettbrett.
+> Signert 1.10.0 / kode 15 er bygd med opphavleg nøkkel og installert over 1.9.0 på eiga AVD.
+> Kaldstart viser kartet og dei to bevarte spelarane. APK: 3 385 767 byte, SHA-256
+> `b00df28e045315e23be92457317a491ae63d4fb0a377e57da92e213b9cde2524`.
+> Arkiv: `dist/release-v1.10.0/`. Pakke, signatur, versjon og ikkje-debuggable er kontrollerte.
+> Ingen ny full testkøyring eller prøve av oppdateringsflyten gjennom foreldresida i denne kjappe runden.
 > Private verdener, signeringsnøkkel og gammalt ukommittert arbeid i `C:\topa` er urørte.
 
 > **NYAST – PUBLISERT 1.9.0 (2026-10-04, Codex):** Brukaren bad «Release» etter kart-/sekk-/menyendringa.

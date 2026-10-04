@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -54,20 +55,20 @@ internal fun MapPlaceMarker(place: PlaceId, label: String, here: Boolean, compac
         else -> T.Sea
     }
     val shape = RoundedCornerShape(50)
+    val labelColor = if (pressed || here) lerp(T.Cream, accent, if (pressed) .3f else .18f) else T.Cream.copy(alpha = .92f)
     Box(modifier.semantics { contentDescription = label; role = Role.Button; selected = here }
         .clickable(source, indication = null, onClick = onClick), contentAlignment = Alignment.BottomCenter) {
         Row(Modifier.graphicsLayer { scaleX = pop; scaleY = pop }
             .height(if(compact) 34.dp else 40.dp)
-            .background(T.Ink.copy(alpha = .08f), shape).padding(bottom = 2.dp)
-            .background(if(pressed || here) accent else T.Cream.copy(alpha = .94f), shape)
-            .border(if(here) 2.dp else 1.dp, if(here) T.Ink else T.CreamLine, shape).padding(horizontal = 8.dp),
+            .background(T.Ink.copy(alpha = .04f), shape).padding(bottom = 1.dp)
+            .background(labelColor, shape)
+            .border(if(here) 1.dp else .75.dp, if(here) accent.copy(alpha = .55f) else T.CreamLine.copy(alpha = .65f), shape).padding(horizontal = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
             Canvas(Modifier.size(if(here) 22.dp else 10.dp)) {
                 if(here) drawBalloon(Offset(size.width / 2, size.height * .42f), size.minDimension * .32f,
                     Pen(size.minDimension * .055f))
                 else {
-                    drawCircle(T.Ink, size.minDimension / 2)
-                    drawCircle(accent, size.minDimension * .32f)
+                    drawCircle(accent, size.minDimension * .4f)
                 }
             }
             GameText(label, style = MaterialTheme.typography.titleMedium, color = T.Ink,

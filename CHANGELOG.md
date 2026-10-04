@@ -1,5 +1,13 @@
 # Endringslogg
 
+## 1.10.0 – Mjukare kart og støvsugarleik
+
+- Mildare namneboksar på kartet, med tynn kant, diskret skugge og lys pastell på vald stad.
+- Nunito og Fredoka gir meir samanhengande typografi. Tekstomrissa og hjelpeknappane er rolegare.
+- Spelarar får same farge og nummer i figurval, portrett og korte markeringar i scena.
+- Slepp ein katt eller figur på støvsugaren for å køyre. Han snur ved møblar, pausar ved løft og stoppar av seg sjølv.
+- Støvsugaren og passasjeren held plasseringa ved lagring. Klede og medborne ting blir bevarte.
+
 ## 1.9.0 – Levande kart og betre leikemenyar
 
 - Kartet er hovudsida utan X. Dag/natt og vêr kan skiftast direkte på kartet, og staden du alt er i kan opnast att utan å miste plasseringa i rommet.

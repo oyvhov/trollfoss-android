@@ -51,6 +51,15 @@ Prøve-APK: `dist/playful-polish/Trollfoss-designprove.apk`, 18 786 384 byte, pa
 `app.trollfoss.polish` (eiga prøveapp). SHA-256:
 `42bea6d4aa2fee96b64773f2ca860c4fc05e3d307a7b62b9bebfa2f4cd434bf6`.
 
-Ingen versjonsauke, publisering eller endring av signeringsnøkkelen høyrer til dette arbeidet.
-GitHub CI er ikkje køyrd, sidan greina ikkje er pusha. Den gamle arbeidskopien og private
-spelverdener i `C:\topa` er urørte.
+## Kjapp release 1.10.0
+
+Brukaren bad deretter om mildare namneboksar på kartet og ein kjapp release utan alle testar på nytt.
+Namneboksane fekk tynnare kant, svakare skugge og pastell på vald stad; den siste justeringa er
+kontrollert visuelt på mobil og nettbrett (`phone-map-milder.png`, `tablet-map-milder.png`).
+Signert 1.10.0 / kode 15 er bygd med opphavleg nøkkel. Pakke, versjon, sertifikat, min Android 26
+og ikkje-debuggable er kontrollerte. Installert over 1.9.0 med `adb install -r` på eiga prøve-AVD;
+kaldstart viser kartet og dei to bevarte spelarane (`tablet-release-v1.10.0.png`).
+APK: 3 385 767 byte, SHA-256 `b00df28e045315e23be92457317a491ae63d4fb0a377e57da92e213b9cde2524`.
+Arkiv: `dist/release-v1.10.0/`, med mapping, hash og kjeldecommit. Dette er ein kort installasjons-
+og startkontroll; full testpakke og oppdateringsflyten gjennom foreldresida er ikkje køyrde om att.
+Den gamle arbeidskopien og private spelverdener i `C:\topa` er urørte.
