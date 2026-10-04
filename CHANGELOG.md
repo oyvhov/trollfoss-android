@@ -1,5 +1,14 @@
 # Endringslogg
 
+## 1.9.0 – Levande kart og betre leikemenyar
+
+- Kartet er hovudsida utan X. Dag/natt og vêr kan skiftast direkte på kartet, og staden du alt er i kan opnast att utan å miste plasseringa i rommet.
+- Runde, farga stadskilt svarar på trykk og viser ein liten ballong på den valde staden. Sidepiler gjer det lettare å utforske kartet; vatn svarar med sprut og andre ledige område med glimt. Reiseballongen legg att eit kort spor. Redusert rørsle blir respektert.
+- Sekken har 12 plassar og viser seks store bilete per side. Full sekk avviser nye ting utan tap. Gamle sekkar med fleire ting og tilbakeførte byggjedelar blir bevarte og kan blaast gjennom.
+- Møblar går berre til møbellageret. Lagerkassa viser rett tal, og etter lagring kan lageret opnast direkte. Sekkesidene ligg over mobilknappane, slik at begge piler kan brukast.
+- Høgremenyen har ein rullbar ikonrad, biletkategoriar og tilgjengelege møblar først. Førehandsvisinga følgjer fingeren under drag; avbrot endrar ikkje verda eller lageret.
+- Figurar, klede, ting, hus og framgang blir bevarte. Nynorsk og bokmål er på plass.
+
 ## 1.8.0 – Legg bort og skattar
 
 - Hjørnet ved sekken veks når barnet løftar noko. Slepp der legg ting og figurar i sekken og møblar på lager, utan at møbelpanelet må vere ope. Kantane ber framleis kameraet vidare til neste rom.
