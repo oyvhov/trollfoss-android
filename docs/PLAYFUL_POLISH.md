@@ -62,4 +62,8 @@ kaldstart viser kartet og dei to bevarte spelarane (`tablet-release-v1.10.0.png`
 APK: 3 385 767 byte, SHA-256 `b00df28e045315e23be92457317a491ae63d4fb0a377e57da92e213b9cde2524`.
 Arkiv: `dist/release-v1.10.0/`, med mapping, hash og kjeldecommit. Dette er ein kort installasjons-
 og startkontroll; full testpakke og oppdateringsflyten gjennom foreldresida er ikkje køyrde om att.
+Publisert som nyaste stabile release: https://github.com/oyvhov/trollfoss-android/releases/tag/v1.10.0.
+Kjelde/tag: `4f73eb330474bd4a8b1556268f3a9c3b2dc900ff`. Fire vedlegg har kontrollerte storleikar/digests;
+offentleg liste/latest og APK-nedlasting utan token stemmer. Hedda og Alva er framleis valde.
+Prøveappen er fjerna og eiga AVD stoppa etter at skjerm-, rotasjons- og animasjonsinnstillingane er tilbakeførte.
 Den gamle arbeidskopien og private spelverdener i `C:\topa` er urørte.

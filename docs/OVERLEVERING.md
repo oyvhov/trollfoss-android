@@ -1,6 +1,6 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
-> **NYAST – 1.10.0 KLAR FOR PUBLISERING (2026-10-04, Codex):** Brukaren bad om å
+> **NYAST – 1.10.0 PUBLISERT (2026-10-04, Codex):** Brukaren bad om å
 > gjennomføre tilrådingane frå den vedlagde designguiden. Rein arbeidskopi frå `origin/main`
 > (7b32c87), grein `codex/playful-polish`, i
 > `C:\Users\Øyvind\.codex\worktrees\playful-polish\topa`. Nunito/Fredoka er pakka lokalt med
@@ -19,7 +19,11 @@
 > Kaldstart viser kartet og dei to bevarte spelarane. APK: 3 385 767 byte, SHA-256
 > `b00df28e045315e23be92457317a491ae63d4fb0a377e57da92e213b9cde2524`.
 > Arkiv: `dist/release-v1.10.0/`. Pakke, signatur, versjon og ikkje-debuggable er kontrollerte.
+> Publisert som nyaste stabile release: https://github.com/oyvhov/trollfoss-android/releases/tag/v1.10.0.
+> Kjelde/tag: `4f73eb330474bd4a8b1556268f3a9c3b2dc900ff`. Alle fire vedlegg har rett storleik og digest;
+> offentleg release-liste/latest og APK-nedlasting utan token er stadfesta. Hedda og Alva er framleis valde.
 > Ingen ny full testkøyring eller prøve av oppdateringsflyten gjennom foreldresida i denne kjappe runden.
+> Prøveappen er fjerna, emulatorinnstillingar tilbakeførte og eiga AVD stoppa; produksjon og prøveverd er bevarte.
 > Private verdener, signeringsnøkkel og gammalt ukommittert arbeid i `C:\topa` er urørte.
 
 > **NYAST – PUBLISERT 1.9.0 (2026-10-04, Codex):** Brukaren bad «Release» etter kart-/sekk-/menyendringa.
