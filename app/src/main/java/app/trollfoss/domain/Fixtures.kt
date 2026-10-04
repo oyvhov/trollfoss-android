@@ -170,6 +170,8 @@ enum class FixtureType {
     PLAY_SEESAW, PLAY_PUPPETS, PLAY_TANDEM, PLAY_PICNIC, PLAY_CRANE, PLAY_CONVEYOR, PLAY_BUILD,
     PLAY_CHANNEL, PLAY_MIRROR, PLAY_HOVER, PLAY_CLOUD, PLAY_PORTAL,
     PLAY_TREE, PLAY_REPAIR, PLAY_DOOR, PLAY_TUNNEL, PLAY_JUMP, PLAY_WATER_WHEEL, PLAY_ART, PLAY_RESCUE,
+    // Collecting: a glass-fronted box for gems, coins and other finds (see [TreasureBox]).
+    TREASURE_BOX,
     ;
 
     val spec: FixtureSpec get() = specs.getValue(this)
@@ -582,6 +584,19 @@ enum class FixtureType {
                 0.40f, 0.42f, front = true,
                 surfaces = listOf(SurfaceSpec(-0.17f, 0.17f, -0.1f), SurfaceSpec(-0.17f, 0.17f, -0.3f)),
                 spots = listOf(SpotSpec(0.02f, -0.1f, Pose.LIE), SpotSpec(0.02f, -0.3f, Pose.LIE)),
+            )
+            TREASURE_BOX -> FixtureSpec(
+                0.26f, 0.20f,
+                container = RRect(-0.12f, -0.19f, 0.12f, -0.015f),
+                glass = true,
+                // Generous: a find let go anywhere over the box, or just above it, goes in.
+                dropZone = RRect(-0.17f, -0.36f, 0.17f, 0.02f),
+                surfaces = listOf(
+                    SurfaceSpec(-0.11f, 0.11f, -0.015f, interior = true),
+                    SurfaceSpec(-0.11f, 0.11f, -0.07f, interior = true),
+                    SurfaceSpec(-0.11f, 0.11f, -0.125f, interior = true),
+                    SurfaceSpec(-0.13f, 0.13f, -0.20f, closedOnly = true),
+                ),
             )
             TOY_BOX -> FixtureSpec(
                 0.20f, 0.12f,

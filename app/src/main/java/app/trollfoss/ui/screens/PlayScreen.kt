@@ -348,7 +348,8 @@ fun PlayScreen(vm: TrollfossViewModel) {
             RoundButton(app.trollfoss.ui.SC.returnTo.str(),onClick={ vm.flyTo(vm.world.community.returnPlace ?: app.trollfoss.domain.PlaceId.HOME) },size=48.dp,tone=Tones.Sea,icon={ drawBalloon(androidx.compose.ui.geometry.Offset(size.width/2,size.height*0.35f),size.minDimension*0.24f,app.trollfoss.ui.art.Pen(size.minDimension*0.025f)) })
             GameText(app.trollfoss.ui.SC.returnTo.str(),fontSize=14.sp,color=T.Ink)
         }
-        if (!engine.designMode) {
+        // The grown put-away corner takes the place of the furniture button while something is held.
+        if (!engine.designMode && engine.away == null) {
             RoundButton(app.trollfoss.ui.SM.furnish.str(), onClick = { menuOpen = false; engine.closeDriving(); engine.designMode = true },
                 modifier = Modifier.align(Alignment.BottomEnd).padding(end = if (compact) 78.dp else 108.dp, bottom = edge),
                 size = btn, tone = Tones.Berry, icon = DesignIcons.Sofa)
@@ -399,8 +400,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
             modifier = Modifier.align(Alignment.CenterEnd),
         ) {
             DesignerPanel(engine, vm.world, place, onClose = {
-                engine.designMode = false
-                engine.storeZone = null
+                engine.closeDesigner()
                 vm.scheduleSave()
             })
         }

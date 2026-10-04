@@ -637,4 +637,44 @@ class HouseAtticTest {
         assertTrue("attic_catch_2" in w2.flags)
         assertNull(w2.people().firstOrNull { it.name == "Sture" && it.mode == Mode.SEATED })
     }
+    // ------------------------------------------------------------------ treasure stays
+
+    @Test
+    fun `the chest never takes back a coin or a gem`() {
+        val world = newWorld()
+        val sim = sim(world)
+        val chest = fixture(world, AtticIds.CHEST)
+        repeat(12) {                       // open, shut, open …: six showers
+            sim.tap(attic, chest, 0f, -0.1f)
+            step(sim, 0.2f)
+        }
+        val made = spawned.filter { it.type == ThingType.COIN || it.type == ThingType.GEM }
+        assertTrue("every coin and gem the chest threw out is still there", made.all { world.bodies[it.id] === it })
+        assertTrue("loose coins: ${Treasure.loose(world, attic, ThingType.COIN)}; all: ${world.bodiesIn(attic).filterIsInstance<Thing>().filter { it.type == ThingType.COIN }.map { it.id to it.inside }}", Treasure.loose(world, attic, ThingType.COIN) <= HouseAtticRules.MAX_COINS)
+        assertTrue(Treasure.loose(world, attic, ThingType.GEM) <= HouseAtticRules.MAX_GEMS)
+    }
+
+    @Test
+    fun `with six loose gems about the chest keeps its next gem`() {
+        val world = newWorld()
+        val sim = sim(world)
+        val mine = (Treasure.loose(world, attic, ThingType.GEM) until HouseAtticRules.MAX_GEMS)
+            .map { world.addThing(ThingType.GEM, 0, attic, 7.6f + it * 0.05f, attic.floor) }
+        spawned.clear()
+        sim.tap(attic, fixture(world, AtticIds.CHEST), 0f, -0.1f)   // the first opening would give a gem
+        assertTrue(spawned.none { it.type == ThingType.GEM })
+        assertTrue(mine.all { world.bodies[it.id] === it })
+    }
+
+    @Test
+    fun `a chest with nothing left to give coughs dust instead`() {
+        val world = newWorld()
+        val sim = sim(world)
+        repeat(HouseAtticRules.MAX_COINS) { world.addThing(ThingType.COIN, 0, attic, 7.2f + it * 0.03f, attic.floor) }
+        repeat(HouseAtticRules.MAX_GEMS) { world.addThing(ThingType.GEM, 0, attic, 7.9f + it * 0.05f, attic.floor) }
+        spawned.clear(); fxs.clear()
+        sim.tap(attic, fixture(world, AtticIds.CHEST), 0f, -0.1f)
+        assertTrue(spawned.isEmpty())
+        assertTrue(Fx.TREASURE_EMPTY in fxs)
+    }
 }

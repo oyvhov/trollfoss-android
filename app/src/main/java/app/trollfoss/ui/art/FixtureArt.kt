@@ -50,6 +50,7 @@ fun DrawScope.drawFixtureBack(f: Fixture, u: Float, pen: Pen, contents: List<Thi
             FixtureType.FRIDGE -> fxFridge(f, u, pen)
             FixtureType.WARDROBE -> fxWardrobe(f, u, pen)
             FixtureType.CHEST -> fxChest(f, u, pen)
+            FixtureType.TREASURE_BOX -> fxTreasureBox(f, u, pen)
             FixtureType.STOVE -> fxStove(f, u, pen)
             FixtureType.SINK -> fxSink(f, u, pen)
             FixtureType.BATH -> fxBath(f, u, pen)
@@ -152,6 +153,7 @@ fun DrawScope.drawFixtureFront(f: Fixture, u: Float, pen: Pen) {
             FixtureType.BOAT -> fxBoatFront(f, u, pen)
             FixtureType.DRYER_HOOD -> fxDryerFront(f, u, pen)
             FixtureType.DISPLAY_CASE -> fxDisplayGlass(f, u, pen)
+            FixtureType.TREASURE_BOX -> fxTreasureGlass(f, u, pen)
             FixtureType.TRACTOR -> fxTractorFront(f, u, pen)
             FixtureType.ROCKET_SHIP -> fxRocketFront(f, u, pen)
             else -> Unit

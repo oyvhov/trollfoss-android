@@ -30,6 +30,7 @@ object FurnitureLabels {
         FixtureType.DESK to Txt("Skrivebord","Skrivebord"),
         FixtureType.BUNK_BED to Txt("Køyeseng","Køyeseng"),
         FixtureType.TOY_BOX to Txt("Leikekasse","Lekekasse"),
+        FixtureType.TREASURE_BOX to Txt("Skattekiste","Skattekiste"),
         FixtureType.TRASH_BIN to Txt("Bossbøtte","Søppelbøtte"),
         FixtureType.AQUARIUM to Txt("Akvarium","Akvarium"),
         FixtureType.ROBOT_VACUUM to Txt("Robotstøvsugar","Robotstøvsuger"),

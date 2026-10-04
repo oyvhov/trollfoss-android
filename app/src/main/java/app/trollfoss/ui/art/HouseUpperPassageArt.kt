@@ -34,14 +34,15 @@ private fun lerpF(a: Float, b: Float, t: Float) = a + (b - a) * t
 /** A stairwell in the floor with banisters round it: warm light from the hall below, steps going down out of sight. */
 internal fun DrawScope.upStairsDown(f: Fixture, u: Float, pen: Pen) {
     fun q(x: Float, y: Float, z: Float) = fxQ(u, x, y, z)
-    val z0 = 0.03f
-    val z1 = 0.27f
+    val opening = StairDoorways.upperDown
+    val z0 = opening.near
+    val z1 = opening.far
     upShadow(u, 0.84f, 0.1f, 0.4f)
     // The trim of the floor round the opening, then the opening itself.
     fxFace(fxFlat(u, -0.42f, 0.42f, 0f, z0 - 0.03f, z1 + 0.03f, 0.014f), UpC.walnut, pen)
-    val hole = fxFlat(u, -0.38f, 0.38f, 0f, z0, z1, 0.01f)
-    val a = q(-0.38f, 0f, z0)
-    val b = q(0.38f, 0f, z1)
+    val hole = fxFlat(u, opening.left, opening.right, 0f, z0, z1, 0.01f)
+    val a = q(opening.left, 0f, z0)
+    val b = q(opening.right, 0f, z1)
     drawPath(hole, Brush.verticalGradient(0f to Color(0xFFFFC76B), 0.35f to Color(0xFF8A4F2C), 1f to Color(0xFF2A1810), startY = b.y, endY = a.y))
     clipPath(hole) {
         // The left wall of the shaft, in shade, and the steps going down away from us, darker and darker.
@@ -98,10 +99,11 @@ internal fun DrawScope.upStairsUp(f: Fixture, u: Float, pen: Pen) {
     val depth = 0.075f
     upShadow(u, 0.84f, depth, 0.8f)
     // The doorway at the top of the stairs, in the back wall: a dark attic with a bulb and a trunk, and the light that sleeps in it.
-    val wx = 0.1f
-    val wr = 0.33f
-    val sill = -0.03f - rise * n
-    val doorTop = sill - 0.27f
+    // Shared with the touch area (see [StairDoorways]).
+    val wx = StairDoorways.ATTIC_LEFT
+    val wr = StairDoorways.ATTIC_RIGHT
+    val sill = StairDoorways.ATTIC_SILL
+    val doorTop = StairDoorways.ATTIC_TOP
     val arch = Path().apply {
         val l = q(wx, sill, 0.07f)
         val r = q(wr, sill, 0.07f)

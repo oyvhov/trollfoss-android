@@ -430,6 +430,7 @@ class WorldStore(private val file: File) {
             Mine.syncFixtures(world)
             WorldFactory.addMissingPlaces(world, known)
             app.trollfoss.domain.StarterLayout.upgrade(world)
+            app.trollfoss.domain.TreasureStart.upgrade(world)
             json.optJSONObject("toys")?.let { toys ->
                 toys.optJSONObject("inputs")?.let { inputs -> inputs.keys().forEach { key ->
                     val id=inputs.optInt(key,-1)

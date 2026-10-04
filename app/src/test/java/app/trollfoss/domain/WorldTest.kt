@@ -24,7 +24,8 @@ class WorldTest {
     fun `a new village has every place, fixture and named figure`() {
         val world = WorldFactory.create(Random(1))
         for (place in PlaceId.entries) {
-            assertEquals(Places.spec(place).fixtures.size, world.fixturesIn(place).size)
+            val gift = if (place == PlaceId.HOME) 1 else 0
+            assertEquals(Places.spec(place).fixtures.size + gift, world.fixturesIn(place).size)
             // The floors of the big house may stand empty; the house as a whole must have people.
             if (!place.big) assertTrue("people in $place", world.bodiesIn(place).any { it is Person })
         }

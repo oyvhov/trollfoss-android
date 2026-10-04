@@ -43,15 +43,16 @@ internal fun DrawScope.grStairs(f: Fixture, u: Float, pen: Pen) {
     val carpet = GrC.burgundy
     grShadow(u, 0.9f, d + 0.04f)
 
-    // The doorway up to the first floor behind the landing, warm with light from above.
+    // The doorway up to the first floor behind the landing, warm with light from above. Its place is shared
+    // with the touch area (see [StairDoorways]): a tap on the doorway is a tap on the stairs.
     run {
-        val a = q(0f, 0f, 0.26f)
-        val arch = archPath(a.x - 0.4f * u, a.x - 0.2f * u, a.y + top * u, a.y + (top - 0.16f) * u, a.y + (top - 0.33f) * u)
-        drawPath(arch, Brush.verticalGradient(listOf(Color(0xFF3A2A4A), Color(0xFFFFD98A)), startY = a.y + (top - 0.33f) * u, endY = a.y + top * u))
+        val door = StairDoorways.hall
+        val arch = archPath(door.left * u, door.right * u, door.bottom * u, (door.bottom - 0.16f) * u, door.top * u)
+        drawPath(arch, Brush.verticalGradient(listOf(Color(0xFF3A2A4A), Color(0xFFFFD98A)), startY = door.top * u, endY = door.bottom * u))
         drawPath(arch, Ink.line, style = pen.stroke)
         drawPath(arch, GrC.ivory, style = Stroke(0.012f * u))
         drawPath(arch, Ink.line, style = pen.thin)
-        grGlow(Offset(a.x - 0.3f * u, a.y + (top - 0.08f) * u), 0.16f * u, pen, 0.18f)
+        grGlow(Offset((door.left + door.right) / 2f * u, (door.bottom - 0.08f) * u), 0.16f * u, pen, 0.18f)
     }
 
     // Treads, risers and the landing as one solid.

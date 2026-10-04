@@ -164,6 +164,7 @@ internal class CellarCtx(val sim: Sim, val random: Random) {
 
     /** At most [max] loose things of [type] stay in the cellar: the oldest goes in a puff. */
     fun limit(type: ThingType, max: Int) {
+        if (type in Treasure.TYPES) return
         val same = world.bodiesIn(place).filterIsInstance<Thing>().filter { it.type == type && it.mode == Mode.FREE && it.inside < 0 && !it.held }
         if (same.size <= max) return
         val oldest = same.minByOrNull { it.z } ?: return

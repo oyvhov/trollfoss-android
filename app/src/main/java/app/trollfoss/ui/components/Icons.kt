@@ -276,6 +276,17 @@ object Icons {
         }
     }
 
+    /** The put-away corner opens its mouth while a find or figure is carried towards it. */
+    val OpenBag: DrawScope.() -> Unit = {
+        u { s, pen ->
+            drawArc(T.Ink, 180f, 180f, false, Offset(32f * s, 3f * s), Size(36f * s, 30f * s), style = Stroke(9f * s))
+            inkedRound(Rect(16f * s, 29f * s, 84f * s, 90f * s), 18f * s, Color(0xFFC9824A), pen)
+            drawOval(T.Ink, Offset(14f * s, 20f * s), Size(72f * s, 28f * s))
+            drawOval(Color(0xFF72432C), Offset(21f * s, 25f * s), Size(58f * s, 16f * s))
+            inkedRound(Rect(30f * s, 55f * s, 70f * s, 77f * s), 8f * s, T.SunTop, pen)
+        }
+    }
+
     val Back: DrawScope.() -> Unit = {
         u { s, _ ->
             val path = Path().apply {

@@ -12,6 +12,73 @@ import org.junit.runner.RunWith
 /** Run on Android: exercises the real pointer engine used by children sharing the screen. */
 @RunWith(AndroidJUnit4::class)
 class SharedPlayTest {
+    @Test fun automaticPanelClosureWaitsForTheOtherFingerToFinishAtTheSameCorner() {
+        val w = World(); val s = Sim(w)
+        val first = w.addThing(ThingType.BALL, 0, PlaceId.HOME, 0.6f, 0.9f)
+        val second = w.addThing(ThingType.APPLE, 0, PlaceId.HOME, 1.1f, 0.9f)
+        val third = w.addThing(ThingType.GEM, 0, PlaceId.HOME, 1.45f, 0.9f)
+        val e = Engine(w, PlaceId.HOME, s, host, false, 0f).apply {
+            setSize(1920f, 1200f, 1.5f, 528f); designMode = true
+            storeZone = Rect(1392f, 0f, 1920f, 1200f)
+        }
+        nudge(e, at(e, first.x, first.y - first.h / 2f))
+        val corner = e.bagAt
+        e.down(1, at(e, second.x, second.y - second.h / 2f), 2000)
+        e.down(2, at(e, third.x, third.y - third.h / 2f), 2000)
+        e.move(1, corner, 2200); e.move(2, corner, 2200); e.update(0.016f)
+        e.up(1, corner, 2300)
+        assertTrue("the highlighted corner stays put under the second finger", e.designMode)
+        e.up(2, corner, 2400)
+        assertEquals(Mode.BAG, second.mode); assertEquals(Mode.BAG, third.mode)
+        assertFalse(e.designMode); e.cancel()
+    }
+
+    @Test fun touchingFurnitureWithAnotherFingerResetsThePanelCounterImmediately() {
+        val w = World(); val s = Sim(w)
+        val ball = w.addThing(ThingType.BALL, 0, PlaceId.HOME, 0.6f, 0.9f)
+        val apple = w.addThing(ThingType.APPLE, 0, PlaceId.HOME, 1.1f, 0.9f)
+        val stool = s.designer.add(PlaceId.HOME, FixtureType.STOOL, 0, 1.6f, 0.9f)!!
+        val e = Engine(w, PlaceId.HOME, s, host, false, 0f).apply { setSize(1920f,1200f,1.5f); designMode=true }
+        nudge(e, at(e, ball.x, ball.y - ball.h / 2f))
+        e.down(2, at(e, stool.x, stool.y - stool.spec.h / 2f), 2000)
+        nudge(e, at(e, apple.x, apple.y - apple.h / 2f))
+        assertTrue(e.designMode)
+        e.up(2, at(e, stool.x, stool.y - stool.spec.h / 2f), 2400)
+        assertTrue("furniture keeps decorating active", e.designMode); e.cancel()
+    }
+
+    @Test fun theVisibleOpenTreasureLidClosesEvenWithAnObjectBehindIt() {
+        for (behind in listOf(false, true)) {
+            val w = World(); val s = Sim(w)
+            val f = s.designer.add(PlaceId.HOME, FixtureType.TREASURE_BOX, 0, 1f, 0.95f)!!.apply { open=true }
+            if (behind) w.addThing(ThingType.DRUM,0,PlaceId.HOME,f.x,f.y-0.22f).apply { resting=true;ground=0.83f }
+            val e = Engine(w,PlaceId.HOME,s,host,false,0f).apply { setSize(1920f,1200f,1.5f) }
+            val lid = at(e,f.x,f.y-0.265f)
+            e.down(1,lid,1000);e.up(1,lid,1100)
+            assertFalse("the painted lid takes the tap (behind=$behind)",f.open);e.cancel()
+        }
+    }
+
+    @Test fun aLongPressOnTheOpenTreasureLidLiftsTheBox() {
+        val w=World();val s=Sim(w)
+        val f=s.designer.add(PlaceId.HOME,FixtureType.TREASURE_BOX,0,1f,0.95f)!!.apply { open=true }
+        val e=Engine(w,PlaceId.HOME,s,host,false,0f).apply { setSize(1920f,1200f,1.5f) }
+        val lid=at(e,f.x,f.y-0.265f);val x=f.x
+        e.down(1,lid,1000);repeat(35) { e.update(0.016f) }
+        e.move(1,lid+Offset(150f,0f),1700);repeat(15) { e.update(0.016f) }
+        assertTrue("the open lid belongs to the movable box",f.x>x+0.1f);e.cancel()
+    }
+
+    @Test fun theFarEdgeOfThePaintedUpperStairwellGoesDownstairs() {
+        val w=WorldFactory.create();val s=Sim(w);val p=PlaceId.MANOR_UPPER
+        val f=w.fixturesIn(p).first { it.type==FixtureType.STAIRCASE && it.variant==0 }
+        lastPassage=null
+        val e=Engine(w,p,s,passageHost,false,0f).apply { setSize(1920f,1200f,1.5f);focusOn(f.x) }
+        val edge=at(e,f.x+0.47f,f.y-0.072f)
+        e.down(1,edge,1000);e.up(1,edge,1100)
+        assertEquals(PlaceId.MANOR_GROUND,lastPassage?.to);e.cancel()
+    }
+
     @Test fun openFridgeAndWardrobeDoorsCloseWhereTheDoorIsDrawn() {
         for ((type, dx) in listOf(FixtureType.FRIDGE to -0.18f, FixtureType.WARDROBE to -0.19f,
             FixtureType.WARDROBE to 0.15f, FixtureType.OVEN to -0.18f)) {
@@ -130,7 +197,8 @@ class SharedPlayTest {
         val friend = w.addPerson(Species.FOLK, Look(), 1f, place, 0.7f, 0.9f)
         w.playerIds += listOf(leader.id, friend.id)
         val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
-        val from = finger(e, leader); val edge = Offset(1850f, from.y)
+        // The floor's right edge still carries the camera above the put-away corner.
+        val from = finger(e, leader); val edge = Offset(1850f, e.bagAt.y - 170f)
         e.down(1, from, 1000); e.move(1, edge, 1100)
         var last = friend.x
         repeat(140) {
@@ -478,5 +546,165 @@ class SharedPlayTest {
         assertTrue(p.x in e.cam..(e.cam + e.visibleViewport))
         assertEquals(Decor.roomAt(PlaceId.HOME, e.cam + e.visibleViewport / 2f), Decor.roomAt(PlaceId.HOME, p.x))
         assertTrue(p.x > 1.5f)
+    }
+
+    private var lastPassage: Passage? = null
+
+    /** Like [host], but remembers the way between floors that was taken. */
+    private val passageHost = object : EngineHost {
+        override fun sfx(effect: Sfx, volume: Float, rate: Float) {}
+        override fun haptic() {}
+        override fun changed() {}
+        override fun secretFound(id: String) {}
+        override fun discovered(key: String) {}
+        override fun telescope() {}
+        override fun radio(on: Boolean) {}
+        override fun egg(id: String) {}
+        override fun passage(passage: Passage, arrivalX: Float) { lastPassage = passage }
+    }
+
+    @Test fun aTapOnTheGlowingDoorwayBehindTheGrandStairsGoesUpstairs() {
+        val w = WorldFactory.create(); val s = Sim(w); val place = PlaceId.MANOR_GROUND
+        val stairs = w.fixtures.getValue(WorldFactory.fixtureId(place, GroundIx.STAIRS))
+        val e = Engine(w, place, s, passageHost, false, 0f).apply { setSize(1920f, 1200f, 1.5f); focusOn(stairs.x) }
+        // The middle of the arch, above the staircase's own box: where a child taps to go up.
+        val at = Offset((stairs.x - 0.17f - e.cam) * e.u, 1200f - e.u + (stairs.y - 0.75f) * e.u)
+        e.down(1, at, 1000); e.up(1, at, 1100)
+        assertEquals("ground-stairs-up", lastPassage?.id); e.cancel()
+    }
+
+    // ------------------------------------------------------------------ the put-away corner
+
+    /** Up and to the left of the bag: outside its own small circle, inside the grown corner. */
+    private fun cornerOf(e: Engine) = Offset(e.bagAt.x - 75f, e.bagAt.y - 75f)
+
+    private fun at(e: Engine, x: Float, y: Float) = Offset((x - e.cam) * e.u, 1200f - e.u + y * e.u)
+
+    private fun drag(e: Engine, from: Offset, to: Offset) {
+        e.down(1, from, 1000)
+        e.move(1, Offset((from.x + to.x) / 2f, (from.y + to.y) / 2f), 1050)
+        repeat(3) { e.update(0.016f) }
+        e.move(1, to, 1100)
+        repeat(3) { e.update(0.016f) }
+        e.up(1, to, 1200)
+    }
+
+    @Test fun aThingLetGoInTheGrownCornerGoesInTheBagWithThePanelShut() {
+        val w = World()
+        val t = w.addThing(ThingType.BALL, 0, PlaceId.HOME, 1.0f, 0.9f)
+        val e = engine(w); repeat(30) { e.update(0.016f) }
+        drag(e, at(e, t.x, t.y - t.h / 2f), cornerOf(e))
+        assertEquals(Mode.BAG, t.mode); e.cancel()
+    }
+
+    @Test fun aFigureLetGoInTheGrownCornerGoesInTheBag() {
+        val w = World()
+        val p = w.addPerson(Species.FOLK, Look(), 1f, PlaceId.HOME, 1.0f, 0.9f, "A")
+        val e = engine(w); repeat(30) { e.update(0.016f) }
+        drag(e, finger(e, p), cornerOf(e))
+        assertEquals(Mode.BAG, p.mode); e.cancel()
+    }
+
+    @Test fun furnitureHeldAndLetGoInTheCornerGoesToTheStoreWithThePanelShut() {
+        val w = World(); val s = Sim(w); val place = PlaceId.HOME
+        val f = s.designer.add(place, FixtureType.STOOL, 0, 1.0f, 0.9f)!!
+        val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        e.down(1, at(e, f.x, f.y - f.spec.h / 2f), 1000)
+        repeat(40) { e.update(0.016f) }                // a long press lifts the stool
+        assertEquals(AwayPicture.CRATE, e.away)
+        e.move(1, cornerOf(e), 1700); repeat(3) { e.update(0.016f) }
+        assertTrue(e.overAway)
+        e.up(1, cornerOf(e), 1800)
+        assertNull(w.fixtures[f.id])
+        assertEquals(FixtureType.STOOL, w.storage.single().type)
+        repeat(20) { e.update(0.016f) }
+        assertNull("the corner sleeps again", e.away); e.cancel()
+    }
+
+    @Test fun aTreasureBoxWithFindsInItStaysInTheRoomWhenLetGoInTheCorner() {
+        val w = World(); val s = Sim(w); val place = PlaceId.HOME
+        val f = s.designer.add(place, FixtureType.TREASURE_BOX, 0, 1.0f, 0.9f)!!
+        val gem = w.addThing(ThingType.GEM, 0, place, f.x, f.y - 0.1f)
+        assertTrue(s.dropInto(place, f, gem))
+        val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        // Hold the box by its lid, above the glass, so the finger is on the furniture and not on the gem.
+        e.down(1, at(e, f.x + 0.12f, f.y - f.spec.h + 0.004f), 1000)
+        repeat(40) { e.update(0.016f) }
+        e.move(1, cornerOf(e), 1700); repeat(3) { e.update(0.016f) }
+        e.up(1, cornerOf(e), 1800)
+        assertTrue(w.fixtures[f.id] === f)
+        assertTrue(w.storage.isEmpty())
+        assertEquals(listOf(gem), s.treasure.holds(f)); e.cancel()
+    }
+
+    @Test fun insideTheCornerTheCameraStaysPutAndAboveItTheEdgeStillCarriesTheCameraAlong() {
+        val w = World()
+        val t = w.addThing(ThingType.BALL, 0, PlaceId.HOME, 1.0f, 0.9f)
+        val e = engine(w); repeat(30) { e.update(0.016f) }
+        e.down(1, at(e, t.x, t.y - t.h / 2f), 1000)
+        e.move(1, Offset(1900f, e.bagAt.y), 1100)      // at the right edge, but inside the corner
+        val before = e.cam
+        repeat(30) { e.update(0.016f) }
+        assertEquals(before, e.cam, 0.0001f)
+        e.move(1, Offset(1900f, 300f), 1200)           // at the right edge, well above the corner
+        repeat(30) { e.update(0.016f) }
+        assertTrue(e.cam > before + 0.2f); e.cancel()
+    }
+
+    @Test fun cancellingAHoldOverTheCornerReleasesItWithoutPackingIt() {
+        val w = World()
+        val t = w.addThing(ThingType.BALL, 0, PlaceId.HOME, 1.0f, 0.9f)
+        val e = engine(w); repeat(30) { e.update(0.016f) }
+        e.down(1, at(e, t.x, t.y - t.h / 2f), 1000)
+        e.move(1, cornerOf(e), 1100); repeat(3) { e.update(0.016f) }
+        assertTrue(t.held)
+        e.cancel()
+        assertEquals(Mode.FREE, t.mode)
+        assertFalse(t.held)
+        assertNull(e.away)
+    }
+
+    @Test fun aTapThatHitsNothingMakesTheNearestChestAnswerForAMoment() {
+        val w = World(); val s = Sim(w); val place = PlaceId.HOME
+        val chest = s.designer.add(place, FixtureType.CHEST, 0, 1.0f, 0.9f)!!
+        val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        fun tap(x: Float, y: Float, time: Long) { val o = at(e, x, y); e.down(1, o, time); e.up(1, o, time + 80) }
+        tap(chest.x + 0.3f, chest.y - 0.3f, 1000)
+        assertEquals(chest.id, e.hintedFixture)
+        repeat(50) { e.update(0.016f) }                 // 0.8 s later the hint is over
+        assertEquals(-1, e.hintedFixture)
+        repeat(60) { e.update(0.016f) }
+        tap(chest.x + 0.9f, chest.y - 0.3f, 4000)       // nothing within reach
+        assertEquals(-1, e.hintedFixture); e.cancel()
+    }
+
+    private fun nudge(e: Engine, from: Offset) = drag(e, from, Offset(from.x + 120f, from.y - 60f))
+
+    @Test fun theFurniturePanelStepsAsideAfterTwoThingsOrFiguresInARowButNotAfterOne() {
+        val w = World()
+        val p = w.addPerson(Species.FOLK, Look(), 1f, PlaceId.HOME, 0.7f, 0.9f, "A")
+        val t = w.addThing(ThingType.BALL, 0, PlaceId.HOME, 1.5f, 0.9f)
+        val e = engine(w); repeat(30) { e.update(0.016f) }
+        e.designMode = true
+        nudge(e, finger(e, p))
+        assertTrue("one moved figure is still decorating", e.designMode)
+        repeat(30) { e.update(0.016f) }
+        nudge(e, at(e, t.x, t.y - t.h / 2f))
+        assertFalse(e.designMode); e.cancel()
+    }
+
+    @Test fun movingFurnitureInBetweenKeepsTheFurniturePanelOpen() {
+        val w = World(); val s = Sim(w); val place = PlaceId.HOME
+        val p = w.addPerson(Species.FOLK, Look(), 1f, place, 0.7f, 0.9f, "A")
+        val stool = s.designer.add(place, FixtureType.STOOL, 0, 1.6f, 0.9f)!!
+        val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+        repeat(30) { e.update(0.016f) }
+        e.designMode = true
+        nudge(e, finger(e, p))
+        repeat(30) { e.update(0.016f) }
+        nudge(e, at(e, stool.x, stool.y - stool.spec.h / 2f))      // with the panel open a plain drag moves furniture
+        repeat(30) { e.update(0.016f) }
+        nudge(e, finger(e, p))
+        assertTrue(e.designMode); e.cancel()
     }
 }
