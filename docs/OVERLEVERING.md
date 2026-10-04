@@ -1,5 +1,21 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – DESIGNFORBETRINGAR FERDIGE LOKALT (2026-10-04, Codex):** Brukaren bad om å
+> gjennomføre tilrådingane frå den vedlagde designguiden. Rein arbeidskopi frå `origin/main`
+> (7b32c87), grein `codex/playful-polish`, i
+> `C:\Users\Øyvind\.codex\worktrees\playful-polish\topa`. Nunito/Fredoka er pakka lokalt med
+> lisensar, tekstomriss og kartskilt er rolegare, spelar/angre har kremtone, og figurval, portrett
+> og kortvarige scenemerke deler spelarfarge og nummer. Portrett har minst 48 dp høg trykkflate.
+> Støvsugaren tek ein katt eller person som passasjer, startar ved slepp på setet, snur ved møblar,
+> pausar når han blir løfta og tek vare på forskyving og passasjer ved lagring. Gamle lagringar
+> er kompatible. Nye samlesystem, skjulte troll, vedmating og levande miniatyrar er utsette.
+> 522 JVM-testar og 58 Android-testar grøne på både mobil og nettbrett; debug-lint 0 feil / 31
+> åtvaringar. Nynorsk, bokmål og rørsle av er kontrollerte visuelt, og katten er prøvd med faktiske
+> skjermdrag. Skjermbilete/loggar i `screenshots/playful-polish/`, eiga prøve-APK i
+> `dist/playful-polish/`. Sjå `docs/PLAYFUL_POLISH.md` for detaljar, hash og avgrensingar.
+> Ingen release, versjonsauke, push eller GitHub CI. Nyaste offentlege utgåve er framleis 1.9.0.
+> Private verdener, signeringsnøkkel og gammalt ukommittert arbeid i `C:\topa` er urørte.
+
 > **NYAST – PUBLISERT 1.9.0 (2026-10-04, Codex):** Brukaren bad «Release» etter kart-/sekk-/menyendringa.
 > PR 6 er fletta, og stabil 1.9.0 / kode 14 er publisert som nyaste release:
 > https://github.com/oyvhov/trollfoss-android/releases/tag/v1.9.0.

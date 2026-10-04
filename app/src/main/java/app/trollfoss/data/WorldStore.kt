@@ -171,7 +171,7 @@ class WorldStore(private val file: File) {
             put("fixtures", JSONArray().apply {
                 world.fixtures.values.forEach { f ->
                     val moved = WorldFactory.moved(f)
-                    if (f.open || f.on || f.mode != 0 || f.count != 0 || moved || f.type==FixtureType.PLAY_LIFT) {
+                    if (f.open || f.on || f.mode != 0 || f.count != 0 || moved || f.type==FixtureType.PLAY_LIFT || f.type == FixtureType.ROBOT_VACUUM && f.shiftX != 0f) {
                         put(JSONObject().apply {
                             put("id", f.id)
                             put("open", f.open)
@@ -179,6 +179,7 @@ class WorldStore(private val file: File) {
                             put("mode", f.mode)
                             put("count", f.count)
                             if(f.type==FixtureType.PLAY_LIFT) put("toyAngle",f.angle.toDouble())
+                            if (f.type == FixtureType.ROBOT_VACUUM) put("vacuumShift", f.shiftX.toDouble())
                             // Furniture the child has moved keeps its new spot.
                             if (moved) {
                                 put("x", f.x.toDouble())
@@ -349,6 +350,10 @@ class WorldStore(private val file: File) {
                 val f: Fixture = world.fixtures[o.optInt("id", -1)] ?: continue
                 f.open = o.optBoolean("open", false) && f.spec.container != null
                 f.on = o.optBoolean("on", false)
+                if (f.type == FixtureType.ROBOT_VACUUM) {
+                    f.shiftX = o.optDouble("vacuumShift", 0.0).toFloat().coerceIn(-1.2f, 1.2f)
+                    f.on = false // A saved ride resumes at its position, waiting for a tap.
+                }
                 f.mode = o.optInt("mode", 0)
                 f.count = o.optInt("count", 0)
                 if(f.type==FixtureType.PLAY_TRAIN && "train:broken:${f.id}" in world.flags) f.variant=1

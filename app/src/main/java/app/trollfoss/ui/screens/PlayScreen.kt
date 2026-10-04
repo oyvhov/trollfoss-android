@@ -243,10 +243,10 @@ fun PlayScreen(vm: TrollfossViewModel) {
             }
         }
 
-        RoundButton(S.players.str(), onClick = { vm.open(Screen.Players) }, size = btn, tone = Tones.Sun,
+        RoundButton(S.players.str(), onClick = { vm.open(Screen.Players) }, size = btn, tone = Tones.Cream,
             modifier = Modifier.align(Alignment.TopStart).padding(start = edge + (btn + gap) * 2, top = edge), icon = Icons.Friends)
         PlayerBar(vm, compact, Modifier.align(Alignment.TopStart).padding(start = edge, top = edge + btn + 6.dp))
-        if(vm.canUndo) RoundButton(app.trollfoss.ui.SP.undo.str(),onClick=vm::undoEdit,size=btn,tone=Tones.Sun,
+        if(vm.canUndo) RoundButton(app.trollfoss.ui.SP.undo.str(),onClick=vm::undoEdit,size=btn,tone=Tones.Cream,
             modifier=Modifier.align(Alignment.BottomStart).padding(start=edge, bottom=edge+btn+8.dp),icon=DesignIcons.Undo)
 
         if (place == app.trollfoss.domain.PlaceId.LAB) {

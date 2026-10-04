@@ -94,6 +94,8 @@ import app.trollfoss.ui.art.twinkle
 import app.trollfoss.ui.components.Icons
 import app.trollfoss.ui.components.DesignIcons
 import app.trollfoss.ui.theme.T
+import app.trollfoss.ui.theme.PlayFont
+import app.trollfoss.ui.theme.PlayerPalette
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.exp
@@ -395,6 +397,8 @@ class Engine(
     fun update(dt: Float) {
         if (playVersion != sim.magic.revision) playVersion = sim.magic.revision
         time += dt
+        playerMarks.entries.removeAll { it.value <= time }
+        for (g in grabs.values) (heldBody(g) as? Person)?.let(::markPlayer)
         val targetNight = if (world.night) 1f else 0f
         night += (targetNight - night) * min(1f, dt * 1.6f)
         rainbow = max(0f, rainbow - dt / 14f)
@@ -870,6 +874,7 @@ class Engine(
         grab.tracker.addPosition(uptime, at)
         val body = heldBody(grab)
         if (body != null) {
+            (body as? Person)?.let(::markPlayer)
             val p = toScene(at)
             grab.offX = body.x - p.x
             grab.offY = body.y - p.y
@@ -997,6 +1002,7 @@ class Engine(
         sim.journal?.begin(p.id)
         try {
         if (PlayConnections.invite(sim, p, place, centerX())) {
+            markPlayer(p)
             particles.burst(PKind.STAR, p.x, p.y - p.h / 2f, 12, 0.5f, 0.012f)
             host.sfx(Sfx.POP, 0.7f)
             host.changed()
@@ -1631,6 +1637,7 @@ class Engine(
         if (b is Thing && sim.magic.actions(b).size > 1) { playThingId = b.id; return }
         when (b) {
             is Person -> {
+                markPlayer(b)
                 val a = b.anim
                 a.nameTag = 2.2f
                 a.taps = if (time - a.lastTap < 1.6f) a.taps + 1 else 1
@@ -2565,7 +2572,10 @@ class Engine(
             }
         }
         if (flash > 0f) drawRect(Color.White.copy(alpha = flash * 0.85f))
-        if (!photoMode) drawNameTagsLate(text)
+        if (!photoMode) {
+            drawPlayerMarks(text)
+            drawNameTagsLate(text)
+        }
         with(sprites) { finish() }
     }
 
@@ -2606,6 +2616,40 @@ class Engine(
     }
 
     private var lateText: List<Body> = emptyList()
+
+    /** A child's team colour appears while touching a player and briefly after calling them over. */
+    private val playerMarks = mutableMapOf<Int, Float>()
+
+    private fun markPlayer(p: Person) {
+        if (p.id in world.playerIds) playerMarks[p.id] = time + 1.8f
+    }
+
+    private fun DrawScope.drawPlayerMarks(text: TextMeasurer) {
+        for (b in lateText) {
+            val p = b as? Person ?: continue
+            val until = playerMarks[p.id] ?: continue
+            val index = world.playerIds.indexOf(p.id)
+            if (index < 0 || until <= time) continue
+            val alpha = ((until - time) / 0.4f).coerceIn(0f, 1f)
+            val color = PlayerPalette.color(index).copy(alpha = alpha)
+            val edge = PlayerPalette.edge(index).copy(alpha = alpha)
+            val cx = sx(p.x)
+            val cy = sy(p.y - p.anim.hop) + top
+            val rx = max(dp(19f), p.h * u * 0.3f)
+            val oval = Size(rx * 2, dp(12f))
+            val origin = Offset(cx - rx, cy - dp(4f))
+            drawOval(color.copy(alpha = alpha * 0.22f), origin, oval)
+            drawOval(edge, origin, oval, style = Stroke(dp(2f)))
+            val badge = Offset(cx - rx, cy - dp(13f))
+            drawCircle(color, dp(11f), badge)
+            drawCircle(edge, dp(11f), badge, style = Stroke(dp(1.5f)))
+            val number = text.measure("${index + 1}", TextStyle(
+                color = T.Ink.copy(alpha = alpha), fontFamily = PlayFont,
+                fontSize = 13.sp, fontWeight = FontWeight.ExtraBold,
+            ))
+            drawText(number, topLeft = badge - Offset(number.size.width / 2f, number.size.height / 2f))
+        }
+    }
 
     private fun DrawScope.drawNameTagsLate(text: TextMeasurer) = drawNameTags(lateText, text)
 
@@ -2924,7 +2968,7 @@ class Engine(
             if (p.anim.nameTag <= 0f || p.name.isBlank()) continue
             val alpha = min(1f, p.anim.nameTag / 0.4f)
             val grow = ((2.5f - p.anim.nameTag) / 0.2f).coerceIn(0f, 1f)
-            val layout = text.measure(p.name, TextStyle(color = T.Ink.copy(alpha = alpha), fontSize = 17.sp, fontWeight = FontWeight.Black))
+            val layout = text.measure(p.name, TextStyle(color = T.Ink.copy(alpha = alpha), fontFamily = PlayFont, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold))
             val hat = Anatomy.at(p, Part.HAT)
             val cx = sx(p.x)
             val by = sy(hat[1] - p.anim.hop) + top - dp(14f)
@@ -3503,7 +3547,7 @@ class Engine(
             drawRoundRect(Ink.line, tray.topLeft, tray.size, CornerRadius(dp(26f)), style = Stroke(dp(2.2f)))
             if (bag.isEmpty()) {
                 drawRoundRect(T.CreamLine, Offset(tray.left + dp(12f), tray.top + dp(12f)), Size(tray.width - dp(24f), tray.height - dp(24f)), CornerRadius(dp(18f)), style = Stroke(dp(2.5f), pathEffect = PathEffect.dashPathEffect(floatArrayOf(dp(10f), dp(8f)))))
-                val hint = text.measure(emptyBagHint, TextStyle(color = T.Ink, fontSize = 14.sp, fontWeight = FontWeight.Bold), constraints = androidx.compose.ui.unit.Constraints(maxWidth = (tray.width - dp(36f)).toInt().coerceAtLeast(1)))
+                val hint = text.measure(emptyBagHint, TextStyle(color = T.Ink, fontFamily = PlayFont, fontSize = 14.sp, fontWeight = FontWeight.Bold), constraints = androidx.compose.ui.unit.Constraints(maxWidth = (tray.width - dp(36f)).toInt().coerceAtLeast(1)))
                 drawText(hint, topLeft = Offset(tray.center.x - hint.size.width / 2f, tray.center.y - hint.size.height / 2f))
             }
             val slot = traySlot()
@@ -3531,12 +3575,12 @@ class Engine(
                     drawLine(color, Offset(cx - direction * dp(6f), y - dp(9f)), Offset(cx + direction * dp(6f), y), dp(3f), StrokeCap.Round)
                     drawLine(color, Offset(cx + direction * dp(6f), y), Offset(cx - direction * dp(6f), y + dp(9f)), dp(3f), StrokeCap.Round)
                 }
-                val label = text.measure("${bagPage.coerceAtMost(pages - 1) + 1} / $pages", TextStyle(color = T.Ink, fontSize = 11.sp))
+                val label = text.measure("${bagPage.coerceAtMost(pages - 1) + 1} / $pages", TextStyle(color = T.Ink, fontFamily = PlayFont, fontSize = 11.sp))
                 drawText(label, topLeft = Offset(tray.center.x - label.size.width / 2, tray.top - label.size.height - dp(4f)))
             }
         }
         if (time < fullBagUntil) {
-            val label = text.measure(fullBagHint, TextStyle(color = T.Ink, fontSize = 14.sp, fontWeight = FontWeight.Bold), constraints = androidx.compose.ui.unit.Constraints(maxWidth = dp(230f).toInt()))
+            val label = text.measure(fullBagHint, TextStyle(color = T.Ink, fontFamily = PlayFont, fontSize = 14.sp, fontWeight = FontWeight.Bold), constraints = androidx.compose.ui.unit.Constraints(maxWidth = dp(230f).toInt()))
             val origin = Offset(geometry.right - label.size.width - dp(12f), c.y - r - label.size.height - dp(20f))
             drawRoundRect(T.Cream, origin - Offset(dp(8f), dp(6f)), Size(label.size.width + dp(16f), label.size.height + dp(12f)), CornerRadius(dp(14f)))
             drawText(label, topLeft = origin)
@@ -3564,7 +3608,7 @@ class Engine(
             val badge = Offset(c.x + r * 0.72f, c.y - r * 0.72f)
             drawCircle(T.Berry, dp(13f), badge)
             drawCircle(Ink.line, dp(13f), badge, style = Stroke(dp(2f)))
-            val layout = text.measure(count.toString(), TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Black))
+            val layout = text.measure(count.toString(), TextStyle(color = Color.White, fontFamily = PlayFont, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold))
             drawText(layout, topLeft = Offset(badge.x - layout.size.width / 2f, badge.y - layout.size.height / 2f))
         }
     }

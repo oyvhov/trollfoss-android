@@ -609,7 +609,7 @@ enum class FixtureType {
             DESK -> FixtureSpec(0.30f, 0.15f, surfaces = listOf(SurfaceSpec(-0.15f, 0.15f, -0.15f)))
             FLOWER_POT -> FixtureSpec(0.09f, 0.14f)
             TRASH_BIN -> FixtureSpec(0.10f, 0.14f, machine = Machine.TRASH, dropZone = RRect(-0.07f, -0.26f, 0.07f, -0.1f))
-            ROBOT_VACUUM -> FixtureSpec(0.10f, 0.03f)
+            ROBOT_VACUUM -> FixtureSpec(0.10f, 0.03f, spots = listOf(seat(0f, -0.025f)))
 
             // The big house: its floors know their own furniture. A type nobody knows yet is a plain box.
             else -> House.specOf(type) ?: FixtureSpec(0.3f, 0.3f)

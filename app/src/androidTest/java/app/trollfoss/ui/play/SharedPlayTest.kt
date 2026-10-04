@@ -790,6 +790,28 @@ class SharedPlayTest {
 
     private fun nudge(e: Engine, from: Offset) = drag(e, from, Offset(from.x + 120f, from.y - 60f))
 
+    @Test fun aCatOrPersonDroppedOnTheRobotVacuumRidesAndCanBeLiftedOffAgain() {
+        for (species in listOf(Species.CAT, Species.FOLK)) {
+            val w = World(); val s = Sim(w); val place = PlaceId.HOME
+            val vacuum = s.designer.add(place, FixtureType.ROBOT_VACUUM, 0, 1.1f, 0.9f)!!
+            val p = w.addPerson(species, Look(), 1f, place, 0.7f, 0.9f)
+            val e = Engine(w, place, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f) }
+            repeat(30) { e.update(0.016f) }
+            // Finger holds the middle of the standing figure; dropping places its hips on the seat.
+            val seat = s.seatPoint(vacuum, 0)
+            drag(e, finger(e, p), at(e, seat[0], seat[1] + p.h * Anatomy.HIPS - p.h / 2f))
+            assertEquals("$species can be seated by a real drag", Mode.SEATED, p.mode)
+            assertEquals(vacuum.id, p.holder)
+            assertTrue("the drag starts the ride", vacuum.on)
+            repeat(60) { e.update(1f / 60f) }
+            assertEquals(s.seatPoint(vacuum, 0)[0], p.x, 0.001f)
+            val body = Anatomy.at(p, Part.BODY)
+            drag(e, at(e, body[0], body[1]), at(e, 1.6f, 0.75f))
+            assertEquals(Mode.FREE, p.mode)
+            assertSame(p, w.bodies[p.id]); e.cancel()
+        }
+    }
+
     @Test fun theFurniturePanelStepsAsideAfterTwoThingsOrFiguresInARowButNotAfterOne() {
         val w = World()
         val p = w.addPerson(Species.FOLK, Look(), 1f, PlaceId.HOME, 0.7f, 0.9f, "A")

@@ -212,6 +212,17 @@ viser hjørnet ei lagerkasse med talet på lagra møblar, og etter lagring kan l
   frisøren får sterkare, meir leikne fargar.
 * **Grensesnitt:** blanke 3D-knappar i hjørna (sol `#FFC83D`, bær `#FF4D6D`, sjø `#2F9BFF`,
   mynte `#2FD18B`, drue `#8B5CF6`), raud X lukkar alt, `GameText` for dei få orda.
+  Spelarval og angre brukar kremtone, slik at dei rolegare hjelpevala tek mindre merksemd.
+* **Typografi:** Nunito i lesetekst, namn, knappar og små skilt; Fredoka Bold i store overskrifter.
+  Fontane er pakka lokalt med SIL OFL-lisensane, med full teikndekning for mellom anna æ/ø/å.
+  `GameText` brukar Nunito under 20 sp og eit fint blekkomriss på lys tekst
+  (7,5 % av tekststorleiken, avgrensa til 0,8–4,5 dp). Mørke skilt er utan omriss.
+  Stadskilta på kartet held namna synlege, med kremfarga kant og svak skugge; vald stad har farge.
+* **Spelarmerking:** `PlayerPalette` gir spelaren same farge i valkort, portrett og scene:
+  gul, lys lilla, lys blå, lys grøn, lys rosa, så om att. Nummeret skil også spelarane.
+  I scena kjem ein liten ring og nummer fram under berøring og i 1,8 sekund etterpå eller etter
+  innkalling. Dei siste 0,4 sekunda tonar merket ut, utan puls eller ekstra rørsle.
+  Foto tek ikkje med merka. Portrettet har minst 48 dp høg trykkflate og skjermlesarnamn.
 
 ---
 

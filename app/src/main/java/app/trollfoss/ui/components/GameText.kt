@@ -22,10 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
 import app.trollfoss.ui.theme.T
+import app.trollfoss.ui.theme.PlayFont
 
 /**
- * Heavy lettering with an ink rim and a drop underneath, the way toy boxes and game titles are
- * lettered. The rim scales with the text so small labels stay crisp and big titles look solid.
+ * Playful lettering with a fine ink rim on light text. Dark labels stay plain; small words use
+ * the reading font, while headings keep the display face.
  */
 @Composable
 fun GameText(
@@ -45,11 +46,12 @@ fun GameText(
     }
     val density = LocalDensity.current
     val sizePx = with(density) { size.toPx() }
-    val rim = (sizePx * 0.16f).coerceIn(with(density) { 2.5.dp.toPx() }, with(density) { 10.dp.toPx() })
-    val drop = rim * 0.6f
+    val rim = (sizePx * 0.075f).coerceIn(with(density) { 0.8.dp.toPx() }, with(density) { 4.5.dp.toPx() })
+    val drop = rim * 0.35f
     val lineHeight = if (style.lineHeight.isSp && style.fontSize.isSp && size.isSp) (size.value * style.lineHeight.value / style.fontSize.value).sp else style.lineHeight
     val base = style.merge(
         TextStyle(
+            fontFamily = if (size.value < 20f) PlayFont else style.fontFamily,
             fontSize = size,
             lineHeight = lineHeight,
             fontWeight = style.fontWeight ?: FontWeight.Black,

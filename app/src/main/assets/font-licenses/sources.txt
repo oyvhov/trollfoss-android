@@ -1,0 +1,8 @@
+Google Fonts repository commit: 9710da1eacb3be272583c3224dcb70f9da6eadbb
+https://github.com/google/fonts/tree/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/nunito
+https://github.com/google/fonts/tree/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/fredoka
+Static instances made with fontTools; full glyph coverage preserved.
+nunito_regular.ttf: wght=400, sha256=ae9e01f75a43cacd9872de43a2feb6146ba43210dac5bb4413b49d6bf976b022
+nunito_bold.ttf: wght=700, sha256=e58604bf2de8d80f784e7727f559e8d0aab05e042a424d91ee58861678b319cf
+nunito_extra_bold.ttf: wght=800, sha256=663199a60032e721d9ac971df0f08b90d051605422de03957767a2ecc8dd0c99
+fredoka_bold.ttf: wght=700, sha256=0e5edbcdd4bcf3d733e79c729e111825b295dc142f9358f3645366dd406d175c

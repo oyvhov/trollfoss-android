@@ -351,9 +351,10 @@ class Designer(private val sim: Sim, private val random: Random) {
 
     /** The robot vacuum trundles along its room, slurping up what lies on the floor. */
     fun stepVacuum(place: PlaceId, f: Fixture, dt: Float) {
-        if (!f.on) return
+        if (!f.on || f.lift > 0f) return
         f.timer += dt
         if (f.angleV == 0f) f.angleV = VACUUM_SPEED
+        val oldShift = f.shiftX
         f.shiftX += f.angleV * dt
         val room = Decor.rooms(place)[Decor.roomAt(place, f.x)]
         val left = room.start + f.spec.w - f.x
@@ -362,6 +363,21 @@ class Designer(private val sim: Sim, private val random: Random) {
             f.shiftX = f.shiftX.coerceIn(maxOf(left, -1.2f), minOf(right, 1.2f))
             f.angleV = -f.angleV
             listener.onFx(Fx.BUMP, f.x + f.shiftX, f.y, f, param = -1)
+        }
+        // Floor furniture blocks the little ride; rugs and wall decorations do not. A vacuum
+        // placed inside something may always reverse out, rather than bouncing in place.
+        val current = f.x + oldShift
+        val next = f.x + f.shiftX
+        val blocked = world.fixturesIn(place).any { other ->
+            other.id != f.id && !other.spec.wall && other.spec.h > FLAT && other.lift == 0f &&
+                abs(other.depth - f.depth) < SAME_DEPTH &&
+                (other.x + other.shiftX - current) * (next - current) > 0f &&
+                abs(other.x + other.shiftX - next) < (f.spec.w + other.spec.w) / 2f
+        }
+        if (blocked) {
+            f.shiftX = oldShift
+            f.angleV = -f.angleV
+            listener.onFx(Fx.BUMP, current, f.y, f, param = -1)
         }
         val x = f.x + f.shiftX
         for (b in world.bodiesIn(place).toList()) {

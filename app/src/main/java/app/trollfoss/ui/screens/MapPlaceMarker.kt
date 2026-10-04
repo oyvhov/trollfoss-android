@@ -58,9 +58,9 @@ internal fun MapPlaceMarker(place: PlaceId, label: String, here: Boolean, compac
         .clickable(source, indication = null, onClick = onClick), contentAlignment = Alignment.BottomCenter) {
         Row(Modifier.graphicsLayer { scaleX = pop; scaleY = pop }
             .height(if(compact) 34.dp else 40.dp)
-            .background(T.Ink.copy(alpha = .18f), shape).padding(bottom = 3.dp)
-            .background(if(pressed || here) accent else T.Cream, shape)
-            .border(if(here) 3.dp else 2.dp, T.Ink, shape).padding(horizontal = 8.dp),
+            .background(T.Ink.copy(alpha = .08f), shape).padding(bottom = 2.dp)
+            .background(if(pressed || here) accent else T.Cream.copy(alpha = .94f), shape)
+            .border(if(here) 2.dp else 1.dp, if(here) T.Ink else T.CreamLine, shape).padding(horizontal = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
             Canvas(Modifier.size(if(here) 22.dp else 10.dp)) {
                 if(here) drawBalloon(Offset(size.width / 2, size.height * .42f), size.minDimension * .32f,

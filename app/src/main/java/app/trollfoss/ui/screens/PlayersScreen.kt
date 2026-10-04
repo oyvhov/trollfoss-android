@@ -39,6 +39,7 @@ import app.trollfoss.ui.components.RoundButton
 import app.trollfoss.ui.components.Tones
 import app.trollfoss.ui.str
 import app.trollfoss.ui.theme.T
+import app.trollfoss.ui.theme.PlayerPalette
 
 /** Select persistent figures together; changing a look uses the same figure workshop. */
 @Composable
@@ -73,7 +74,9 @@ fun PlayersScreen(vm: TrollfossViewModel) {
                 Text(S.chooseTeamHint.str(), color = T.InkSoft, style = MaterialTheme.typography.bodyMedium)
             }
             team.forEachIndexed { index, person ->
-                Row(Modifier.background(T.SunTop, RoundedCornerShape(18.dp)).padding(horizontal = 10.dp, vertical = 4.dp),
+                Row(Modifier.background(PlayerPalette.color(index).copy(alpha = 0.3f), RoundedCornerShape(18.dp))
+                    .border(1.dp, PlayerPalette.edge(index), RoundedCornerShape(18.dp))
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Canvas(Modifier.size(if (compact) 40.dp else 56.dp)) {
                         drawSpeciesThumb(person.species, Rect(0f, 0f, size.width, size.height), person.look)
@@ -93,14 +96,14 @@ fun PlayersScreen(vm: TrollfossViewModel) {
                 val index = team.indexOfFirst { it.id == person.id }
                 val description = if (index >= 0) "${S.playerNumber.str()} ${index + 1}: ${person.name}" else person.name
                 val shape = RoundedCornerShape(22.dp)
-                Column(Modifier.clip(shape).background(if (index >= 0) T.SunTop else Color.White)
-                    .border(if (index >= 0) 3.dp else 1.dp, if (index >= 0) T.Grape else T.CreamLine, shape)
+                Column(Modifier.clip(shape).background(if (index >= 0) PlayerPalette.color(index).copy(alpha = 0.3f) else Color.White)
+                    .border(if (index >= 0) 2.dp else 1.dp, if (index >= 0) PlayerPalette.edge(index) else T.CreamLine, shape)
                     .semantics { contentDescription = description; selected = index >= 0 }
                     .clickable(role = Role.Checkbox) { vm.togglePlayer(person) }.padding(8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally) {
                     Box {
                         Canvas(Modifier.height(if (compact) 74.dp else 112.dp).fillMaxWidth()) {
-                            val backdrop = if (index >= 0) T.Sun else lerp(T.Cream, T.MintTop, 0.22f)
+                            val backdrop = if (index >= 0) PlayerPalette.color(index) else lerp(T.Cream, T.MintTop, 0.22f)
                             drawCircle(backdrop, size.height * 0.43f, Offset(size.width / 2f, size.height * 0.48f))
                             drawOval(T.Ink.copy(alpha = 0.08f),
                                 Offset(size.width / 2f - size.height * 0.25f, size.height * 0.9f),
@@ -108,7 +111,7 @@ fun PlayersScreen(vm: TrollfossViewModel) {
                             drawSpeciesThumb(person.species, Rect(0f, 0f, size.width, size.height), person.look)
                         }
                         if (index >= 0) Canvas(Modifier.align(Alignment.TopEnd).size(24.dp)
-                            .background(T.Grape, CircleShape).padding(4.dp)) { Icons.Check(this) }
+                            .background(PlayerPalette.edge(index), CircleShape).padding(4.dp)) { Icons.Check(this) }
                     }
                     Text(person.name, color = T.Ink, style = MaterialTheme.typography.titleMedium,
                         fontSize = if (compact) 14.sp else 16.sp, maxLines = 1)

@@ -792,6 +792,12 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         placeSeated(p)
         updatePose(p)
         if (f.type in RIDES) f.timer = 0f
+        // A large rider covers the vacuum's button. Dropping onto it starts the little ride.
+        if (f.type == FixtureType.ROBOT_VACUUM && !f.on) {
+            f.on = true
+            f.timer = 0f
+            listener.onFx(Fx.ON, f.x + f.shiftX, f.top, f)
+        }
         life.seated(p)
         p.place?.let { jokes.seated(it, p) }
         tasks.record(Deed.SEATED, p.place ?: here, fixture = f.type)
