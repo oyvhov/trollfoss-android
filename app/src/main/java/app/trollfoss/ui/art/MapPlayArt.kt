@@ -14,6 +14,15 @@ import kotlin.math.sin
 /** Short local responses, drawn over the cached landscape. They never alter the saved world. */
 internal data class MapTap(val at: Offset, val born: Float, val water: Boolean)
 
+/** Touch responses use the same pool ellipse, river ribbon and fjord shoreline as the landscape. */
+internal fun MapGeo.inWater(at: Offset): Boolean {
+    val dx = (at.x - pool.center.x) / (pool.width / 2)
+    val dy = (at.y - pool.center.y) / (pool.height / 2)
+    if (dx * dx + dy * dy <= 1f || inSea(at.x, at.y)) return true
+    val along = river.nearestF(at.x, at.y)
+    return river.dist(at.x, at.y) <= riverWidth(along) / 2f
+}
+
 internal fun DrawScope.drawMapTap(tap: MapTap, now: Float, pen: Pen) {
     val age = (now - tap.born).coerceAtLeast(0f)
     if(age > 1.1f) return

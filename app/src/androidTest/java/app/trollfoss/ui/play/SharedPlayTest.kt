@@ -12,6 +12,59 @@ import org.junit.runner.RunWith
 /** Run on Android: exercises the real pointer engine used by children sharing the screen. */
 @RunWith(AndroidJUnit4::class)
 class SharedPlayTest {
+    @Test fun bagPagingActionsExistOnlyForPagesThatCanBeReached() {
+        val w = World()
+        val things = List(7) { w.addThing(ThingType.COIN, 0, null, 0f, 0f).apply { mode = Mode.BAG } }
+        val e = engine(w); e.update(.016f)
+        assertFalse(e.canPreviousBagPage); assertFalse(e.canNextBagPage)
+        e.bagOpen = true
+        assertFalse(e.canPreviousBagPage); assertTrue(e.canNextBagPage)
+        assertTrue(e.turnBagPage(1))
+        assertTrue(e.canPreviousBagPage); assertFalse(e.canNextBagPage)
+        assertFalse(e.turnBagPage(1))
+        assertTrue(e.turnBagPage(-1)); assertFalse(e.turnBagPage(-1))
+        things.drop(1).forEach { it.mode = Mode.FREE }
+        e.update(.016f)
+        assertFalse(e.canPreviousBagPage); assertFalse(e.canNextBagPage)
+        e.cancel()
+    }
+
+    @Test fun anItemTakenFromAnOldOverfilledBagCanBePutStraightBack() {
+        val w = World(); val s = Sim(w)
+        val things = List(37) { w.addThing(ThingType.COIN, 0, null, 0f, 0f).apply { mode = Mode.BAG } }
+        val e = Engine(w, PlaceId.HOME, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f); bagOpen = true }
+        e.down(1, Offset(350f, 969f), 1000)
+        assertEquals(36, w.bag().size)
+        e.move(1, e.bagAt, 1100); e.up(1, e.bagAt, 1200)
+        assertEquals(things.map { it.id }.toSet(), w.bag().map { it.id }.toSet())
+        e.cancel()
+    }
+
+    @Test fun takingAnItemOutTemporarilyReservesItsSlotWhileAnotherFingerPacks() {
+        val w = World(); val s = Sim(w)
+        val things = List(12) { w.addThing(ThingType.COIN, 0, null, 0f, 0f).apply { mode = Mode.BAG } }
+        val ball = w.addThing(ThingType.BALL, 0, PlaceId.HOME, .8f, .55f)
+        val e = Engine(w, PlaceId.HOME, s, host, false, 0f).apply { setSize(1920f, 1200f, 1.5f); bagOpen = true }
+        e.down(1, Offset(350f, 969f), 1000)
+        e.down(2, at(e, ball.x, ball.y - ball.h / 2), 1000)
+        e.move(2, e.bagAt, 1100)
+        assertTrue(ball.held)
+        e.up(2, e.bagAt, 1200)
+        assertEquals(Mode.FREE, ball.mode)
+        e.move(1, e.bagAt, 1300); e.up(1, e.bagAt, 1400)
+        assertEquals(things.map { it.id }.toSet(), w.bag().map { it.id }.toSet())
+        e.cancel()
+    }
+
+    @Test fun closingTheDesignerConsumesItsOneTimeStorageEntryHint() {
+        val e = engine(World())
+        e.startWithStorage = true; e.designMode = true; e.closeDesigner()
+        assertFalse(e.startWithStorage)
+        e.designMode = true
+        assertFalse(e.startWithStorage)
+        e.cancel()
+    }
+
     @Test fun anOldOverfilledBagCanBePagedAboveThePhoneToolbarAndItsLastThingTakenOut() {
         val w = World(); val s = Sim(w)
         val things = List(37) { w.addThing(ThingType.COIN, 0, null, 0f, 0f).apply { mode = Mode.BAG } }

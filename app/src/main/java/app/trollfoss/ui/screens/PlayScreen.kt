@@ -167,10 +167,10 @@ fun PlayScreen(vm: TrollfossViewModel) {
                         CustomAccessibilityAction(findLabel) { vm.recallPlayers();true },
                         CustomAccessibilityAction(helpLabel) { vm.open(Screen.Tasks);true },
                         CustomAccessibilityAction(playLabel) { playCardsOpen=true;true },
-                    ) + (if (engine.bagOpen) listOf(
-                        CustomAccessibilityAction(previousBagLabel) { engine.turnBagPage(-1); true },
-                        CustomAccessibilityAction(nextBagLabel) { engine.turnBagPage(1); true },
-                    ) else emptyList()) + vm.world.people().filter { it.place==place && it.name.isNotBlank() }.take(12).map { p ->
+                    ) + listOfNotNull(
+                        if (engine.canPreviousBagPage) CustomAccessibilityAction(previousBagLabel) { engine.turnBagPage(-1) } else null,
+                        if (engine.canNextBagPage) CustomAccessibilityAction(nextBagLabel) { engine.turnBagPage(1) } else null,
+                    ) + vm.world.people().filter { it.place==place && it.name.isNotBlank() }.take(12).map { p ->
                         CustomAccessibilityAction(p.name) { engine.accessiblePlay(p.id) }
                     } + fixtureActions
                 }

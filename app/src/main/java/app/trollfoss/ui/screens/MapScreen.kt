@@ -75,6 +75,8 @@ import app.trollfoss.ui.art.Ink
 import app.trollfoss.ui.art.Pen
 import app.trollfoss.ui.art.drawIslandMapLive
 import app.trollfoss.ui.art.MapTap
+import app.trollfoss.ui.art.mapGeo
+import app.trollfoss.ui.art.inWater
 import app.trollfoss.ui.art.drawMapTap
 import app.trollfoss.ui.art.drawBalloonTrail
 import app.trollfoss.ui.art.inkedRound
@@ -157,8 +159,7 @@ fun MapScreen(vm: TrollfossViewModel) {
         Canvas(Modifier.fillMaxSize().graphicsLayer().pointerInput(vm, motion, mapWidth, mapHeight) {
             detectTapGestures { at ->
                 val x = at.x / mapWidth
-                val y = at.y / mapHeight
-                val water = y > .9f || (x in .415f.. .56f && y in .35f.. .46f)
+                val water = mapGeo(mapWidth.toFloat(), mapHeight.toFloat()).inWater(at)
                 vm.sfx(if(water) Sfx.SPLASH else Sfx.POP, .45f, .9f + (x % .3f))
                 if(motion) {
                     val tap = MapTap(at, t, water)

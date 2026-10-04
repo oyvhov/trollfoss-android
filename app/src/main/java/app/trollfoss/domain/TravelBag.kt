@@ -4,8 +4,8 @@ package app.trollfoss.domain
 object TravelBag {
     const val CAPACITY = 12
     const val PAGE_SIZE = 6
-    fun canPack(world: World, body: Body): Boolean =
-        body.mode == Mode.BAG || world.bag().size < CAPACITY
+    fun canPack(world: World, body: Body, returning: Boolean = false, reserved: Int = 0): Boolean =
+        returning || body.mode == Mode.BAG || world.bag().size + reserved < CAPACITY
 
     /** Old bags and returned assembly parts are preserved, even when they exceed today's capacity. */
     fun pages(count: Int): Int = maxOf(1, (count + PAGE_SIZE - 1) / PAGE_SIZE)

@@ -185,9 +185,14 @@ class Engine(
     var bagPage by mutableIntStateOf(0)
         private set
     private var fullBagUntil = 0f
-    fun turnBagPage(direction: Int) {
-        bagPage = (bagPage + direction).coerceIn(0, app.trollfoss.domain.TravelBag.pages(world.bag().size) - 1)
+    val canPreviousBagPage get() = bagOpen && bagPage > 0
+    val canNextBagPage get() = bagOpen && bagPage < app.trollfoss.domain.TravelBag.pages(bagCount) - 1
+    fun turnBagPage(direction: Int): Boolean {
+        val next = (bagPage + direction).coerceIn(0, app.trollfoss.domain.TravelBag.pages(world.bag().size) - 1)
+        if (next == bagPage) return false
+        bagPage = next
         host.sfx(Sfx.ZIP, 0.4f)
+        return true
     }
 
     private val panelIdle = PanelIdle()
@@ -200,6 +205,7 @@ class Engine(
         set(value) {
             if (value != designModeState) panelTouched()
             designModeState = value
+            if (!value) startWithStorage = false
         }
 
     /** The child touched the furniture panel: still decorating. */
@@ -1399,7 +1405,7 @@ class Engine(
         body.held = false
         val fingerOnBag = allowBag && onBag(g)
         if (fingerOnBag) {
-            if (intoBag(body)) return
+            if (intoBag(body, returning = g.target is Target.FromBag)) return
         }
         if (body is Person) {
             body.anim.faceTime = 0f
@@ -1450,8 +1456,10 @@ class Engine(
         host.changed()
     }
 
-    private fun intoBag(body: Body): Boolean {
-        if (!app.trollfoss.domain.TravelBag.canPack(world, body)) {
+    private fun intoBag(body: Body, returning: Boolean = false): Boolean {
+        // A second finger cannot fill a slot while its original item is still being dragged out.
+        val reserved = grabs.values.count { it.target is Target.FromBag }
+        if (!app.trollfoss.domain.TravelBag.canPack(world, body, returning, reserved)) {
             fullBagUntil = time + 2.8f
             bagOpen = true
             awayWobble = 1f

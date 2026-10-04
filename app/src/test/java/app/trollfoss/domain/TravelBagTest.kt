@@ -4,6 +4,21 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class TravelBagTest {
+    @Test fun aReturningLegacyItemKeepsItsPlaceWithoutAdmittingNewItems() {
+        val w = World()
+        repeat(36) { w.addThing(ThingType.COIN, 0, null, 0f, 0f).mode = Mode.BAG }
+        val original = w.addThing(ThingType.GEM, 0, PlaceId.HOME, 1f, .9f)
+        assertFalse(TravelBag.canPack(w, original))
+        assertTrue(TravelBag.canPack(w, original, returning = true))
+    }
+    @Test fun anItemBeingDraggedFromTheBagReservesItsPlace() {
+        val w = World()
+        repeat(11) { w.addThing(ThingType.COIN, 0, null, 0f, 0f).mode = Mode.BAG }
+        val ball = w.addThing(ThingType.BALL, 0, PlaceId.HOME, 1f, .9f)
+        assertTrue(TravelBag.canPack(w, ball))
+        assertFalse(TravelBag.canPack(w, ball, reserved = 1))
+    }
+
     @Test fun fullBagRefusesNewThingsAndFiguresWithoutChangingThem() {
         val w = World()
         repeat(12) { w.addThing(ThingType.GEM, it % 5, null, 0f, 0f).mode = Mode.BAG }
