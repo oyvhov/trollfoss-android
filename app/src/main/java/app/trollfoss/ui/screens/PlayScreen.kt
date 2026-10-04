@@ -61,7 +61,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import app.trollfoss.domain.Secrets
-import app.trollfoss.domain.Weather
 import app.trollfoss.ui.S
 import app.trollfoss.ui.TrollfossViewModel
 import app.trollfoss.ui.Screen
@@ -84,6 +83,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
     val place = vm.place
     val engine = remember(place, vm.generation, vm.season, vm.festival) { vm.engineFor(place, motion) }
     engine.emptyBagHint = S.emptyBagHint.str()
+    engine.fullBagHint = S.bagFull.str()
     val tick = remember { mutableLongStateOf(0L) }
     val text = rememberTextMeasurer()
     val density = LocalDensity.current.density
@@ -151,6 +151,8 @@ fun PlayScreen(vm: TrollfossViewModel) {
         val findLabel=S.recallPlayers.str()
         val helpLabel=app.trollfoss.ui.SF.hint.str()
         val playLabel=S.playCards.str()
+        val previousBagLabel = S.bagPrevious.str()
+        val nextBagLabel = S.bagNext.str()
         engine.visibleRoom // Refresh alternative actions when the camera enters another room.
         val fixtureActions=vm.world.fixturesIn(place).filter { kotlin.math.abs(it.x-(engine.cam+engine.visibleViewport/2))<engine.visibleViewport/2+0.1f }.take(12).map { f ->
             val name=app.trollfoss.ui.FurnitureLabels.name(f.type).str()
@@ -165,6 +167,9 @@ fun PlayScreen(vm: TrollfossViewModel) {
                         CustomAccessibilityAction(findLabel) { vm.recallPlayers();true },
                         CustomAccessibilityAction(helpLabel) { vm.open(Screen.Tasks);true },
                         CustomAccessibilityAction(playLabel) { playCardsOpen=true;true },
+                    ) + listOfNotNull(
+                        if (engine.canPreviousBagPage) CustomAccessibilityAction(previousBagLabel) { engine.turnBagPage(-1) } else null,
+                        if (engine.canNextBagPage) CustomAccessibilityAction(nextBagLabel) { engine.turnBagPage(1) } else null,
                     ) + vm.world.people().filter { it.place==place && it.name.isNotBlank() }.take(12).map { p ->
                         CustomAccessibilityAction(p.name) { engine.accessiblePlay(p.id) }
                     } + fixtureActions
@@ -271,11 +276,6 @@ fun PlayScreen(vm: TrollfossViewModel) {
             }
             Unit
         }
-        val weatherIcon: androidx.compose.ui.graphics.drawscope.DrawScope.() -> Unit = when (vm.weather) {
-            Weather.SUN -> Icons.SunCloud
-            Weather.RAIN -> Icons.Rain
-            Weather.SNOW -> Icons.Snow
-        }
         val counter = Modifier.onGloballyPositioned { coords ->
             val b = coords.boundsInRoot()
             engine.counterTarget = Offset(b.left + (if (compact) 14.dp else 22.dp).value * density, b.center.y)
@@ -289,8 +289,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 GlimtCounter(vm.found, Secrets.all.size, counter)
-                RoundButton(if (vm.night) S.day.str() else S.night.str(), onClick = vm::toggleNight, tone = Tones.Night, icon = if (vm.night) Icons.Sun else Icons.Moon)
-                RoundButton(S.weather.str(), onClick = vm::cycleWeather, tone = Tones.Cream, icon = weatherIcon)
+                WorldControlButtons(vm, 64.dp)
                 RoundButton(S.camera.str(), onClick = { photo() }, tone = Tones.Cream, tapSound = false, icon = Icons.Camera)
             }
             Row(Modifier.align(Alignment.BottomStart).padding(edge), horizontalArrangement = Arrangement.spacedBy(gap)) {
@@ -329,8 +328,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    RoundButton(if (vm.night) S.day.str() else S.night.str(), onClick = { vm.toggleNight() }, size = small, tone = Tones.Night, icon = if (vm.night) Icons.Sun else Icons.Moon)
-                    RoundButton(S.weather.str(), onClick = { vm.cycleWeather() }, size = small, tone = Tones.Cream, icon = weatherIcon)
+                    WorldControlButtons(vm, small)
                     RoundButton(S.camera.str(), onClick = { menuOpen = false; photo() }, size = small, tone = Tones.Cream, tapSound = false, icon = Icons.Camera)
                     if (place.mine) RoundButton(app.trollfoss.ui.SM.build.str(), onClick = { menuOpen = false; mineUi.open = !mineUi.open }, size = small, tone = if (mineUi.open) Tones.Sun else Tones.Mint, icon = BuildIcons.Hammer)
                     if (place.mine) RoundButton(app.trollfoss.ui.SM.paint.str(), onClick = {
@@ -350,9 +348,11 @@ fun PlayScreen(vm: TrollfossViewModel) {
         }
         // The grown put-away corner takes the place of the furniture button while something is held.
         if (!engine.designMode && engine.away == null) {
-            RoundButton(app.trollfoss.ui.SM.furnish.str(), onClick = { menuOpen = false; engine.closeDriving(); engine.designMode = true },
+            RoundButton((if(engine.justStored) app.trollfoss.ui.SM.storage else app.trollfoss.ui.SM.furnish).str(), onClick = {
+                menuOpen = false; engine.closeDriving(); engine.startWithStorage = engine.justStored; engine.designMode = true
+            },
                 modifier = Modifier.align(Alignment.BottomEnd).padding(end = if (compact) 78.dp else 108.dp, bottom = edge),
-                size = btn, tone = Tones.Berry, icon = DesignIcons.Sofa)
+                size = btn, tone = if(engine.justStored) Tones.Grape else Tones.Berry, icon = if(engine.justStored) DesignIcons.Box else DesignIcons.Sofa)
         }
         if (!engine.designMode && engine.vehicle != null) {
             Row(Modifier.align(Alignment.BottomCenter).padding(bottom = edge).background(T.Cream.copy(alpha = 0.94f), RoundedCornerShape(32.dp)).padding(6.dp),

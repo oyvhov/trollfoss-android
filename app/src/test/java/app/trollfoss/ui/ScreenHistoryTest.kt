@@ -36,6 +36,15 @@ class ScreenHistoryTest {
         history.open(Screen.Book)
         assertSame(Screen.Play, history.back())
         history.open(Screen.Map)
-        assertSame(Screen.Play, history.back())
+        assertSame(Screen.Map, history.back())
+    }
+    @Test fun mapNeverReturnsToAnOldRoomOrMenu() {
+        val history = ScreenHistory()
+        history.arrive(Screen.Play)
+        history.open(Screen.Tasks)
+        history.open(Screen.Map)
+        repeat(3) { assertSame(Screen.Map, history.back()) }
+        history.open(Screen.Players)
+        assertSame(Screen.Map, history.back())
     }
 }

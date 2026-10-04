@@ -71,7 +71,9 @@ fun TrollfossApp(vm: TrollfossViewModel) {
     }
 
     CompositionLocalProvider(LocalMaalform provides vm.settings.maalform, LocalFeedback provides vm.feedback) {
-        BackHandler(enabled = vm.screen != Screen.Play) { vm.back() }
+        BackHandler(enabled = vm.screen != Screen.Map) {
+            if (vm.screen == Screen.Play) vm.open(Screen.Map) else vm.back()
+        }
         Box(Modifier.fillMaxSize().background(T.Night)) {
             // The play screen stays underneath so the world keeps its place; others slide over it.
             Box(if (vm.screen == Screen.Play) Modifier else Modifier.clearAndSetSemantics { }) {

@@ -181,6 +181,19 @@ class Engine(
 
     var bagOpen by mutableStateOf(false)
     var emptyBagHint: String = ""
+    var fullBagHint: String = ""
+    var bagPage by mutableIntStateOf(0)
+        private set
+    private var fullBagUntil = 0f
+    val canPreviousBagPage get() = bagOpen && bagPage > 0
+    val canNextBagPage get() = bagOpen && bagPage < app.trollfoss.domain.TravelBag.pages(bagCount) - 1
+    fun turnBagPage(direction: Int): Boolean {
+        val next = (bagPage + direction).coerceIn(0, app.trollfoss.domain.TravelBag.pages(world.bag().size) - 1)
+        if (next == bagPage) return false
+        bagPage = next
+        host.sfx(Sfx.ZIP, 0.4f)
+        return true
+    }
 
     private val panelIdle = PanelIdle()
     private var designModeState by mutableStateOf(false)
@@ -192,6 +205,7 @@ class Engine(
         set(value) {
             if (value != designModeState) panelTouched()
             designModeState = value
+            if (!value) startWithStorage = false
         }
 
     /** The child touched the furniture panel: still decorating. */
@@ -202,6 +216,7 @@ class Engine(
 
     /** Closes the furniture panel, the way its red X does. */
     fun closeDesigner() {
+        cancelCatalogueDrag()
         designMode = false
         storeZone = null
         host.changed()
@@ -225,6 +240,10 @@ class Engine(
 
     /** Bumps whenever the designer changes something, so its panel redraws. */
     var designVersion by mutableIntStateOf(0)
+    var startWithStorage by mutableStateOf(false)
+    var justStored by mutableStateOf(false)
+        private set
+    private var storedUntil = 0f
     var bagCount by mutableIntStateOf(0)
         private set
     var found by mutableIntStateOf(world.found.size)
@@ -262,6 +281,7 @@ class Engine(
         class Hold(val body: Body) : Target
         class FromBag(val body: Body) : Target
         object BagButton : Target
+        class BagPage(val direction: Int) : Target
         object Pan : Target
 
         /** A piece of furniture picked up with a long press, to be moved («heimedesignar»). */
@@ -284,6 +304,7 @@ class Engine(
         sim.listener = this
         sim.settle(place)
         bagCount = world.bag().size
+        bagPage = bagPage.coerceAtMost(app.trollfoss.domain.TravelBag.pages(bagCount) - 1)
     }
 
     // ---------------------------------------------------------------------------------- geometry
@@ -457,6 +478,8 @@ class Engine(
         seasonParticles(dt)
         flights.removeAll { it.t += dt / 0.75f; it.t >= 1f }
         bagCount = world.bag().size
+        bagPage = bagPage.coerceAtMost(app.trollfoss.domain.TravelBag.pages(bagCount) - 1)
+        if (time > storedUntil) justStored = false
     }
 
     private fun accepts(f: Fixture, t: Thing): Boolean = PlayInteractions.accepts(f, t) || f.type == FixtureType.TREASURE_BOX ||
@@ -921,6 +944,7 @@ class Engine(
                     bagOpen = !bagOpen
                     host.sfx(Sfx.ZIP, 0.6f)
                 }
+                is Target.BagPage -> turnBagPage(t.direction)
                 Target.Pan -> tapScene(at)
                 is Target.Furniture -> putDown(t.fixture)
                 is Target.Coop -> Unit
@@ -942,6 +966,8 @@ class Engine(
                 val inCorner = onBag(g)
                 if ((storeZone?.contains(at) == true || inCorner) && sim.designer.store(place, f)) {
                     designVersion++
+                    justStored = true
+                    storedUntil = time + 4f
                     if (inCorner) particles.burst(PKind.SPARK, units(bagCenter.x) + cam, units(bagCenter.y - top), 8, 0.4f)
                     host.changed()
                 } else {
@@ -1022,6 +1048,10 @@ class Engine(
     }
 
     private var cataloguePreview: Fixture? = null
+    var catalogueType by mutableStateOf<FixtureType?>(null)
+        private set
+    var catalogueVariant by mutableIntStateOf(0)
+        private set
     private var catalogueFinger = Offset.Zero
     private var catalogueStoreIndex: Int? = null
 
@@ -1029,6 +1059,8 @@ class Engine(
     fun beginCatalogueDrag(type: FixtureType, variant: Int, at: Offset, storeIndex: Int? = null) {
         panelTouched()
         cataloguePreview = Fixture(-1, place, type, 0f, 0f, variant)
+        catalogueType = type
+        catalogueVariant = variant
         catalogueStoreIndex = storeIndex
         moveCatalogueDrag(at)
         host.sfx(Sfx.PICK, 0.6f)
@@ -1051,7 +1083,7 @@ class Engine(
         placed(furniture, focus = false)
     }
 
-    fun cancelCatalogueDrag() { cataloguePreview = null; catalogueStoreIndex = null }
+    fun cancelCatalogueDrag() { cataloguePreview = null; catalogueStoreIndex = null; catalogueType = null }
 
     fun addFromStore(index: Int) {
         val type = world.storage.getOrNull(index)?.type ?: return
@@ -1221,7 +1253,14 @@ class Engine(
     /** What a finger touches, from the top down. */
     private fun pick(at: Offset): Target {
         if (hypot(at.x - bagCenter.x, at.y - bagCenter.y) < bagRadius * 1.1f) return Target.BagButton
-        if (bagOpen) trayHit(at)?.let { return Target.FromBag(it) }
+        if (bagOpen) {
+            val tray = trayRect()
+            if (app.trollfoss.domain.TravelBag.pages(world.bag().size) > 1 && tray.contains(at)) {
+                if (at.x < tray.left + dp(48f)) return Target.BagPage(-1)
+                if (at.x > tray.right - dp(48f)) return Target.BagPage(1)
+            }
+            trayHit(at)?.let { return Target.FromBag(it) }
+        }
         val p = toScene(at)
         val list = drawList()
         val front = fixtureAt(p, pad = 0f)
@@ -1366,8 +1405,7 @@ class Engine(
         body.held = false
         val fingerOnBag = allowBag && onBag(g)
         if (fingerOnBag) {
-            intoBag(body)
-            return
+            if (intoBag(body, returning = g.target is Target.FromBag)) return
         }
         if (body is Person) {
             body.anim.faceTime = 0f
@@ -1418,7 +1456,16 @@ class Engine(
         host.changed()
     }
 
-    private fun intoBag(body: Body) {
+    private fun intoBag(body: Body, returning: Boolean = false): Boolean {
+        // A second finger cannot fill a slot while its original item is still being dragged out.
+        val reserved = grabs.values.count { it.target is Target.FromBag }
+        if (!app.trollfoss.domain.TravelBag.canPack(world, body, returning, reserved)) {
+            fullBagUntil = time + 2.8f
+            bagOpen = true
+            awayWobble = 1f
+            host.sfx(Sfx.HMM, 0.6f)
+            return false
+        }
         // A figure says goodbye on its way into the bag.
         if (body is Person) voice(body, Sfx.GIGGLE, 0.7f)
         if (body is Person) Players.pack(world, body) else {
@@ -1430,28 +1477,31 @@ class Engine(
         host.sfx(Sfx.ZIP, 0.7f)
         particles.burst(PKind.SPARK, units(bagCenter.x) + cam, units(bagCenter.y - top), 8, 0.4f)
         host.changed()
+        bagPage = (app.trollfoss.domain.TravelBag.pages(world.bag().size) - 1)
+        return true
     }
 
     private fun trayRect(): Rect {
         val right = bagCenter.x - bagRadius - dp(if (compact) 8f else 14f)
         val left = dp(if (compact) 12f else 104f)
-        val bottom = heightPx - dp(if (compact) 8f else 108f)
+        // Keep both paging arrows above the phone's furniture and room buttons.
+        val bottom = heightPx - dp(if (compact) 68f else 108f)
         val height = dp(if (compact) 66f else 92f)
         return Rect(left, bottom - height, max(left + height, right), bottom)
     }
 
     private fun traySlot(): Float {
         val r = trayRect()
-        val n = max(1, world.bag().size)
-        return min(dp(if (compact) 64f else 88f), (r.width - dp(12f)) / n)
+        return (r.width - trayInset() * 2) / app.trollfoss.domain.TravelBag.PAGE_SIZE
     }
+    private fun trayInset() = dp(if (app.trollfoss.domain.TravelBag.pages(world.bag().size) > 1) 48f else 6f)
 
     private fun trayHit(at: Offset): Body? {
         val r = trayRect()
         if (!r.contains(at)) return null
-        val bag = world.bag()
-        val i = ((at.x - r.left - dp(6f)) / traySlot()).toInt()
-        return bag.getOrNull(i)
+        if (at.x < r.left + trayInset() || at.x >= r.right - trayInset()) return null
+        val i = ((at.x - r.left - trayInset()) / traySlot()).toInt()
+        return app.trollfoss.domain.TravelBag.page(world.bag(), bagPage).getOrNull(i)
     }
 
     /** The best spot on a figure for a thing let go at [center], within reach. */
@@ -3457,8 +3507,8 @@ class Engine(
                 drawText(hint, topLeft = Offset(tray.center.x - hint.size.width / 2f, tray.center.y - hint.size.height / 2f))
             }
             val slot = traySlot()
-            bag.forEachIndexed { i, b ->
-                val cx = tray.left + dp(6f) + slot * (i + 0.5f)
+            app.trollfoss.domain.TravelBag.page(bag, bagPage).forEachIndexed { i, b ->
+                val cx = tray.left + trayInset() + slot * (i + 0.5f)
                 val base = tray.bottom - dp(14f)
                 val box = min(slot - dp(10f), dp(if (compact) 48f else 66f))
                 translate(cx, base) {
@@ -3471,12 +3521,31 @@ class Engine(
                     }
                 }
             }
+            val pages = app.trollfoss.domain.TravelBag.pages(bag.size)
+            if (pages > 1) {
+                for (direction in listOf(-1, 1)) {
+                    val cx = if (direction < 0) tray.left + dp(24f) else tray.right - dp(24f)
+                    val enabled = if (direction < 0) bagPage > 0 else bagPage < pages - 1
+                    val color = if (enabled) T.Ink else T.CreamLine
+                    val y = tray.center.y
+                    drawLine(color, Offset(cx - direction * dp(6f), y - dp(9f)), Offset(cx + direction * dp(6f), y), dp(3f), StrokeCap.Round)
+                    drawLine(color, Offset(cx + direction * dp(6f), y), Offset(cx - direction * dp(6f), y + dp(9f)), dp(3f), StrokeCap.Round)
+                }
+                val label = text.measure("${bagPage.coerceAtMost(pages - 1) + 1} / $pages", TextStyle(color = T.Ink, fontSize = 11.sp))
+                drawText(label, topLeft = Offset(tray.center.x - label.size.width / 2, tray.top - label.size.height - dp(4f)))
+            }
+        }
+        if (time < fullBagUntil) {
+            val label = text.measure(fullBagHint, TextStyle(color = T.Ink, fontSize = 14.sp, fontWeight = FontWeight.Bold), constraints = androidx.compose.ui.unit.Constraints(maxWidth = dp(230f).toInt()))
+            val origin = Offset(geometry.right - label.size.width - dp(12f), c.y - r - label.size.height - dp(20f))
+            drawRoundRect(T.Cream, origin - Offset(dp(8f), dp(6f)), Size(label.size.width + dp(16f), label.size.height + dp(12f)), CornerRadius(dp(14f)))
+            drawText(label, topLeft = origin)
         }
         // The bag button, drawn like the other round buttons.
         val wobble = (if (bag.isNotEmpty() && motion) sin(time * 3f) * 3f else 0f) +
             (if (motion) sin((1f - awayWobble) * PI.toFloat()) * 8f * awayWobble else 0f)
         // What is held is over the corner: the whole touch area lights up.
-        if (overAway) drawCircle(T.SunTop.copy(alpha = 0.35f), bagRadius * AwayCorner.HIT, bagCenter)
+        if (overAway) drawCircle(T.SunTop.copy(alpha = 0.35f), r, c)
         drawCircle(T.SunDeep, r, Offset(c.x, c.y + dp(5f)))
         drawCircle(Brush.verticalGradient(if (bagOpen || overAway) listOf(T.Mint, T.MintDeep) else listOf(T.SunTop, T.Sun), c.y - r, c.y + r), r, c)
         drawCircle(Ink.line, r, c, style = Stroke(dp(2.2f)))
@@ -3490,11 +3559,12 @@ class Engine(
                 }
             }
         }
-        if (bag.isNotEmpty()) {
+        val count = if (away == AwayPicture.CRATE) world.storage.size else bag.size
+        if (count > 0) {
             val badge = Offset(c.x + r * 0.72f, c.y - r * 0.72f)
             drawCircle(T.Berry, dp(13f), badge)
             drawCircle(Ink.line, dp(13f), badge, style = Stroke(dp(2f)))
-            val layout = text.measure(bag.size.toString(), TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Black))
+            val layout = text.measure(count.toString(), TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Black))
             drawText(layout, topLeft = Offset(badge.x - layout.size.width / 2f, badge.y - layout.size.height / 2f))
         }
     }

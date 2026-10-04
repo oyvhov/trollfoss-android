@@ -4,7 +4,10 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -20,13 +23,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -42,7 +48,9 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -66,6 +74,11 @@ import app.trollfoss.ui.art.drawBalloon
 import app.trollfoss.ui.art.Ink
 import app.trollfoss.ui.art.Pen
 import app.trollfoss.ui.art.drawIslandMapLive
+import app.trollfoss.ui.art.MapTap
+import app.trollfoss.ui.art.mapGeo
+import app.trollfoss.ui.art.inWater
+import app.trollfoss.ui.art.drawMapTap
+import app.trollfoss.ui.art.drawBalloonTrail
 import app.trollfoss.ui.art.inkedRound
 import app.trollfoss.ui.art.inkedCircle
 import app.trollfoss.ui.art.drawPerson
@@ -73,8 +86,8 @@ import app.trollfoss.ui.art.mapLabel
 import app.trollfoss.ui.art.mapSpot
 import app.trollfoss.ui.art.MAP_WIDTH_FACTOR
 import app.trollfoss.ui.art.rememberMapLayer
-import app.trollfoss.ui.components.CloseButton
 import app.trollfoss.ui.components.GameText
+import app.trollfoss.ui.components.IconCanvas
 import app.trollfoss.ui.components.Icons
 import app.trollfoss.ui.components.RoundButton
 import app.trollfoss.ui.components.Tones
@@ -82,6 +95,7 @@ import app.trollfoss.ui.str
 import app.trollfoss.ui.theme.LocalMotion
 import app.trollfoss.ui.theme.T
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import kotlin.math.max
 import kotlin.math.sin
 
@@ -95,6 +109,7 @@ fun MapScreen(vm: TrollfossViewModel) {
     var yawnAt by remember { mutableFloatStateOf(-10f) }
     val flight = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
+    val taps = remember { mutableStateListOf<MapTap>() }
     LaunchedEffect(Unit) {
         val start = withFrameNanos { it }
         while (true) withFrameNanos { t = if (motion) (it - start) / 1e9f else 0f }
@@ -105,12 +120,15 @@ fun MapScreen(vm: TrollfossViewModel) {
         (if (vm.world.playerIds.isNotEmpty()) team else vm.world.people().filter { it.species == Species.FOLK && it.place == vm.place }.take(3)).map { it.look }
     }
     val scroll = rememberScrollState()
+    val canPanLeft by remember { derivedStateOf { scroll.value > 2 } }
+    val canPanRight by remember { derivedStateOf { scroll.value < scroll.maxValue - 2 } }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val controls = mapControls(maxHeight.value)
         var controlsHeightPx by remember { mutableIntStateOf(0) }
         val controlsHeight = if (controlsHeightPx > 0) with(LocalDensity.current) { controlsHeightPx.toDp() } else 96.dp
         val viewportWidth = constraints.maxWidth
+        val mapHeight = constraints.maxHeight
         val w = maxWidth * MAP_WIDTH_FACTOR
         val h = maxHeight
         val mapWidth = with(LocalDensity.current) { w.roundToPx() }
@@ -118,7 +136,7 @@ fun MapScreen(vm: TrollfossViewModel) {
         LaunchedEffect(mapWidth, from) { scroll.scrollTo(centered(from)) }
         fun fly(place: PlaceId) {
             if(target!=null) return
-            if(place==from) { vm.back(); return }
+            if(place==from) { vm.open(Screen.Play); return }
             target=place
             vm.sfx(Sfx.WHOOSH,0.8f)
             scope.launch {
@@ -138,7 +156,19 @@ fun MapScreen(vm: TrollfossViewModel) {
         Box(Modifier.fillMaxSize().horizontalScroll(scroll)) {
         Box(Modifier.width(w).fillMaxHeight()) {
         // The map is its own layer: every frame only it is redrawn, not the labels and buttons over it.
-        Canvas(Modifier.fillMaxSize().graphicsLayer()) {
+        Canvas(Modifier.fillMaxSize().graphicsLayer().pointerInput(vm, motion, mapWidth, mapHeight) {
+            detectTapGestures { at ->
+                val x = at.x / mapWidth
+                val water = mapGeo(mapWidth.toFloat(), mapHeight.toFloat()).inWater(at)
+                vm.sfx(if(water) Sfx.SPLASH else Sfx.POP, .45f, .9f + (x % .3f))
+                if(motion) {
+                    val tap = MapTap(at, t, water)
+                    if(taps.size >= 6) taps.removeAt(0)
+                    taps.add(tap)
+                    scope.launch { delay(1200); taps.remove(tap) }
+                }
+            }
+        }) {
             val pen = Pen(max(1.4f, size.height * 0.0034f), t, if (vm.night) 1f else 0f, vm.weather, season = vm.season, festival = vm.festival)
             drawIslandMapLive(pen, target ?: from, t, mapLayer.value)
             val cloud=mapSpot(PlaceId.CLOUD_ISLAND)
@@ -173,10 +203,12 @@ fun MapScreen(vm: TrollfossViewModel) {
             val a = mapSpot(from)
             val b = mapSpot(target ?: from)
             val p = flight.value
+            if(motion) drawBalloonTrail(a, b, p, pen)
             val x = (a.x + (b.x - a.x) * p) * size.width
             val arc = sin(p * Math.PI.toFloat()) * size.height * 0.18f
             val y = ((a.y + (b.y - a.y) * p) * size.height - size.height * 0.1f - arc + sin(t * 1.6f) * size.height * 0.008f).coerceIn(size.height * 0.12f, size.height * 0.83f)
             drawBalloon(Offset(x, y), size.height * 0.09f, pen, riders)
+            for(tap in taps) drawMapTap(tap, t, pen)
         }
 
         Box(
@@ -184,8 +216,8 @@ fun MapScreen(vm: TrollfossViewModel) {
                 .offset(x = w * 0.41f - 48.dp, y = h * 0.25f - 40.dp)
                 .size(96.dp, 80.dp)
                 .clickable(remember { MutableInteractionSource() }, indication = null) {
-                    if (t - yawnAt < 2.4f) return@clickable
-                    yawnAt = t
+                    if (motion && t - yawnAt < 2.4f) return@clickable
+                    if(motion) yawnAt = t
                     vm.sfx(Sfx.SNORE, 0.9f, 0.55f)
                     vm.sfx(Sfx.ROAR, 0.35f, 0.5f)
                     vm.sim.egg("mountain")
@@ -195,25 +227,18 @@ fun MapScreen(vm: TrollfossViewModel) {
         for (place in PlaceId.entries.filter { it.onMap }.sortedBy { if (it == PlaceId.MANOR_GROUND) 0 else 1 }) {
             val label = mapLabel(place).str()
             val bounds = mapMarkerBounds(place, w.value, h.value, controlsHeight.value)
-            Column(
+            MapPlaceMarker(place, label, place == (target ?: from), h.value < 500f, onClick = { fly(place) }, modifier =
                 Modifier
                     // Keep coastal labels above the floating controls without shrinking the map.
                     .offset(x = bounds.left.dp, y = bounds.top.dp)
-                    .size(bounds.width.dp, bounds.height.dp)
-                    .semantics { contentDescription = label; role = Role.Button }
-                    .clickable(remember { MutableInteractionSource() }, indication = null) {
-                        fly(place)
-                    },
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Bottom,
-            ) {
-                GameText(label, fontSize = 19.sp, style = MaterialTheme.typography.titleLarge, color = if (place == (target ?: from)) T.Sun else Color.White, textAlign = TextAlign.Center, maxLines = 1)
-            }
+                    .size(bounds.width.dp, bounds.height.dp))
         }
         }
         }
 
-        CloseButton({ vm.back() }, Modifier.align(Alignment.TopStart).padding(16.dp))
+        Row(Modifier.align(Alignment.TopStart).padding(controls.edge.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            WorldControlButtons(vm, size = if (h.value < 500f) 48.dp else 56.dp)
+        }
         Row(
             Modifier.align(Alignment.BottomCenter).fillMaxWidth().onSizeChanged { controlsHeightPx = it.height }.padding(controls.edge.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -227,6 +252,19 @@ fun MapScreen(vm: TrollfossViewModel) {
             ProgressButton(vm)
         }
         RoundButton(S.parents.str(), onClick = { vm.open(Screen.ParentGate) }, modifier = Modifier.align(Alignment.TopEnd).padding(16.dp), size = 52.dp, tone = Tones.Cream, icon = Icons.Gear)
-        GameText(S.mapDrag.str(), modifier = Modifier.align(Alignment.TopCenter).padding(top = 16.dp), fontSize = 14.sp, color = Color.White)
+        Row(Modifier.align(Alignment.TopCenter).padding(top = controls.edge.dp)
+            .background(T.Cream, RoundedCornerShape(50)).border(2.dp, T.Ink, RoundedCornerShape(50))
+            .padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            IconCanvas(Icons.Map, Modifier.size(if(h.value < 500f) 24.dp else 32.dp))
+            GameText(S.appName.str(), fontSize = if(h.value < 500f) 20.sp else 26.sp, color = T.Sea, maxLines = 1)
+        }
+        if(canPanLeft) RoundButton(S.mapLeft.str(), onClick = {
+            scope.launch { scroll.animateScrollTo((scroll.value - viewportWidth * .65f).toInt().coerceAtLeast(0), tween(if(motion) 480 else 1)) }
+        }, modifier = Modifier.align(Alignment.CenterStart).padding(controls.edge.dp), size = 48.dp, tone = Tones.Cream, icon = Icons.Back)
+        if(canPanRight) RoundButton(S.mapRight.str(), onClick = {
+            scope.launch { scroll.animateScrollTo((scroll.value + viewportWidth * .65f).toInt().coerceAtMost(scroll.maxValue), tween(if(motion) 480 else 1)) }
+        }, modifier = Modifier.align(Alignment.CenterEnd).padding(controls.edge.dp), size = 48.dp, tone = Tones.Cream,
+            icon = { rotate(180f) { Icons.Back(this) } })
     }
 }

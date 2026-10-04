@@ -1,17 +1,23 @@
 package app.trollfoss.ui.screens
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +25,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.height
@@ -53,6 +60,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,6 +69,8 @@ import app.trollfoss.domain.CatalogueItem
 import app.trollfoss.domain.Decor
 import app.trollfoss.domain.Fixture
 import app.trollfoss.domain.FixtureType
+import app.trollfoss.domain.FurnitureGroup
+import app.trollfoss.domain.FurnitureGroups
 import app.trollfoss.domain.PlaceId
 import app.trollfoss.domain.World
 import app.trollfoss.ui.art.Pen
@@ -89,14 +99,14 @@ import kotlin.math.min
 private enum class DesignTab { FURNITURE, WALL, FLOOR, STORE, TIDY, TRASH }
 
 /**
- * The home designer's panel along the bottom of the screen: furniture from the catalogue, wallpaper and
+ * The home designer's panel on the right: furniture from the catalogue, wallpaper and
  * floors for the room in the middle of the screen, the store (drag furniture onto the panel to put it
  * away) and the broom that tidies the whole place. Everything is pictures; nothing needs reading.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> Unit, modifier: Modifier = Modifier) {
-    var tab by remember(place) { mutableIntStateOf(DesignTab.FURNITURE.ordinal) }
+    var tab by remember(place, engine.startWithStorage) { mutableIntStateOf(if(engine.startWithStorage) DesignTab.STORE.ordinal else DesignTab.FURNITURE.ordinal) }
+    var group by remember(place) { mutableStateOf(FurnitureGroup.ALL) }
     val feedback = LocalFeedback.current
     val version = engine.designVersion
     val compact = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp < 520
@@ -106,7 +116,8 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
     // The store as a list of its own for every change: the grid below only redraws when it is handed a new list.
     val stored = remember(version, world.storage.size) { world.storage.toList() }
     val discarded = remember(version, world.discardedStorage.size) { world.discardedStorage.toList() }
-    val thumbSide = if (compact) 88.dp else 112.dp
+    val thumbSide = if (compact) 72.dp else 96.dp
+    val motion = app.trollfoss.ui.theme.LocalMotion.current
     // Furniture dropped on the panel flies into the box: open the box, so the child sees where it went.
     var storedBefore by remember(place) { mutableIntStateOf(stored.size) }
     var storageNotice by remember(place) { mutableStateOf<app.trollfoss.domain.Stored?>(null) }
@@ -117,7 +128,7 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
     val shape = RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp)
 
     // A slim panel on the right, so the floor with the furniture stays in view.
-    Column(
+    Row(
         modifier
             .fillMaxHeight()
             .width(playPanelWidth(compact, designer = true))
@@ -135,41 +146,37 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
             .background(if (glow > 0.01f) androidx.compose.ui.graphics.lerp(T.Cream, T.SunTop, glow) else T.Cream.copy(alpha = 0.97f))
             .border(3.dp, T.Ink, shape)
             .padding(horizontal = 10.dp, vertical = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            // The heading names the open tab, so the pictures below get the room a second heading would take.
-            GameText(when (DesignTab.entries[tab]) { DesignTab.FURNITURE -> SM.furnish; DesignTab.WALL -> SM.wallpaper; DesignTab.FLOOR -> SM.flooring; DesignTab.STORE -> SM.storage; DesignTab.TIDY -> SM.tidy; DesignTab.TRASH -> SM.trash }.str(), fontSize = 20.sp, color = T.Ink)
-            CloseButton(onClose, size = if (compact) 40.dp else 48.dp)
-        }
-        FlowRow(maxItemsInEachRow = 3, horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        // A scrollable picture rail leaves the height to the furniture, also on a short phone.
+        Column(Modifier.width(48.dp).fillMaxHeight().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             for (t in tabs) {
-                val on = t.ordinal == tab
                 Box {
-                RoundButton(
-                    description = when (t) { DesignTab.FURNITURE -> SM.furnish; DesignTab.WALL -> SM.wallpaper; DesignTab.FLOOR -> SM.flooring; DesignTab.STORE -> SM.storage; DesignTab.TIDY -> SM.tidy; DesignTab.TRASH -> SM.trash }.str(),
-                    onClick = { tab = t.ordinal },
-                    size = 44.dp,
-                    tone = if (on) Tones.Sun else Tones.Cream,
-                    icon = when (t) {
-                        DesignTab.FURNITURE -> DesignIcons.Sofa
-                        DesignTab.WALL -> DesignIcons.Wallpaper
-                        DesignTab.FLOOR -> DesignIcons.Floor
-                        DesignTab.STORE -> DesignIcons.Box
-                        DesignTab.TIDY -> DesignIcons.Broom
-                        DesignTab.TRASH -> DesignIcons.Bin
-                    },
-                )
-                // How many pieces wait in the box, ready to come along to another house.
-                val count=if(t==DesignTab.STORE) stored.size else if(t==DesignTab.TRASH) discarded.size else 0
-                if (count>0) {
-                    Box(
-                        Modifier.align(Alignment.TopEnd).size(20.dp).background(T.Berry, androidx.compose.foundation.shape.CircleShape).border(2.dp, T.Ink, androidx.compose.foundation.shape.CircleShape),
-                        contentAlignment = Alignment.Center,
-                    ) { GameText("$count", fontSize = 11.sp, style = MaterialTheme.typography.titleMedium, color = Color.White) }
-                }
+                    RoundButton(designTabLabel(t).str(), onClick = { engine.cancelCatalogueDrag(); tab = t.ordinal }, size = 48.dp,
+                        modifier = Modifier.semantics { selected = t.ordinal == tab },
+                        tone = if (t.ordinal == tab) Tones.Sun else Tones.Cream,
+                        icon = when(t) { DesignTab.FURNITURE -> DesignIcons.Sofa; DesignTab.WALL -> DesignIcons.Wallpaper;
+                            DesignTab.FLOOR -> DesignIcons.Floor; DesignTab.STORE -> DesignIcons.Box;
+                            DesignTab.TIDY -> DesignIcons.Broom; DesignTab.TRASH -> DesignIcons.Bin })
+                    val count = if (t == DesignTab.STORE) stored.size else if(t == DesignTab.TRASH) discarded.size else 0
+                    if (count > 0) CountBadge(count, Modifier.align(Alignment.TopEnd))
                 }
             }
+        }
+        Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            // The heading names the open tab, so the pictures below get the room a second heading would take.
+            GameText(designTabLabel(DesignTab.entries[tab]).str(), modifier = Modifier.weight(1f), maxLines = 1, fontSize = if(compact) 16.sp else 20.sp, color = T.Ink)
+            CloseButton(onClose, size = if (compact) 40.dp else 48.dp)
+        }
+        if (tab == DesignTab.FURNITURE.ordinal) {
+            val availableGroups = remember(place) { FurnitureGroup.entries.filter { g -> g == FurnitureGroup.ALL || Decor.catalogue(place).any { FurnitureGroups.matches(g, it.type) } } }
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                for (g in availableGroups) RoundButton(groupLabel(g).str(), onClick = { engine.cancelCatalogueDrag(); group = g },
+                    modifier = Modifier.semantics { selected = group == g }, size = 48.dp,
+                    tone = if(group == g) Tones.Mint else Tones.Cream, icon = { groupIcon(g)(this) })
+            }
+            GameText(groupLabel(group).str(), fontSize = 12.sp, maxLines = 1, color = T.Ink)
         }
         if (Decor.rooms(place).size > 1) GameText(roomLabel(world, place, currentRoom).str(), fontSize = 13.sp, color = T.Ink)
         if(storageNotice!=null && stored.any { it===storageNotice }) Row(Modifier.fillMaxWidth().background(T.Mint.copy(alpha=0.2f),RoundedCornerShape(16.dp)).padding(6.dp),verticalAlignment=Alignment.CenterVertically) {
@@ -177,7 +184,7 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
             RoundButton(app.trollfoss.ui.SF.bringBack.str(),onClick={ val index=world.storage.indexOfFirst { it===storageNotice };if(index>=0) engine.addFromStore(index);storageNotice=null },size=44.dp,tone=Tones.Mint,icon=DesignIcons.Undo)
         }
         if (tab == DesignTab.FURNITURE.ordinal || tab == DesignTab.STORE.ordinal)
-            GameText(S.furnitureDragHint.str(), fontSize = 12.sp, color = T.Ink)
+            GameText((if(engine.catalogueType != null) S.dropFurniture else S.furnitureDragHint).str(), fontSize = 12.sp, color = T.Ink)
         if (engine.placementFailed) GameText(
             (if ((place == PlaceId.MINE_GROUND || place == PlaceId.MINE_UPPER) &&
                 (0 until app.trollfoss.domain.Mine.SLOTS).none { world.mine.standing(place, it) }) SM.buildBeforeFurnishing else SM.placeFull).str(),
@@ -187,16 +194,20 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
         Box(Modifier.fillMaxWidth().weight(1f)) {
             // Read the version so the panel redraws after every change.
             if (version < 0) Unit
-            when (DesignTab.entries[tab]) {
+            AnimatedContent(targetState = tab to group, transitionSpec = { fadeIn(tween(if(motion) 140 else 0)) togetherWith fadeOut(tween(if(motion) 100 else 0)) }, label = "furniture category") { selection ->
+            when (DesignTab.entries[selection.first]) {
                 DesignTab.FURNITURE -> {
-                    val items = remember(place) { Decor.catalogue(place) }
+                    val items = remember(place, selection.second, world.stickers.size) {
+                        Decor.catalogue(place).filter { FurnitureGroups.matches(selection.second, it.type) }
+                            .sortedBy { !Decor.available(world, it) }
+                    }
                     LazyVerticalGrid(GridCells.Fixed(2), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         itemsIndexed(items) { index, item ->
                             val reward = Decor.reward(item)
                             val label = app.trollfoss.ui.FurnitureLabels.name(item.type).str()
                             val locked = !Decor.available(world, item)
                             val hangs = item.type.spec.wall
-                            Tile(modifier = furnitureDrag(engine, item.type, item.variant, locked = locked).semantics { contentDescription = label }, look = TileLook.ROOM, tint = index / 2 + index % 2, feet = if (hangs) null else thumbSide * fixtureThumbFeet(item.type), onClick = {
+                            Tile(chosen = engine.catalogueType == item.type && engine.catalogueVariant == item.variant, modifier = furnitureDrag(engine, item.type, item.variant, locked = locked).semantics { contentDescription = label }, look = TileLook.ROOM, tint = index / 2 + index % 2, feet = if (hangs) null else thumbSide * fixtureThumbFeet(item.type), onClick = {
                                 if (locked && reward != null) {
                                     engine.cancel(); engine.designMode = false; engine.wantedToy = reward
                                 } else if (locked) feedback.sfx(Sfx.HMM, 0.6f, 0.8f) else engine.addFurniture(item.type, item.variant)
@@ -209,7 +220,7 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                     }
                 }
                 DesignTab.WALL, DesignTab.FLOOR -> {
-                    val wall = DesignTab.entries[tab] == DesignTab.WALL
+                    val wall = DesignTab.entries[selection.first] == DesignTab.WALL
                     val current = Decor.style(world, place, currentRoom)
                     val n = if (wall) Decor.WALLS else Decor.FLOORS
                     LazyVerticalGrid(GridCells.Fixed(2), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -275,6 +286,7 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                     }
                 }
             }
+            }
         }
 
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
@@ -290,8 +302,28 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
                 IconCanvas(DesignIcons.Sticker, Modifier.size(28.dp))
                 GameText("${world.stickers.size}", fontSize = 20.sp, style = MaterialTheme.typography.titleLarge, color = Color.White)
             }
-            RoundButton(SM.done.str(), onClick = onClose, size = 56.dp, tone = Tones.Mint, icon = Icons.Check)
+            RoundButton(SM.done.str(), onClick = onClose, size = 48.dp, tone = Tones.Mint, icon = Icons.Check)
         }
+    }
+    }
+}
+private fun designTabLabel(tab: DesignTab) = when(tab) {
+    DesignTab.FURNITURE -> SM.furnish; DesignTab.WALL -> SM.wallpaper; DesignTab.FLOOR -> SM.flooring;
+    DesignTab.STORE -> SM.storage; DesignTab.TIDY -> SM.tidy; DesignTab.TRASH -> SM.trash
+}
+private fun groupLabel(group: FurnitureGroup) = when(group) {
+    FurnitureGroup.ALL -> S.allFurniture; FurnitureGroup.SEATING -> S.furnitureSeats; FurnitureGroup.TABLES -> S.furnitureTables;
+    FurnitureGroup.STORAGE -> S.furnitureStorage; FurnitureGroup.KITCHEN -> S.furnitureKitchen;
+    FurnitureGroup.PLAY -> S.furniturePlay; FurnitureGroup.DECOR -> S.furnitureDecor
+}
+private fun groupIcon(group: FurnitureGroup): DrawScope.() -> Unit = {
+    if(group == FurnitureGroup.ALL) DesignIcons.Sofa(this) else {
+        val type = when(group) {
+            FurnitureGroup.SEATING -> FixtureType.BED; FurnitureGroup.TABLES -> FixtureType.TABLE;
+            FurnitureGroup.STORAGE -> FixtureType.WARDROBE; FurnitureGroup.KITCHEN -> FixtureType.SINK;
+            FurnitureGroup.PLAY -> FixtureType.PIANO; else -> FixtureType.LAMP
+        }
+        drawFixtureThumb(type, 0, Rect(0f, 0f, size.width, size.height))
     }
 }
 /** How a card is dressed: a little showroom with a wall and a floor, a soft pad with no frame, or a plain swatch. */
@@ -376,7 +408,7 @@ private fun DrawScope.drawRoomCard(wall: Color, feet: Float?) {
 
 @Composable
 private fun LockBadge(item: CatalogueItem) {
-    Box(Modifier.size(104.dp)) {
+    Box(Modifier.fillMaxSize()) {
         if (Decor.reward(item) != app.trollfoss.domain.ToyReward.TRAIN) Row(
             Modifier.align(Alignment.BottomCenter).padding(bottom = 4.dp).background(T.Grape, RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -393,7 +425,7 @@ private fun LockBadge(item: CatalogueItem) {
 @Composable
 private fun FurnitureThumb(type: FixtureType, variant: Int, place: PlaceId, locked: Boolean) {
     val compact = androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp < 520
-    CachedThumb("fixture:$type:$variant", if (compact) 88.dp else 112.dp, Modifier.graphicsLayer { alpha = if (locked) 0.45f else 1f }) {
+    CachedThumb("fixture:$type:$variant", if (compact) 72.dp else 96.dp, Modifier.graphicsLayer { alpha = if (locked) 0.45f else 1f }) {
         drawFixtureThumb(type, variant, Rect(0f, 0f, size.width, size.height))
     }
 }

@@ -1,5 +1,35 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – KART, SEKK OG HØGREMENY (2026-10-04, Codex):** Brukaren melde feil på kartet og i
+> sekken/høgremenyen etter 1.8.0, og bad om eit meir spennande kart med animasjonar.
+> Ferdig lokalt på `codex/map-and-play-menu` i `C:\topa\.claude\worktrees\legg-bort`.
+> Kartet er hovudsida utan X eller retur til eit gammalt rom. Dag/natt og vêr har eigne knappar;
+> same stad kan opnast att. Runde, farga stadskilt svarar på trykk og markerer staden med ein liten
+> ballong. Sidepiler blar i kartet, vatn svarar med sprut og andre ledige område med farga glimt.
+> Reiseballongen legg att eit kort spor. Faste treffområde, høgst seks samtidige trykkeffektar og
+> den eksisterande mellomlagra bakgrunnen er bevarte. Redusert rørsle gir straksreise utan ekstra effektar.
+> Sekken tek imot høgst 12 ting/figurar og viser seks store bilete per side. Full sekk avviser utan tap;
+> gamle, større sekkar og tilbakeførte byggjedelar blir bevarte. Møblar går berre til det separate
+> møbellageret; lagerkassa tel møblane. Opne sekkesider ligg over mobilknappane, så begge piler kan brukast.
+> Høgremenyen har ein rullbar ikonrad, biletkategoriar, tilgjengelege møblar først, mjuke kategoriskifte
+> og markert førehandsvising under drag. Lageret viser kva som nett vart lagt bort; avbroten draging
+> legg ikkje til noko og tek ikkje noko frå lageret. Nynorsk og bokmål er på plass.
+> **Kontroll:** 517 einingstestar og 51 Android-testar grøne, debug-APK og test-APK bygde. Lint: 0 feil /
+> 31 åtvaringar. Nye Android-kontrollar dekkjer to fingrar om siste sekkplass, møblar ved full sekk,
+> avbroten katalogdrag og mobilpaging/uthenting frå siste side av ein gammal sekk med 37 ting.
+> **Native prøve:** dag/natt/regn/snø, stadopning og retur, sidepiler, faktisk sprut/glimt/ballongreise,
+> møbelkategoriar, loddrett blading og faktisk katalogdrag på mobil og nettbrett. Full 12-sekk avviste
+> den trettande ballen utan tap. Alle 37 originale prøve-ID-ar vart bevarte etter paging, kaldstart og
+> reiser; ein stol frå mobilkatalogen gjekk til møbellageret med sekken uendra. Bokmål vart valt gjennom
+> den faktiske foreldreporten. Reise, gjenopning av same stad, Android-tilbake og sidepiler vart også
+> prøvde med Android-animasjonar avslått. Ingen krasj/ANR for prøvepakken i dei bevarte emulatorloggane.
+> Nettbrett 1920 × 1200 / 240 dpi og mobil 2400 × 1080 / 420 dpi: éin eigen `TrollfossRelease180`-AVD
+> i to format, eiga pakke `app.trollfoss.menus` og kontrollert prøveverd. Ingen fysisk prøve eller barnetest.
+> Bilete/XML og film: Git-ignorert `screenshots/map-and-menu/`. Prøve-APK: `dist/map-and-menu/`.
+> Prøvepakkane er avinstallerte, eigen emulator stoppa og skjerm-/rotasjons-/animasjonsinnstillingar
+> tilbakeførte. Produksjonspakken og private spelverdener er urørte. Ingen push, PR, ny release eller
+> versjonsauke i denne runden; publisert 1.8.0 under inneheld ikkje desse endringane.
+
 > **NYAST – PUBLISERT 1.8.0 (2026-10-04, Codex):** Brukaren bad om ny release etter ferdig plan.
 > PR 5 er fletta, og stabil 1.8.0 / kode 13 er publisert som nyaste release:
 > https://github.com/oyvhov/trollfoss-android/releases/tag/v1.8.0.

@@ -55,10 +55,16 @@ trolla er det einaste eventyret.
 
 ## 2. Verda: bygda Trollfoss
 
-Kartet viser bygda ovanfrå med **18 reisemål**: dei femten opphavlege stadene, Storhuset, Mitt hus og Vagstaddalen. Kartet er 60 prosent breiare enn skjermen og kan dragast sidelengs. Fjella med trollhola og romstasjonen ligg
+Kartet viser bygda ovanfrå med **19 reisemål**: dei femten opphavlege stadene, Storhuset, Mitt hus, Vagstaddalen og Skyøya. Kartet er 60 prosent breiare enn skjermen og kan dragast sidelengs. Fjella med trollhola og romstasjonen ligg
 øvst, dalen med tivoli, butikk, foss, lege, bakeri og gard i midten, og strandlinja med frisør,
 Familiehuset, konserthus, strand og dykkebøya ytst – og bak alt saman det store, lange fjellet **Heileberget**. Kvar stad er ei brei scene i skrå-3D (sjå §5) som ein
 sveipar sidelengs i.
+
+Kartet er hovudsida, utan raud X. Dag/natt og vêr kan skiftast direkte her. Stadene har runde
+stadskilt med fargemerke, trykkrespons og ein liten ballong på den valde staden. Sidepiler viser kor
+det finst meir å utforske. Trykk på vatnet gir ein liten sprut, andre ledige område svarar med farga
+glimt, og reiseballongen legg att eit kort spor. Treffområda til stadene er faste, også når skilta
+sprett. Redusert rørsle slår av desse animasjonane; reiser og knappar fungerer framleis.
 
 | Stad | Id | Stemning | Hjartet i staden |
 | --- | --- | --- | --- |
@@ -157,12 +163,17 @@ blekk. Alle rundt ler.
 | Dra på tomt område | Panorer scena. |
 | Hald inne på ein møbel | Møbelen løftar seg og kan flyttast langs golvet og i djupna, med alt som står på han. |
 
-**Heimedesignaren** (malarrulla nede til venstre) opnar eit smalt panel på høgre side, så golvet
+**Heimedesignaren** (møbelknappen nede til høgre) opnar eit smalt panel på høgre side, så golvet
 er synleg: **møblar** frå ein biletkatalog (spesialmøblar opnar seg med klistremerke), **tapet** (12)
 og **golv** (9) for rommet midt på skjermen, **lager** (dra ein møbel over panelet for å leggje han
 vekk) og **kosten** som ryddar heile staden: kvar ting flyg heim i ein glitrande boge, ting laga i
 leiken havnar i hittegodskista, rusk forsvinn i ein puff. Søppelbøtta et rusk og rapar, og
 robotstøvsugaren tuslar langs rommet og slurpar opp det som ligg på golvet.
+
+Ein smal, rullbar ikonrad skiftar mellom møblar, tapet, golv, lager, rydding og papirkorg.
+Møbelkatalogen har biletkategoriar for senger/sitjeplassar, bord, skap/kister, kjøken/bad,
+leik/musikk og pynt. Tilgjengelege møblar kjem før låste leiker. Loddrett sveip blar i møblane;
+eit drag til venstre viser møbelet under fingeren før slepp. Avbroten draging endrar ikkje verda.
 
 **Legg bort-hjørnet:** når barnet løftar ein ting, ein figur eller eit møbel, veks sekken nede til høgre.
 Slepp der legg ting og figurar i sekken og møblar på lager, utan at møbelpanelet er ope. Skjermkantane
@@ -176,7 +187,11 @@ nokon. Kvart oppdrag gir eit klistremerke til albumet i oppdagingsboka; når all
 deler terningen ut tre nye.
 
 Møblar er **flater**, **plassar** (stol, seng, akebakke, hoppbakke, badstu), **skap** og **maskinar**.
-**Sekken** nede til høgre er korleis ting og figurar reiser mellom stadene.
+**Sekken** nede til høgre er korleis ting og figurar reiser mellom stadene. Han har 12 plassar og
+viser seks store bilete per side over verktøyknappane, med piler for å bla. Ein full sekk avviser nye ting og figurar;
+det som blir avvist, blir verande i verda. Gamle sekkar med fleire ting og delar frå byggjeleikar
+blir bevarte og kan blaast gjennom. Møblar går berre til det separate møbellageret. Ved møbelløft
+viser hjørnet ei lagerkasse med talet på lagra møblar, og etter lagring kan lageret opnast direkte.
 
 ---
 

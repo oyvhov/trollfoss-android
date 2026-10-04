@@ -15,7 +15,7 @@ object AwayCorner {
     const val DRAW = 1.6f
 
     /** The touch radius in bag radii, for what was lifted from the scene. */
-    const val HIT = 2.4f
+    const val HIT = DRAW
 
     /** The bag's own touch radius: what comes out of the bag tray keeps it, so a tap in the tray still takes a thing out. */
     const val BAG_ONLY = 1.4f
@@ -25,8 +25,10 @@ object AwayCorner {
 
     fun reach(fromScene: Boolean): Float = if (fromScene) HIT else BAG_ONLY
 
-    fun contains(fingerX: Float, fingerY: Float, centerX: Float, centerY: Float, bagRadius: Float, fromScene: Boolean): Boolean =
-        hypot(fingerX - centerX, fingerY - centerY) < bagRadius * reach(fromScene)
+    fun contains(fingerX: Float, fingerY: Float, centerX: Float, centerY: Float, bagRadius: Float, fromScene: Boolean): Boolean {
+        val shift = if (fromScene) bagRadius * (DRAW - 1f) else 0f
+        return hypot(fingerX - (centerX - shift), fingerY - (centerY - shift)) < bagRadius * reach(fromScene)
+    }
 
     /** Null while nothing from the scene is held; the crate only when everything held is furniture. */
     fun picture(bodies: Int, furniture: Int): AwayPicture? = when {

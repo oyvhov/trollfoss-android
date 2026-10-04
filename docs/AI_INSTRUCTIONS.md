@@ -14,7 +14,7 @@ reglar, poeng eller tap. Sjå `docs/DESIGN.md` for verda og stilen, og `docs/ART
   Olvar; vaksne Tuva, Øyvind, Sondre, Elise, Sander, Hilde, Berit, Sølve; eldre BesteSonja og Besten.
   Trollet heiter Rumle.
 - **Liggjande skjerm** på mobil og nettbrett. All grafikk, musikk og lyd er laga i kode.
-- **Raud X lukkar alt.** Nye dialogar bruker `TrollDialog`.
+- **Raud X lukkar menyar og dialogar.** Kartet er hovudsida og har ikkje lukkeknapp. Nye dialogar bruker `TrollDialog`.
 - **Nesten ingen tekst for barnet.** All tekst finst som `Txt(nn, nb)` i `ui/Strings.kt`.
 - **Personvern.** Ingen reklame, kjøp, konto, analyse eller andre nettkall enn oppdateringssjekken.
 - **Foreldresida** ligg bak eit gongestykke (6–9 × 6–9).

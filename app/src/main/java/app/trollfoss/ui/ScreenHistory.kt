@@ -20,6 +20,8 @@ internal class ScreenHistory {
     fun previousIsPlayers(): Boolean = previous.lastOrNull() == Screen.Players
 
     fun open(target: Screen): Screen {
+        // The village map is the home screen, never a dialog over a previous room.
+        if (target == Screen.Map) return arrive(Screen.Map)
         if (target == current) return current
         // Solving the gate opens its contents, without leaving the puzzle in the back path.
         if (current != Screen.ParentGate || target != Screen.Parent) previous.add(current)
@@ -28,7 +30,7 @@ internal class ScreenHistory {
     }
 
     fun back(): Screen {
-        current = if (previous.isNotEmpty()) previous.removeAt(previous.lastIndex) else Screen.Play
+        current = if (current == Screen.Map) Screen.Map else if (previous.isNotEmpty()) previous.removeAt(previous.lastIndex) else Screen.Map
         return current
     }
 

@@ -16,15 +16,20 @@ class AwayCornerTest {
     @Test fun `the corner reaches further for what comes from the scene than for what comes out of the bag`() {
         assertEquals(AwayCorner.HIT, AwayCorner.reach(fromScene = true), 0f)
         assertEquals(AwayCorner.BAG_ONLY, AwayCorner.reach(fromScene = false), 0f)
-        assertTrue(AwayCorner.BAG_ONLY < AwayCorner.DRAW && AwayCorner.DRAW < AwayCorner.HIT)
+        assertTrue(AwayCorner.BAG_ONLY < AwayCorner.DRAW)
+        assertEquals(AwayCorner.DRAW, AwayCorner.HIT, 0f)
     }
 
     @Test fun `a finger up and to the left of the bag is in the corner only for what comes from the scene`() {
-        // 106 px from the centre: outside the bag's own 80 px, inside the grown corner's 137 px.
+        // 106 px from the old centre: outside the bag's 80 px, inside the shifted, visible 91 px corner.
         assertTrue(AwayCorner.contains(cx - 75f, cy - 75f, cx, cy, r, fromScene = true))
         assertFalse(AwayCorner.contains(cx - 75f, cy - 75f, cx, cy, r, fromScene = false))
         assertFalse(AwayCorner.contains(cx - 233f, cy, cx, cy, r, fromScene = true))
         assertTrue(AwayCorner.contains(cx, cy, cx, cy, r, fromScene = false))
+    }
+    @Test fun anUnpaintedAreaAboveOrLeftOfTheGrownCornerDoesNotPackAnything() {
+        assertFalse(AwayCorner.contains(cx - 135f, cy, cx, cy, r, true))
+        assertFalse(AwayCorner.contains(cx, cy - 135f, cx, cy, r, true))
     }
 
     @Test fun `things and figures get the bag, furniture alone gets the crate, nothing held gets nothing`() {
