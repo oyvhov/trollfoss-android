@@ -26,7 +26,7 @@ import kotlin.math.sin
 /**
  * Where each place sits on the map, as fractions of the map's width and height. Spots are far enough
  * apart for 90 dp buttons on a landscape phone (0.13 apart across or 0.27 apart up and down). They
- * keep clear of the close button (top left), the gear (top right) and the two round buttons (bottom
+ * keep clear of the world controls (top left), the gear (top right) and the three round buttons (bottom
  * left). Heileberget, the great long mountain, has its hut right under the crest.
  */
 fun mapSpot(place: PlaceId): Offset = when (place) {

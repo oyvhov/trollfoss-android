@@ -38,21 +38,22 @@ class MapSpotTest {
 
     private fun word(place: PlaceId, s: Screen): Box {
         val spot = mapSpot(place)
-        val label = mapLabel(place)
-        val chars = max(label.nn.length, label.nb.length)
-        val half = (chars * 10.5f + 6f) / 2f
+        val half = 70f // The full sticker, including its rim and balloon badge.
         val cx = spot.x * s.w * MAP_WIDTH_FACTOR
         val bottom = mapMarkerBounds(place, s.w * MAP_WIDTH_FACTOR, s.h, s.controlsHeight).bottom
-        return Box(cx - half, bottom - 34f, cx + half, bottom)
+        return Box(cx - half, bottom - if(s.h < 500f) 34f else 40f, cx + half, bottom)
     }
 
     private fun corners(s: Screen) = listOf(
-        Box(16f, 16f, 76f, 76f), // close
+        Box(s.controls.edge, s.controls.edge, s.controls.edge + if(s.h < 500f) 104f else 120f,
+            s.controls.edge + if(s.h < 500f) 48f else 56f), // day/night and weather
         Box(s.w - 68f, 16f, s.w - 16f, 68f), // parents
         Box(s.controls.edge, s.h - s.controls.edge - s.controls.button,
             s.controls.edge + s.controls.groupWidth, s.h - s.controls.edge), // all three buttons
         Box(s.w - s.controls.edge - 240f, s.h - s.controls.edge - 58f,
             s.w - s.controls.edge, s.h - s.controls.edge), // progress and next gift
+        Box(s.w / 2 - 90f, s.controls.edge, s.w / 2 + 90f,
+            s.controls.edge + if(s.h < 500f) 44f else 52f), // title
     )
 
     @Test
