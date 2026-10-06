@@ -143,6 +143,8 @@ class WorldStore(private val file: File) {
             put("discardedStorage", JSONArray().apply { world.discardedStorage.forEach { (index, item) -> put(storedJson(item).put("index",index)) } })
             put("stickers", JSONArray(world.stickers))
             put("eggs", JSONArray(world.eggs.toList()))
+            put("firsts", JSONArray(world.firsts.toList()))
+            put("visited", JSONArray(world.visited.map { it.name }))
             put("tasks", JSONObject().apply {
                 put("set", JSONArray(world.taskSet))
                 put("progress", JSONObject().apply { world.taskProgress.forEach { (k, v) -> put(k, v) } })
@@ -337,6 +339,8 @@ class WorldStore(private val file: File) {
                 }
             }
             world.eggs += strings(json.optJSONArray("eggs"))
+            world.firsts += strings(json.optJSONArray("firsts")).filter { app.trollfoss.domain.First.byName(it) != null }
+            world.visited += strings(json.optJSONArray("visited")).mapNotNull { n -> PlaceId.entries.firstOrNull { it.name == n } }
             json.optJSONObject("tasks")?.let { t ->
                 world.taskSet += strings(t.optJSONArray("set"))
                 t.optJSONObject("progress")?.let { p -> for (k in p.keys()) world.taskProgress[k] = p.optInt(k, 0) }
@@ -436,6 +440,7 @@ class WorldStore(private val file: File) {
             WorldFactory.addMissingPlaces(world, known)
             app.trollfoss.domain.StarterLayout.upgrade(world)
             app.trollfoss.domain.TreasureStart.upgrade(world)
+            world.visited += world.place
             json.optJSONObject("toys")?.let { toys ->
                 toys.optJSONObject("inputs")?.let { inputs -> inputs.keys().forEach { key ->
                     val id=inputs.optInt(key,-1)

@@ -296,6 +296,12 @@ class World {
     /** Easter eggs found, by id. Each one earns a sticker the first time. */
     val eggs = LinkedHashSet<String>()
 
+    /** First-time discoveries, by [First] name. Each earned one sticker. */
+    val firsts = LinkedHashSet<String>()
+
+    /** Places the child has been to, for the travel discoveries. */
+    val visited = LinkedHashSet<PlaceId>()
+
     /** The tasks on the board, how far each has come, and where the shuffled deck is. */
     val taskSet = ArrayList<String>()
     val taskProgress = HashMap<String, Int>()

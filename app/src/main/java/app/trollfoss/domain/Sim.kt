@@ -67,6 +67,9 @@ interface SimListener {
     /** An Easter egg was found for the first time. */
     fun onEgg(id: String) {}
 
+    /** Something was done for the first time; a sticker was earned at scene point ([x], [y]) in [place] (NaN when unknown). */
+    fun onFirst(first: First, place: PlaceId, x: Float, y: Float) {}
+
     /** Someone used a passage of the big house; the view follows to the arrival at [arrivalX]. */
     fun onPassage(passage: Passage, arrivalX: Float, riders: Int) {}
 }
@@ -165,6 +168,24 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         world.stickers += world.stickers.size
         listener.onEgg(id)
         return true
+    }
+
+    /** A first-time discovery: a sticker the first time, never while the world is built. Returns true when new. */
+    fun firstTime(f: First, x: Float = Float.NaN, y: Float = Float.NaN): Boolean {
+        if (!tasks.recording || !world.firsts.add(f.name)) return false
+        world.stickers += world.stickers.size
+        Progression.remember(world)
+        listener.onFirst(f, here, x, y)
+        return true
+    }
+
+    /** Notes a place the child has reached; new places count towards the travel discoveries. */
+    fun visit(place: PlaceId) {
+        if (!world.visited.add(place)) return
+        val n = world.visited.size
+        if (n >= 2) firstTime(First.FIRST_TRIP)
+        if (n >= 5) firstTime(First.TRIP_5)
+        if (n >= 12) firstTime(First.TRIP_12)
     }
 
     /** Shake the device and the world shakes: everything loose jumps, figures yelp, trees rattle. */
