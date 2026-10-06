@@ -20,7 +20,7 @@ class ToyPlayTest {
             assertEquals(ToyReward.entries.size,toys.size)
             assertEquals(ToyReward.entries.filter { it.level==1 }.toSet(),toys.filter { Decor.available(w,it) }.map { Decor.reward(it) }.toSet())
         }
-        w.stickers.addAll((0..20).toList());Progression.remember(w)
+        w.stickers.addAll((0..Progression.thresholds.last()).toList());Progression.remember(w)
         val toys=Decor.catalogue(PlaceId.BEACH).filter { Decor.reward(it)!=null }
         assertFalse(Decor.available(w,toys.single { Decor.reward(it)==ToyReward.TRAIN }))
         w.stickers.clear()
@@ -35,7 +35,7 @@ class ToyPlayTest {
         assertTrue(Sim(restored).toys.broken(restored.fixtures[f.id]!!))
     }
     private fun fixture(s:Sim,reward:ToyReward,place:PlaceId=PlaceId.HOME):Fixture {
-        s.world.stickers.addAll((0..20).toList())
+        s.world.stickers.addAll((0..Progression.thresholds.last()).toList())
         return requireNotNull(s.toys.claim(reward,place,1.1f))
     }
     @Test fun levelsRespectThresholdsAndNeverSpendOldStickers() {

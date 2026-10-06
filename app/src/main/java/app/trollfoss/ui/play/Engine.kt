@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import app.trollfoss.audio.Sfx
 import app.trollfoss.domain.Anatomy
 import app.trollfoss.domain.First
+import app.trollfoss.domain.ShowPlay
 import app.trollfoss.domain.Community
 import app.trollfoss.domain.CreativePlay
 import app.trollfoss.domain.Body
@@ -1932,6 +1933,17 @@ class Engine(
                 particles.burst(PKind.STAR, x, y, 16, 0.6f, 0.013f)
             }
             Fx.KEY -> s(Sfx.NOTE, 0.8f, 2f.pow(PENTATONIC[param % PENTATONIC.size] / 12f))
+            Fx.ECHO_NOTE -> {
+                // The echo box sings back what it heard, squeakier.
+                if (ShowPlay.echoKind(param) == 1) s(Sfx.DRUM, 0.7f, 1.4f)
+                else s(Sfx.NOTE, 0.75f, (1.5f * 2f.pow(PENTATONIC[ShowPlay.echoPitch(param).coerceIn(0, PENTATONIC.lastIndex)] / 12f)).coerceAtMost(2f))
+                particles.add(Particle(PKind.NOTE, x, y - 0.03f, (random.nextFloat() - 0.5f) * 0.1f, -0.14f, 1.4f, 0.012f, listOf(T.Grape, T.Berry, T.Sea)[random.nextInt(3)]))
+            }
+            Fx.CONFETTI -> {
+                s(Sfx.POP, 0.9f, 0.8f)
+                particles.burst(PKind.CONFETTI, x, y, if (motion) 50 else 16, 1.1f, 0.012f, up = 0.9f, life = 2.4f)
+                laughAround(x, null)
+            }
             Fx.TICK -> s(Sfx.TICK, 0.6f)
             Fx.CUCKOO -> s(Sfx.CUCKOO, 0.8f)
             Fx.TOOT -> s(Sfx.HORN, 0.8f)

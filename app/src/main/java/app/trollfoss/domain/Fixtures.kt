@@ -174,6 +174,8 @@ enum class FixtureType {
     TREASURE_BOX,
     // Level 7 «Eventyrar»: rides and finds (see [AdventurePlay]).
     PLAY_CABLE_CAR, PLAY_DIVING_BELL, PLAY_DIGGER, PLAY_TREASURE_TABLE,
+    // Level 8 «Showmeister»: music, dance, confetti and lights (see [ShowPlay]).
+    PLAY_ECHO_BOX, PLAY_DANCE_FLOOR, PLAY_CONFETTI, PLAY_LIGHT_RIG,
     ;
 
     val spec: FixtureSpec get() = specs.getValue(this)
@@ -210,6 +212,10 @@ enum class FixtureType {
             PLAY_DIVING_BELL -> FixtureSpec(0.30f,0.44f,front=true,spots=listOf(seat(0f,-0.06f)),dropZone=RRect(-0.16f,-0.46f,0.16f,0f))
             PLAY_DIGGER -> FixtureSpec(0.56f,0.30f,front=true,spots=listOf(seat(-0.08f,-0.14f)))
             PLAY_TREASURE_TABLE -> FixtureSpec(0.46f,0.24f,dropZone=RRect(-0.26f,-0.4f,0.26f,0f))
+            PLAY_ECHO_BOX -> FixtureSpec(0.26f,0.24f)
+            PLAY_DANCE_FLOOR -> FixtureSpec(0.80f,0.05f)
+            PLAY_CONFETTI -> FixtureSpec(0.30f,0.40f)
+            PLAY_LIGHT_RIG -> FixtureSpec(0.30f,0.60f)
             PLAY_BUS, PLAY_TRAIN -> FixtureSpec(0.58f, 0.29f, front = true,
                 spots = listOf(seat(-0.12f, -0.09f), seat(0.12f, -0.09f)),
                 surfaces = listOf(SurfaceSpec(-0.20f, 0.20f, -0.09f)))

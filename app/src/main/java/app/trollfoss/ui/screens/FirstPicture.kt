@@ -71,6 +71,10 @@ fun firstSubject(f: First): FirstSubject = when (f) {
     First.DIVING_BELL -> FirstSubject.Fixture(FixtureType.PLAY_DIVING_BELL)
     First.DIGGER -> FirstSubject.Fixture(FixtureType.PLAY_DIGGER)
     First.TREASURE_TABLE -> FirstSubject.Fixture(FixtureType.PLAY_TREASURE_TABLE)
+    First.ECHO_BOX -> FirstSubject.Fixture(FixtureType.PLAY_ECHO_BOX)
+    First.DANCE_FLOOR -> FirstSubject.Fixture(FixtureType.PLAY_DANCE_FLOOR)
+    First.CONFETTI -> FirstSubject.Fixture(FixtureType.PLAY_CONFETTI)
+    First.LIGHT_RIG -> FirstSubject.Fixture(FixtureType.PLAY_LIGHT_RIG)
     First.HUG, First.HIGH_FIVE, First.HOLD_HANDS, First.PET -> FirstSubject.Friends
     First.LIVING_TEDDY -> FirstSubject.Thing(ThingType.TEDDY)
     First.BAND -> FirstSubject.Thing(ThingType.GUITAR)

@@ -51,6 +51,9 @@ enum class Fx {
 
     // Collecting: a find lands in the treasure box, every fifth one is a party, and a chest with nothing left to give.
     TREASURE_IN, TREASURE_PARTY, TREASURE_EMPTY,
+
+    // Level 8 show toys: a confetti burst, and a note played back by the echo box (see [ShowPlay.echoNote]).
+    CONFETTI, ECHO_NOTE,
 }
 
 interface SimListener {
@@ -102,6 +105,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         override fun onFx(fx: Fx, x: Float, y: Float, fixture: Fixture?, thing: Thing?, param: Int) {
             heard(fx, fixture, thing, param)
             magic.react(fixture?.place ?: thing?.place ?: here, fx, x, y)
+            show.heard(fx, x, here, param)
             // Effects sent from (0, 0) have no real place; their sticker then starts at the middle of the screen.
             val placed = !(x == 0f && y == 0f)
             FirstsDetector.of(fx, fixture, thing, param)?.let { if (placed) firstTime(it, x, y) else firstTime(it) }
@@ -250,6 +254,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     val community = Community(this)
     val creative = CreativePlay(this)
     val adventure = AdventurePlay(this)
+    val show = ShowPlay(this)
     /** Funny surprises; switched on by the engine, so rule tests stay quiet and repeatable. */
     val mischief = Mischief(this, random)
     val playerFollow = PlayerFollow(this)

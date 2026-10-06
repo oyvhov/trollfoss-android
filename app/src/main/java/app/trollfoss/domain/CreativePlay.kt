@@ -9,6 +9,7 @@ class CreativePlay(private val sim:Sim) {
     private var weatherTime=0f
     fun drop(f:Fixture,t:Thing):Boolean {
         if(f.type in AdventurePlay.TYPES) return sim.adventure.drop(f,t)
+        if(f.type in ShowPlay.TYPES) return false
         if(!accepts(f,t) || t.held) return false
         when(f.type) {
             FixtureType.PLAY_TREE -> { t.used=0;water(f) }
@@ -34,6 +35,7 @@ class CreativePlay(private val sim:Sim) {
     }
     fun tap(f:Fixture):Boolean {
         if(f.type in AdventurePlay.TYPES) return sim.adventure.tap(f)
+        if(f.type in ShowPlay.TYPES) return sim.show.tap(f)
         if(f.type !in TYPES) return false
         when(f.type) {
             FixtureType.PLAY_TREE -> if(f.mode>=3) {
@@ -92,6 +94,7 @@ class CreativePlay(private val sim:Sim) {
     fun step(f:Fixture,dt:Float):Boolean {
         if(f.type !in TYPES || Vehicles.controllable(f)) return false
         if(f.type in AdventurePlay.TYPES) return sim.adventure.step(f,dt)
+        if(f.type in ShowPlay.TYPES) return sim.show.step(f,dt)
         val cargo=world.inMachine(f).firstOrNull()
         when(f.type) {
             FixtureType.PLAY_SEESAW -> {
