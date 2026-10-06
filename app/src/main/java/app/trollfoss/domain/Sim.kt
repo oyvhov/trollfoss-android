@@ -763,7 +763,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
             FixtureType.SALON_CHAIR -> y -= f.mode * 0.04f
             FixtureType.PLAY_LIFT -> y -= f.angle * 0.28f
             FixtureType.PLAY_CABLE_CAR -> { x += f.angle * 0.72f; y -= sin(f.angle * 3.14159f) * 0.06f }
-            FixtureType.PLAY_DIVING_BELL -> { x = adventure.bellX(f); y += f.angle * adventure.depth(f) }
+            FixtureType.PLAY_DIVING_BELL -> { x = f.x + f.reach; y += f.angle * f.dive }
             FixtureType.PLAY_SEESAW -> y += if(spot==0) f.angle else -f.angle
             FixtureType.PLAY_TUNNEL -> x += (f.timer/1.5f).coerceIn(0f,1f)*0.3f
             FixtureType.PLAY_JUMP -> y -= sin((f.timer/1.5f).coerceIn(0f,1f)*3.14159f)*0.12f

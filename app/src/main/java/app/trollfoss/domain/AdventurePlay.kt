@@ -37,11 +37,13 @@ class AdventurePlay(private val sim: Sim) {
                     if (f.on) world.seatedAt(f, 0)?.anim?.let { it.face = Face.OOH; it.faceTime = 0.5f }
                 }
                 else {
-                    val bx = bellX(f); f.reach = bx - f.x; f.dive = depth(f)
-                    cargo?.let { it.x = bx; it.y = f.y - 0.08f + f.angle * depth(f) }
-                    // Down in real water, a loose thing below comes along on the way up.
-                    if (cargo == null && f.angle > 0.95f && overWater(f)) world.bodiesIn(f.place).filterIsInstance<Thing>()
-                        .firstOrNull { it.mode == Mode.FREE && !it.held && abs(it.x - bx) < 0.2f && it.type.cat !in setOf(Cat.HAT, Cat.GARMENT) }
+                    // Where the arm reaches and how deep it goes are worked out once per step; seats and art read them.
+                    val bx = bellX(f); val pool = poolUnder(f.place, bx)
+                    f.reach = bx - f.x; f.dive = if (pool != null || sim.underwater(f.place)) 0.22f else 0.08f
+                    cargo?.let { it.x = bx; it.y = f.y - 0.08f + f.angle * f.dive }
+                    // Down in real water, a loose thing in that water comes along on the way up; the shore is left alone.
+                    if (cargo == null && f.angle > 0.95f && (pool != null || sim.underwater(f.place))) world.bodiesIn(f.place).filterIsInstance<Thing>()
+                        .firstOrNull { it.mode == Mode.FREE && !it.held && abs(it.x - bx) < 0.2f && (pool == null || it.x in pool.x1..pool.x2) && it.type.cat !in WEARABLE }
                         ?.let { t -> t.mode = Mode.INSIDE; t.holder = f.id; t.inside = -1; t.resting = false; t.restOwner = -2; t.vx = 0f; t.vy = 0f }
                 }
             }
@@ -53,7 +55,8 @@ class AdventurePlay(private val sim: Sim) {
 
     /** How deep the bell goes: into real water, or just a little way on dry land. */
     fun depth(f: Fixture): Float = if (overWater(f)) 0.22f else 0.08f
-    fun overWater(f: Fixture): Boolean = sim.underwater(f.place) || sim.pools(f.place).any { bellX(f) in it.x1..it.x2 }
+    fun overWater(f: Fixture): Boolean = sim.underwater(f.place) || poolUnder(f.place, bellX(f)) != null
+    private fun poolUnder(place: PlaceId, x: Float): Pool? = sim.pools(place).firstOrNull { x in it.x1..it.x2 }
 
     /** Furniture stands on the shore, so the bell's arm reaches out over water close by; elsewhere it hangs straight down. */
     fun bellX(f: Fixture): Float {
@@ -71,7 +74,8 @@ class AdventurePlay(private val sim: Sim) {
         val parts = world.inMachine(f)
         if (parts.size < 3) { sim.listener.onFx(Fx.BONK, f.x, f.top, f); return }
         sim.firstTime(First.TREASURE_TABLE, f.x, f.top)
-        if ((rest[f.id] ?: 0f) > 0f) { sim.listener.onFx(Fx.SPARKLE, f.x, f.top, f); return }
+        val full = world.bodiesIn(f.place).count { it is Thing && it.type in SURPRISES && it.mode == Mode.FREE } >= MAX_SURPRISES
+        if (full || (rest[f.id] ?: 0f) > 0f) { sim.listener.onFx(Fx.SPARKLE, f.x, f.top, f); return }
         rest[f.id] = 45f
         val (type, variant) = when ((world.stickers.size + parts.sumOf { it.id }) % 4) {
             0 -> ThingType.CROWN to 0
@@ -88,7 +92,12 @@ class AdventurePlay(private val sim: Sim) {
         val TYPES = setOf(FixtureType.PLAY_CABLE_CAR, FixtureType.PLAY_DIVING_BELL, FixtureType.PLAY_DIGGER, FixtureType.PLAY_TREASURE_TABLE)
         /** Toys whose position (angle 0–1) is saved. */
         const val REACH = 0.4f
+        /** Loose surprises a place can hold before the treasure table only sparkles. */
+        const val MAX_SURPRISES = 8
+        private val SURPRISES = setOf(ThingType.CROWN, ThingType.PARTY_HAT, ThingType.FLOWER_CROWN, ThingType.DUCK)
+        private val WEARABLE = setOf(Cat.HAT, Cat.GARMENT)
+        private val CARRIERS = setOf(FixtureType.PLAY_CABLE_CAR, FixtureType.PLAY_DIVING_BELL, FixtureType.PLAY_TREASURE_TABLE)
         val ANGLED = setOf(FixtureType.PLAY_LIFT, FixtureType.PLAY_CABLE_CAR, FixtureType.PLAY_DIVING_BELL)
-        fun accepts(f: Fixture, t: Thing): Boolean = f.type in setOf(FixtureType.PLAY_CABLE_CAR, FixtureType.PLAY_DIVING_BELL, FixtureType.PLAY_TREASURE_TABLE) && t.type.cat !in setOf(Cat.HAT, Cat.GARMENT)
+        fun accepts(f: Fixture, t: Thing): Boolean = f.type in CARRIERS && t.type.cat !in WEARABLE
     }
 }

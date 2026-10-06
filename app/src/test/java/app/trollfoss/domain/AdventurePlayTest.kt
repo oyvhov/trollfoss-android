@@ -44,6 +44,24 @@ class AdventurePlayTest {
         assertTrue("DIVING_BELL" in s.world.firsts)
     }
 
+    @Test fun theDivingBellLeavesThingsOnTheShoreAlone() {
+        val s = sim(); val place = PlaceId.BEACH; val pool = s.pools(place).first()
+        val f = s.designer.add(place, FixtureType.PLAY_DIVING_BELL, 0, (pool.x1 + pool.x2) / 2, place.floor)!!
+        repeat(2) { s.step(place, 0.02f) }
+        val shell = s.world.addThing(ThingType.SHELL, 0, place, pool.x1 - 0.05f, place.floor)
+        s.tap(place, f, 0f, -0.2f); step(s, place, 4f)
+        assertEquals(Mode.FREE, shell.mode)
+    }
+
+    @Test fun theTreasureTableStopsWhenThePlaceIsFullOfSurprises() {
+        val s = sim(); val f = toy(s, ToyReward.TREASURE_TABLE)
+        repeat(AdventurePlay.MAX_SURPRISES) { s.world.addThing(ThingType.DUCK, 0, f.place, 0.5f + it * 0.1f, f.place.floor) }
+        (0 until 3).map { s.world.addThing(ThingType.APPLE, 0, f.place, f.x, f.y) }.forEach { s.dropInto(f.place, f, it) }
+        val before = s.world.bodies.size
+        s.tap(f.place, f, 0f, -0.2f)
+        assertEquals(before, s.world.bodies.size)
+    }
+
     @Test fun diggerFindsTreasureOutsideButNeverFloodsThePlace() {
         val s = sim(); val f = toy(s, ToyReward.DIGGER, PlaceId.BEACH)
         assertTrue(Vehicles.controllable(f))
