@@ -134,6 +134,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     var furnishAnchor by mutableStateOf<androidx.compose.ui.geometry.Offset?>(null)
     override fun first(first: app.trollfoss.domain.First, x: Float, y: Float) { firstQueue.push(first, x, y); bookPulse++; refreshTasks(); scheduleSave() }
     fun tickFirsts(now: Float) { firstQueue.due(now)?.let { firstPops += it } }
+    override fun busy(): Boolean = levelGift > 0 || parcelOpening > 0 || screen != Screen.Play
 
     /** Bumps when the world is replaced, so engines are rebuilt. */
     var generation by mutableIntStateOf(0)

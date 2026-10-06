@@ -123,6 +123,9 @@ interface EngineHost {
     /** A first-time discovery earned a sticker, seen at screen point ([x], [y]); NaN when off screen. */
     fun first(first: First, x: Float, y: Float) {}
 
+    /** True while a gift or another screen asks the world to hold its little surprises. */
+    fun busy(): Boolean = false
+
     /** Someone took a passage of the big house; the view moves to the arrival at [arrivalX]. */
     fun passage(passage: Passage, arrivalX: Float)
 }
@@ -411,6 +414,10 @@ class Engine(
         for (f in world.fixturesIn(place)) if (f.type == FixtureType.MAILBOX) f.mode = if (sim.giftWaiting()) 1 else 0
         val wasDriving = vehicle?.on == true
         sim.playerFollow.view(cam, visibleViewport)
+        // Funny surprises wait while a finger is down, the furniture panel is open or the app is busy with a gift.
+        sim.mischief.enabled = true
+        sim.mischief.calm = !motion
+        sim.mischief.paused = touching || designMode || host.busy()
         sim.step(place, dt)
         if (wasDriving && vehicle?.on != true) host.changed()
 
@@ -1698,6 +1705,7 @@ class Engine(
 
     private fun tapScene(at: Offset) {
         val p = toScene(at)
+        trollAt()?.let { t -> if (hypot(p.x - t.x, p.y - t.y) < max(0.07f, minTouch)) { sim.mischief.tapTroll(); host.sfx(Sfx.GIGGLE, 0.9f, 1.3f); host.changed(); return } }
         if(sim.toys.pop(place,p.x,p.y)) { host.changed();return }
         if (catchStar(p)) return
         // A glimt?
@@ -1791,7 +1799,7 @@ class Engine(
 
     override fun onFirst(first: First, place: PlaceId, x: Float, y: Float) {
         val seen = place == this.place && !x.isNaN() && !y.isNaN()
-        host.first(first, if (seen) sx(x) else Float.NaN, if (seen) sy(y) else Float.NaN)
+        host.first(first, if (seen) sx(x) else Float.NaN, if (seen) sy(y) + top else Float.NaN)
         host.sfx(Sfx.CHIME, 0.75f, 1.25f)
         host.haptic()
     }
@@ -2777,6 +2785,7 @@ class Engine(
         }
 
         timed(5) { particles.draw(this, u, cam, lw) }
+        drawMischief(lw)
         for(bond in sim.community.bonds) {
             val a=world.bodies[bond.a] as? Person ?: continue
             val b=world.bodies[bond.b] as? Person ?: continue
@@ -2822,6 +2831,42 @@ class Engine(
         if (b is Person && b.mode == Mode.SEATED) return
         val fade = max(0.2f, 1f - lift * 2.5f)
         groundShadow(sx(b.x), sy(floorY), w * u * fade, fade)
+    }
+
+    /** Where the peeking troll shows: at the edge of its cupboard, a little below the top. */
+    private fun trollAt(): Offset? {
+        val t = sim.mischief.troll ?: return null
+        val f = world.fixtures[t.fixtureId]?.takeIf { it.place == place } ?: return null
+        return Offset(f.x + f.shiftX + f.spec.w * 0.42f, f.y - f.spec.h * 0.62f)
+    }
+
+    /** A bird on a head and a troll peeking out of a cupboard (see [app.trollfoss.domain.Mischief]). */
+    private fun DrawScope.drawMischief(lw: Float) {
+        val ink = Color(0xFF2D2A32)
+        sim.mischief.bird?.let { visit ->
+            val p = world.bodies[visit.personId] as? Person ?: return@let
+            if (!motion || p.place != place) return@let
+            // It flutters in, sits, and flutters off again.
+            val arrive = ((4f - visit.time) / 0.5f).coerceIn(0f, 1f); val leave = (visit.time / 0.5f).coerceIn(0f, 1f)
+            val k = min(arrive, leave)
+            val c = Offset(sx(p.x + (1f - k) * 0.3f), sy(p.y - p.h - 0.025f - (1f - k) * 0.25f))
+            val r = u * 0.022f
+            val flap = if (k < 1f) sin(time * 30f) * r else 0f
+            drawOval(Color(0xFF73BFE8), Offset(c.x - r * 1.2f, c.y - r * 0.7f - flap), Size(r * 1.4f, r * 0.6f))
+            drawOval(Color(0xFF4F8FD9), Offset(c.x - r, c.y - r * 0.6f), Size(r * 2f, r * 1.2f))
+            drawCircle(Color(0xFF4F8FD9), r * 0.6f, Offset(c.x + r * 0.9f, c.y - r * 0.6f))
+            drawCircle(ink, r * 0.12f, Offset(c.x + r * 1.05f, c.y - r * 0.7f))
+            drawPath(Path().apply { moveTo(c.x + r * 1.4f, c.y - r * 0.65f); lineTo(c.x + r * 1.9f, c.y - r * 0.5f); lineTo(c.x + r * 1.4f, c.y - r * 0.4f); close() }, Color(0xFFFFCE69))
+        }
+        trollAt()?.let { at ->
+            val c = Offset(sx(at.x), sy(at.y)); val r = u * 0.035f; val green = Color(0xFF6AA86A)
+            for (side in intArrayOf(-1, 1)) drawOval(green, Offset(c.x + side * r * 0.95f - r * 0.3f, c.y - r * 0.8f), Size(r * 0.6f, r * 0.9f))
+            drawCircle(green, r, c); drawCircle(ink, r, c, style = Stroke(lw))
+            val blink = motion && time % 2f < 0.12f
+            for (side in intArrayOf(-1, 1)) { val e = Offset(c.x + side * r * 0.35f, c.y - r * 0.15f)
+                if (blink) drawLine(ink, Offset(e.x - r * 0.12f, e.y), Offset(e.x + r * 0.12f, e.y), lw) else drawCircle(ink, r * 0.13f, e) }
+            drawArc(ink, 20f, 140f, false, Offset(c.x - r * 0.45f, c.y - r * 0.05f), Size(r * 0.9f, r * 0.6f), style = Stroke(lw))
+        }
     }
 
     private fun DrawScope.drawBody(b: Body, pen: Pen) {

@@ -248,6 +248,8 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     val community = Community(this)
     val creative = CreativePlay(this)
     val adventure = AdventurePlay(this)
+    /** Funny surprises; switched on by the engine, so rule tests stay quiet and repeatable. */
+    val mischief = Mischief(this, random)
     val playerFollow = PlayerFollow(this)
     val treasure = TreasureBox(this)
     var journal: EditJournal? = null
@@ -386,6 +388,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     fun step(place: PlaceId, dt: Float) {
         here = place
         time += dt
+        if (mischief.enabled) mischief.step(place, dt)
         if (place.big) house.tick(place, dt)
         pools = pools(place)
         floating = zeroG(place)
