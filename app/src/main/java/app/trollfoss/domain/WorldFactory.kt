@@ -36,6 +36,7 @@ object WorldFactory {
         val sim = Sim(world).apply { tasks.recording=false }
         for (place in PlaceId.entries) populate(world, sim, place, random)
         world.flags += StarterLayout.FLAG
+        world.flags += FirstsRetro.FLAG
         TreasureStart.upgrade(world, sim)
         world.bodies.values.forEach { it.age = 10f }
         return world

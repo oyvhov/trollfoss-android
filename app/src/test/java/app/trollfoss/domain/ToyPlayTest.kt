@@ -43,9 +43,9 @@ class ToyPlayTest {
         assertEquals(1,Progression.level(w));assertEquals(2,Progression.missing(w))
         assertTrue(Progression.unlocked(w,ToyReward.CAMERA));assertFalse(Progression.unlocked(w,ToyReward.BUS))
         w.stickers.addAll(listOf(0,1));Progression.remember(w)
-        assertEquals(2,Progression.level(w));assertEquals(3,Progression.missing(w))
+        assertEquals(2,Progression.level(w));assertEquals(2,Progression.missing(w))
         w.stickers.addAll((2..50).toList());Progression.remember(w)
-        assertEquals(6,Progression.level(w));assertEquals(0,Progression.missing(w));assertEquals(51,w.stickers.size)
+        assertEquals(Progression.thresholds.size,Progression.level(w));assertEquals(0,Progression.missing(w));assertEquals(51,w.stickers.size)
         assertFalse(Progression.unlocked(w,ToyReward.TRAIN))
         w.stickers.clear();assertTrue(Progression.unlocked(w,ToyReward.BUS))
     }

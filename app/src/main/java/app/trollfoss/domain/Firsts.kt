@@ -26,6 +26,25 @@ enum class First(val group: FirstGroup) {
     companion object { fun byName(name: String): First? = entries.firstOrNull { it.name == name } }
 }
 
+/** One look back at an older save: what it clearly shows the child has done counts, without a celebration. */
+object FirstsRetro {
+    const val FLAG = "firsts:retro:1"
+    fun upgrade(world: World) {
+        if (!world.flags.add(FLAG)) return
+        val found = buildList {
+            if (world.mine.ground.any { it != 0 } || world.mine.upper.any { it != 0 }) add(First.BUILD_ROOM)
+            if (world.community.pets.isNotEmpty()) add(First.PET)
+            if (world.community.art.isNotEmpty()) add(First.STAMP_ART)
+            if (world.community.wallArt.isNotEmpty()) add(First.HANG_ART)
+            if (world.community.doors.isNotEmpty()) add(First.SECRET_DOOR)
+            if (world.flags.any { it.startsWith("place:repaired:") }) add(First.REPAIR_LIGHT)
+            if (world.bodies.values.any { it.mode == Mode.INSIDE && world.fixtures[it.holder]?.type == FixtureType.TREASURE_BOX }) add(First.TREASURE_BOX)
+        }
+        for (f in found) if (world.firsts.add(f.name)) world.stickers += world.stickers.size
+        Progression.remember(world)
+    }
+}
+
 /** Turns the coarse sim events into first-time discoveries. Events that already earn a sticker are left out. */
 object FirstsDetector {
     fun of(fx: Fx, fixture: Fixture?, thing: Thing?, param: Int): First? {

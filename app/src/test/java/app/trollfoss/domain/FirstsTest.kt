@@ -59,6 +59,33 @@ class FirstsTest {
         FirstGroup.entries.forEach { g -> assertTrue(First.entries.any { it.group == g }) }
     }
 
+    @Test fun lowerThresholdsNeverLowerALevel() {
+        assertEquals(listOf(0, 2, 4, 7, 10, 14), Progression.thresholds)
+        val w = World(); repeat(20) { w.stickers += it }
+        assertEquals(6, Progression.level(w))
+        for ((i, n) in listOf(0, 2, 4, 7).withIndex()) { w.stickers.clear(); repeat(n) { w.stickers += it }; assertEquals(i + 1, Progression.level(w)) }
+    }
+
+    @Test fun retroUpgradeCountsStoredStateOnce() {
+        val w = World(); w.flags += "place:repaired:99"; w.community.pets[1] = 2; w.mine.ground[0] = 1
+        val stickers = w.stickers.size
+        FirstsRetro.upgrade(w); FirstsRetro.upgrade(w)
+        assertTrue("REPAIR_LIGHT" in w.firsts && "PET" in w.firsts && "BUILD_ROOM" in w.firsts)
+        assertEquals(stickers + 3, w.stickers.size)
+        assertTrue(FirstsRetro.FLAG in w.flags)
+    }
+
+    @Test fun loadingAnOldSaveRunsTheRetroUpgrade() {
+        val w = World(); w.flags += TreasureStart.FLAG; w.flags += "place:repaired:99"
+        val back = WorldStore.decode(WorldStore.encode(w, Settings())).world
+        assertTrue("REPAIR_LIGHT" in back.firsts)
+        assertEquals(w.stickers.size + 1, back.stickers.size)
+    }
+
+    @Test fun newWorldsSkipTheRetroUpgrade() {
+        assertTrue(FirstsRetro.FLAG in WorldFactory.create().flags)
+    }
+
     @Test fun undoKeepsFirstsAndStickers() {
         var w = World(); val s = Sim(w); val h = WorldHistory({ w }); s.journal = h
         w.flags += TreasureStart.FLAG

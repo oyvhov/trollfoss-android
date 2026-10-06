@@ -440,6 +440,7 @@ class WorldStore(private val file: File) {
             WorldFactory.addMissingPlaces(world, known)
             app.trollfoss.domain.StarterLayout.upgrade(world)
             app.trollfoss.domain.TreasureStart.upgrade(world)
+            app.trollfoss.domain.FirstsRetro.upgrade(world)
             world.visited += world.place
             json.optJSONObject("toys")?.let { toys ->
                 toys.optJSONObject("inputs")?.let { inputs -> inputs.keys().forEach { key ->
