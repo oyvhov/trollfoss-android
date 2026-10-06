@@ -11,7 +11,7 @@
 > fallskjerm (`ToyPlay.openGift`), nivå 7 (taubane, dykkarklokke med arm ut over vatnet, gravemaskin med Grav-knapp,
 > skattebord), tullehendingar (nys, fugl, katt, troll som tittar fram; av ved redusert rørsle) og Mailinn i
 > Familiehuset (`Residents.kt`, `people:mailinn:1`, ingen endra id-ar/røyster for andre).
-> **Kontroll:** 570 JVM-testar og 58 Android-testar grøne på både mobil (2400 × 1080 / 420 dpi) og nettbrett
+> **Kontroll:** 573 JVM-testar og 61 Android-testar grøne (nye: ekte draging til taubane, gravemaskin, trollfangst) på mobil (2400 × 1080 / 420 dpi) og nettbrett
 > (1920 × 1200 / 240 dpi), eiga AVD `TrollfossRelease180`, pakke `app.trollfoss.oppdag`. Lint 0 feil / 31 åtvaringar.
 > Visuelt: spelarval med Mailinn, kart med foss/steinar/troll, første reise → flygande merke → nivå 2 → gåvepakke →
 > boblemaskin i stova, Oppdagingar-fana med silhuettar, Gåver med nivå 7-teikningane. Bilete: Git-ignorert
@@ -19,7 +19,8 @@
 > produksjonsappen på AVD-en er urørt. **Ikkje prøvd:** bokmål visuelt (strengtestar dekkjer begge), nivå 7-leikene
 > i ein faktisk scene (berre einings-/teiknetestar og miniatyrar), tullehendingar på skjerm, fysisk eining, barnetest.
 > **Står att:** 1.12 nivå 8 + lys/partiklar, 1.13 nivå 9 + lyd, 1.14 nivå 10 + regnbogefinale (spesifikasjonen §12).
-> Mailinn sin utsjånad er ein standard brukaren kan endre. Push/PR/release berre når brukaren ber om det.
+> Mailinn sin utsjånad er ein standard brukaren kan endre. Ein fersk kodegjennomgang (Opus) fann fem feil som er retta med
+> testar; elleve mindre punkt står i ledger-lista i sluttmeldinga. Push/PR/release berre når brukaren ber om det.
 
 > **NYAST – 1.10.0 PUBLISERT (2026-10-04, Codex):** Brukaren bad om å
 > gjennomføre tilrådingane frå den vedlagde designguiden. Rein arbeidskopi frå `origin/main`
