@@ -218,6 +218,10 @@ class Fixture(val id: Int, val place: PlaceId, val type: FixtureType, var x: Flo
     var anim = 0f
     var angle = 0f
     var angleV = 0f
+    /** How far the diving bell's arm reaches out over water, in scene units (see [AdventurePlay.bellX]). */
+    var reach = 0f
+    /** How deep the diving bell goes here: deeper over real water. */
+    var dive = 0.08f
     var taps = 0
     var tapTime = -10f
     var bumpTime = -10f

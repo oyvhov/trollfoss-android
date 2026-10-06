@@ -999,6 +999,7 @@ class Engine(
     }
 
     fun dive(direction: Int) { vehicle?.let { sim.vehicles.dive(it, direction); host.changed() } }
+    fun dig() { vehicle?.let { v -> sim.edit { sim.vehicles.dig(v) }; host.changed() } }
 
     fun closeDriving() { drive(0); vehicleId = -1 }
 

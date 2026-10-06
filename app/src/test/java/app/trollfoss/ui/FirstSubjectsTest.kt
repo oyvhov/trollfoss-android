@@ -16,5 +16,7 @@ class FirstSubjectsTest {
         assertEquals(FirstSubject.Fixture(FixtureType.TRACTOR), firstSubject(First.TRACTOR))
         assertEquals(FirstSubject.Thing(ThingType.BOOK), firstSubject(First.READ))
         assertEquals(FirstSubject.Troll, firstSubject(First.PEEK_TROLL))
+        assertEquals(FirstSubject.Fixture(FixtureType.PLAY_DIGGER), firstSubject(First.DIGGER))
+        assertEquals(FirstSubject.Fixture(FixtureType.PLAY_CABLE_CAR), firstSubject(First.CABLE_CAR))
     }
 }

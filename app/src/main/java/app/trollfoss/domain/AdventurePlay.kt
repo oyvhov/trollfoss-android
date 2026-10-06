@@ -31,9 +31,13 @@ class AdventurePlay(private val sim: Sim) {
                 f.angle += (target - f.angle).coerceIn(-dt * 0.35f, dt * 0.35f)
                 if (abs(target - f.angle) < 0.001f) f.on = false
                 val cargo = world.inMachine(f).firstOrNull()
-                if (f.type == FixtureType.PLAY_CABLE_CAR) cargo?.let { it.x = f.x - 0.36f + f.angle * 0.72f; it.y = f.y - 0.3f }
+                if (f.type == FixtureType.PLAY_CABLE_CAR) {
+                    cargo?.let { it.x = f.x - 0.36f + f.angle * 0.72f; it.y = f.y - 0.3f }
+                    // High up on the line, the rider holds on tight and goes «oooh».
+                    if (f.on) world.seatedAt(f, 0)?.anim?.let { it.face = Face.OOH; it.faceTime = 0.5f }
+                }
                 else {
-                    val bx = bellX(f)
+                    val bx = bellX(f); f.reach = bx - f.x; f.dive = depth(f)
                     cargo?.let { it.x = bx; it.y = f.y - 0.08f + f.angle * depth(f) }
                     // Down in real water, a loose thing below comes along on the way up.
                     if (cargo == null && f.angle > 0.95f && overWater(f)) world.bodiesIn(f.place).filterIsInstance<Thing>()

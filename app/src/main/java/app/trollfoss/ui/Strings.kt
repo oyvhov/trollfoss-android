@@ -491,6 +491,10 @@ object SC {
         app.trollfoss.domain.FriendAction.HOLD_HANDS -> Txt("Halde hender","Holde hender")
     }
     fun toyName(t:FixtureType):Txt=when(t) {
+        FixtureType.PLAY_CABLE_CAR -> Txt("Taubane","Taubane")
+        FixtureType.PLAY_DIVING_BELL -> Txt("Dykkarklokke","Dykkerklokke")
+        FixtureType.PLAY_DIGGER -> Txt("Gravemaskin","Gravemaskin")
+        FixtureType.PLAY_TREASURE_TABLE -> Txt("Skattebord","Skattebord")
         FixtureType.PLAY_SEESAW -> Txt("Vennevippe","Vennevippe")
         FixtureType.PLAY_PUPPETS -> Txt("Dokketeater","Dukketeater")
         FixtureType.PLAY_TANDEM -> Txt("Tandemsykkel","Tandemsykkel")
@@ -514,6 +518,10 @@ object SC {
         else -> Txt("Leike","Leke")
     }
     fun toyUse(t:FixtureType):Txt=when(t) {
+        FixtureType.PLAY_CABLE_CAR -> Txt("Set ein venn i gondolen og trykk Bruk. Oooh, høgt!","Sett en venn i gondolen og trykk Bruk. Oooh, høyt!")
+        FixtureType.PLAY_DIVING_BELL -> Txt("Set klokka ved vatnet og ein venn inni. Dykk ned og hels på fisken!","Sett klokka ved vannet og en venn inni. Dykk ned og hils på fisken!")
+        FixtureType.PLAY_DIGGER -> Txt("Køyr ut og trykk Grav. Kanskje finn du skatt – eller ein gammal støvel.","Kjør ut og trykk Grav. Kanskje finner du skatt – eller en gammel støvel.")
+        FixtureType.PLAY_TREASURE_TABLE -> Txt("Legg tre ting på bordet og trykk Bruk. Kva dukkar opp?","Legg tre ting på bordet og trykk Bruk. Hva dukker opp?")
         FixtureType.PLAY_SEESAW -> Txt("Set ein venn i kvar ende. Trykk Bruk for å vippe.","Sett en venn i hver ende. Trykk Bruk for å vippe.")
         FixtureType.PLAY_PUPPETS -> Txt("Set vennene i teatret. Start dokkene – publikum ler!","Sett vennene i teatret. Start dukkene – publikum ler!")
         FixtureType.PLAY_TANDEM -> Txt("To venner kan sykle med pilene. Trykk på sykkelen for ringjeklokke.","To venner kan sykle med pilene. Trykk på sykkelen for ringeklokke.")

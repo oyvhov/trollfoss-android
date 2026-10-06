@@ -372,6 +372,12 @@ fun PlayScreen(vm: TrollfossViewModel) {
                         rotate(90f) { driveArrow(true) }
                     })
                 }
+                if (engine.vehicle?.type == app.trollfoss.domain.FixtureType.PLAY_DIGGER)
+                    RoundButton(app.trollfoss.ui.SO.dig.str(), onClick = { engine.dig() }, size = btn, tone = Tones.Sun, icon = {
+                        // A little spade: handle and blade.
+                        drawLine(T.Ink, Offset(size.width * 0.35f, size.height * 0.25f), Offset(size.width * 0.58f, size.height * 0.6f), strokeWidth = size.minDimension * 0.08f, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+                        drawOval(Color(0xFF8C8FA3), Offset(size.width * 0.5f, size.height * 0.52f), androidx.compose.ui.geometry.Size(size.width * 0.24f, size.height * 0.3f))
+                    })
                 app.trollfoss.ui.components.CloseButton(engine::closeDriving, size = btn)
             }
         }

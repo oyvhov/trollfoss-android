@@ -220,7 +220,8 @@ class ToyPlay(private val sim: Sim) {
         const val PHOTO_BASE=10000
         val TYPES=ToyReward.entries.map { it.type }.toSet()
         val VISIBLE_INSIDE=setOf(FixtureType.PLAY_LIFT,FixtureType.PLAY_MARBLES,FixtureType.PLAY_LAUNCHER,FixtureType.PLAY_POPCORN,
-            FixtureType.PLAY_CRANE,FixtureType.PLAY_CONVEYOR,FixtureType.PLAY_BUILD,FixtureType.PLAY_HOVER,FixtureType.PLAY_RESCUE)
+            FixtureType.PLAY_CRANE,FixtureType.PLAY_CONVEYOR,FixtureType.PLAY_BUILD,FixtureType.PLAY_HOVER,FixtureType.PLAY_RESCUE,
+            FixtureType.PLAY_CABLE_CAR,FixtureType.PLAY_DIVING_BELL,FixtureType.PLAY_TREASURE_TABLE)
         fun accepts(f: Fixture,t: Thing): Boolean = when(f.type) {
             FixtureType.PLAY_WINDMILL -> t.type==ThingType.HAIR_DRYER
             FixtureType.PLAY_COLORS -> t.type.variants>1 && t.type.cat !in setOf(Cat.HAT,Cat.GARMENT)
