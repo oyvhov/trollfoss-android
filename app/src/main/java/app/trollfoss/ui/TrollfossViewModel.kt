@@ -126,6 +126,15 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         private set
     private var seenLevel=1
 
+    /** Stickers flying to the book right now, fed one at a time from [firstQueue]. */
+    val firstPops = androidx.compose.runtime.mutableStateListOf<FirstPop>()
+    private val firstQueue = FirstQueue()
+    /** Where the book and furniture buttons are on screen, so stickers and gifts know where to fly. */
+    var bookAnchor by mutableStateOf<androidx.compose.ui.geometry.Offset?>(null)
+    var furnishAnchor by mutableStateOf<androidx.compose.ui.geometry.Offset?>(null)
+    override fun first(first: app.trollfoss.domain.First, x: Float, y: Float) { firstQueue.push(first, x, y); bookPulse++; refreshTasks(); scheduleSave() }
+    fun tickFirsts(now: Float) { firstQueue.due(now)?.let { firstPops += it } }
+
     /** Bumps when the world is replaced, so engines are rebuilt. */
     var generation by mutableIntStateOf(0)
         private set

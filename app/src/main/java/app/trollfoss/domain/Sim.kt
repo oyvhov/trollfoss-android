@@ -176,6 +176,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         if (!tasks.recording || !world.firsts.add(f.name)) return false
         world.stickers += world.stickers.size
         Progression.remember(world)
+        if (!x.isNaN()) magic.cheer(here, x)
         listener.onFirst(f, here, x, y)
         return true
     }

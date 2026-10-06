@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import app.trollfoss.audio.Sfx
 import app.trollfoss.domain.Anatomy
+import app.trollfoss.domain.First
 import app.trollfoss.domain.Community
 import app.trollfoss.domain.CreativePlay
 import app.trollfoss.domain.Body
@@ -118,6 +119,9 @@ interface EngineHost {
 
     /** An Easter egg was found for the first time. */
     fun egg(id: String)
+
+    /** A first-time discovery earned a sticker, seen at screen point ([x], [y]); NaN when off screen. */
+    fun first(first: First, x: Float, y: Float) {}
 
     /** Someone took a passage of the big house; the view moves to the arrival at [arrivalX]. */
     fun passage(passage: Passage, arrivalX: Float)
@@ -1782,6 +1786,13 @@ class Engine(
 
     override fun onEgg(id: String) {
         host.egg(id)
+    }
+
+    override fun onFirst(first: First, place: PlaceId, x: Float, y: Float) {
+        val seen = place == this.place && !x.isNaN() && !y.isNaN()
+        host.first(first, if (seen) sx(x) else Float.NaN, if (seen) sy(y) else Float.NaN)
+        host.sfx(Sfx.CHIME, 0.75f, 1.25f)
+        host.haptic()
     }
 
     override fun onWish(person: Person, event: WishEvent) {

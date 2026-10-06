@@ -232,7 +232,8 @@ fun PlayScreen(vm: TrollfossViewModel) {
         Row(Modifier.align(Alignment.TopStart).padding(edge), horizontalArrangement = Arrangement.spacedBy(gap)) {
             RoundButton(S.map.str(), onClick = { vm.open(Screen.Map) }, size = btn, tone = Tones.Sea, icon = Icons.Map)
             Box {
-                RoundButton(S.tasks.str(), onClick = { vm.open(Screen.Tasks) }, size = btn, tone = Tones.Sun, icon = DesignIcons.Tasks)
+                RoundButton(S.tasks.str(), onClick = { vm.open(Screen.Tasks) }, size = btn, tone = Tones.Sun, icon = DesignIcons.Tasks,
+                    modifier = Modifier.onGloballyPositioned { vm.bookAnchor = it.boundsInRoot().center })
                 if (vm.tasksLeft > 0) {
                     val badge = if (compact) 20.dp else 26.dp
                     Box(
@@ -351,7 +352,8 @@ fun PlayScreen(vm: TrollfossViewModel) {
             RoundButton((if(engine.justStored) app.trollfoss.ui.SM.storage else app.trollfoss.ui.SM.furnish).str(), onClick = {
                 menuOpen = false; engine.closeDriving(); engine.startWithStorage = engine.justStored; engine.designMode = true
             },
-                modifier = Modifier.align(Alignment.BottomEnd).padding(end = if (compact) 78.dp else 108.dp, bottom = edge),
+                modifier = Modifier.align(Alignment.BottomEnd).padding(end = if (compact) 78.dp else 108.dp, bottom = edge)
+                    .onGloballyPositioned { vm.furnishAnchor = it.boundsInRoot().center },
                 size = btn, tone = if(engine.justStored) Tones.Grape else Tones.Berry, icon = if(engine.justStored) DesignIcons.Box else DesignIcons.Sofa)
         }
         if (!engine.designMode && engine.vehicle != null) {

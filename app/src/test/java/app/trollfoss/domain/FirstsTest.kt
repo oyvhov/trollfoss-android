@@ -59,6 +59,17 @@ class FirstsTest {
         FirstGroup.entries.forEach { g -> assertTrue(First.entries.any { it.group == g }) }
     }
 
+    @Test fun aNearbyFriendCheersButAHeldOneDoesNot() {
+        val s = sim()
+        val near = s.world.addPerson(Species.FOLK, Look(), 1f, PlaceId.HOME, 1.2f, PlaceId.HOME.floor)
+        val held = s.world.addPerson(Species.FOLK, Look(), 1f, PlaceId.HOME, 1.3f, PlaceId.HOME.floor).also { it.held = true }
+        s.here = PlaceId.HOME
+        s.firstTime(First.HUG, 1f, PlaceId.HOME.floor - 0.2f)
+        assertEquals(Face.GRIN, near.anim.face)
+        assertNotEquals(Face.GRIN, held.anim.face)
+        assertTrue(near.anim.wave > 0f)
+    }
+
     @Test fun lowerThresholdsNeverLowerALevel() {
         assertEquals(listOf(0, 2, 4, 7, 10, 14), Progression.thresholds)
         val w = World(); repeat(20) { w.stickers += it }

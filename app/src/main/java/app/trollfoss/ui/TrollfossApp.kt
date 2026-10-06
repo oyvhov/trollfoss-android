@@ -101,6 +101,7 @@ fun TrollfossApp(vm: TrollfossViewModel) {
             if (vm.splash) Splash(onDone = { vm.splash = false })
             if(!vm.splash && vm.levelGift>0 && vm.screen in listOf(Screen.Play,Screen.Map))
                 app.trollfoss.ui.screens.LevelGiftCard(vm,Modifier.align(Alignment.BottomCenter).padding(bottom=90.dp))
+            if(!vm.splash) app.trollfoss.ui.screens.FirstPops(vm, motion)
         }
     }
 }

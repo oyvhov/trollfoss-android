@@ -212,6 +212,14 @@ class MagicPlay(private val sim: Sim) {
         }
     }
 
+    /** Up to two free friends near a first-time discovery grin and wave. */
+    fun cheer(place: PlaceId, x: Float) {
+        world.bodiesIn(place).filterIsInstance<Person>()
+            .filter { !it.held && it.mode == Mode.FREE && it.anim.pose != Pose.LIE && abs(it.x - x) < 0.9f }
+            .sortedBy { abs(it.x - x) }.take(2)
+            .forEach { p -> p.anim.face = Face.GRIN; p.anim.faceTime = 2f; p.anim.wave = 1f; p.anim.lookX = (x - p.x).coerceIn(-1f, 1f) }
+    }
+
     fun started(a: Adventure) = "adventure:${a.name}:start" in world.flags
     fun stage(a: Adventure): Int = (1..3).count { "adventure:${a.name}:$it" in world.flags }
     fun nextPlace(a: Adventure) = if (a == Adventure.HAT && stage(a) >= 1) PlaceId.HOME else a.place
