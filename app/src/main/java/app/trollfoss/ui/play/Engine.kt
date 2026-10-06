@@ -417,7 +417,7 @@ class Engine(
         // Funny surprises wait while a finger is down, the furniture panel is open or the app is busy with a gift.
         sim.mischief.enabled = true
         sim.mischief.calm = !motion
-        sim.mischief.paused = touching || designMode || host.busy()
+        sim.mischief.paused = touching || designMode || bagOpen || toyFixtureId >= 0 || host.busy()
         sim.step(place, dt)
         if (wasDriving && vehicle?.on != true) host.changed()
 

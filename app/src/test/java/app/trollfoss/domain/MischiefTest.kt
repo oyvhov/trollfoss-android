@@ -60,6 +60,14 @@ class MischiefTest {
         assertEquals(0, s.world.taskProgress["sneeze"] ?: 0)
     }
 
+    @Test fun withReducedMotionTheHatDropsStraightDown() {
+        val s = sim(); val p = folk(s, 1f); s.mischief.calm = true
+        val hat = s.world.addThing(ThingType.CAP, 0, PlaceId.HOME, p.x, p.y); s.give(p, hat, Part.HAT)
+        s.mischief.force(MischiefKind.SNEEZE, PlaceId.HOME)
+        assertEquals(p.x, hat.x, 0.0001f)
+        assertEquals(0f, hat.vx, 0f)
+    }
+
     @Test fun reducedMotionKeepsOnlyTheSneezeAndTheTroll() {
         val s = sim(); folk(s, 1f); s.mischief.calm = true
         s.mischief.force(MischiefKind.BIRD, PlaceId.HOME)

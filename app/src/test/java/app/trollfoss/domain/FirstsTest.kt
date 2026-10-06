@@ -30,6 +30,14 @@ class FirstsTest {
         assertEquals(First.BUBBLE_POP, heard)
     }
 
+    @Test fun anEffectWithoutAPlaceGivesAStickerWithoutAStartingPoint() {
+        var at = 0f to 0f
+        val s = Sim(World(), object : SimListener { override fun onFirst(first: First, place: PlaceId, x: Float, y: Float) { at = x to y } })
+        s.listener.onFx(Fx.TIDY, 0f, 0f)
+        assertTrue("TIDY" in s.world.firsts)
+        assertTrue(at.first.isNaN() && at.second.isNaN())
+    }
+
     @Test fun tripsCountNewPlaces() {
         val s = sim(); s.visit(PlaceId.HOME)
         s.visit(PlaceId.BEACH)

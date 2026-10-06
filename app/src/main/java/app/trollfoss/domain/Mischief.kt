@@ -56,7 +56,9 @@ class Mischief(private val sim: Sim, private val random: Random) {
                 val p = free(place, Species.FOLK).random(random)
                 world.worn(p, Slot.HEAD)?.let { hat ->
                     hat.mode = Mode.FREE; hat.holder = -1; hat.slot = -1; hat.place = place
-                    hat.x = p.x + 0.08f * p.anim.facing; hat.y = p.y - p.h; hat.ground = p.y; hat.vy = -0.3f; hat.resting = false
+                    // With reduced motion the hat just drops; otherwise it hops off to the side.
+                    hat.x = if (calm) p.x else p.x + 0.08f * p.anim.facing; hat.y = p.y - p.h; hat.ground = p.y
+                    hat.vx = 0f; hat.vy = if (calm) 0f else -0.3f; hat.resting = false
                 }
                 p.anim.face = Face.WOW; p.anim.faceTime = 1.5f
                 // The world sneezed, not the child: no task or sticker may come of it.

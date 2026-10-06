@@ -37,6 +37,13 @@ class ResidentsTest {
         ids.forEach { (n, id) -> assertEquals(n, id, again.people().first { it.name == n }.id) }
     }
 
+    @Test fun aChildMadeMailinnInOtherLettersIsNotDuplicatedEither() {
+        val w = withoutMailinn()
+        w.addPerson(Species.FOLK, Look(), 1f, PlaceId.BEACH, 1f, PlaceId.BEACH.floor, "mailinn")
+        assertNull(Residents.addMailinn(w))
+        assertEquals(1, w.people().count { it.name.equals("Mailinn", ignoreCase = true) })
+    }
+
     @Test fun aChildMadeMailinnIsNotDuplicated() {
         val w = withoutMailinn()
         w.addPerson(Species.FOLK, Look(), 1f, PlaceId.BEACH, 1f, PlaceId.BEACH.floor, "Mailinn")

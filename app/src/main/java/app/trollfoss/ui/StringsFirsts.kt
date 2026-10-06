@@ -33,7 +33,7 @@ object SO {
         First.VACUUM_RIDE -> Txt("Reid på støvsugaren", "Red på støvsugeren")
         First.BALLOON -> Txt("Flaug med ballongen", "Fløy med ballongen")
         First.SKY_ISLAND -> Txt("Landa på Skyøya", "Landet på Skyøya")
-        First.BUBBLE_POP -> Txt("Sprengde ei boble", "Sprakk en boble")
+        First.BUBBLE_POP -> Txt("Sprengde ei boble", "Sprengte en boble")
         First.PILLOW_LAUNCH -> Txt("Skaut med putekastaren", "Skjøt med putekasteren")
         First.MARBLES -> Txt("Klinkekula kom fram", "Klinkekula kom fram")
         First.COLOUR_SPRAY -> Txt("Sprøyta farge", "Sprøytet farge")

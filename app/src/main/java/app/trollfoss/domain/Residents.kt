@@ -13,7 +13,7 @@ object Residents {
     /** Mailinn moves into Familiehuset next to Hedda and Øyvind, once, after everyone else (so no other ids change). */
     fun addMailinn(world: World): Person? {
         if (!world.flags.add(MAILINN_FLAG)) return null
-        if (world.people().any { it.name == "Mailinn" }) return null
+        if (world.people().any { it.name.trim().equals("Mailinn", ignoreCase = true) }) return null
         val home = PlaceId.HOME
         val near = world.people().filter { it.place == home && it.name in setOf("Hedda", "Øyvind") }.map { it.x }
         val x = ((near.maxOrNull() ?: 1.2f) + 0.35f).coerceIn(0.3f, home.width - 0.3f)

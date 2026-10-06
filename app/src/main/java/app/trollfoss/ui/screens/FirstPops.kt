@@ -40,7 +40,7 @@ import kotlin.math.sin
 /** New discoveries: a sticker pops up where it happened, spins once and flies in an arc to the book. */
 @Composable
 fun FirstPops(vm: TrollfossViewModel, motion: Boolean) {
-    LaunchedEffect(Unit) { while (true) withFrameNanos { vm.tickFirsts(it / 1e9f) } }
+    LaunchedEffect(vm.firstsPending) { while (vm.firstsPending) withFrameNanos { vm.tickFirsts(it / 1e9f) } }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val w = constraints.maxWidth.toFloat(); val h = constraints.maxHeight.toFloat()
         val half = with(LocalDensity.current) { 32.dp.toPx() }

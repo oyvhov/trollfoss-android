@@ -102,7 +102,9 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         override fun onFx(fx: Fx, x: Float, y: Float, fixture: Fixture?, thing: Thing?, param: Int) {
             heard(fx, fixture, thing, param)
             magic.react(fixture?.place ?: thing?.place ?: here, fx, x, y)
-            FirstsDetector.of(fx, fixture, thing, param)?.let { firstTime(it, x, y) }
+            // Effects sent from (0, 0) have no real place; their sticker then starts at the middle of the screen.
+            val placed = !(x == 0f && y == 0f)
+            FirstsDetector.of(fx, fixture, thing, param)?.let { if (placed) firstTime(it, x, y) else firstTime(it) }
             inner.onFx(fx, x, y, fixture, thing, param)
         }
 

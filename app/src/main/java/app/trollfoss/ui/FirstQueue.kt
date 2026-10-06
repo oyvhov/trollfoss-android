@@ -9,6 +9,7 @@ data class FirstPop(val first: First, val x: Float, val y: Float, val extra: Int
 class FirstQueue(private val gap: Float = 1.2f, private val max: Int = 5) {
     private val waiting = ArrayDeque<FirstPop>()
     private var last = -99f
+    val size: Int get() = waiting.size
 
     fun push(first: First, x: Float, y: Float) {
         if (waiting.size >= max) waiting.addLast(waiting.removeLast().let { it.copy(extra = it.extra + 1) })

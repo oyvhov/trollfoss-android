@@ -132,8 +132,11 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     /** Where the book and furniture buttons are on screen, so stickers and gifts know where to fly. */
     var bookAnchor by mutableStateOf<androidx.compose.ui.geometry.Offset?>(null)
     var furnishAnchor by mutableStateOf<androidx.compose.ui.geometry.Offset?>(null)
-    override fun first(first: app.trollfoss.domain.First, x: Float, y: Float) { firstQueue.push(first, x, y); bookPulse++; refreshTasks(); scheduleSave() }
-    fun tickFirsts(now: Float) { firstQueue.due(now)?.let { firstPops += it } }
+    /** True while stickers wait to fly, so the overlay only asks for frames when it has something to show. */
+    var firstsPending by mutableStateOf(false)
+        private set
+    override fun first(first: app.trollfoss.domain.First, x: Float, y: Float) { firstQueue.push(first, x, y); firstsPending = true; bookPulse++; refreshTasks(); scheduleSave() }
+    fun tickFirsts(now: Float) { firstQueue.due(now)?.let { firstPops += it }; firstsPending = firstQueue.size > 0 }
     override fun busy(): Boolean = levelGift > 0 || parcelOpening > 0 || screen != Screen.Play
 
     /** Bumps when the world is replaced, so engines are rebuilt. */

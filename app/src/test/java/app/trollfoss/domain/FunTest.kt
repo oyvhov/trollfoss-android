@@ -185,7 +185,7 @@ class FunTest {
         val sim = sim(world)
         val tuva = folk(world, PlaceId.HEILEBERGET, "Tuva")
         for (p in world.people()) p.anim.nextWish = 1e6f
-        // This is about Hedda finding her own bed; Mailinn is out playing tonight.
+        // Mailinn is out playing, so only the figures this test watches are at home.
         world.people().filter { it.name == "Mailinn" }.forEach { it.place = PlaceId.BEACH }
         val start = tuva.x
         var moved = false
