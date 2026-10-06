@@ -492,6 +492,10 @@ object SC {
     }
     fun toyName(t:FixtureType):Txt=when(t) {
         FixtureType.PLAY_CABLE_CAR -> Txt("Taubane","Taubane")
+        FixtureType.PLAY_ECHO_BOX -> Txt("Ekkoboks","Ekkoboks")
+        FixtureType.PLAY_DANCE_FLOOR -> Txt("Danseteppe","Dansematte")
+        FixtureType.PLAY_CONFETTI -> Txt("Konfettimaskin","Konfettimaskin")
+        FixtureType.PLAY_LIGHT_RIG -> Txt("Lysrigg med discokule","Lysrigg med discokule")
         FixtureType.PLAY_DIVING_BELL -> Txt("Dykkarklokke","Dykkerklokke")
         FixtureType.PLAY_DIGGER -> Txt("Gravemaskin","Gravemaskin")
         FixtureType.PLAY_TREASURE_TABLE -> Txt("Skattebord","Skattebord")
@@ -518,6 +522,10 @@ object SC {
         else -> Txt("Leike","Leke")
     }
     fun toyUse(t:FixtureType):Txt=when(t) {
+        FixtureType.PLAY_ECHO_BOX -> Txt("Spel noko i nærleiken, og trykk Bruk. Boksen syng det att – med pipestemme!","Spill noe i nærheten, og trykk Bruk. Boksen synger det tilbake – med pipestemme!")
+        FixtureType.PLAY_DANCE_FLOOR -> Txt("Trykk Bruk for musikk, og set vennene på teppet. To saman hoppar i takt!","Trykk Bruk for musikk, og sett vennene på matta. To sammen hopper i takt!")
+        FixtureType.PLAY_CONFETTI -> Txt("Trykk Bruk: pang! Konfetti over heile rommet, og vennene hoppar.","Trykk Bruk: pang! Konfetti over hele rommet, og vennene hopper.")
+        FixtureType.PLAY_LIGHT_RIG -> Txt("Trykk Bruk for scenelys, ein gong til for disco, og ein gong til for å slå av.","Trykk Bruk for scenelys, en gang til for disco, og en gang til for å slå av.")
         FixtureType.PLAY_CABLE_CAR -> Txt("Set ein venn i gondolen og trykk Bruk. Oooh, høgt!","Sett en venn i gondolen og trykk Bruk. Oooh, høyt!")
         FixtureType.PLAY_DIVING_BELL -> Txt("Set klokka ved vatnet og ein venn inni. Dykk ned og hels på fisken!","Sett klokka ved vannet og en venn inni. Dykk ned og hils på fisken!")
         FixtureType.PLAY_DIGGER -> Txt("Køyr ut og trykk Grav. Kanskje finn du skatt – eller ein gammal støvel.","Kjør ut og trykk Grav. Kanskje finner du skatt – eller en gammel støvel.")

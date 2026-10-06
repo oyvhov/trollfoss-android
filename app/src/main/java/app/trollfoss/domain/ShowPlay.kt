@@ -56,7 +56,7 @@ class ShowPlay(private val sim: Sim) {
                 if (f.timer >= BEAT) { f.timer = 0f; if (dancers.size >= 2) dancers.forEach { if (it.anim.hop <= 0f) it.anim.hopV = 1.2f } }
             }
             FixtureType.PLAY_CONFETTI -> rest[f.id]?.let { rest[f.id] = it - dt }
-            FixtureType.PLAY_LIGHT_RIG -> if (f.mode == 1) {
+            FixtureType.PLAY_LIGHT_RIG -> if (f.mode == 2) f.angle += dt * 1.5f else if (f.mode == 1) {
                 f.timer += dt
                 if (f.timer >= 3f) {
                     f.timer = 0f

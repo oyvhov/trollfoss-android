@@ -608,6 +608,7 @@ class Engine(
         listen(dt)
         val radio = world.fixturesIn(place).firstOrNull { it.type == FixtureType.RADIO && it.on }
         val discoOn = disco() != null
+        val floors = sim.show.floorsOn(place)
         val held = grabs.values.filter { it.moved }.mapNotNull { heldBody(it) }
         val finger = grabs.values.firstOrNull()?.let { toScene(it.finger) }
         for (b in world.bodiesIn(place)) {
@@ -662,7 +663,7 @@ class Engine(
             a.lookY += (ly - a.lookY) * min(1f, dt * 7f)
 
             // Dancing to the radio.
-            a.dance = if (sim.community.dances(p) || a.cheer > 0f || (discoOn && a.pose == Pose.STAND) || (radio != null && a.pose == Pose.STAND && p.resting && abs(p.x - radio.x) < 1.6f)) {
+            a.dance = if (sim.community.dances(p) || a.cheer > 0f || (discoOn && a.pose == Pose.STAND) || floors.any { sim.show.onFloor(p, it) } || (radio != null && a.pose == Pose.STAND && p.resting && abs(p.x - radio.x) < 1.6f)) {
                 time * 2.07f * PI.toFloat() + 0.001f
             } else {
                 0f
@@ -2485,7 +2486,7 @@ class Engine(
     }
 
     /** Is the disco ball spinning here? Then everyone dances. */
-    private fun disco(): Fixture? = world.fixturesIn(place).firstOrNull { it.type == FixtureType.DISCO_BALL && it.on }
+    private fun disco(): Fixture? = world.fixturesIn(place).firstOrNull { it.type == FixtureType.DISCO_BALL && it.on || it.type == FixtureType.PLAY_LIGHT_RIG && it.mode == 2 }
 
     /** Everyone close by laughs, a moment later. At most two voices, so it stays a giggle, not a din. */
     private fun laughAround(x: Float, except: Person?, delay: Float = 0.45f, reach: Float = 0.7f) {
@@ -2782,6 +2783,7 @@ class Engine(
         if (skip and 8 == 0) timed(3) { drawPlaceFront(place, cam, u, pen) }
         timed(4) {
             disco()?.let { drawDisco(it) }
+            for (rig in world.fixturesIn(place)) if (rig.type == FixtureType.PLAY_LIGHT_RIG && rig.mode == 1) drawRigSpot(rig)
             if (!photoMode) {
                 drawHints(lw)
                 drawTapHint(lw)
@@ -3315,10 +3317,24 @@ class Engine(
         }
     }
 
+    /** The light rig's warm spotlight: a soft cone from the lamp down to a bright patch on the floor. */
+    private fun DrawScope.drawRigSpot(rig: Fixture) {
+        val lamp = Offset(sx(rig.x + rig.shiftX + 0.1f), sy(rig.y - 0.52f))
+        val floorX = rig.x + rig.shiftX + 0.4f
+        val warm = Color(0xFFFFE3A0)
+        val cone = Path().apply {
+            moveTo(lamp.x - 0.02f * u, lamp.y); lineTo(lamp.x + 0.02f * u, lamp.y)
+            lineTo(sx(floorX + 0.27f), sy(rig.y)); lineTo(sx(floorX - 0.27f), sy(rig.y)); close()
+        }
+        drawPath(cone, Brush.verticalGradient(listOf(warm.copy(alpha = 0.32f), warm.copy(alpha = 0.10f)), lamp.y, sy(rig.y)), blendMode = BlendMode.Plus)
+        drawOval(warm.copy(alpha = 0.28f), Offset(sx(floorX - 0.28f), sy(rig.y - 0.03f)), Size(0.56f * u, 0.06f * u), blendMode = BlendMode.Plus)
+    }
+
     private fun DrawScope.drawDisco(ball: Fixture) {
         drawRect(Color(0xFF1B1036).copy(alpha = 0.28f), Offset(0f, -top), Size(size.width, size.height + top))
         val colors = listOf(T.Berry, T.Sun, T.Sea, T.Mint, T.Grape, Color(0xFFFF9F43))
-        val origin = Offset(sx(ball.x), sy(ball.y - 0.07f))
+        // The light rig carries its little disco ball on top of the stand.
+        val origin = Offset(sx(ball.x), sy(ball.y - if (ball.type == FixtureType.PLAY_LIGHT_RIG) 0.56f else 0.07f))
         for (k in 0 until 9) {
             val a = ball.angle * (if (k % 2 == 0) 1f else -0.7f) + k * 0.7f
             val x = ball.x + sin(a) * (0.5f + (k % 3) * 0.35f)
