@@ -91,7 +91,7 @@ class ToyPlay(private val sim: Sim) {
         sim.here=f.place
         when(f.type) {
             FixtureType.PLAY_BUBBLES -> { f.on=!f.on; if(f.on) emit(f) }
-            FixtureType.PLAY_WINDMILL -> { f.on=!f.on; f.timer=if(f.on) 6f else 0f }
+            FixtureType.PLAY_WINDMILL -> { f.on=!f.on; f.timer=if(f.on) 6f else 0f; if(f.on) sim.firstTime(First.WINDMILL,f.x,f.top) }
             FixtureType.PLAY_LAUNCHER -> world.inMachine(f).firstOrNull()?.let { t ->
                 release(f,t);t.vx=0.65f;t.vy=-1.35f;t.cool=0.4f;world.flags += "soft:${t.id}";fx(Fx.BOING,f,t)
             }
@@ -113,7 +113,7 @@ class ToyPlay(private val sim: Sim) {
         if(!accepts(f,t) || t.held || world.fixtures[f.id] !== f) return false
         sim.here=f.place
         when(f.type) {
-            FixtureType.PLAY_WINDMILL -> { f.on=true;f.timer=8f;fx(Fx.DRY,f,t);free(t) }
+            FixtureType.PLAY_WINDMILL -> { f.on=true;f.timer=8f;fx(Fx.DRY,f,t);free(t);sim.firstTime(First.WINDMILL,f.x,f.top) }
             FixtureType.PLAY_COLORS -> {
                 if(world.flags.none { it.startsWith("dye:${t.id}:") }) world.flags += "dye:${t.id}:${t.variant}"
                 t.variant=f.mode.mod(t.type.variants);free(t);fx(Fx.SPLAT,f,t)
@@ -151,7 +151,7 @@ class ToyPlay(private val sim: Sim) {
         val id=world.nextId++
         val frame=sim.designer.add(f.place,FixtureType.PICTURE,PHOTO_BASE+id,f.x,f.place.back-0.15f) ?: return
         world.toyPhotos[id]=Person(id,p.species,p.look.copy(),p.voice,p.name)
-        frame.anim=1f;fx(Fx.SPARKLE,f);sim.tasks.record(Deed.PHOTO,f.place)
+        frame.anim=1f;fx(Fx.SPARKLE,f);sim.tasks.record(Deed.PHOTO,f.place);sim.firstTime(First.PHOTO,f.x,f.top)
         p.anim.face=Face.GRIN;p.anim.faceTime=2f;p.anim.wave=1f
     }
     fun releaseAll(f: Fixture) = sim.edit { world.inMachine(f).forEach { release(f,it) };f.on=false;f.count=0 }
@@ -164,7 +164,7 @@ class ToyPlay(private val sim: Sim) {
     }
     fun pop(place: PlaceId,x: Float,y: Float): Boolean {
         val bubble=bubbles.firstOrNull { world.fixtures[it.fixture]?.place==place && hypot(it.x-x,it.y-y)<0.065f } ?: return false
-        bubbles.remove(bubble);sim.listener.onFx(Fx.BOING,x,y);return true
+        bubbles.remove(bubble);sim.listener.onFx(Fx.BOING,x,y);sim.firstTime(First.BUBBLE_POP,x,y);return true
     }
     fun tick(place: PlaceId,dt: Float) {
         bubbles.removeAll { world.fixtures[it.fixture]?.place != place || it.age>4f }

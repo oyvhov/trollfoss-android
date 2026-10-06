@@ -102,6 +102,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         override fun onFx(fx: Fx, x: Float, y: Float, fixture: Fixture?, thing: Thing?, param: Int) {
             heard(fx, fixture, thing, param)
             magic.react(fixture?.place ?: thing?.place ?: here, fx, x, y)
+            FirstsDetector.of(fx, fixture, thing, param)?.let { firstTime(it, x, y) }
             inner.onFx(fx, x, y, fixture, thing, param)
         }
 
@@ -822,6 +823,12 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         life.seated(p)
         p.place?.let { jokes.seated(it, p) }
         tasks.record(Deed.SEATED, p.place ?: here, fixture = f.type)
+        when (f.type) {
+            FixtureType.ROBOT_VACUUM -> firstTime(First.VACUUM_RIDE, f.x + f.shiftX, f.top)
+            FixtureType.BATH -> firstTime(First.BATH, f.x, f.top)
+            FixtureType.BED, FixtureType.BUNK_BED, FixtureType.SPACE_BED -> firstTime(First.SLEEP, f.x, f.top)
+            else -> Unit
+        }
         magic.seated(f)
         toys.seated(f)
         return true
@@ -1671,7 +1678,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
             else -> Unit
         }
         if (result != Give.NONE && result != Give.SNEEZE && result != Give.YUCK) life.given(p, type)
-        if (result == Give.ATE || result == Give.DRANK || result == Give.FINISHED) jokes.ate(p, type, result, time)
+        if (result == Give.ATE || result == Give.DRANK || result == Give.FINISHED) { jokes.ate(p, type, result, time); firstTime(First.EAT, p.x, p.y - p.h) }
         // Brunost for the moose calf: a little dance.
         if (p.species == Species.ELK && type == ThingType.BROWN_CHEESE && result != Give.NONE) {
             listener.onFx(Fx.JIG, p.x, p.y - p.h, param = p.id)

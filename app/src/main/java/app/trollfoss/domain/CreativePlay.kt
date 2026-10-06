@@ -39,22 +39,22 @@ class CreativePlay(private val sim:Sim) {
                 val old=world.bodies[world.toyInputs[key]] as? Thing
                 if(old==null || old.mode==Mode.BAG || old.type!=ThingType.APPLE) {
                     val fruit=old?.takeIf { it.type==ThingType.APPLE } ?: world.addThing(ThingType.APPLE,0,f.place,f.x,f.y).also { world.toyInputs[key]=it.id }
-                    fruit.place=f.place;fruit.mode=Mode.FREE;fruit.holder=-1;fruit.x=f.x;fruit.y=f.top;fruit.ground=f.depth;fruit.vy=-0.25f;fruit.resting=false;sim.listener.onSpawn(fruit)
+                    fruit.place=f.place;fruit.mode=Mode.FREE;fruit.holder=-1;fruit.x=f.x;fruit.y=f.top;fruit.ground=f.depth;fruit.vy=-0.25f;fruit.resting=false;sim.listener.onSpawn(fruit);sim.firstTime(First.APPLE_HARVEST,f.x,f.top)
                 }
             }
             FixtureType.PLAY_REPAIR -> if(f.mode>0) { f.on=!f.on;sim.listener.onFx(Fx.ON,f.x,f.top,f) }
             FixtureType.PLAY_CHANNEL -> { f.on=!f.on }
-            FixtureType.PLAY_CRANE -> { f.mode=(f.mode+1)%3;f.on=true }
-            FixtureType.PLAY_CONVEYOR -> { f.mode=if(f.mode==1) -1 else 1;f.on=!f.on }
-            FixtureType.PLAY_HOVER -> { f.on=!f.on;f.mode=if(f.on) 1 else 0 }
+            FixtureType.PLAY_CRANE -> { f.mode=(f.mode+1)%3;f.on=true;sim.firstTime(First.CRANE,f.x,f.top) }
+            FixtureType.PLAY_CONVEYOR -> { f.mode=if(f.mode==1) -1 else 1;f.on=!f.on;sim.firstTime(First.CONVEYOR,f.x,f.top) }
+            FixtureType.PLAY_HOVER -> { f.on=!f.on;f.mode=if(f.on) 1 else 0;sim.firstTime(First.HOVER,f.x,f.top) }
             FixtureType.PLAY_BUILD -> assemble(f)
             FixtureType.PLAY_MIRROR -> world.people().firstOrNull { it.place==f.place && !it.held && abs(it.x-f.x)<0.65f }?.let { p ->
-                p.anim.face=Face.entries[(f.mode++).mod(4)];p.anim.faceTime=3f;p.anim.wave=1f;f.count=p.id
+                p.anim.face=Face.entries[(f.mode++).mod(4)];p.anim.faceTime=3f;p.anim.wave=1f;f.count=p.id;sim.firstTime(First.MIRROR,f.x,f.top)
             }
             FixtureType.PLAY_PUPPETS -> { f.on=!f.on;f.timer=0f;sim.listener.onFx(Fx.PAGE,f.x,f.top,f) }
-            FixtureType.PLAY_PICNIC -> { f.open=!f.open;if(f.open) share(f) }
+            FixtureType.PLAY_PICNIC -> { f.open=!f.open;if(f.open) { share(f);sim.firstTime(First.PICNIC,f.x,f.top) } }
             FixtureType.PLAY_PORTAL -> world.people().firstOrNull { it.place==f.place && !it.held && it.mode==Mode.FREE && abs(it.x-f.x)<0.2f }?.let { transport(f,it) }
-            FixtureType.PLAY_SEESAW -> { f.on=!f.on }
+            FixtureType.PLAY_SEESAW -> { f.on=!f.on;sim.firstTime(First.SEESAW,f.x,f.top) }
             FixtureType.PLAY_TUNNEL,FixtureType.PLAY_JUMP -> { f.on=true;f.timer=0f }
             FixtureType.PLAY_CLOUD,FixtureType.PLAY_WATER_WHEEL -> { f.on=!f.on }
             FixtureType.PLAY_RESCUE -> {

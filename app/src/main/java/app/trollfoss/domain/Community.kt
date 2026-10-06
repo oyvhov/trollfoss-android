@@ -46,6 +46,7 @@ class Community(private val sim: Sim) {
         for(p in listOf(a,b)) { p.anim.walkTo=Float.NaN;p.anim.nextWalk=5f;p.anim.face=Face.GRIN;p.anim.faceTime=3f;p.vx=0f;p.vy=0f }
         bonds += Bond(a.id,b.id,action)
         sim.listener.onFx(Fx.SQUEAK,mid,a.y-a.h/2,param=a.id)
+        sim.firstTime(when(action) { FriendAction.HUG -> First.HUG;FriendAction.HIGH_FIVE -> First.HIGH_FIVE;FriendAction.HOLD_HANDS -> First.HOLD_HANDS },mid,a.y-a.h)
         true
     }
     fun choosePet(owner: Person, pet: Person?): Boolean = sim.edit {
@@ -68,6 +69,7 @@ class Community(private val sim: Sim) {
         state.pets[owner.id]=pet.id
         owner.place?.let { House.moveTo(world,pet,it,(owner.x+0.24f).coerceAtMost(it.width-0.1f),owner.y) }
         pet.anim.face=Face.GRIN;pet.anim.faceTime=3f
+        sim.firstTime(First.PET,pet.x,pet.y-pet.h)
         true
     }
     fun follow(to: PlaceId) {
@@ -88,17 +90,17 @@ class Community(private val sim: Sim) {
         val p=owner?.takeIf { it.place==t.place && !it.held } ?: world.people().firstOrNull { it.place==t.place && it.species==Species.FOLK && !it.held && abs(it.x-t.x)<0.8f } ?: return@edit false
         state.teddies[t.id]=p.id
         if(t.mode==Mode.WORN) { val hand=Anatomy.at(p,Part.HAND);t.x=hand[0];t.y=hand[1];t.mode=Mode.FREE;t.holder=-1;t.inside=-1;t.resting=false;t.restOwner=-2;t.ground=p.y }
-        sim.listener.onFx(Fx.POOF,t.x,t.y,thing=t);true
+        sim.listener.onFx(Fx.POOF,t.x,t.y,thing=t);sim.firstTime(First.LIVING_TEDDY,t.x,t.y);true
     }
     fun linkDoor(f: Fixture, place: PlaceId, slot: Int): Boolean = sim.edit {
         if(f.type != FixtureType.PLAY_DOOR || world.fixtures[f.id] !== f || !place.mine || place==PlaceId.MINE_YARD || slot !in 0 until Mine.SLOTS || !world.mine.standing(place,slot)) return@edit false
-        state.doors[f.id]=RoomLink(place,slot);true
+        state.doors[f.id]=RoomLink(place,slot);sim.firstTime(First.SECRET_DOOR,f.x,f.top);true
     }
     fun door(f: Fixture): RoomLink? = state.doors[f.id]?.takeIf { world.mine.standing(it.place,it.slot) }
     fun startBand(ids: List<Int>): Boolean = sim.edit {
         val people=ids.distinct().mapNotNull { world.bodies[it] as? Person }
         if(people.size<3 || people.map { it.place }.distinct().size!=1 || people.any { it.held || instrument(it)==null }) return@edit false
-        state.band.clear();state.band.addAll(people.map { it.id });beat=0f;true
+        state.band.clear();state.band.addAll(people.map { it.id });beat=0f;sim.firstTime(First.BAND,people[0].x,people[0].y-people[0].h);true
     }
     fun stopBand() { state.band.clear() }
     fun instrument(p:Person)=world.worn(p,Slot.HAND)?.type?.takeIf { it in INSTRUMENTS }
@@ -114,7 +116,7 @@ class Community(private val sim: Sim) {
             House.moveTo(world,p,place,(x+(i-guests.lastIndex/2f)*0.22f).coerceIn(0.2f,place.width-0.2f),PlaceId.FRONT-0.04f)
             p.anim.wave=2f;p.anim.nextWalk=30f
         }
-        sim.listener.onFx(Fx.GIFT,x,place.floor-0.3f);true
+        sim.listener.onFx(Fx.GIFT,x,place.floor-0.3f);sim.firstTime(First.PARTY,x,place.floor-0.3f);true
     }
     fun endParty(): Boolean = sim.edit {
         if(state.guests.any { world.bodies[it.id]?.held==true }) return@edit false
@@ -131,12 +133,12 @@ class Community(private val sim: Sim) {
     fun addMark(id:Int,shape:Int,color:Int,x:Float,y:Float):Boolean {
         val marks=state.art[id] ?: return false
         if(marks.size>=80 || !x.isFinite() || !y.isFinite()) return false
-        marks += ArtMark(shape.coerceIn(0,2),color.mod(6),x.coerceIn(0f,1f),y.coerceIn(0f,1f));return true
+        marks += ArtMark(shape.coerceIn(0,2),color.mod(6),x.coerceIn(0f,1f),y.coerceIn(0f,1f));sim.firstTime(First.STAMP_ART);return true
     }
     fun newArt(): Int { val id=world.nextId++;state.art[id]=mutableListOf();return id }
     fun hangArt(id:Int,place:PlaceId,x:Float):Fixture? = sim.edit {
         if(state.art[id].isNullOrEmpty()) return@edit null
-        sim.designer.add(place,FixtureType.PICTURE,ART_BASE+id,x,place.back-0.17f)
+        sim.designer.add(place,FixtureType.PICTURE,ART_BASE+id,x,place.back-0.17f)?.also { sim.firstTime(First.HANG_ART,it.x,it.top) }
     }
     fun step(place:PlaceId,dt:Float) {
         for((id,trait) in state.traits) {

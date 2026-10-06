@@ -149,6 +149,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         world = saved?.world ?: WorldFactory.create()
         // A brand-new world starts on the empty plot of Mitt hus, with the builder panel open (an old save is left as it is).
         if (saved == null) startOnPlot()
+        world.visited += world.place
         settings = saved?.settings ?: Settings()
         sim = Sim(world)
         sim.journal=history
@@ -350,6 +351,8 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         open(Screen.Map)
     }
     fun landBalloon(to: PlaceId) {
+        sim.firstTime(app.trollfoss.domain.First.BALLOON)
+        if(to==PlaceId.CLOUD_ISLAND) sim.firstTime(app.trollfoss.domain.First.SKY_ISLAND)
         if(place==PlaceId.CLOUD_ISLAND && to==world.community.returnPlace) {
             val x=world.community.returnX
             world.community.returnPlace=null
@@ -387,6 +390,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         if (place != to) radioOn = false
         world.place = to
         place = to
+        sim.visit(to)
         screen = navigation.arrive(Screen.Play)
         // A trip within the same place reuses its engine; consume the focus here too.
         engine?.takeIf { it.place == to }?.let { current ->

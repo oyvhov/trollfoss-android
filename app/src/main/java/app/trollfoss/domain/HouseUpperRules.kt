@@ -279,6 +279,7 @@ class HouseUpperRules(private val sim: Sim, private val random: Random) : FloorR
                 p.anim.faceTime = 1.6f
                 p.anim.wave = 1.6f
                 sim.tasks.record(Deed.UP_TRAIN, place, null, f.type)
+                sim.firstTime(First.TOY_TRAIN, f.x, f.top)
             }
         }
         // It rolls into the station when told to, and after a good long run by itself.

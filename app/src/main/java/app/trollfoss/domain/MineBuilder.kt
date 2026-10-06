@@ -287,6 +287,7 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
             JobKind.ROOM -> {
                 fx(MineEvent.ROOM_DONE, job.room?.ordinal ?: 0, slotCenter(job), 0.6f)
                 sim.tasks.record(Deed.MI_ROOM, PlaceId.MINE_YARD)
+                sim.firstTime(First.BUILD_ROOM)
                 select(job.place, job.slot)
             }
             JobKind.UPPER -> {

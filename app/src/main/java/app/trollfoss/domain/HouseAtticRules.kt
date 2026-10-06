@@ -544,7 +544,7 @@ class HouseAtticRules(private val sim: Sim, private val random: Random) : FloorR
         val gem = f.count % 3 == 1 && waiting(ThingType.GEM) < MAX_GEMS
         if (gem) toss(ThingType.GEM, random.nextInt(ThingType.GEM.variants), f, 0f, -0.14f, 0.2f, -2.8f)
         if (coins == 0 && !gem) sim.listener.onFx(Fx.TREASURE_EMPTY, f.x, f.y - 0.2f, f)
-        else fx(AtticCode.CHEST, f.x, f.y - 0.2f, f, arg = 0)
+        else { fx(AtticCode.CHEST, f.x, f.y - 0.2f, f, arg = 0); sim.firstTime(First.ATTIC_CHEST, f.x, f.y - 0.2f) }
         sim.unlock("attic_secret")
         return true
     }

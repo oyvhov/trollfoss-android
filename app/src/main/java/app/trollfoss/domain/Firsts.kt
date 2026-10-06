@@ -25,3 +25,40 @@ enum class First(val group: FirstGroup) {
 
     companion object { fun byName(name: String): First? = entries.firstOrNull { it.name == name } }
 }
+
+/** Turns the coarse sim events into first-time discoveries. Events that already earn a sticker are left out. */
+object FirstsDetector {
+    fun of(fx: Fx, fixture: Fixture?, thing: Thing?, param: Int): First? {
+        val type = fixture?.type
+        return when (fx) {
+            Fx.VROOM -> if (param != 2) null else when (type) {
+                FixtureType.TRACTOR -> First.TRACTOR; FixtureType.SUBMARINE -> First.SUBMARINE
+                FixtureType.BUMPER_CAR -> First.BUMPER_CAR; FixtureType.PLAY_BUS -> First.BUS
+                FixtureType.PLAY_TRAIN -> First.TOY_TRAIN; FixtureType.PLAY_TANDEM -> First.TANDEM
+                else -> null
+            }
+            Fx.TOOT -> if (type == FixtureType.BOAT) First.BOAT else null
+            Fx.BOING -> if (type == FixtureType.PLAY_LAUNCHER) First.PILLOW_LAUNCH else null
+            Fx.DING -> if (type == FixtureType.PLAY_MARBLES) First.MARBLES else null
+            Fx.SPLAT -> if (type == FixtureType.PLAY_COLORS) First.COLOUR_SPRAY else null
+            Fx.COOKED -> if (type == FixtureType.PLAY_POPCORN) First.POPCORN else if (thing != null) First.COOK else null
+            Fx.PUMP -> when (type) { FixtureType.PLAY_PUMP -> First.PUMP; FixtureType.PLAY_LIFT -> First.MINI_LIFT; else -> null }
+            Fx.PAGE -> if (type == FixtureType.PLAY_PUPPETS) First.PUPPETS else null
+            Fx.BUILD -> when (type) {
+                FixtureType.PLAY_CART -> First.BUILD_TABLE; FixtureType.PLAY_REPAIR -> First.REPAIR_LIGHT
+                FixtureType.SNOWMAN -> First.SNOWMAN; FixtureType.SANDCASTLE -> First.SANDCASTLE
+                else -> null
+            }
+            Fx.INTO -> when (type) {
+                FixtureType.PLAY_CHANNEL -> First.WATER_CHANNEL; FixtureType.PLAY_WATER_WHEEL -> First.WATER_WHEEL
+                FixtureType.PLAY_CLOUD -> First.RAIN_CLOUD; else -> null
+            }
+            Fx.POOF -> if (type == FixtureType.PLAY_PORTAL) First.PORTAL else null
+            Fx.WHEE -> if (type == FixtureType.PLAY_TUNNEL || type == FixtureType.PLAY_JUMP) First.OBSTACLE else null
+            Fx.TIDY -> First.TIDY
+            Fx.PAINT -> First.PAINT_ROOM
+            Fx.TREASURE_IN -> First.TREASURE_BOX
+            else -> null
+        }
+    }
+}

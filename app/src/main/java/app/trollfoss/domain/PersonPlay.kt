@@ -63,6 +63,8 @@ class PersonPlay(private val sim: Sim) {
                 Fx.BOING
             }
         }
+        when (activity) { READ -> First.READ; PHONE -> First.PHONE; BRUSH -> First.BRUSH_TEETH; THROW -> First.THROW_BALL; else -> null }
+            ?.let { sim.firstTime(it, p.x, p.y - p.h) }
         sim.listener.onFx(fx, p.x, p.y - p.h * 0.5f, thing = t)
         return true
     }
@@ -71,6 +73,7 @@ class PersonPlay(private val sim: Sim) {
         if (t.type != ThingType.TOOTHBRUSH) return false
         sim.give(p, t, Part.HAND)
         p.anim.sparkle = 1f
+        sim.firstTime(First.BRUSH_TEETH, p.x, p.y - p.h)
         return true
     }
 
@@ -132,6 +135,7 @@ class PersonPlay(private val sim: Sim) {
             if (abs(t.x - hand[0]) < 0.095f && abs(t.y - hand[1]) < 0.12f) {
                 sim.give(p, t, Part.HAND)
                 p.anim.face = Face.GRIN; p.anim.faceTime = 2f; p.anim.wave = 1f
+                sim.firstTime(First.CATCH_BALL, p.x, p.y - p.h)
                 iterator.remove()
             }
         }
