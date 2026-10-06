@@ -252,3 +252,46 @@ nedteljing eller tap. Ingen nettverk. Glimt, oppdrag og eventyr held fram som f�
 - **Detektor som fyrer feil:** `Fx` er grov; testar per Fx-type og `fixture.type`.
 - **Yting på kartet:** fossefyllinga er få primitive figurar per bilete; mål på det trege nettbrettet.
 - **Tullehendingar som irriterer:** sjeldne, korte, aldri under draging; kan skruast ned i éin konstant.
+
+## 16. Utgåve 1.12: nivå 8 «Showmeister» og levande scene (del 1)
+
+Godkjent i bolk 3–4; brukaren bad «Ta neste steg» etter publisert 1.11.0 og har bede om at arbeidet ikkje stoppar
+ved kvar port. Release først når brukaren ber om det. Barnetest av tempoet i 1.11 står framleis att.
+
+### 16.1 Småting frå gjennomgangen av 1.11 (ferdige først)
+Tullehendingar pausar også ved open sekk/leikedialog; hatten dett rett ned ved redusert rørsle; merke frå effektar
+utan stad (0, 0) startar midt på skjermen; Mailinn-sjekken skil ikkje store/små bokstavar; overlegget for merke tikkar
+berre når noko ventar; steinane ved fossen er trykkbare; bokmål «Sprengte en boble»; dykkarklokka hentar berre ting
+som faktisk ligg i vatnet og finn vatnet éin gong per steg; skattebordet stoppar ved åtte lause overraskingar.
+
+### 16.2 Nivå 8 (grense 25 merke), fire leiker i `ShowPlay`
+1. **Ekkoboks (`PLAY_ECHO_BOX`).** Høyrer dei siste (høgst åtte) tonane som blir spela innan 1,5 på same stad
+   (piano `KEY`, gitar `STRUM`, tromme `DRUM`, xylofon `XYLO`, song `SING`), med tidsavstand. Trykk spelar dei att i
+   same rytme med pipestemme (høgare tonehøgd), og vennene i nærleiken dansar ein augeblink. Tom boks: eit lite
+   «hæ?»-pip. Opptaket er mellombels (ikkje lagra). Oppdaging `ECHO_BOX` ved første avspeling.
+2. **Danseteppe (`PLAY_DANCE_FLOOR`).** Flatt teppe med fargefelt. Trykk slår musikk på/av (same radiomusikk som
+   discokula). Medan det er på, dansar alle frie, ståande figurar som står på teppet; to eller fleire saman får eit
+   felles hopp på takta. Feltet under kvar dansar lyser. Oppdaging `DANCE_FLOOR` når nokon dansar på det.
+3. **Konfettimaskin (`PLAY_CONFETTI`).** Trykk: konfettiregn (partiklar, ikkje ting som må ryddast), «pang»,
+   og venner innan 1,0 hoppar og ler. Kviler 2 s mellom skota. Oppdaging `CONFETTI`.
+4. **Lysrigg med discokule (`PLAY_LIGHT_RIG`).** Trykk byter mellom av, varmt lyskjegle og fargedisco (lagra i
+   `mode`). Disco: same mørklegging og fargeflekkar som discokula, og alle ståande dansar. Lyskjegle: eit varmt kjegle
+   frå riggen ned på golvet; figurar i kjegla smiler og vinkar. Oppdaging `LIGHT_RIG` første gong lyset blir slått på.
+
+Nye `First` (72 i alt) med bilete og tekst på begge målformer. Grenser `0, 2, 4, 7, 10, 14, 19, 25`.
+
+### 16.3 Levande scene, del 1
+- **Lys gjennom vindauge:** for `WINDOW`-møblar (Familiehuset, kafeen, frisøren, laben) med gardinene oppe, om dagen:
+  ei mjuk, lys stripe frå glaset ned på golvet, svakare i regn/snø, borte om natta; 8 støvkorn som dansar i stripa.
+  Mitt hus og Storhuset (vindauge i bakgrunnskunsten) kjem i ein seinare runde.
+- **Lamper om kvelden:** når natta kjem, går lampene (`LAMP`) på av seg sjølv, og av att om morgonen.
+- **Ringar i vatnet:** eit plask lagar ringar som veks og forsvinn; av og til ein roleg ring der det er vatn.
+  Høgst 12 ringar.
+- **Damp:** eit varmt bad (på) dampar lett.
+- Redusert rørsle: lysstriper står stille utan støvdans, ingen sjølvstendige ringar; plask-ringar vert viste kort.
+- Yting: få primitivar per stripe, støv som `drawPoints`, ingen nye bitmapar; mål på nettbrettet.
+
+### 16.4 Kontroll
+Einingstestar for kvar leike (opptak/avspeling, dans på teppet, konfettikvile, lysmodus og lagring), nye grenser,
+lamper som følgjer natta og ringtak; Android-test med ekte draging til danseteppet og trykk på lysriggen;
+visuell kontroll på mobil og nettbrett.
