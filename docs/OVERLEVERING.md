@@ -7,7 +7,10 @@
 > tonar i nærleiken og spelar dei att med pipestemme, danseteppe med dans og felles hopp, konfettimaskin med kvile,
 > lysrigg av/scenelys/disco lagra i `mode`); fire nye oppdagingar (72); levande scene del 1 (lysstriper med støv frå
 > `WINDOW`, lamper som følgjer natta, ringar i vatn via `Ripples`, damp frå varmt bad).
-> **Kontroll:** einingstestane grøne (sjå sluttmeldinga for tal); debug-, test-APK og lint bygde gjennom låsen.
+> **Kontroll:** 591 einingstestar grøne; debug-, test-APK og lint (0 feil / 32 åtvaringar) gjennom låsen. Fersk
+> gjennomgang (Opus): animasjonar som aldri gjekk over (òg eldre leiker sidan 1.7), felles musikkbrytar og tynt treff på
+> danseteppet er retta med testar. Utsett: ekko-tonehøgd, ringar ved redusert rørsle, felt under kvar dansar, høgd på
+> teppet, små allokeringar per bilete, namnet «discokule».
 > **Ikkje gjort:** Android-testane (inkl. nye `ShowPlayUiTest`) og visuell kontroll. Emulatorane (`TrollfossRelease180`
 > og `TrollfossReview110`) heng ved oppstart natt til 7. oktober: qemu startar, men VM-en brukar ~1 s CPU og adb ser
 > berre «offline». Første forsøk viste òg eit krasjrapport-spørsmål; `-crash-report-mode never` fjerna det, men ikkje
