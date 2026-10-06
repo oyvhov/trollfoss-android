@@ -441,6 +441,7 @@ class WorldStore(private val file: File) {
             app.trollfoss.domain.StarterLayout.upgrade(world)
             app.trollfoss.domain.TreasureStart.upgrade(world)
             app.trollfoss.domain.FirstsRetro.upgrade(world)
+            app.trollfoss.domain.Residents.addMailinn(world)
             world.visited += world.place
             json.optJSONObject("toys")?.let { toys ->
                 toys.optJSONObject("inputs")?.let { inputs -> inputs.keys().forEach { key ->

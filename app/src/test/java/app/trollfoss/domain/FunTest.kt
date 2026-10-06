@@ -164,6 +164,8 @@ class FunTest {
         hedda.ground = 0.92f
         hedda.resting = false
         for (p in world.people()) p.anim.nextWish = 1e6f
+        // This is about Hedda finding her own bed; Mailinn is out playing tonight.
+        world.people().filter { it.name == "Mailinn" }.forEach { it.place = PlaceId.BEACH }
         world.night = true
         step(sim, PlaceId.HOME, 90f)
         val bed = world.fixturesIn(PlaceId.HOME).first { it.type == FixtureType.BED }
@@ -183,6 +185,8 @@ class FunTest {
         val sim = sim(world)
         val tuva = folk(world, PlaceId.HEILEBERGET, "Tuva")
         for (p in world.people()) p.anim.nextWish = 1e6f
+        // This is about Hedda finding her own bed; Mailinn is out playing tonight.
+        world.people().filter { it.name == "Mailinn" }.forEach { it.place = PlaceId.BEACH }
         val start = tuva.x
         var moved = false
         var t = 0f

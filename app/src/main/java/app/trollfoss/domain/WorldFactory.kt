@@ -38,6 +38,7 @@ object WorldFactory {
         world.flags += StarterLayout.FLAG
         world.flags += FirstsRetro.FLAG
         TreasureStart.upgrade(world, sim)
+        Residents.addMailinn(world)
         world.bodies.values.forEach { it.age = 10f }
         return world
     }
