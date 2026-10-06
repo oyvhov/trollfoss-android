@@ -490,6 +490,7 @@ class Engine(
         updatePreviews()
         updatePeople(dt)
         particles.update(dt)
+        ripples.step(dt)
         ambient(dt)
         seasonParticles(dt)
         flights.removeAll { it.t += dt / 0.75f; it.t >= 1f }
@@ -734,6 +735,10 @@ class Engine(
     private fun visible(b: Body): Boolean = b.x > cam - 0.2f && b.x < cam + viewport + 0.2f
 
     /** Little background life: chimney steam, notes from the radio, sparks from the fire. */
+    /** Rings on water and the time until the next calm one (see [Ripples]). */
+    private val ripples = Ripples()
+    private var rippleWait = 3f
+
     private fun ambient(dt: Float) {
         if (!motion) return
         for (f in world.fixturesIn(place)) {
@@ -754,8 +759,20 @@ class Engine(
                     particles.add(Particle(PKind.SMOKE, x + 0.12f, f.top + 0.02f, -0.05f, -0.15f, 1.2f, 0.016f, Color(0xFF8E93A6)))
                 f.type == FixtureType.ROCKET_SHIP && f.on && random.nextFloat() < dt * 30f ->
                     particles.add(Particle(PKind.SMOKE, x + (random.nextFloat() - 0.5f) * 0.1f, f.y + f.shiftY, (random.nextFloat() - 0.5f) * 0.3f, 0.2f, 1.2f, 0.03f, Color(0xFFE8ECF5)))
-                f.type == FixtureType.BATH && f.on && random.nextFloat() < dt * 2f ->
+                f.type == FixtureType.BATH && f.on && random.nextFloat() < dt * 2f -> {
                     particles.add(Particle(PKind.BUBBLE, x + (random.nextFloat() - 0.5f) * 0.3f, f.y - 0.11f, 0f, -0.06f, 1.5f, 0.012f, Color.White))
+                    // A warm bath steams a little.
+                    if (random.nextFloat() < 0.6f) particles.add(Particle(PKind.STEAM, x + (random.nextFloat() - 0.5f) * 0.25f, f.y - 0.16f, 0.01f, -0.07f, 2f, 0.018f, Color.White))
+                }
+            }
+        }
+        // Now and then a calm ring where there is water.
+        rippleWait -= dt
+        if (rippleWait <= 0f) {
+            rippleWait = 2.5f + random.nextFloat() * 2f
+            sim.pools(place).randomOrNull(random)?.let { p ->
+                val x = p.x1 + random.nextFloat() * (p.x2 - p.x1)
+                if (x > cam - 0.2f && x < cam + viewport + 0.2f) ripples.add(x, p.line)
             }
         }
         if (sim.underwater(place)) {
@@ -1789,6 +1806,7 @@ class Engine(
     }
 
     override fun onSplash(body: Body, speed: Float) {
+        ripples.add(body.x, body.y)
         host.sfx(Sfx.SPLASH, min(1f, 0.3f + speed * 0.2f))
         repeat(10) {
             particles.add(Particle(PKind.DROP, body.x, body.y - 0.01f, (random.nextFloat() - 0.5f) * 0.8f, -0.5f - random.nextFloat() * 0.6f, 0.8f, 0.012f, Color(0xFF9ADAFF)))
@@ -2731,6 +2749,7 @@ class Engine(
         sprites.frame()
         if (skip and 1 == 0) timed(0) { drawPlaceBack(place, cam, u, pen, Decor.styles(world, place)) }
         drawPartyLights(lw)
+        drawWindowLight(pen)
         drawShootingStar()
 
         // One list for furniture, glimt and bodies, sorted back to front.
@@ -2799,6 +2818,7 @@ class Engine(
         }
 
         timed(5) { particles.draw(this, u, cam, lw) }
+        drawRipples(lw)
         drawMischief(lw)
         for(bond in sim.community.bonds) {
             val a=world.bodies[bond.a] as? Person ?: continue
@@ -3314,6 +3334,48 @@ class Engine(
             drawPath(cone,color.copy(alpha=0.09f))
             drawCircle(Ink.line,u*0.018f,Offset(x,y+u*0.024f))
             drawCircle(color,u*0.014f,Offset(x,y+u*0.024f))
+        }
+    }
+
+    /**
+     * Daylight through windows with open curtains: a soft shaft from the glass down to the floor, fainter in rain or snow
+     * and gone at night, with a few specks of dust dancing in it. Only a handful of primitives per window.
+     */
+    private fun DrawScope.drawWindowLight(pen: Pen) {
+        val day = (1f - night) * (1f - app.trollfoss.ui.art.overcast(pen))
+        if (day < 0.05f) return
+        val warm = Color(0xFFFFF4D2)
+        for (w in world.fixturesIn(place)) {
+            if (w.type != FixtureType.WINDOW || w.mode == 1) continue
+            val wx = w.x + w.shiftX
+            if (wx < cam - 0.6f || wx > cam + viewport + 0.6f) continue
+            val top = w.y - 0.2f; val floor = place.floor
+            val shaft = Path().apply {
+                moveTo(sx(wx - 0.08f), sy(top)); lineTo(sx(wx + 0.08f), sy(top))
+                lineTo(sx(wx + 0.38f), sy(floor)); lineTo(sx(wx + 0.07f), sy(floor)); close()
+            }
+            drawPath(shaft, Brush.verticalGradient(listOf(warm.copy(alpha = 0.16f * day), warm.copy(alpha = 0.03f * day)), sy(top), sy(floor)), blendMode = BlendMode.Plus)
+            for (i in 0 until 8) {
+                val k = if (motion) ((time * 0.04f + i * 0.125f) % 1f) else i * 0.125f
+                val y = top + (floor - top) * k
+                val across = 0.15f + 0.7f * ((i * 0.37f) % 1f)
+                val x = (wx - 0.08f + 0.15f * k) + (0.16f + 0.15f * k) * across + (if (motion) sin(time * 0.7f + i) * 0.015f else 0f)
+                drawCircle(Color.White.copy(alpha = 0.55f * day), u * 0.0035f, Offset(sx(x), sy(y)))
+            }
+        }
+    }
+
+    /** Rings on the water that grow and fade (see [Ripples]). */
+    private fun DrawScope.drawRipples(lw: Float) {
+        for (i in 0 until ripples.count) {
+            val k = ripples.age(i) / ripples.life
+            val c = Offset(sx(ripples.x(i)), sy(ripples.y(i)))
+            for (ring in 0..1) {
+                val rk = (k - ring * 0.25f).coerceIn(0f, 1f)
+                if (rk <= 0f) continue
+                val r = (0.02f + 0.1f * rk) * u
+                drawOval(Color.White.copy(alpha = 0.6f * (1f - rk)), Offset(c.x - r, c.y - r * 0.25f), Size(r * 2f, r * 0.5f), style = Stroke(lw * 0.9f))
+            }
         }
     }
 

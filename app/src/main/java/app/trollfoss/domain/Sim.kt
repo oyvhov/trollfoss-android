@@ -187,6 +187,11 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         return true
     }
 
+    /** When night falls the lamps go on by themselves, and off again in the morning; in between they are the child's. */
+    fun lampsFollowNight(night: Boolean) {
+        for (f in world.fixtures.values) if (f.type == FixtureType.LAMP) f.on = night
+    }
+
     /** Notes a place the child has reached; new places count towards the travel discoveries. */
     fun visit(place: PlaceId) {
         if (!world.visited.add(place)) return

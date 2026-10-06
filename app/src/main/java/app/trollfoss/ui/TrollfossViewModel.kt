@@ -489,6 +489,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     fun toggleNight() {
         world.night = !world.night
         night = world.night
+        sim.lampsFollowNight(world.night)
         sfx(if (night) Sfx.CHIME else Sfx.MAGIC, 0.7f, if (night) 0.8f else 1.1f)
         updateMusic()
         scheduleSave()
