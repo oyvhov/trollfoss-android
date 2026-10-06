@@ -50,6 +50,16 @@ class MischiefTest {
         assertEquals(stickers + 1, s.world.stickers.size)
     }
 
+    @Test fun aMischiefSneezeNeverCompletesATaskOrEarnsASticker() {
+        val s = sim(); folk(s, 1f)
+        s.world.taskSet.clear(); s.world.taskSet += "sneeze"
+        val stickers = s.world.stickers.size
+        s.mischief.force(MischiefKind.SNEEZE, PlaceId.HOME)
+        assertEquals(MischiefKind.SNEEZE, s.mischief.last)
+        assertEquals(stickers, s.world.stickers.size)
+        assertEquals(0, s.world.taskProgress["sneeze"] ?: 0)
+    }
+
     @Test fun reducedMotionKeepsOnlyTheSneezeAndTheTroll() {
         val s = sim(); folk(s, 1f); s.mischief.calm = true
         s.mischief.force(MischiefKind.BIRD, PlaceId.HOME)

@@ -30,12 +30,20 @@ class FirstsDetectorTest {
         assertNull(FirstsDetector.of(Fx.HOUSE, null, null, 0))
     }
 
-    @Test fun seatingInBedCountsAsSleep() {
+    @Test fun aChildPuttingAFriendToBedCountsAsSleep() {
+        val s = Sim(World())
+        val bed = s.designer.add(PlaceId.HOME, FixtureType.BED, 0, 1.5f, PlaceId.HOME.floor)!!
+        val p = s.world.addPerson(Species.FOLK, Look(), 1f, PlaceId.HOME, 1.2f, PlaceId.HOME.floor)
+        assertTrue(s.seatByChild(p, bed, 0))
+        assertTrue("SLEEP" in s.world.firsts)
+    }
+
+    @Test fun villagersGoingToBedByThemselvesEarnNothing() {
         val s = Sim(World())
         val bed = s.designer.add(PlaceId.HOME, FixtureType.BED, 0, 1.5f, PlaceId.HOME.floor)!!
         val p = s.world.addPerson(Species.FOLK, Look(), 1f, PlaceId.HOME, 1.2f, PlaceId.HOME.floor)
         assertTrue(s.seat(p, bed, 0))
-        assertTrue("SLEEP" in s.world.firsts)
+        assertTrue(s.world.firsts.isEmpty())
     }
 
     @Test fun friendsActionsCount() {

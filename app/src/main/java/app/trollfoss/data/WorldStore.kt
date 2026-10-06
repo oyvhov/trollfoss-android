@@ -440,8 +440,6 @@ class WorldStore(private val file: File) {
             WorldFactory.addMissingPlaces(world, known)
             app.trollfoss.domain.StarterLayout.upgrade(world)
             app.trollfoss.domain.TreasureStart.upgrade(world)
-            app.trollfoss.domain.FirstsRetro.upgrade(world)
-            app.trollfoss.domain.Residents.addMailinn(world)
             world.visited += world.place
             json.optJSONObject("toys")?.let { toys ->
                 toys.optJSONObject("inputs")?.let { inputs -> inputs.keys().forEach { key ->
@@ -454,6 +452,9 @@ class WorldStore(private val file: File) {
                 } }
             }
             CommunityStore.decode(world,json.optJSONObject("community"))
+            // After everything is loaded: what the save shows the child has done, and new villagers.
+            app.trollfoss.domain.FirstsRetro.upgrade(world)
+            app.trollfoss.domain.Residents.addMailinn(world)
             return Saved(world, settings)
         }
 

@@ -93,6 +93,18 @@ class FirstsTest {
         assertEquals(w.stickers.size + 1, back.stickers.size)
     }
 
+    @Test fun loadingAnOldSaveCountsItsPetArtAndSecretDoor() {
+        val s = sim(); val w = s.world; w.flags += TreasureStart.FLAG
+        val owner = w.addPerson(Species.FOLK, Look(), 1f, PlaceId.HOME, 1f, PlaceId.HOME.floor)
+        val cat = w.addPerson(Species.CAT, Look(), 1f, PlaceId.HOME, 1.3f, PlaceId.HOME.floor)
+        w.community.pets[owner.id] = cat.id
+        w.community.art[w.nextId++] = mutableListOf(ArtMark(0, 0, 0.5f, 0.5f))
+        val json = WorldStore.encode(w, Settings())
+        val back = WorldStore.decode(json).world
+        assertTrue("PET" in back.firsts)
+        assertTrue("STAMP_ART" in back.firsts)
+    }
+
     @Test fun newWorldsSkipTheRetroUpgrade() {
         assertTrue(FirstsRetro.FLAG in WorldFactory.create().flags)
     }

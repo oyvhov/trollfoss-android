@@ -64,6 +64,8 @@ fun GiftParcel(vm: TrollfossViewModel, motion: Boolean) {
     val rewards = remember(level) { ToyReward.entries.filter { it.level == level } }
     LaunchedEffect(Unit) { var start = -1L; while (true) withFrameNanos { if (start < 0) start = it; t = (it - start) / 1e9f } }
     LaunchedEffect(Unit) { if (motion) { fall.animateTo(1f, tween(1600, easing = LinearEasing)); phase = ParcelPhase.WAIT } }
+    // Leaving the screen mid-pop must not leave a parcel behind that can never open.
+    androidx.compose.runtime.DisposableEffect(Unit) { onDispose { vm.parcelDone() } }
     LaunchedEffect(phase) {
         if (phase == ParcelPhase.WAIT) while (true) { kotlinx.coroutines.delay(3000); vm.sfx(Sfx.GIGGLE, 0.4f, 1.2f) }
         if (phase == ParcelPhase.POP) { pop.animateTo(1f, tween(if (motion) 1300 else 500)); vm.parcelDone() }

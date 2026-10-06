@@ -808,6 +808,18 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         p.y = point[1]
     }
 
+    /** The child dropped [p] onto [f]: a seat, and the first bath, bed or vacuum ride is a discovery. */
+    fun seatByChild(p: Person, f: Fixture, spot: Int): Boolean {
+        if (!seat(p, f, spot)) return false
+        when (f.type) {
+            FixtureType.ROBOT_VACUUM -> firstTime(First.VACUUM_RIDE, f.x + f.shiftX, f.top)
+            FixtureType.BATH -> firstTime(First.BATH, f.x, f.top)
+            FixtureType.BED, FixtureType.BUNK_BED, FixtureType.SPACE_BED -> firstTime(First.SLEEP, f.x, f.top)
+            else -> Unit
+        }
+        return true
+    }
+
     /** Seats [p] on [f] if the spot is free. */
     fun seat(p: Person, f: Fixture, spot: Int): Boolean {
         if (spot !in f.spec.spots.indices || world.seatedAt(f, spot) != null) return false
@@ -830,12 +842,6 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         life.seated(p)
         p.place?.let { jokes.seated(it, p) }
         tasks.record(Deed.SEATED, p.place ?: here, fixture = f.type)
-        when (f.type) {
-            FixtureType.ROBOT_VACUUM -> firstTime(First.VACUUM_RIDE, f.x + f.shiftX, f.top)
-            FixtureType.BATH -> firstTime(First.BATH, f.x, f.top)
-            FixtureType.BED, FixtureType.BUNK_BED, FixtureType.SPACE_BED -> firstTime(First.SLEEP, f.x, f.top)
-            else -> Unit
-        }
         magic.seated(f)
         toys.seated(f)
         return true

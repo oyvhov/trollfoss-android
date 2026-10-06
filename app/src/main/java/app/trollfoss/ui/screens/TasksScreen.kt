@@ -69,8 +69,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun TasksScreen(vm: TrollfossViewModel) {
     vm.tasksVersion
-    var tab by remember { mutableStateOf(if(vm.levelGift>0) BookTab.GIFTS else vm.bookTab) }
-    LaunchedEffect(tab) { if(tab==BookTab.GIFTS) vm.dismissLevelGift() }
+    // A waiting gift parcel stays for the child to open; the book does not unwrap it.
+    var tab by remember { mutableStateOf(vm.bookTab) }
     var selected by remember { mutableStateOf<ToyReward?>(null) }
     val compact=androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp<520
     val board=vm.sim.tasks.board()

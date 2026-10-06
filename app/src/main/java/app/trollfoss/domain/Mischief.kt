@@ -59,7 +59,10 @@ class Mischief(private val sim: Sim, private val random: Random) {
                     hat.x = p.x + 0.08f * p.anim.facing; hat.y = p.y - p.h; hat.ground = p.y; hat.vy = -0.3f; hat.resting = false
                 }
                 p.anim.face = Face.WOW; p.anim.faceTime = 1.5f
-                sim.listener.onFx(Fx.ATSJO, p.x, p.y - p.h, param = p.id)
+                // The world sneezed, not the child: no task or sticker may come of it.
+                val recording = sim.tasks.recording
+                sim.tasks.recording = false
+                try { sim.listener.onFx(Fx.ATSJO, p.x, p.y - p.h, param = p.id) } finally { sim.tasks.recording = recording }
             }
             MischiefKind.BIRD -> bird = BirdVisit(free(place, Species.FOLK).random(random).id, 4f)
             MischiefKind.CAT -> free(place, Species.CAT).random(random).let { cat -> catSpin = cat.id; catTime = 3f; cat.anim.spin = 1f; cat.anim.face = Face.DIZZY; cat.anim.faceTime = 2f }

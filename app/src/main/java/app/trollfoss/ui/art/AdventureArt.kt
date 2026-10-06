@@ -48,9 +48,10 @@ fun DrawScope.drawAdventureBack(f: Fixture, u: Float, pen: Pen): Boolean {
             box(gx - 0.075f, gy + 0.1f, gx + 0.075f, gy + 0.27f, ToyColors[0]); box(gx - 0.055f, gy + 0.12f, gx + 0.055f, gy + 0.19f, glass)
         }
         FixtureType.PLAY_DIVING_BELL -> with(k) {
-            val rx = max(0f, f.reach)
+            // The stand stays on the shore; the arm reaches out over the water on whichever side it is.
+            val rx = f.reach; val post = if (f.reach < 0f) 0.11f else -0.11f
             val by = -0.26f + f.angle * f.dive
-            box(-0.13f, -0.44f, -0.09f, 0f, wood); line(-0.11f, -0.42f, rx + 0.02f, -0.42f, wood, pen.lw * 3); line(rx, -0.42f, rx, by, Ink.line, pen.lw * 1.2f)
+            box(post - 0.02f, -0.44f, post + 0.02f, 0f, wood); line(post, -0.42f, rx, -0.42f, wood, pen.lw * 3); line(rx, -0.42f, rx, by, Ink.line, pen.lw * 1.2f)
             if (f.angle > 0.3f) {
                 val t = pen.t
                 fish(rx + sin(t * 1.3f) * 0.17f, by + 0.13f, if (kotlin.math.cos(t * 1.3f) > 0f) 1f else -1f, ToyColors[3])
@@ -90,7 +91,7 @@ fun DrawScope.drawAdventureFront(f: Fixture, u: Float, pen: Pen): Boolean {
             box(gx - 0.075f, gy + 0.19f, gx + 0.075f, gy + 0.27f, ToyColors[0])
         }
         FixtureType.PLAY_DIVING_BELL -> with(k) {
-            val rx = max(0f, f.reach); val by = -0.26f + f.angle * f.dive
+            val rx = f.reach; val by = -0.26f + f.angle * f.dive
             drawCircle(glass.copy(alpha = 0.35f), 0.055f * u, Offset(rx * u, (by + 0.12f) * u))
         }
         FixtureType.PLAY_DIGGER -> with(k) { line(-0.19f, -0.16f, -0.04f, -0.16f, Ink.line, pen.lw * 1.5f) }

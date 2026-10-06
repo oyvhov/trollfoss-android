@@ -1429,7 +1429,7 @@ class Engine(
             body.anim.faceTime = 0f
             val seat = sim.freeSeatNear(place, body, body.x, body.y, 0.13f)
             if (seat != null && hypot(vx, vy) < 3f) {
-                sim.seat(body, seat.first, seat.second)
+                sim.seatByChild(body, seat.first, seat.second)
                 body.squashV += 5f
                 host.sfx(Sfx.DROP, 0.5f)
                 host.changed()
