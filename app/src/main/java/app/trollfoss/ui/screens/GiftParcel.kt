@@ -74,7 +74,7 @@ fun GiftParcel(vm: TrollfossViewModel, motion: Boolean) {
         val density = LocalDensity.current
         val side = with(density) { (if (h / density.density < 520f) 72.dp else 96.dp).toPx() }
         val cx = w / 2f
-        val ground = h * 0.58f
+        val ground = h * 0.62f
         val y = -side * 2f + (ground + side * 2f) * fall.value
         if (phase != ParcelPhase.POP) {
             val wiggle = if (motion && phase == ParcelPhase.WAIT) sin(t * 6f) * 8f else 0f

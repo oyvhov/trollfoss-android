@@ -94,7 +94,7 @@ fun firstSubject(f: First): FirstSubject = when (f) {
     First.PEEK_TROLL -> FirstSubject.Troll
 }
 
-private val SILHOUETTE = ColorFilter.tint(Color(0xFF2B2140).copy(alpha = 0.78f), BlendMode.SrcAtop)
+private val SILHOUETTE = ColorFilter.tint(Color(0xFF241A3C).copy(alpha = 0.92f), BlendMode.SrcIn)
 
 /** The picture of a discovery; found ones in full colour, the others as a dark silhouette of the same picture. */
 @Composable

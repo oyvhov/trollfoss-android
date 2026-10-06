@@ -50,7 +50,7 @@ fun FirstsTab(vm: TrollfossViewModel, compact: Boolean) {
         GameText("${found.size} / ${First.entries.size}", fontSize = 20.sp, color = Color.White)
     }
     val tile = if (compact) 56.dp else 76.dp
-    val perRow = if (compact) 7 else 9
+    val perRow = ((androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp - 60) / ((if (compact) 56 else 76) + 8)).coerceIn(5, 14)
     for (group in FirstGroup.entries) {
         GameText(SO.group(group).str(), fontSize = if (compact) 16.sp else 20.sp, color = Color.White)
         for (row in First.entries.filter { it.group == group }.chunked(perRow)) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

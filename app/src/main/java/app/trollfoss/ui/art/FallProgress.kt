@@ -64,7 +64,7 @@ internal fun DrawScope.drawFallProgress(g: MapGeo, pen: Pen, stickers: Int, thre
         drawCircle(Color.White, h * 0.0045f, Offset(fall.cx + sin(i * 2.1f + (if (motion) t else 0f)) * gw * 0.35f, y), alpha = 0.9f)
     }
     // Ten stones up the left side: gold for levels reached.
-    val r = h * 0.016f
+    val r = minOf(h * 0.012f, span / (FallProgress.STONES - 1) * 0.36f)
     val sx = fall.cx - fall.bw * 0.5f - r * 1.8f
     for (i in 0 until FallProgress.STONES) {
         val c = Offset(sx, fall.bottom - span * FallProgress.stone(i))
@@ -75,7 +75,7 @@ internal fun DrawScope.drawFallProgress(g: MapGeo, pen: Pen, stickers: Int, thre
     if (level < thresholds.size) {
         val hop = if (motion && FallProgress.ready(stickers, thresholds)) -abs(sin(t * 5f)) * r * 0.9f else 0f
         val c = Offset(sx - r * 2.6f, fall.bottom - span * FallProgress.stone(level) + hop)
-        val b = r * 1.1f
+        val b = h * 0.016f
         drawRoundRect(Color(0xFFE45B78), Offset(c.x - b, c.y - b), Size(b * 2, b * 1.7f), CornerRadius(b * 0.25f))
         drawRoundRect(T.Ink, Offset(c.x - b, c.y - b), Size(b * 2, b * 1.7f), CornerRadius(b * 0.25f), style = Stroke(pen.lw))
         drawRect(T.Sun, Offset(c.x - b * 0.18f, c.y - b), Size(b * 0.36f, b * 1.7f))

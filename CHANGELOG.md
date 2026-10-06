@@ -1,5 +1,17 @@
 # Endringslogg
 
+## 1.11.0 – Oppdagingar og Trollfossen
+
+- Fri leik gir merke: første gong barnet køyrer traktor, sprengjer ei boble, gir ein klem, et noko godt eller reiser til ein ny stad, flyg eit merke inn i boka, og vennene i nærleiken jublar. 68 oppdagingar i alt.
+- Nivåa kjem raskare (2, 4, 7, 10, 14 og 19 merke). Ingen mistar nivå eller leiker; gamle lagringar får merke for det dei tydeleg alt har gjort.
+- Trollfossen på kartet viser vegen mot nivå 10: fossen glitrar høgare for kvart merke, ti steinar viser nivåa, gåva ventar på neste stein, og trollet på toppen vinkar.
+- Nytt nivå: ei gåvepakke dalar ned i fallskjerm der barnet leikar, vrikkar og fnisar til nokon trykkjer. Pang! Éi ny leike blir ståande, resten flyg inn i Møblar.
+- Boka har ei ny fane, Oppdagingar: det barnet har funne i farge, resten som silhuettar som lokkar til å prøve.
+- Nivå 7 «Eventyrar»: taubane, dykkarklokke som når ut over vatnet, gravemaskin som grev etter skattar (og gamle støvlar) og eit skattebord som gir overraskingar.
+- Tullehendingar: av og til nys nokon så hatten flyg, ein fugl landar på eit hovud, katten jagar halen sin, eller eit lite troll tittar ut av eit skap. Fang trollet!
+- Mailinn har flytta inn i Familiehuset.
+- Figurar, klede, ting, hus og opptente rettar blir bevarte. Nynorsk og bokmål er på plass.
+
 ## 1.10.0 – Mjukare kart og støvsugarleik
 
 - Mildare namneboksar på kartet, med tynn kant, diskret skugge og lys pastell på vald stad.
