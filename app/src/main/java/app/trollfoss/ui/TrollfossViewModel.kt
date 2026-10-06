@@ -243,8 +243,9 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         sim.toys.supply(f);changed();travelPlayCard(to,f.x);return true
     }
     var guidedTask by mutableStateOf<Task?>(null)
-    var giftsFirst by mutableStateOf(false)
-    fun openGifts() { open(Screen.Tasks); giftsFirst = true }
+    var bookTab by mutableStateOf(BookTab.FIRSTS)
+    fun openGifts() { open(Screen.Tasks); bookTab = BookTab.GIFTS }
+    fun openFirsts() { open(Screen.Tasks); bookTab = BookTab.FIRSTS }
     fun goRecipe(recipe: app.trollfoss.domain.Recipe, fixture: app.trollfoss.domain.Fixture) {
         mineUi.open=false;engine?.designMode=false
         sim.edit {
@@ -419,7 +420,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun open(target: Screen) {
-        if (target == Screen.Tasks) giftsFirst = false
+        if (target == Screen.Tasks) bookTab = BookTab.FIRSTS
         if (target != Screen.Play) engine?.cancel()
         screen = navigation.open(target)
         updateMusic()

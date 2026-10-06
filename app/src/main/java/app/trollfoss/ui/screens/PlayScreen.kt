@@ -232,7 +232,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
         Row(Modifier.align(Alignment.TopStart).padding(edge), horizontalArrangement = Arrangement.spacedBy(gap)) {
             RoundButton(S.map.str(), onClick = { vm.open(Screen.Map) }, size = btn, tone = Tones.Sea, icon = Icons.Map)
             Box {
-                RoundButton(S.tasks.str(), onClick = { vm.open(Screen.Tasks) }, size = btn, tone = Tones.Sun, icon = DesignIcons.Tasks,
+                RoundButton(app.trollfoss.ui.SO.firsts.str(), onClick = { vm.openFirsts() }, size = btn, tone = Tones.Sun, icon = DesignIcons.Tasks,
                     modifier = Modifier.onGloballyPositioned { vm.bookAnchor = it.boundsInRoot().center })
                 if (vm.tasksLeft > 0) {
                     val badge = if (compact) 20.dp else 26.dp

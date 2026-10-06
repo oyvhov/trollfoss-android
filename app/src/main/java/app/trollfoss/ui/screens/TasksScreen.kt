@@ -45,6 +45,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.trollfoss.domain.Task
 import app.trollfoss.ui.S
+import app.trollfoss.ui.SO
+import app.trollfoss.ui.BookTab
 import app.trollfoss.ui.TrollfossViewModel
 import app.trollfoss.ui.art.Ink
 import app.trollfoss.ui.art.starPath
@@ -67,8 +69,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun TasksScreen(vm: TrollfossViewModel) {
     vm.tasksVersion
-    var tab by remember { mutableIntStateOf(if(vm.giftsFirst || vm.levelGift>0) 1 else 0) }
-    LaunchedEffect(tab) { if(tab==1) vm.dismissLevelGift() }
+    var tab by remember { mutableStateOf(if(vm.levelGift>0) BookTab.GIFTS else vm.bookTab) }
+    LaunchedEffect(tab) { if(tab==BookTab.GIFTS) vm.dismissLevelGift() }
     var selected by remember { mutableStateOf<ToyReward?>(null) }
     val compact=androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp<520
     val board=vm.sim.tasks.board()
@@ -86,15 +88,15 @@ fun TasksScreen(vm: TrollfossViewModel) {
                 }
             }
             Row(horizontalArrangement=Arrangement.spacedBy(10.dp),verticalAlignment=Alignment.CenterVertically) {
-                for(i in 0..1) Row(Modifier.background(if(tab==i) T.Sun else T.Cream,RoundedCornerShape(18.dp)).clickable { tab=i }.padding(horizontal=18.dp,vertical=10.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-                    IconCanvas(if(i==0) DesignIcons.Tasks else Icons.Star,Modifier.size(28.dp))
-                    GameText((if(i==0) S.tasks else SP.gifts).str(),fontSize=18.sp,color=T.Ink)
+                for(t in BookTab.entries) Row(Modifier.background(if(tab==t) T.Sun else T.Cream,RoundedCornerShape(18.dp)).clickable { tab=t }.padding(horizontal=if(compact) 12.dp else 18.dp,vertical=10.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+                    IconCanvas(when(t) { BookTab.FIRSTS -> DesignIcons.Sticker;BookTab.GIFTS -> Icons.Star;BookTab.TASKS -> DesignIcons.Tasks },Modifier.size(28.dp))
+                    GameText(when(t) { BookTab.FIRSTS -> SO.firsts;BookTab.GIFTS -> SP.gifts;BookTab.TASKS -> S.tasks }.str(),fontSize=18.sp,color=T.Ink)
                 }
-                if(tab==0 && vm.tasksLeft==0) RoundButton(SP.newTasks.str(),onClick=vm::newTasks,size=48.dp,tone=Tones.Sun,icon=Icons.Dice)
+                if(tab==BookTab.TASKS && vm.tasksLeft==0) RoundButton(SP.newTasks.str(),onClick=vm::newTasks,size=48.dp,tone=Tones.Sun,icon=Icons.Dice)
                 if(vm.levelGift>0) GameText(SP.newGifts.str(),fontSize=16.sp,color=T.Sun)
             }
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(12.dp)) {
-                if(tab==0) {
+                if(tab==BookTab.FIRSTS) FirstsTab(vm,compact) else if(tab==BookTab.TASKS) {
                     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp)) {
                         for(task in board) TaskCard(vm,task,Modifier.weight(1f),compact)
                     }

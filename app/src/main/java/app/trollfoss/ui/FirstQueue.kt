@@ -21,3 +21,6 @@ class FirstQueue(private val gap: Float = 1.2f, private val max: Int = 5) {
         return waiting.removeFirst()
     }
 }
+
+/** The three tabs of the book, in the order they are shown: discoveries first, because children play freely. */
+enum class BookTab { FIRSTS, GIFTS, TASKS }
