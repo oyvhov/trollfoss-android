@@ -28,6 +28,7 @@ import app.trollfoss.domain.FirstGroup
 import app.trollfoss.domain.ToyReward
 import app.trollfoss.ui.SO
 import app.trollfoss.ui.TrollfossViewModel
+import app.trollfoss.ui.art.drawMiniFall
 import app.trollfoss.ui.components.DesignIcons
 import app.trollfoss.ui.components.GameText
 import app.trollfoss.ui.components.IconCanvas
@@ -44,6 +45,7 @@ fun FirstsTab(vm: TrollfossViewModel, compact: Boolean) {
     val found = vm.world.firsts
     val notYet = SO.notYet.str()
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        androidx.compose.foundation.Canvas(Modifier.size(30.dp, 56.dp)) { drawMiniFall(vm.stickers, app.trollfoss.domain.Progression.thresholds) }
         IconCanvas(DesignIcons.Sticker, Modifier.size(28.dp))
         GameText("${found.size} / ${First.entries.size}", fontSize = 20.sp, color = Color.White)
     }

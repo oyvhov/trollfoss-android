@@ -2,6 +2,10 @@ package app.trollfoss.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -113,15 +117,14 @@ fun ToyControls(vm:TrollfossViewModel,engine:Engine,f:Fixture) {
 /** One visible invitation on the map, with a picture of what the child will receive. */
 @Composable
 fun ProgressButton(vm:TrollfossViewModel,modifier:Modifier=Modifier) {
+    vm.tasksVersion
     val level=Progression.level(vm.world)
-    Row(modifier.background(T.Cream,RoundedCornerShape(28.dp)).padding(horizontal=10.dp,vertical=5.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-        RoundButton(SP.gifts.str(),onClick=vm::openGifts,size=48.dp,tone=Tones.Sun,icon=Icons.Star)
-        Column {
-            GameText(SP.level(level).str(),fontSize=16.sp,color=T.Ink)
-            GameText((if(level<Progression.thresholds.size) SP.missing(Progression.missing(vm.world)) else SP.allReady).str(),fontSize=12.sp,color=T.Ink)
-            LevelDots(vm)
+    // The way to the next level is shown on Trollfossen itself; here only the gifts and the level number.
+    Box(modifier.onGloballyPositioned { vm.bookAnchor=it.boundsInRoot().center }) {
+        RoundButton(SP.gifts.str()+", "+SP.level(level).str(),onClick=vm::openGifts,size=56.dp,tone=Tones.Sun,icon=Icons.Star)
+        Box(Modifier.align(Alignment.TopEnd).size(24.dp).background(T.Sea,RoundedCornerShape(12.dp)).border(2.dp,T.Ink,RoundedCornerShape(12.dp)),contentAlignment=Alignment.Center) {
+            GameText("$level",fontSize=13.sp,color=Color.White)
         }
-        ToyPicture(ToyReward.entries.first { it.level==minOf(Progression.thresholds.size,level+1) },48.dp)
     }
 }
 

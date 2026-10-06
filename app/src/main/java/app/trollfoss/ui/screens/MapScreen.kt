@@ -76,6 +76,7 @@ import app.trollfoss.ui.art.Pen
 import app.trollfoss.ui.art.drawIslandMapLive
 import app.trollfoss.ui.art.MapTap
 import app.trollfoss.ui.art.mapGeo
+import app.trollfoss.ui.art.drawFallProgress
 import app.trollfoss.ui.art.inWater
 import app.trollfoss.ui.art.drawMapTap
 import app.trollfoss.ui.art.drawBalloonTrail
@@ -171,6 +172,7 @@ fun MapScreen(vm: TrollfossViewModel) {
         }) {
             val pen = Pen(max(1.4f, size.height * 0.0034f), t, if (vm.night) 1f else 0f, vm.weather, season = vm.season, festival = vm.festival)
             drawIslandMapLive(pen, target ?: from, t, mapLayer.value)
+            drawFallProgress(mapGeo(size.width, size.height), pen, vm.stickers, app.trollfoss.domain.Progression.thresholds, t, motion)
             val cloud=mapSpot(PlaceId.CLOUD_ISLAND)
             val c=Offset(cloud.x*size.width,cloud.y*size.height-size.height*0.045f)
             val r=size.height*0.035f
@@ -222,6 +224,16 @@ fun MapScreen(vm: TrollfossViewModel) {
                     vm.sfx(Sfx.ROAR, 0.35f, 0.5f)
                     vm.sim.egg("mountain")
                 },
+        )
+        // Trollfossen is the way to level 10: a tap opens the discoveries. It keeps clear of the yawning troll.
+        val fallLeft = maxOf(w * 0.41f + 52.dp, w * 0.485f - 64.dp)
+        val fallLabel = app.trollfoss.ui.SO.fallLabel.str()
+        Box(
+            Modifier
+                .offset(x = fallLeft, y = h * 0.13f)
+                .size(w * 0.485f + 44.dp - fallLeft, h * 0.27f)
+                .clickable(remember { MutableInteractionSource() }, indication = null) { vm.sfx(Sfx.SPLASH, 0.6f); vm.openFirsts() }
+                .semantics { contentDescription = fallLabel; role = Role.Button },
         )
         // Storhuset (the widest place) goes first, so the other places stay on top where their touch areas meet.
         for (place in PlaceId.entries.filter { it.onMap }.sortedBy { if (it == PlaceId.MANOR_GROUND) 0 else 1 }) {
