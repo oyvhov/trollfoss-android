@@ -20,7 +20,10 @@
 > i ein faktisk scene (berre einings-/teiknetestar og miniatyrar), tullehendingar på skjerm, fysisk eining, barnetest.
 > **Står att:** 1.12 nivå 8 + lys/partiklar, 1.13 nivå 9 + lyd, 1.14 nivå 10 + regnbogefinale (spesifikasjonen §12).
 > Mailinn sin utsjånad er ein standard brukaren kan endre. Ein fersk kodegjennomgang (Opus) fann fem feil som er retta med
-> testar; elleve mindre punkt står i ledger-lista i sluttmeldinga. Push/PR/release berre når brukaren ber om det.
+> testar. Utsette småting: tullehendingar pausar ikkje ved open sekk/leikedialog; hatten hoppar til sida også ved redusert
+> rørsle; TIDY-merket startar i (0,0); FirstPops tikkar alltid; dykkarklokka kallar sim.pools() fleire gonger per bilete og kan
+> plukke opp ting på land; skattebordet manglar tak per stad; Mailinn-sjekken skil store/små bokstavar; steinane ved fossen er
+> ikkje trykkbare; bokmål «Sprakk en boble» → «Sprengte en boble». Push/PR/release berre når brukaren ber om det.
 
 > **NYAST – 1.10.0 PUBLISERT (2026-10-04, Codex):** Brukaren bad om å
 > gjennomføre tilrådingane frå den vedlagde designguiden. Rein arbeidskopi frå `origin/main`
