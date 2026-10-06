@@ -1,5 +1,20 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – PUBLISERT 1.11.0 (2026-10-06, Claude):** Brukaren bad «Flette inn og commit og push. Lag ny release».
+> `claude/oppdagingar` er spolt fram til `main` (frå e3e5e02) og publisert som stabil, nyaste release:
+> https://github.com/oyvhov/trollfoss-android/releases/tag/v1.11.0. Kjelde/tag: `fe9f5d8662d33aa98ff54c26b20c1a72cabcdf15`.
+> Éin universal APK, 3 418 527 byte, SHA-256 `4508453c71114d89a66f4a2d7feb86eda4d6fecc11bc9eb9ad7fb3e08cabd715`.
+> Opphavleg sertifikat (`de170fe9…70fe9f3`), app.trollfoss, 1.11.0 / kode 16, min Android 26, ikkje debuggable.
+> Mapping, SHA256SUMS og SOURCE_COMMIT er vedlagde; alle fire storleikar/digest stemmer med arkivet
+> `dist/release-v1.11.0/` i arbeidskopien. Offentleg release-liste/latest og APK-nedlasting utan token er stadfesta.
+> Signert release-bygg, 573 einingstestar og release-lint grøne (0 feil / 23 åtvaringar). GitHub main (37481534285)
+> og tag (37481534629) grøne. **Ekte oppdatering** på eiga `TrollfossRelease180`: publisert 1.9.0 / 14 → 1.11.0 / 16
+> gjennom foreldresida (appen fann utgåva sjølv) → Last ned → Installer → Android Update → Play Protect «This app looks
+> safe» → «App installed». Kaldstart viser kartet med Trollfossen; Hedda og Alva er framleis spelarar, og Mailinn er
+> lagd til i den gamle verda. Ingen krasj i krasjbufferen. Emulatoren er stoppa; kopiane av signeringsfilene i
+> arbeidskopien er fjerna. Bilete: Git-ignorert `screenshots/release-v1.11.0/`. Rotarbeidskopien `C:\topa`
+> (codex/magic-rest) er urørt.
+
 > **NYAST – 1.11.0 «OPPDAGINGAR» FERDIG LOKALT, IKKJE PUBLISERT (2026-10-06, Claude):** Brukaren har testa med
 > barna: dei leikar mest fritt, og merke/nivå kom for seint. Bestilt: nivå 7–10 og eit designløft (veg og
 > belønning › humor › levande scene › stil) og Mailinn som ny figur. Spesifikasjon:
