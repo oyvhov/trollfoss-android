@@ -32,6 +32,12 @@ class ToyPlay(private val sim: Sim) {
         } ?: return@edit null
         sim.designer.add(place,reward.type,0,spot[0],spot[1])
     }
+    /** The gift parcel of a new level: its first toy is set out near [x] in [place] if there is room; the rest wait in the catalogue. */
+    fun openGift(level: Int, place: PlaceId, x: Float): Fixture? {
+        if (level <= 1) return null
+        val reward = ToyReward.entries.firstOrNull { it.level == level } ?: return null
+        return claim(reward, place, x)?.also { supply(it) }
+    }
     fun inputs(type: FixtureType): List<ThingType> = when(type) {
         FixtureType.PLAY_TREE,FixtureType.PLAY_CHANNEL,FixtureType.PLAY_WATER_WHEEL,FixtureType.PLAY_CLOUD -> listOf(ThingType.BUCKET)
         FixtureType.PLAY_REPAIR -> listOf(ThingType.SCREWDRIVER)

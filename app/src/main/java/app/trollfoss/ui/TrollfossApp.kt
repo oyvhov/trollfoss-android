@@ -99,8 +99,8 @@ fun TrollfossApp(vm: TrollfossViewModel) {
                 }
             }
             if (vm.splash) Splash(onDone = { vm.splash = false })
-            if(!vm.splash && vm.levelGift>0 && vm.screen in listOf(Screen.Play,Screen.Map))
-                app.trollfoss.ui.screens.LevelGiftCard(vm,Modifier.align(Alignment.BottomCenter).padding(bottom=90.dp))
+            if(!vm.splash && (vm.levelGift>0 || vm.parcelOpening>0) && vm.screen in listOf(Screen.Play,Screen.Map))
+                androidx.compose.runtime.key(vm.levelGift.takeIf { it > 0 } ?: vm.parcelOpening) { app.trollfoss.ui.screens.GiftParcel(vm, motion) }
             if(!vm.splash) app.trollfoss.ui.screens.FirstPops(vm, motion)
         }
     }

@@ -141,13 +141,3 @@ fun LevelDots(vm:TrollfossViewModel) {
     }
 }
 
-@Composable
-fun LevelGiftCard(vm:TrollfossViewModel,modifier:Modifier=Modifier) {
-    Row(modifier.background(T.Cream,RoundedCornerShape(24.dp)).clickable { vm.openGifts() }.padding(12.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-        Column(horizontalAlignment=Alignment.CenterHorizontally) {
-            GameText(SP.newGifts.str(),fontSize=18.sp,color=T.Ink)
-            Row { for(reward in ToyReward.entries.filter { it.level==vm.levelGift }) ToyPicture(reward,52.dp) }
-        }
-        CloseButton(vm::dismissLevelGift,size=44.dp)
-    }
-}

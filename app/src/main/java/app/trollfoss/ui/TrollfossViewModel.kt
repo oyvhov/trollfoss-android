@@ -225,6 +225,23 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun swapTask(task:Task) { sim.tasks.swap(task);refreshTasks();scheduleSave() }
+    /** Opens the parcel of [levelGift]: while playing in a built place, its first toy is set out on the spot. Returns true when one was. */
+    fun openParcel(): Boolean {
+        val level=levelGift;if(level<=0) return false
+        val unbuilt=place==PlaceId.MINE_UPPER && !world.mine.upperBuilt || place==PlaceId.MINE_GROUND && !world.mine.started
+        val placed=screen==Screen.Play && !unbuilt && run {
+            val x=engine?.takeIf { it.place==place }?.let { it.cam+it.visibleViewport/2 } ?: 1.15f
+            sim.toys.openGift(level,place,x)!=null
+        }
+        if(placed) changed()
+        parcelOpening=level
+        sfx(Sfx.FANFARE,0.9f);haptic();dismissLevelGift()
+        return placed
+    }
+    /** The level whose parcel is popping open right now; the parcel stays on screen until its toys have flown. */
+    var parcelOpening by mutableIntStateOf(0)
+        private set
+    fun parcelDone() { parcelOpening=0 }
     fun dismissLevelGift() { if(levelGift>0) world.flags+="gift:level:seen:$levelGift";levelGift=0;scheduleSave() }
     fun undoEdit() {
         if(!canUndo) return
