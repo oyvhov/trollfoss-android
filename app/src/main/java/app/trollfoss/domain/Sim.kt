@@ -187,6 +187,12 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         return true
     }
 
+    /** Music plays in [place] while any music maker is on: the radio, a disco ball, a dance floor or a light rig in disco. */
+    fun musicOn(place: PlaceId): Boolean = world.fixturesIn(place).any {
+        it.on && (it.type == FixtureType.RADIO || it.type == FixtureType.DISCO_BALL || it.type == FixtureType.PLAY_DANCE_FLOOR) ||
+            it.type == FixtureType.PLAY_LIGHT_RIG && it.mode == 2
+    }
+
     /** When night falls the lamps go on by themselves, and off again in the morning; in between they are the child's. */
     fun lampsFollowNight(night: Boolean) {
         for (f in world.fixtures.values) if (f.type == FixtureType.LAMP) f.on = night
@@ -883,8 +889,9 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     // ------------------------------------------------------------------ fixtures
 
     private fun stepFixture(place: PlaceId, f: Fixture, dt: Float) {
-        if (toys.step(f, dt)) return
+        // A tap's little bounce wears off for every fixture, toys too.
         f.anim = max(0f, f.anim - dt * 2.5f)
+        if (toys.step(f, dt)) return
         if (time - f.tapTime > 3.5f) f.taps = 0
         if (place.big) house.step(place, f, dt)
         if (!place.mine) mine.play.step(f, dt)

@@ -1263,7 +1263,7 @@ class Engine(
             val dy = p.y - fy
             if (FixtureDoors.hit(f, dx, dy, pad) || TreasureBoxLid.hit(f, dx, dy, pad) || StairDoorways.hit(f, dx, dy, pad) ||
                 f.type == FixtureType.TRACTOR && TractorCab.contains(dx, dy - f.bob, pad)) return f
-            if (p.x in (fx - f.spec.w / 2 - pad)..(fx + f.spec.w / 2 + pad) && p.y in (fy - f.spec.h - pad)..(fy + pad)) return f
+            if (p.x in (fx - f.spec.w / 2 - pad)..(fx + f.spec.w / 2 + pad) && p.y in (fy - ShowPlay.hitHeight(f) - pad)..(fy + pad)) return f
         }
         return null
     }
@@ -1904,13 +1904,13 @@ class Engine(
             Fx.CLOSE -> s(Sfx.SHUT, 0.6f)
             Fx.ON -> {
                 s(Sfx.CLICK, 0.6f)
-                if (fixture?.type == FixtureType.RADIO) host.radio(true)
+                if (fixture?.type == FixtureType.RADIO) host.radio(sim.musicOn(place))
                 if (fixture?.type == FixtureType.CAMPFIRE || fixture?.type == FixtureType.WOOD_STOVE) s(Sfx.POOF, 0.4f, 1.3f)
                 if (fixture?.type == FixtureType.BATH || fixture?.type == FixtureType.SINK || fixture?.type == FixtureType.HAIR_WASH) s(Sfx.SPLASH, 0.4f, 1.3f)
             }
             Fx.OFF -> {
                 s(Sfx.CLICK, 0.5f, 0.8f)
-                if (fixture?.type == FixtureType.RADIO) host.radio(false)
+                if (fixture?.type == FixtureType.RADIO) host.radio(sim.musicOn(place))
             }
             Fx.CHANNEL -> s(Sfx.CLICK, 0.5f, 1.2f)
             Fx.DISPENSE -> s(Sfx.POP, 0.7f, 0.9f + random.nextFloat() * 0.3f)
@@ -2286,7 +2286,7 @@ class Engine(
             }
             Fx.DISCO -> {
                 s(if (param == 1) Sfx.SPARKLE else Sfx.CLICK, 0.8f)
-                host.radio(param == 1)
+                host.radio(sim.musicOn(place))
             }
             Fx.FOG -> {
                 s(Sfx.SPRAY, 0.6f, 0.6f)

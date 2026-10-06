@@ -126,6 +126,8 @@ class ShowPlay(private val sim: Sim) {
         const val MAX_NOTES = 8
         const val HEARING = 1.5f
         const val BEAT = 0.8f
+        /** The flat dance floor is hard for small fingers to hit; it gets a taller touch area than it looks. */
+        fun hitHeight(f: Fixture): Float = if (f.type == FixtureType.PLAY_DANCE_FLOOR) maxOf(f.spec.h, 0.12f) else f.spec.h
         fun echoNote(kind: Int, pitch: Int): Int = kind * 16 + pitch
         fun echoKind(param: Int): Int = param / 16
         fun echoPitch(param: Int): Int = param % 16

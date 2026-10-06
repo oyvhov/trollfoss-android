@@ -353,7 +353,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
             it.festival = festival
             it.skip = debugSkip
             engine = it
-            radioOn = world.fixturesIn(place).any { f -> f.type == FixtureType.RADIO && f.on }
+            radioOn = sim.musicOn(place)
             updateMusic()
         }
     }

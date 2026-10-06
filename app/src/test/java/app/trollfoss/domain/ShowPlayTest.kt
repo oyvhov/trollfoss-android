@@ -72,6 +72,32 @@ class ShowPlayTest {
         assertTrue("CONFETTI" in s.world.firsts)
     }
 
+    @Test fun aToysTapAnimationWearsOff() {
+        val s = sim(); val m = s.toys.claim(ToyReward.CONFETTI, place, 1.2f)!!
+        s.tap(place, m, 0f, -0.2f)
+        assertTrue(m.anim > 0f)
+        step(s, 1f)
+        assertEquals(0f, m.anim, 0f)
+    }
+
+    @Test fun musicPlaysWhileAnyMusicMakerIsOn() {
+        val s = sim()
+        val floor = s.toys.claim(ToyReward.DANCE_FLOOR, place, 1.2f)!!
+        val rig = s.toys.claim(ToyReward.LIGHT_RIG, place, 2.4f)!!
+        assertFalse(s.musicOn(place))
+        s.tap(place, floor, 0f, -0.02f); assertTrue(s.musicOn(place))
+        s.tap(place, rig, 0f, -0.3f); s.tap(place, rig, 0f, -0.3f); s.tap(place, rig, 0f, -0.3f) // disco and off again
+        assertTrue("the dance floor still plays", s.musicOn(place))
+        s.tap(place, floor, 0f, -0.02f); assertFalse(s.musicOn(place))
+    }
+
+    @Test fun theThinDanceFloorIsEasyToHit() {
+        val s = sim(); val floor = s.toys.claim(ToyReward.DANCE_FLOOR, place, 1.2f)!!
+        assertTrue(ShowPlay.hitHeight(floor) >= 0.12f)
+        val box = s.toys.claim(ToyReward.ECHO_BOX, place, 2.4f)!!
+        assertEquals(box.spec.h, ShowPlay.hitHeight(box), 0f)
+    }
+
     @Test fun theLightRigCyclesAndKeepsItsModeAfterSaving() {
         val s = sim(); val rig = s.toys.claim(ToyReward.LIGHT_RIG, place, 1.2f)!!
         s.tap(place, rig, 0f, -0.3f); assertEquals(1, rig.mode)
