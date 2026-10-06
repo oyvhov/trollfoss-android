@@ -172,6 +172,8 @@ enum class FixtureType {
     PLAY_TREE, PLAY_REPAIR, PLAY_DOOR, PLAY_TUNNEL, PLAY_JUMP, PLAY_WATER_WHEEL, PLAY_ART, PLAY_RESCUE,
     // Collecting: a glass-fronted box for gems, coins and other finds (see [TreasureBox]).
     TREASURE_BOX,
+    // Level 7 «Eventyrar»: rides and finds (see [AdventurePlay]).
+    PLAY_CABLE_CAR, PLAY_DIVING_BELL, PLAY_DIGGER, PLAY_TREASURE_TABLE,
     ;
 
     val spec: FixtureSpec get() = specs.getValue(this)
@@ -204,6 +206,10 @@ enum class FixtureType {
             PLAY_WATER_WHEEL -> FixtureSpec(0.3f,0.37f,dropZone=RRect(-0.2f,-0.44f,0.2f,0f))
             PLAY_ART -> FixtureSpec(0.32f,0.43f)
             PLAY_RESCUE -> FixtureSpec(0.68f,0.17f,dropZone=RRect(-0.4f,-0.3f,0.4f,0f))
+            PLAY_CABLE_CAR -> FixtureSpec(0.90f,0.52f,front=true,spots=listOf(seat(-0.36f,-0.22f)),dropZone=RRect(-0.45f,-0.36f,-0.27f,-0.16f))
+            PLAY_DIVING_BELL -> FixtureSpec(0.30f,0.44f,front=true,spots=listOf(seat(0f,-0.06f)),dropZone=RRect(-0.16f,-0.46f,0.16f,0f))
+            PLAY_DIGGER -> FixtureSpec(0.56f,0.30f,front=true,spots=listOf(seat(-0.08f,-0.14f)))
+            PLAY_TREASURE_TABLE -> FixtureSpec(0.46f,0.24f,dropZone=RRect(-0.26f,-0.4f,0.26f,0f))
             PLAY_BUS, PLAY_TRAIN -> FixtureSpec(0.58f, 0.29f, front = true,
                 spots = listOf(seat(-0.12f, -0.09f), seat(0.12f, -0.09f)),
                 surfaces = listOf(SurfaceSpec(-0.20f, 0.20f, -0.09f)))

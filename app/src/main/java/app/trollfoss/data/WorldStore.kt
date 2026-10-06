@@ -173,14 +173,14 @@ class WorldStore(private val file: File) {
             put("fixtures", JSONArray().apply {
                 world.fixtures.values.forEach { f ->
                     val moved = WorldFactory.moved(f)
-                    if (f.open || f.on || f.mode != 0 || f.count != 0 || moved || f.type==FixtureType.PLAY_LIFT || f.type == FixtureType.ROBOT_VACUUM && f.shiftX != 0f) {
+                    if (f.open || f.on || f.mode != 0 || f.count != 0 || moved || f.type in app.trollfoss.domain.AdventurePlay.ANGLED || f.type == FixtureType.ROBOT_VACUUM && f.shiftX != 0f) {
                         put(JSONObject().apply {
                             put("id", f.id)
                             put("open", f.open)
                             put("on", f.on)
                             put("mode", f.mode)
                             put("count", f.count)
-                            if(f.type==FixtureType.PLAY_LIFT) put("toyAngle",f.angle.toDouble())
+                            if(f.type in app.trollfoss.domain.AdventurePlay.ANGLED) put("toyAngle",f.angle.toDouble())
                             if (f.type == FixtureType.ROBOT_VACUUM) put("vacuumShift", f.shiftX.toDouble())
                             // Furniture the child has moved keeps its new spot.
                             if (moved) {
@@ -361,7 +361,7 @@ class WorldStore(private val file: File) {
                 f.mode = o.optInt("mode", 0)
                 f.count = o.optInt("count", 0)
                 if(f.type==FixtureType.PLAY_TRAIN && "train:broken:${f.id}" in world.flags) f.variant=1
-                if(f.type==FixtureType.PLAY_LIFT) f.angle=o.optDouble("toyAngle",f.mode.coerceIn(0,1).toDouble()).toFloat().coerceIn(0f,1f)
+                if(f.type in app.trollfoss.domain.AdventurePlay.ANGLED) { f.angle=o.optDouble("toyAngle",f.mode.coerceIn(0,1).toDouble()).toFloat().coerceIn(0f,1f);if(f.type!=FixtureType.PLAY_LIFT) f.on=false }
                 if (f.type == FixtureType.PLAY_CART) f.count = 0 // Touches belong to this session only.
                 if (o.has("x")) {
                     f.x = o.optDouble("x", f.x.toDouble()).toFloat()

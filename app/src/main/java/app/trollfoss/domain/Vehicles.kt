@@ -26,6 +26,21 @@ class Vehicles(private val sim: Sim) {
         if (f.on) sim.listener.onFx(Fx.VROOM, f.x, f.top, f, param = 2)
     }
 
+    /** The digger's bucket: outdoors a coin, a gem, a shell or an old boot, at most [MAX_FINDS] loose finds in a place; indoors only dust. */
+    fun dig(f: Fixture): Thing? {
+        if (f.type != FixtureType.PLAY_DIGGER || world.fixtures[f.id] !== f) return null
+        f.anim = 1f
+        sim.listener.onFx(Fx.CRUMBLE, f.x + 0.25f, f.y, f)
+        sim.firstTime(First.DIGGER, f.x, f.top)
+        if (!f.place.outdoor) return null
+        if (world.bodiesIn(f.place).count { it is Thing && it.type in FINDS && it.mode == Mode.FREE } >= MAX_FINDS) return null
+        val type = FINDS[(world.nextId + f.id) % FINDS.size]
+        val t = world.addThing(type, if (type == ThingType.GEM) world.nextId % type.variants.coerceAtLeast(1) else 0, f.place, f.x + 0.3f, f.y - 0.05f)
+        t.ground = f.depth; t.vy = -0.5f; t.resting = false
+        sim.listener.onSpawn(t)
+        return t
+    }
+
     fun step(place: PlaceId, f: Fixture, dt: Float) {
         if(sim.toys.broken(f)) { f.on=false;f.mode=0;return }
         if (!f.on || f.lift > 0f) {
@@ -78,6 +93,8 @@ class Vehicles(private val sim: Sim) {
 
     companion object {
         fun controllable(f: Fixture): Boolean = f.type in TYPES
-        private val TYPES = setOf(FixtureType.TRACTOR, FixtureType.BOAT, FixtureType.SUBMARINE, FixtureType.BUMPER_CAR, FixtureType.PLAY_BUS, FixtureType.PLAY_TRAIN,FixtureType.PLAY_TANDEM)
+        private val TYPES = setOf(FixtureType.TRACTOR, FixtureType.BOAT, FixtureType.SUBMARINE, FixtureType.BUMPER_CAR, FixtureType.PLAY_BUS, FixtureType.PLAY_TRAIN,FixtureType.PLAY_TANDEM,FixtureType.PLAY_DIGGER)
+        private val FINDS = listOf(ThingType.COIN, ThingType.GEM, ThingType.SHELL, ThingType.COIN, ThingType.BOOT)
+        const val MAX_FINDS = 8
     }
 }

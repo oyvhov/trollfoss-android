@@ -8,6 +8,7 @@ class CreativePlay(private val sim:Sim) {
     private val world get()=sim.world
     private var weatherTime=0f
     fun drop(f:Fixture,t:Thing):Boolean {
+        if(f.type in AdventurePlay.TYPES) return sim.adventure.drop(f,t)
         if(!accepts(f,t) || t.held) return false
         when(f.type) {
             FixtureType.PLAY_TREE -> { t.used=0;water(f) }
@@ -32,6 +33,7 @@ class CreativePlay(private val sim:Sim) {
         if(f.type==FixtureType.PLAY_WINDMILL || f.type==FixtureType.PLAY_WATER_WHEEL) { f.on=true;f.timer=4f;f.count=8 }
     }
     fun tap(f:Fixture):Boolean {
+        if(f.type in AdventurePlay.TYPES) return sim.adventure.tap(f)
         if(f.type !in TYPES) return false
         when(f.type) {
             FixtureType.PLAY_TREE -> if(f.mode>=3) {
@@ -89,6 +91,7 @@ class CreativePlay(private val sim:Sim) {
     }
     fun step(f:Fixture,dt:Float):Boolean {
         if(f.type !in TYPES || Vehicles.controllable(f)) return false
+        if(f.type in AdventurePlay.TYPES) return sim.adventure.step(f,dt)
         val cargo=world.inMachine(f).firstOrNull()
         when(f.type) {
             FixtureType.PLAY_SEESAW -> {
@@ -160,7 +163,7 @@ class CreativePlay(private val sim:Sim) {
         if("play:wind" in world.flags) world.fixturesIn(place).filter { it.type==FixtureType.PLAY_WINDMILL }.forEach { it.on=true;it.timer=3f }
     }
     companion object {
-    fun accepts(f:Fixture,t:Thing):Boolean=when(f.type) {
+    fun accepts(f:Fixture,t:Thing):Boolean=if(f.type in AdventurePlay.TYPES) AdventurePlay.accepts(f,t) else when(f.type) {
         FixtureType.PLAY_TREE,FixtureType.PLAY_CHANNEL,FixtureType.PLAY_WATER_WHEEL,FixtureType.PLAY_CLOUD -> t.type in setOf(ThingType.BUCKET,ThingType.WATERING_CAN) && t.used>0
         FixtureType.PLAY_REPAIR -> t.type in setOf(ThingType.PLAY_GEAR,ThingType.HAMMER,ThingType.SCREWDRIVER)
         FixtureType.PLAY_BUILD -> t.type==ThingType.UP_BLOCK

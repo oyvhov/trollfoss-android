@@ -247,6 +247,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     val toys = ToyPlay(this)
     val community = Community(this)
     val creative = CreativePlay(this)
+    val adventure = AdventurePlay(this)
     val playerFollow = PlayerFollow(this)
     val treasure = TreasureBox(this)
     var journal: EditJournal? = null
@@ -756,6 +757,8 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         when (f.type) {
             FixtureType.SALON_CHAIR -> y -= f.mode * 0.04f
             FixtureType.PLAY_LIFT -> y -= f.angle * 0.28f
+            FixtureType.PLAY_CABLE_CAR -> { x += f.angle * 0.72f; y -= sin(f.angle * 3.14159f) * 0.06f }
+            FixtureType.PLAY_DIVING_BELL -> { x = adventure.bellX(f); y += f.angle * adventure.depth(f) }
             FixtureType.PLAY_SEESAW -> y += if(spot==0) f.angle else -f.angle
             FixtureType.PLAY_TUNNEL -> x += (f.timer/1.5f).coerceIn(0f,1f)*0.3f
             FixtureType.PLAY_JUMP -> y -= sin((f.timer/1.5f).coerceIn(0f,1f)*3.14159f)*0.12f
