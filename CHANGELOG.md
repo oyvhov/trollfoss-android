@@ -1,5 +1,14 @@
 # Endringslogg
 
+## 1.12.0 – Showmeister og levande rom
+
+- Nivå 8 «Showmeister» ved 25 merke: ekkoboks som syng att det du spelar – med pipestemme, danseteppe der vennene dansar og hoppar i takt, konfettimaskin som får alle til å hoppe, og lysrigg med varmt scenelys eller fargedisco.
+- Fire nye oppdagingar for dei nye leikene.
+- Sol gjennom vindauga om dagen, med støvkorn som dansar i lyset. Lampene går på av seg sjølv når natta kjem.
+- Ringar i vatnet når noko plaskar, og av og til ein roleg ring der det er vatn. Eit varmt bad dampar.
+- Småting: tullehendingar ventar når sekken eller ein leikedialog er open, hatten dett rett ned med redusert rørsle, steinane ved Trollfossen kan trykkjast på, og dykkarklokka hentar berre ting som ligg i vatnet.
+- Figurar, klede, ting, hus og framgang blir bevarte. Nynorsk og bokmål er på plass.
+
 ## 1.11.0 – Oppdagingar og Trollfossen
 
 - Fri leik gir merke: første gong barnet køyrer traktor, sprengjer ei boble, gir ein klem, et noko godt eller reiser til ein ny stad, flyg eit merke inn i boka, og vennene i nærleiken jublar. 68 oppdagingar i alt.

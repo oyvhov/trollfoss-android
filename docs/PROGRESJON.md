@@ -1,6 +1,6 @@
 # Plan: nivå, oppdagingar og nye leiker i Trollfoss
 
-Status 2026-10-06: 1.11.0 (lokalt) har nivå 1–7 med grensene 0/2/4/7/10/14/19 og merke frå oppdagingar i fri leik (sjå `superpowers/specs/2026-10-06-oppdagingar-design.md`). Tidlegare: publisert 1.7.0 har nivå 1–6. Utgåva legg til nivå 4–6, 12 nivåleiker og åtte frie leiker. Sjå `FLOW_POLISH_2026-10-03.md` for faktisk kontroll og `OVERLEVERING.md` for release-/oppdateringskontroll. Nivå 7–10 og dei åtte historiebonusane nedanfor er vidare utviklingsplan, ikkje utgitt innhald.
+Status 2026-10-07: 1.12.0 (lokalt) har nivå 1–8 med grensene 0/2/4/7/10/14/19/25; 1.11.0 (publisert) har nivå 1–7 og merke frå oppdagingar i fri leik (sjå `superpowers/specs/2026-10-06-oppdagingar-design.md`). Tidlegare: publisert 1.7.0 har nivå 1–6. Utgåva legg til nivå 4–6, 12 nivåleiker og åtte frie leiker. Sjå `FLOW_POLISH_2026-10-03.md` for faktisk kontroll og `OVERLEVERING.md` for release-/oppdateringskontroll. Nivå 7–10 og dei åtte historiebonusane nedanfor er vidare utviklingsplan, ikkje utgitt innhald.
 
 ## 1. Målet
 

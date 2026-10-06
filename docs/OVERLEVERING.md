@@ -1,5 +1,18 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – 1.12.0 FERDIG LOKALT, IKKJE PUBLISERT (2026-10-07, Claude):** Brukaren bad «Ta neste steg» etter 1.11.0.
+> Grein `claude/niva-8` i `C:\topa\.claude\worktrees\oppdagingar` (frå main 48516a4). Spesifikasjon §16, plan
+> `docs/superpowers/plans/2026-10-06-niva-8-1-12.md`. Versjon 1.12.0 / kode 17.
+> **Gjort:** småtinga frå gjennomgangen av 1.11 (med testar); nivå 8 ved 25 merke med `ShowPlay` (ekkoboks som tek opp
+> tonar i nærleiken og spelar dei att med pipestemme, danseteppe med dans og felles hopp, konfettimaskin med kvile,
+> lysrigg av/scenelys/disco lagra i `mode`); fire nye oppdagingar (72); levande scene del 1 (lysstriper med støv frå
+> `WINDOW`, lamper som følgjer natta, ringar i vatn via `Ripples`, damp frå varmt bad).
+> **Kontroll:** einingstestane grøne (sjå sluttmeldinga for tal); debug-, test-APK og lint bygde gjennom låsen.
+> **Ikkje gjort:** Android-testane (inkl. nye `ShowPlayUiTest`) og visuell kontroll. Emulatorane (`TrollfossRelease180`
+> og `TrollfossReview110`) heng ved oppstart natt til 7. oktober: qemu startar, men VM-en brukar ~1 s CPU og adb ser
+> berre «offline». Første forsøk viste òg eit krasjrapport-spørsmål; `-crash-report-mode never` fjerna det, men ikkje
+> hengen. Truleg må maskina startast på nytt (WHPX). Ingen emulatorprosess står att. Ikkje release før dette er køyrt.
+
 > **NYAST – PUBLISERT 1.11.0 (2026-10-06, Claude):** Brukaren bad «Flette inn og commit og push. Lag ny release».
 > `claude/oppdagingar` er spolt fram til `main` (frå e3e5e02) og publisert som stabil, nyaste release:
 > https://github.com/oyvhov/trollfoss-android/releases/tag/v1.11.0. Kjelde/tag: `fe9f5d8662d33aa98ff54c26b20c1a72cabcdf15`.
