@@ -54,6 +54,9 @@ enum class Fx {
 
     // Level 8 show toys: a confetti burst, and a note played back by the echo box (see [ShowPlay.echoNote]).
     CONFETTI, ECHO_NOTE,
+
+    // Level 9 inventor toys: a rocket kit countdown (param 3, 2, 1) and lift-off, and a reaction course hit (param = pad * 16 + streak).
+    COUNTDOWN, KIT_LAUNCH, REACT,
 }
 
 interface SimListener {
@@ -266,6 +269,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     val creative = CreativePlay(this)
     val adventure = AdventurePlay(this)
     val show = ShowPlay(this)
+    val inventor = InventorPlay(this, random)
     /** Funny surprises; switched on by the engine, so rule tests stay quiet and repeatable. */
     val mischief = Mischief(this, random)
     val playerFollow = PlayerFollow(this)
@@ -780,6 +784,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
             FixtureType.PLAY_LIFT -> y -= f.angle * 0.28f
             FixtureType.PLAY_CABLE_CAR -> { x += f.angle * 0.72f; y -= sin(f.angle * 3.14159f) * 0.06f }
             FixtureType.PLAY_DIVING_BELL -> { x = f.x + f.reach; y += f.angle * f.dive }
+            FixtureType.PLAY_ROCKET_KIT -> y -= f.angle * InventorPlay.RISE
             FixtureType.PLAY_SEESAW -> y += if(spot==0) f.angle else -f.angle
             FixtureType.PLAY_TUNNEL -> x += (f.timer/1.5f).coerceIn(0f,1f)*0.3f
             FixtureType.PLAY_JUMP -> y -= sin((f.timer/1.5f).coerceIn(0f,1f)*3.14159f)*0.12f

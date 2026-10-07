@@ -176,6 +176,8 @@ enum class FixtureType {
     PLAY_CABLE_CAR, PLAY_DIVING_BELL, PLAY_DIGGER, PLAY_TREASURE_TABLE,
     // Level 8 «Showmeister»: music, dance, confetti and lights (see [ShowPlay]).
     PLAY_ECHO_BOX, PLAY_DANCE_FLOOR, PLAY_CONFETTI, PLAY_LIGHT_RIG,
+    // Level 9 «Oppfinnar»: a robot workshop, a helper robot, a rocket kit and a reaction course (see [InventorPlay]).
+    PLAY_ROBOT_WORKSHOP, PLAY_HELPER_ROBOT, PLAY_ROCKET_KIT, PLAY_REACTION_COURSE,
     ;
 
     val spec: FixtureSpec get() = specs.getValue(this)
@@ -216,6 +218,10 @@ enum class FixtureType {
             PLAY_DANCE_FLOOR -> FixtureSpec(0.80f,0.05f)
             PLAY_CONFETTI -> FixtureSpec(0.30f,0.40f)
             PLAY_LIGHT_RIG -> FixtureSpec(0.30f,0.60f)
+            PLAY_ROBOT_WORKSHOP -> FixtureSpec(0.50f,0.28f,dropZone=RRect(-0.28f,-0.42f,0.28f,0f))
+            PLAY_HELPER_ROBOT -> FixtureSpec(0.20f,0.26f,dropZone=RRect(-0.14f,-0.34f,0.14f,0f))
+            PLAY_ROCKET_KIT -> FixtureSpec(0.30f,0.46f,front=true,spots=listOf(seat(0f,-0.13f)))
+            PLAY_REACTION_COURSE -> FixtureSpec(0.64f,0.07f)
             PLAY_BUS, PLAY_TRAIN -> FixtureSpec(0.58f, 0.29f, front = true,
                 spots = listOf(seat(-0.12f, -0.09f), seat(0.12f, -0.09f)),
                 surfaces = listOf(SurfaceSpec(-0.20f, 0.20f, -0.09f)))

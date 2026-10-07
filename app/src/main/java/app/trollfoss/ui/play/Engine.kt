@@ -35,6 +35,7 @@ import app.trollfoss.audio.Sfx
 import app.trollfoss.domain.Anatomy
 import app.trollfoss.domain.First
 import app.trollfoss.domain.ShowPlay
+import app.trollfoss.domain.InventorPlay
 import app.trollfoss.domain.Community
 import app.trollfoss.domain.CreativePlay
 import app.trollfoss.domain.Body
@@ -759,6 +760,12 @@ class Engine(
                     particles.add(Particle(PKind.SMOKE, x + 0.12f, f.top + 0.02f, -0.05f, -0.15f, 1.2f, 0.016f, Color(0xFF8E93A6)))
                 f.type == FixtureType.ROCKET_SHIP && f.on && random.nextFloat() < dt * 30f ->
                     particles.add(Particle(PKind.SMOKE, x + (random.nextFloat() - 0.5f) * 0.1f, f.y + f.shiftY, (random.nextFloat() - 0.5f) * 0.3f, 0.2f, 1.2f, 0.03f, Color(0xFFE8ECF5)))
+                f.type == FixtureType.PLAY_ROCKET_KIT && f.on && f.angle > 0.02f && random.nextFloat() < dt * 40f -> {
+                    // The rocket kit's exhaust: a puff of smoke and an orange spark under the flame.
+                    val base = f.y - f.angle * InventorPlay.RISE
+                    particles.add(Particle(PKind.SMOKE, x + (random.nextFloat() - 0.5f) * 0.05f, base, (random.nextFloat() - 0.5f) * 0.2f, 0.25f, 0.9f, 0.022f, Color(0xFFE8ECF5)))
+                    if (random.nextFloat() < 0.5f) particles.add(Particle(PKind.SPARK, x + (random.nextFloat() - 0.5f) * 0.03f, base + 0.04f, (random.nextFloat() - 0.5f) * 0.15f, 0.35f, 0.5f, 0.007f, Color(0xFFFFB02E)))
+                }
                 f.type == FixtureType.BATH && f.on && random.nextFloat() < dt * 2f -> {
                     particles.add(Particle(PKind.BUBBLE, x + (random.nextFloat() - 0.5f) * 0.3f, f.y - 0.11f, 0f, -0.06f, 1.5f, 0.012f, Color.White))
                     // A warm bath steams a little.
@@ -1737,7 +1744,8 @@ class Engine(
         }
         // A fixture? Front-most first, wall fixtures last.
         fixtureAt(p)?.let { f ->
-            if(f.type in ToyPlay.TYPES && (!Vehicles.controllable(f) || sim.toys.broken(f))) { cancel();toyFixtureId=f.id;return }
+            // The reaction course takes taps straight onto its pads; every other toy opens its dialog.
+            if(f.type in ToyPlay.TYPES && f.type != FixtureType.PLAY_REACTION_COURSE && (!Vehicles.controllable(f) || sim.toys.broken(f))) { cancel();toyFixtureId=f.id;return }
             if (f.type == FixtureType.PLAY_FORT || f.type == FixtureType.PLAY_CART) { playFixtureId = f.id; return }
             if (Vehicles.controllable(f) && vehicleId != f.id) vehicle?.let { sim.vehicles.drive(it, 0) }
             sim.tap(place, f, p.x - (f.x + f.shiftX), p.y - (f.y + f.shiftY))
@@ -1963,6 +1971,17 @@ class Engine(
                 s(Sfx.POP, 0.9f, 0.8f)
                 particles.burst(PKind.CONFETTI, x, y, if (motion) 50 else 16, 1.1f, 0.012f, up = 0.9f, life = 2.4f)
                 laughAround(x, null)
+            }
+            Fx.COUNTDOWN -> s(Sfx.BEEP, 0.7f, 0.8f + (3 - param) * 0.25f)
+            Fx.KIT_LAUNCH -> {
+                s(Sfx.RUMBLE, 0.8f)
+                pending += (time + 0.4f) to { s(Sfx.WHOOSH, 0.9f, 1.1f) }
+                particles.burst(PKind.SMOKE, x, y, if (motion) 20 else 6, 0.5f, 0.03f, Color(0xFFE8ECF5), up = -0.1f)
+            }
+            Fx.REACT -> {
+                // The rights climb a pentatonic scale: the longer the run, the higher the note.
+                s(Sfx.NOTE, 0.85f, 2f.pow(PENTATONIC[((param % 16) + 4).coerceIn(0, PENTATONIC.lastIndex)] / 12f))
+                particles.burst(PKind.STAR, x, y, 6, 0.4f, 0.011f)
             }
             Fx.TICK -> s(Sfx.TICK, 0.6f)
             Fx.CUCKOO -> s(Sfx.CUCKOO, 0.8f)

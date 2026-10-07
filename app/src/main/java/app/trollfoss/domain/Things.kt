@@ -233,6 +233,8 @@ enum class ThingType(
     /** What comes out of a bucket turned over in the sandbox. Pretend food: it is kind to taste it. */
     GA_SAND_CAKE(0.07f, 0.05f, Cat.FOOD, bites = 2),
     MAGNET(0.06f,0.065f,Cat.TOOL), SPOON(0.025f,0.08f,Cat.TOOL),
+    /** A little robot pal from the robot workshop (level 9); the variant is its colour. */
+    ROBOT_PAL(0.07f, 0.09f, Cat.TOY, bounce = 0.2f, variants = 4),
     ;
 
     /** Head width of a grown-up figure; hats and glasses are drawn at this size and scaled to fit a head. */

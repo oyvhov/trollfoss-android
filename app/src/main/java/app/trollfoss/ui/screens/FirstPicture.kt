@@ -75,6 +75,10 @@ fun firstSubject(f: First): FirstSubject = when (f) {
     First.DANCE_FLOOR -> FirstSubject.Fixture(FixtureType.PLAY_DANCE_FLOOR)
     First.CONFETTI -> FirstSubject.Fixture(FixtureType.PLAY_CONFETTI)
     First.LIGHT_RIG -> FirstSubject.Fixture(FixtureType.PLAY_LIGHT_RIG)
+    First.ROBOT_WORKSHOP -> FirstSubject.Fixture(FixtureType.PLAY_ROBOT_WORKSHOP)
+    First.HELPER_ROBOT -> FirstSubject.Fixture(FixtureType.PLAY_HELPER_ROBOT)
+    First.ROCKET_KIT -> FirstSubject.Fixture(FixtureType.PLAY_ROCKET_KIT)
+    First.REACTION_COURSE -> FirstSubject.Fixture(FixtureType.PLAY_REACTION_COURSE)
     First.HUG, First.HIGH_FIVE, First.HOLD_HANDS, First.PET -> FirstSubject.Friends
     First.LIVING_TEDDY -> FirstSubject.Thing(ThingType.TEDDY)
     First.BAND -> FirstSubject.Thing(ThingType.GUITAR)

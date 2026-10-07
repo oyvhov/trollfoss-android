@@ -16,6 +16,7 @@ enum class First(val group: FirstGroup) {
     REPAIR_LIGHT(FirstGroup.PLAY), SECRET_DOOR(FirstGroup.PLAY), STAMP_ART(FirstGroup.PLAY), HANG_ART(FirstGroup.PLAY),
     CABLE_CAR(FirstGroup.PLAY), DIVING_BELL(FirstGroup.PLAY), DIGGER(FirstGroup.PLAY), TREASURE_TABLE(FirstGroup.PLAY),
     ECHO_BOX(FirstGroup.PLAY), DANCE_FLOOR(FirstGroup.PLAY), CONFETTI(FirstGroup.PLAY), LIGHT_RIG(FirstGroup.PLAY),
+    ROBOT_WORKSHOP(FirstGroup.PLAY), HELPER_ROBOT(FirstGroup.PLAY), ROCKET_KIT(FirstGroup.PLAY), REACTION_COURSE(FirstGroup.PLAY),
     HUG(FirstGroup.FRIENDS), HIGH_FIVE(FirstGroup.FRIENDS), HOLD_HANDS(FirstGroup.FRIENDS), PET(FirstGroup.FRIENDS),
     LIVING_TEDDY(FirstGroup.FRIENDS), BAND(FirstGroup.FRIENDS), PARTY(FirstGroup.FRIENDS),
     SNOWMAN(FirstGroup.LIFE), SANDCASTLE(FirstGroup.LIFE), COOK(FirstGroup.LIFE), EAT(FirstGroup.LIFE), BATH(FirstGroup.LIFE),

@@ -91,6 +91,7 @@ class ToyPlay(private val sim: Sim) {
         }
     }
     fun tap(f: Fixture, dx: Float, dy: Float): Boolean {
+        if(f.type==FixtureType.PLAY_REACTION_COURSE) return sim.inventor.tap(f,dx)
         if(f.type in CreativePlay.TYPES) return sim.creative.tap(f)
         if(f.type !in TYPES) return false
         if(f.type==FixtureType.PLAY_BUS || f.type==FixtureType.PLAY_TRAIN && !broken(f)) return false
