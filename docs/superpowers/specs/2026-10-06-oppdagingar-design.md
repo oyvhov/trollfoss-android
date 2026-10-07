@@ -295,3 +295,40 @@ Nye `First` (72 i alt) med bilete og tekst på begge målformer. Grenser `0, 2, 
 Einingstestar for kvar leike (opptak/avspeling, dans på teppet, konfettikvile, lysmodus og lagring), nye grenser,
 lamper som følgjer natta og ringtak; Android-test med ekte draging til danseteppet og trykk på lysriggen;
 visuell kontroll på mobil og nettbrett.
+
+
+## 17. Utgåve 1.13: nivå 9 «Oppfinnar» og lydbilete
+
+Brukaren sa «jobb vidare» etter publisert 1.12.0 og at Mailinn er ei jente (ho har lange krøllar og genser, ingenting i
+appen bruker pronomen, så ingen endring trengst). Release først når brukaren ber om det.
+
+### 17.1 Nivå 9 (grense 32 merke), fire leiker i `InventorPlay`
+1. **Robotverkstad (`PLAY_ROBOT_WORKSHOP`).** Verkstadbord som tek to ting (som skattebordet, `dropZone`). Trykk med to
+   ting: 2,5 s knatring og gneistar, så rullar ein liten **robotkompis** (`ThingType.ROBOT_PAL`, ny, fire fargar) ut. Tinga
+   på bordet blir verande. Kviler 45 s; høgst åtte robotkompisar laus per stad. Med færre enn to ting: «hmm»-bank og ein
+   gneist. Oppdaging `ROBOT_WORKSHOP` første gong ein robotkompis kjem ut.
+2. **Hjelperobot (`PLAY_HELPER_ROBOT`).** Rullande robot med brett. Trykk: han ser etter den næraste lause tingen på golvet
+   innan 1,2 til kvar side, rullar dit (`shiftX`), tek han opp på brettet (`Mode.INSIDE`), rullar til næraste figur innan
+   rekkjevidde og set han ned ved føtene hennar med «ta-daa» (figuren ler og hoppar). Ingen ting eller ingen figur: robotten
+   dansar og pip-pip. Brettlasta blir sleppt ved føtene om roboten står stille utan oppdrag (trygt ved lagring). Oppdaging
+   `HELPER_ROBOT` når ein ting er levert.
+3. **Rakettsett (`PLAY_ROCKET_KIT`).** Utskytingsrampe med ein liten rakett og ei sitjeplass. Trykk: nedtelling 3-2-1 (1,5 s),
+   så stig raketten (`angle` 0–1) med flamme og røyk, snurrar ei stjerneskur på toppen og dalar mjukt ned att med fallskjerm.
+   Passasjeren held seg fast («oooh») og ler ved landing. Oppdaging `ROCKET_KIT` ved første oppskyting.
+4. **Reaksjonsbane (`PLAY_REACTION_COURSE`).** Flat brett med fire fargefelt. Eit trykk startar; eit felt lyser, og barnet må
+   trykke akkurat det feltet på 2,0 s (kortare for kvar rette, ned til 0,9 s). Rett: tone (pentatonisk) og glitter; feil eller
+   for sein: ei lita «bonk» og rekkja startar på nytt. Fem rette på rad: konfetti, jubel frå vennene og oppdaging
+   `REACTION_COURSE`. Trykket går direkte til feltet (ikkje gjennom leikedialogen). Lyset er sim-tilstand utan lagring.
+
+Nye `First` (76 i alt); grenser `0, 2, 4, 7, 10, 14, 19, 25, 32`; nye `FixtureType`/`ThingType`/`ToyReward` blir lagde til
+sist så ordinalane held. Kunst i `ui/art/InventorArt.kt`; tekstar på begge målformer.
+
+### 17.2 Lydbilete per stad
+Mjuke, løkkjande lydbilete laga i kode (`audio/Soundscape.kt`): vind, bølgjer, fossebrus, fuglar, siklader, romstille med
+klokketikk, murring, drypp, romdrone. Eit eige lag under musikken (same dempa/av-reglar som musikken: sluttar når musikk er
+av, lågare ved tale og oppgåver). `Soundscape.bedFor(place, night, onMap)` er ein rein funksjon. **Fossebrusen på kartet aukar
+med nivå** (`Soundscape.mapGain(level)`).
+
+### 17.3 Kontroll
+Einingstestar for kvar leike, nye grenser og lydbilete (val per stad, lengd, ingen klipping, saumlaus løkke, aukande foss-
+styrke); Android-test med ekte trykk på reaksjonsbana og oppskyting; visuell kontroll på mobil og nettbrett.
