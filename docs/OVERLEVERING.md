@@ -1,6 +1,26 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
-> **NYAST – 1.12.0 FERDIG LOKALT, IKKJE PUBLISERT (2026-10-07, Claude):** Brukaren bad «Ta neste steg» etter 1.11.0.
+> **NYAST – PUBLISERT 1.12.0 (2026-10-07, Claude):** Brukaren sa «Ja, fiks og release» etter statusen for 1.12.
+> Lysriggen tek no berre trykk der han er teikna (`ShowPlay.hitSpan`, -0,1..0,15; test i eining og med ekte trykk), og
+> `claude/niva-8` er spolt fram til `main` og publisert som stabil, nyaste release:
+> https://github.com/oyvhov/trollfoss-android/releases/tag/v1.12.0. Kjelde/tag: `5de0bc59f7f5de44ab6610b54552d269f9a39eac`.
+> Éin universal APK, 3 434 911 byte, SHA-256 `00227284543069e7cc04836f981ac0a113010b5aaca8d9c457e6df60879685b7`.
+> Opphavleg sertifikat (`de170fe9…70fe9f3`), app.trollfoss, 1.12.0 / kode 17, min Android 26, ikkje debuggable.
+> Mapping, SHA256SUMS og SOURCE_COMMIT er vedlagde. Offentleg liste utan token viser v1.12.0 først (kladd: nei,
+> prerelease: nei), digest stemmer, og nedlasta APK har same hash som den bygde. Signert release-bygg, 592
+> einingstestar, 66 Android-testar (mobil og nettbrett) og release-lint grøne (0 feil / 23 åtvaringar).
+> **Ekte oppdatering** på eiga `TrollfossRelease180` (mobilformat): publisert 1.11.0 / 16 → 1.12.0 / 17 gjennom
+> foreldresida (7 × 7-sperra, «Sjekk no» fann utgåva sjølv) → Last ned → Installer → Android «Update» → Play Protect
+> (Scan app, «This app looks safe») → «App installed». Kaldstart viser kartet med Trollfossen; Hedda og Alva er
+> framleis spelarar i Familiehuset. Ingen krasj i krasjbufferen. Testpakkane er borte, emulatoren er stoppa og
+> kopiane av signeringsfilene i arbeidskopien er fjerna. Arkiv: `dist/release-v1.12.0/` (Git-ignorert); bilete i
+> `screenshots/niva-8/` (Git-ignorert). Rotarbeidskopien `C:	opa` (codex/magic-rest) er urørt.
+> **Utsett (småting):** ekko-tonehøgd (to øvste tonar smeltar saman), ringar ved redusert rørsle, felt under kvar
+> dansar og høgd på teppet, små allokeringar per bilete, namnet «discokule» mot «Diskokule», taklampa i stova lyser
+> ikkje om natta (berre `LAMP`), danseteppet er tynt som bilete i leikedialogen. **Står att:** 1.13 nivå 9 + lyd,
+> 1.14 nivå 10 + regnbogefinale (spesifikasjon §12), Mailinn sin utsjånad (brukaren gav aldri detaljar) og barnetest av tempo.
+
+> **1.12.0 – BYGGJEHISTORIE (2026-10-07, Claude):** Brukaren bad «Ta neste steg» etter 1.11.0.
 > Grein `claude/niva-8` i `C:\topa\.claude\worktrees\oppdagingar` (frå main 48516a4). Spesifikasjon §16, plan
 > `docs/superpowers/plans/2026-10-06-niva-8-1-12.md`. Versjon 1.12.0 / kode 17.
 > **Gjort:** småtinga frå gjennomgangen av 1.11 (med testar); nivå 8 ved 25 merke med `ShowPlay` (ekkoboks som tek opp
