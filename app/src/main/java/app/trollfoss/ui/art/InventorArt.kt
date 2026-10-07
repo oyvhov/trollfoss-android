@@ -92,7 +92,7 @@ fun DrawScope.drawInventorBack(f: Fixture, u: Float, pen: Pen): Boolean {
                 val c = ToyColors[i]
                 val on = i == lit
                 val path = fxFlat(u, x0, x0 + InventorPlay.PAD - 0.014f, top, z0 + 0.03f, z1 - 0.025f, 0.008f)
-                drawPath(path, if (on) c else c.copy(alpha = 0.38f))
+                drawPath(path, if (on) c else c.copy(alpha = 0.58f))
                 if (on) {
                     drawPath(fxFlat(u, x0 + 0.02f, x0 + 0.07f, top, z0 + 0.06f, z1 - 0.045f, 0.004f), Color.White.copy(alpha = 0.75f))
                     val mid = fxQ(u, x0 + (InventorPlay.PAD - 0.014f) / 2f, top, (z0 + z1) / 2f)

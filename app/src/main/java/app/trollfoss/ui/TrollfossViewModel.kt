@@ -757,11 +757,14 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
             sim.mine.setBuildMode(b == "on", PlaceId.entries.firstOrNull { it.name.equals(placeName, true) } ?: world.place)
         }
         placeName?.let { name -> PlaceId.entries.firstOrNull { it.name.equals(name, true) }?.let { travel(it) } }
-        // `--es toys show` (or fixture type names joined by commas) sets those toys out in a row in the current place.
+        // `--es toys show|inventor` (or fixture type names joined by commas) sets those toys out in a row in the current place.
         toys?.let { list ->
             val types = if (list == "show") app.trollfoss.domain.ShowPlay.TYPES.toList()
+            else if (list == "inventor") app.trollfoss.domain.InventorPlay.TYPES.toList()
             else list.split(',').mapNotNull { n -> FixtureType.entries.firstOrNull { it.name.equals(n.trim(), true) } }
             types.forEachIndexed { i, type -> sim.designer.add(place, type, 0, 0.5f + i * 0.6f, place.floor) }
+            // Two loose things on the floor, so the helper robot has something to fetch.
+            if (list == "inventor") listOf(ThingType.BALL to 0.88f).forEach { (type, x) -> world.addThing(type, 0, place, x, place.floor - 0.1f).also { it.ground = place.floor } }
         }
         when (screenName?.lowercase()) {
             "map" -> open(Screen.Map)

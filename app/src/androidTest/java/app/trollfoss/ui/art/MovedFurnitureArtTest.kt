@@ -51,6 +51,28 @@ class MovedFurnitureArtTest {
         }
         image.recycle()
     }
+    @Test fun inventorToysShowWhatTheyAreDoing() {
+        val image=Bitmap.createBitmap(260,260,Bitmap.Config.ARGB_8888)
+        fun render(f:Fixture):IntArray {
+            image.eraseColor(android.graphics.Color.TRANSPARENT)
+            CanvasDrawScope().draw(Density(1f),LayoutDirection.Ltr,Canvas(image.asImageBitmap()),Size(260f,260f)) {
+                drawContext.transform.translate(130f,230f);drawToyBack(f,300f,Pen(2f));drawToyFront(f,300f,Pen(2f))
+            }
+            return IntArray(260*260).also { image.getPixels(it,0,260,0,0,260,260) }
+        }
+        val cases=listOf<Pair<FixtureType,(Fixture)->Unit>>(
+            FixtureType.PLAY_ROBOT_WORKSHOP to { f -> f.anim=0.8f },
+            FixtureType.PLAY_HELPER_ROBOT to { f -> f.on=true;f.shiftX=0.1f },
+            FixtureType.PLAY_ROCKET_KIT to { f -> f.on=true;f.angle=0.5f },
+            FixtureType.PLAY_REACTION_COURSE to { f -> f.angle=3f;f.angleV=2f },
+        )
+        try {
+            for((type,work) in cases) {
+                val idle=Fixture(-1,PlaceId.HOME,type,0f,0f);val busy=Fixture(-1,PlaceId.HOME,type,0f,0f).also(work)
+                assertFalse("$type looks the same when it works",render(idle).contentEquals(render(busy)))
+            }
+        } finally { image.recycle() }
+    }
     @Test fun handmadeToysHaveRealArtInEveryPlace() {
         val image = Bitmap.createBitmap(200,200,Bitmap.Config.ARGB_8888)
         val scope = CanvasDrawScope()
