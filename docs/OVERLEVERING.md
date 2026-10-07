@@ -2,7 +2,7 @@
 
 > **NYAST – 1.13.0 FERDIG LOKALT, IKKJE PUBLISERT (2026-10-07, Claude):** Brukaren sa «Det er ei jente, og ja jobb vidare»
 > (Mailinn er ei jente; ho har lange krøllar og genser og appen nemner ingen pronomen, så ingenting trengde endring).
-> Grein `claude/niva-9` i `C:	opa\.claude\worktrees\oppdagingar` (frå main e0fdcc6). Spesifikasjon §17, plan
+> Grein `claude/niva-9` i `C:/topa/.claude/worktrees/oppdagingar` (frå main e0fdcc6). Spesifikasjon §17, plan
 > `docs/superpowers/plans/2026-10-07-niva-9-1-13.md`. Versjon 1.13.0 / kode 18.
 > **Gjort:** nivå 9 «Oppfinnar» ved 32 merke med `InventorPlay`: robotverkstad (to ting inn, ein `ROBOT_PAL`-robotkompis ut,
 > tinga blir verande, 45 s kvile, høgst åtte per stad), hjelperobot (hentar næraste lause ting i sitt eige rom og leverer til
