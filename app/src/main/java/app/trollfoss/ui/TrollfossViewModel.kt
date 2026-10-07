@@ -730,7 +730,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     /** Debug builds only: jump straight to a place or screen for screenshots. */
-    fun debug(placeName: String?, screenName: String?, nightOn: String?, weatherName: String?, secrets: Int, wishes: Boolean = false, skip: Int = 0, task: String? = null, seasonName: String? = null, festivalName: String? = null, mine: String? = null, shape: Int = 0, build: String? = null, cam: Float = Float.NaN, layers: String? = null) {
+    fun debug(placeName: String?, screenName: String?, nightOn: String?, weatherName: String?, secrets: Int, wishes: Boolean = false, skip: Int = 0, task: String? = null, seasonName: String? = null, festivalName: String? = null, mine: String? = null, shape: Int = 0, build: String? = null, cam: Float = Float.NaN, layers: String? = null, toys: String? = null) {
         layers?.let { app.trollfoss.ui.play.SpriteCache.useLayers = it != "off" }
         if (seasonName != null || festivalName != null) {
             if (seasonName != null) debugSeason = Season.entries.firstOrNull { it.name.equals(seasonName, true) }
@@ -747,6 +747,12 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
             sim.mine.setBuildMode(b == "on", PlaceId.entries.firstOrNull { it.name.equals(placeName, true) } ?: world.place)
         }
         placeName?.let { name -> PlaceId.entries.firstOrNull { it.name.equals(name, true) }?.let { travel(it) } }
+        // `--es toys show` (or fixture type names joined by commas) sets those toys out in a row in the current place.
+        toys?.let { list ->
+            val types = if (list == "show") app.trollfoss.domain.ShowPlay.TYPES.toList()
+            else list.split(',').mapNotNull { n -> FixtureType.entries.firstOrNull { it.name.equals(n.trim(), true) } }
+            types.forEachIndexed { i, type -> sim.designer.add(place, type, 0, 0.5f + i * 0.6f, place.floor) }
+        }
         when (screenName?.lowercase()) {
             "map" -> open(Screen.Map)
             "creator" -> open(Screen.Creator(null))

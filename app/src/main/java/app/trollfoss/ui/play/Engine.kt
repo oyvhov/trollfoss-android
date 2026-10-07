@@ -734,11 +734,11 @@ class Engine(
 
     private fun visible(b: Body): Boolean = b.x > cam - 0.2f && b.x < cam + viewport + 0.2f
 
-    /** Little background life: chimney steam, notes from the radio, sparks from the fire. */
-    /** Rings on water and the time until the next calm one (see [Ripples]). */
-    private val ripples = Ripples()
+    /** Rings on water and the time until the next calm one (see [Ripples]). Internal so a render test can place one. */
+    internal val ripples = Ripples()
     private var rippleWait = 3f
 
+    /** Little background life: chimney steam, notes from the radio, sparks from the fire. */
     private fun ambient(dt: Float) {
         if (!motion) return
         for (f in world.fixturesIn(place)) {

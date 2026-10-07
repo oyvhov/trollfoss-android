@@ -11,10 +11,16 @@
 > gjennomgang (Opus): animasjonar som aldri gjekk over (òg eldre leiker sidan 1.7), felles musikkbrytar og tynt treff på
 > danseteppet er retta med testar. Utsett: ekko-tonehøgd, ringar ved redusert rørsle, felt under kvar dansar, høgd på
 > teppet, små allokeringar per bilete, namnet «discokule».
-> **Ikkje gjort:** Android-testane (inkl. nye `ShowPlayUiTest`) og visuell kontroll. Emulatorane (`TrollfossRelease180`
-> og `TrollfossReview110`) heng ved oppstart natt til 7. oktober: qemu startar, men VM-en brukar ~1 s CPU og adb ser
-> berre «offline». Første forsøk viste òg eit krasjrapport-spørsmål; `-crash-report-mode never` fjerna det, men ikkje
-> hengen. Truleg må maskina startast på nytt (WHPX). Ingen emulatorprosess står att. Ikkje release før dette er køyrt.
+> **Android og visuelt (7. oktober, etter omstart av maskina):** 66 Android-testar grøne på mobil (2400 × 1080 /
+> 420 dpi) og nettbrett (1920 × 1200 / 240 dpi), eiga AVD `TrollfossRelease180`, pakke `app.trollfoss.oppdag`. Ny
+> `SceneLightTest` teiknar vindaugslys (av om natta), scenelyset frå lysriggen og ringar i vatn; alle tre feilar når
+> lyset er teke bort. Visuelt prøvd i stova: lysrigg av/scenelys/disco, konfetti med hopp og merke, danseteppe med
+> dans, nivågåve, vindaugslys med støv, natt med lampe, skumbad med damp og ringar ved bryggja. Danseteppet er
+> teikna om til ei flat scene i skrå-3D (4 × 2 ruter i sjakkmønster). Debug: `--es toys show` set nivå 8-leikene ut.
+> Ingen Trollfoss-krasj. Testpakken er borte, skjermmål/rotasjon tilbakeførte, emulatoren stoppa, produksjon 1.11.0
+> urørt. Bilete: Git-ignorert `screenshots/niva-8/`. Nye småting: lysriggen sin trykkflate tek trykk frå pianoet når
+> han står inntil; taklampa i stova lyser ikkje om natta (berre `LAMP`); danseteppet er tynt som bilete i dialogen
+> (som teppa). Klar for fletting/release når brukaren seier ja.
 
 > **NYAST – PUBLISERT 1.11.0 (2026-10-06, Claude):** Brukaren bad «Flette inn og commit og push. Lag ny release».
 > `claude/oppdagingar` er spolt fram til `main` (frå e3e5e02) og publisert som stabil, nyaste release:

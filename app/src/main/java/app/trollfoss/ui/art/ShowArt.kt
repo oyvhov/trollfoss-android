@@ -33,13 +33,21 @@ fun DrawScope.drawShowBack(f: Fixture, u: Float, pen: Pen): Boolean {
                 Offset((0.1f - k * 0.04f) * u, (-0.09f - k * 0.06f) * u), Size((0.08f + k * 0.08f) * u, (0.12f * k) * u), style = Stroke(pen.lw * 1.4f))
         }
         FixtureType.PLAY_DANCE_FLOOR -> {
-            // Four coloured tiles; when the music is on they take turns to light up.
-            box(-0.4f, -0.05f, 0.4f, 0f, dark)
-            for (i in 0 until 4) {
-                val lit = f.on && ((pen.t * 2.5f).toInt() + i) % 2 == 0
-                val c = ToyColors[(i * 2 + if (f.on) (pen.t * 1.2f).toInt() else 0) % ToyColors.size]
-                drawRect(if (lit) c else c.copy(alpha = 0.45f), Offset((-0.38f + i * 0.19f) * u, -0.042f * u), Size(0.17f * u, 0.034f * u))
+            // A thin stage lying on the floor with 4 × 2 coloured tiles; when the music is on they light up in a checkerboard.
+            val top = -0.018f; val z0 = -0.01f; val z1 = 0.15f
+            val a = fxQ(u, -0.4f, top, z0); val b = fxQ(u, 0.4f, top, z0)
+            fxFace(fxQuad(a.x, a.y, b.x, b.y, b.x, 0f, a.x, 0f), dark.darken(0.25f), pen)
+            val face = fxFlat(u, -0.4f, 0.4f, top, z0, z1, 0.012f)
+            drawPath(face, dark)
+            val beat = (pen.t * 2.5f).toInt()
+            for (i in 0 until 4) for (j in 0 until 2) {
+                val lit = f.on && (beat + i + j) % 2 == 0
+                val c = ToyColors[(i * 2 + j + if (f.on) (pen.t * 1.2f).toInt() else 0) % ToyColors.size]
+                val x0 = -0.385f + i * 0.195f; val zA = z0 + 0.012f + j * 0.074f
+                drawPath(fxFlat(u, x0, x0 + 0.18f, top, zA, zA + 0.064f, 0.006f), if (lit) c else c.copy(alpha = 0.4f))
+                if (lit) drawPath(fxFlat(u, x0 + 0.03f, x0 + 0.08f, top, zA + 0.04f, zA + 0.055f, 0.004f), Color.White.copy(alpha = 0.6f))
             }
+            drawPath(face, Ink.line, style = pen.stroke)
         }
         FixtureType.PLAY_CONFETTI -> {
             // A red machine on wheels with a funnel, confetti waiting on top.

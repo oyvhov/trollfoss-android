@@ -59,6 +59,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             build = extras.getString("build"),
             cam = extras.getFloat("cam", Float.NaN),
             layers = extras.getString("layers"),
+            toys = extras.getString("toys"),
         )
     }
 
