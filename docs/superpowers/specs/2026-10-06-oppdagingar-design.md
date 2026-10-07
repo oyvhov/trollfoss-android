@@ -310,7 +310,8 @@ appen bruker pronomen, så ingen endring trengst). Release først når brukaren 
 2. **Hjelperobot (`PLAY_HELPER_ROBOT`).** Rullande robot med brett. Trykk: han ser etter den næraste lause tingen på golvet
    innan 1,2 til kvar side, rullar dit (`shiftX`), tek han opp på brettet (`Mode.INSIDE`), rullar til næraste figur innan
    rekkjevidde og set han ned ved føtene hennar med «ta-daa» (figuren ler og hoppar). Ingen ting eller ingen figur: robotten
-   dansar og pip-pip. Brettlasta blir sleppt ved føtene om roboten står stille utan oppdrag (trygt ved lagring). Oppdaging
+   dansar og pip-pip. Det barnet legg på brettet blir liggande (synleg på brettet, lagra) til neste trykk leverer det; ei teken last blir
+   alltid levert eller sleppt ved lagring og sletting. Oppdaging
    `HELPER_ROBOT` når ein ting er levert.
 3. **Rakettsett (`PLAY_ROCKET_KIT`).** Utskytingsrampe med ein liten rakett og ei sitjeplass. Trykk: nedtelling 3-2-1 (1,5 s),
    så stig raketten (`angle` 0–1) med flamme og røyk, snurrar ei stjerneskur på toppen og dalar mjukt ned att med fallskjerm.
@@ -324,9 +325,8 @@ Nye `First` (76 i alt); grenser `0, 2, 4, 7, 10, 14, 19, 25, 32`; nye `FixtureTy
 sist så ordinalane held. Kunst i `ui/art/InventorArt.kt`; tekstar på begge målformer.
 
 ### 17.2 Lydbilete per stad
-Mjuke, løkkjande lydbilete laga i kode (`audio/Soundscape.kt`): vind, bølgjer, fossebrus, fuglar, siklader, romstille med
-klokketikk, murring, drypp, romdrone. Eit eige lag under musikken (same dempa/av-reglar som musikken: sluttar når musikk er
-av, lågare ved tale og oppgåver). `Soundscape.bedFor(place, night, onMap)` er ein rein funksjon. **Fossebrusen på kartet aukar
+Mjuke, løkkjande lydbilete laga i kode (`audio/Soundscape.kt`): vind, bølgjer, fossebrus, fuglar, sirissar, romstille med
+klokketikk, murring, drypp, romdrone. Eit eige lag under musikken (same av-bryter som musikken; ingen eigen dempeknapp). `Soundscape.bedFor(place, night, onMap)` er ein rein funksjon. **Fossebrusen på kartet aukar
 med nivå** (`Soundscape.mapGain(level)`).
 
 ### 17.3 Kontroll

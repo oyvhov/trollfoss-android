@@ -91,7 +91,7 @@ class ToyPlay(private val sim: Sim) {
         }
     }
     fun tap(f: Fixture, dx: Float, dy: Float): Boolean {
-        if(f.type==FixtureType.PLAY_REACTION_COURSE) return sim.inventor.tap(f,dx)
+        if(f.type==FixtureType.PLAY_REACTION_COURSE) return sim.inventor.tap(f,dx,dy)
         if(f.type in CreativePlay.TYPES) return sim.creative.tap(f)
         if(f.type !in TYPES) return false
         if(f.type==FixtureType.PLAY_BUS || f.type==FixtureType.PLAY_TRAIN && !broken(f)) return false
@@ -163,7 +163,7 @@ class ToyPlay(private val sim: Sim) {
     }
     fun releaseAll(f: Fixture) = sim.edit { world.inMachine(f).forEach { release(f,it) };f.on=false;f.count=0 }
     private fun free(t: Thing) { t.mode=Mode.FREE;t.holder=-1;t.inside=-1;t.resting=false;t.restOwner=-2 }
-    private fun release(f: Fixture,t: Thing) { free(t);t.x=f.x;t.y=f.y-0.06f;t.ground=f.depth;t.vx=0f;t.vy=-0.2f;f.count=0 }
+    private fun release(f: Fixture,t: Thing) { free(t);t.x=f.x+f.shiftX;t.y=f.y-0.06f;t.ground=f.depth;t.vx=0f;t.vy=-0.2f;f.count=0 }
     private fun fx(fx: Fx,f: Fixture,t: Thing?=null) = sim.listener.onFx(fx,f.x,f.top,f,t)
     private fun emit(f: Fixture) {
         if(bubbles.size<36) bubbles += Bubble(f.id,f.x+sin(sim.time)*0.08f,f.top)
@@ -222,7 +222,8 @@ class ToyPlay(private val sim: Sim) {
         val TYPES=ToyReward.entries.map { it.type }.toSet()
         val VISIBLE_INSIDE=setOf(FixtureType.PLAY_LIFT,FixtureType.PLAY_MARBLES,FixtureType.PLAY_LAUNCHER,FixtureType.PLAY_POPCORN,
             FixtureType.PLAY_CRANE,FixtureType.PLAY_CONVEYOR,FixtureType.PLAY_BUILD,FixtureType.PLAY_HOVER,FixtureType.PLAY_RESCUE,
-            FixtureType.PLAY_CABLE_CAR,FixtureType.PLAY_DIVING_BELL,FixtureType.PLAY_TREASURE_TABLE)
+            FixtureType.PLAY_CABLE_CAR,FixtureType.PLAY_DIVING_BELL,FixtureType.PLAY_TREASURE_TABLE,
+            FixtureType.PLAY_ROBOT_WORKSHOP,FixtureType.PLAY_HELPER_ROBOT)
         fun accepts(f: Fixture,t: Thing): Boolean = when(f.type) {
             FixtureType.PLAY_WINDMILL -> t.type==ThingType.HAIR_DRYER
             FixtureType.PLAY_COLORS -> t.type.variants>1 && t.type.cat !in setOf(Cat.HAT,Cat.GARMENT)

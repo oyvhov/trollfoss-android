@@ -41,7 +41,7 @@ class SoundscapeTest {
             val pcm = Soundscape.render(bed)
             assertEquals("$bed length", Soundscape.RATE * Soundscape.SECONDS, pcm.size)
             val peak = pcm.maxOf { abs(it.toInt()) }
-            assertTrue("$bed is not clipped ($peak)", peak < 32767)
+            assertTrue("$bed peaks near 60% of full scale, never clipped ($peak)", peak in 18000..21000)
             val rms = sqrt(pcm.sumOf { it.toDouble() * it } / pcm.size)
             assertTrue("$bed is not silent (rms $rms)", rms > 200.0)
             // The step from the last sample to the first must be no bigger than the steps inside the loop.

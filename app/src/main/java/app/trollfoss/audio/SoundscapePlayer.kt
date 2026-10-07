@@ -5,6 +5,7 @@ import android.media.AudioFormat
 import android.media.AudioTrack
 import android.os.Process
 import java.util.EnumMap
+import kotlin.math.abs
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 
@@ -43,7 +44,7 @@ class SoundscapePlayer {
         if (!enabled) return
         control.execute {
             val current = playing
-            if (current?.bed == bed && current.running) { fadeTo(current, volume(gain), 600); return@execute }
+            if (current?.bed == bed && current.running) { if (abs(current.level - volume(gain)) > 0.01f) fadeTo(current, volume(gain), 600); return@execute }
             stopCurrent(fade = true)
             if (wanted != bed || !enabled) return@execute
             start(bed, loop(bed), volume(wantedGain))
@@ -52,7 +53,8 @@ class SoundscapePlayer {
 
     fun pause() {
         paused = true
-        control.execute { runCatching { playing?.track?.pause() } }
+        // Straight away: the control thread may be in the middle of a fade.
+        runCatching { playing?.track?.pause() }
     }
 
     fun resume() {

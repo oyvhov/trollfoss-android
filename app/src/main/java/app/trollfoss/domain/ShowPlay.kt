@@ -130,7 +130,12 @@ class ShowPlay(private val sim: Sim) {
         fun hitHeight(f: Fixture): Float = if (f.type == FixtureType.PLAY_DANCE_FLOOR || f.type == FixtureType.PLAY_REACTION_COURSE) maxOf(f.spec.h, 0.12f) else f.spec.h
         /** Where a tap counts as a hit, left to right from the toy's middle. The light rig is a thin stand, so it leaves the piano behind it alone. */
         fun hitSpan(f: Fixture): ClosedFloatingPointRange<Float> =
-            if (f.type == FixtureType.PLAY_LIGHT_RIG) -0.1f..0.15f else -f.spec.w / 2f..f.spec.w / 2f
+            when (f.type) {
+                FixtureType.PLAY_LIGHT_RIG -> -0.1f..0.15f
+                // The pads are drawn leaning to the right with depth: the board reaches further on that side.
+                FixtureType.PLAY_REACTION_COURSE -> -f.spec.w / 2f..f.spec.w / 2f + 0.5f * 0.15f
+                else -> -f.spec.w / 2f..f.spec.w / 2f
+            }
         fun echoNote(kind: Int, pitch: Int): Int = kind * 16 + pitch
         fun echoKind(param: Int): Int = param / 16
         fun echoPitch(param: Int): Int = param % 16

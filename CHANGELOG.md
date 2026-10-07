@@ -4,7 +4,7 @@
 
 - Nivå 9 «Oppfinnar» ved 32 merke: robotverkstad som byggjer ein robotkompis av to ting, hjelperobot som hentar noko frå golvet og gir det til ein venn, rakettsett med nedtelling og ein passasjer som flyg opp og kjem ned att, og reaksjonsbane der du trykkjer det feltet som lyser – fem på rad gir fest.
 - Fire nye oppdagingar for dei nye leikene, 76 i alt. Ein ny ting: robotkompisen.
-- Lydbilete under musikken: vind på fjellet, bølgjer på stranda, fuglar om dagen og siklader om natta, ei klokke som tikkar i stova, drypp i kjellaren og susing under vatnet.
+- Lydbilete under musikken: vind på fjellet, bølgjer på stranda, fuglar om dagen og sirissar om natta, ei klokke som tikkar i stova, drypp i kjellaren og susing under vatnet.
 - Fossebrusen på kartet veks for kvart nivå.
 - Figurar, klede, ting, hus og framgang blir bevarte. Nynorsk og bokmål er på plass.
 

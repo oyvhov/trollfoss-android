@@ -1,5 +1,28 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – 1.13.0 FERDIG LOKALT, IKKJE PUBLISERT (2026-10-07, Claude):** Brukaren sa «Det er ei jente, og ja jobb vidare»
+> (Mailinn er ei jente; ho har lange krøllar og genser og appen nemner ingen pronomen, så ingenting trengde endring).
+> Grein `claude/niva-9` i `C:	opa\.claude\worktrees\oppdagingar` (frå main e0fdcc6). Spesifikasjon §17, plan
+> `docs/superpowers/plans/2026-10-07-niva-9-1-13.md`. Versjon 1.13.0 / kode 18.
+> **Gjort:** nivå 9 «Oppfinnar» ved 32 merke med `InventorPlay`: robotverkstad (to ting inn, ein `ROBOT_PAL`-robotkompis ut,
+> tinga blir verande, 45 s kvile, høgst åtte per stad), hjelperobot (hentar næraste lause ting i sitt eige rom og leverer til
+> ein venn; ei last barnet legg på brettet blir liggande til neste trykk), rakettsett (nedtelling, stig 0,38, passasjer via
+> `seatPoint`, fyrverkeri på toppen, mjuk landing) og reaksjonsbane (fire felt, trykk direkte på felta, fem rette gir fest;
+> dialogens Bruk trykkjer lyst felt for dei som ikkje kan sikte). Fire nye oppdagingar (76). Lydbilete per stad
+> (`audio/Soundscape.kt`, `SoundscapePlayer`): vind, bølgjer, foss, fuglar/sirissar, romstille med klokke, murring, drypp,
+> romdrone, hav; fossebrusen på kartet veks med nivå (`mapGain`). Same av-bryter som musikken.
+> **Kontroll:** 614 einingstestar, 71 Android-testar (mobil og nettbrett, éi AVD) og lint (0 feil / 32 åtvaringar) grøne.
+> Visuelt prøvd: rakettoppskyting (flamme, røyk, fyrverkeri), reaksjonsfelt som lyser, verkstad, robot og rampe i skogen.
+> Debug: `--es toys inventor` set ut leikene og ein ball. Fersk gjennomgang (Opus) fann ti reelle feil som er retta med testar:
+> ting på bordet/brettet vart ikkje teikna (`VISIBLE_INSIDE`), feil felt i skrå 3D (`padAt` tek omsyn til djupna), to ting på
+> brettet, tilstand som følgde med ein gammal leike-id (no `WeakHashMap` på fixture-objektet), flamme på ein rakett lasta
+> midt i flukta, last som hoppa tilbake til startpunktet, tilgjenge for reaksjonsbana, tonar som svulma i romdrona og
+> fade som heldt igjen pause.
+> **Ikkje gjort:** barnetest; lyden er ikkje høyrd av menneske (berre rekna og målt: lengd, klipping, saum); robotens
+> henting er testa i eining og ikkje sett på skjerm (nivåpakka la seg over scena). Release berre når brukaren ber om det.
+> **Utsett (småting):** hjelperoboten stoppar ikkje for golvmøblar (som støvsugaren gjer); ingen nedtoning av lydbileta ved tale
+> (ingenting dempar musikken heller); Mailinn sin utsjånad er framleis standard.
+
 > **NYAST – PUBLISERT 1.12.0 (2026-10-07, Claude):** Brukaren sa «Ja, fiks og release» etter statusen for 1.12.
 > Lysriggen tek no berre trykk der han er teikna (`ShowPlay.hitSpan`, -0,1..0,15; test i eining og med ekte trykk), og
 > `claude/niva-8` er spolt fram til `main` og publisert som stabil, nyaste release:

@@ -67,6 +67,7 @@ object Soundscape {
             SoundBed.SEA -> sea(raw, random)
         }
         val loop = loopable(raw)
+        if (bed == SoundBed.DRONE) droneTones(loop)
         val peak = loop.maxOf { abs(it) }.takeIf { it > 0f } ?: 1f
         val scale = 0.6f * Short.MAX_VALUE / peak
         return ShortArray(LENGTH) { (loop[it] * scale).roundToInt().coerceIn(-32767, 32767).toShort() }
@@ -161,12 +162,17 @@ object Soundscape {
 
     private fun drone(out: FloatArray, random: Random) {
         val air = lowPass(white(out.size, random), 0.02f)
+        for (i in out.indices) out[i] += air[i] * 0.9f
+        for (k in 0 until 3) tone(out, 1.0 + k * 2.4 + random.nextDouble(), 0.7, 1500.0 + random.nextInt(900), 1500.0 + random.nextInt(900), 0.09f, decay = 5.0)
+    }
+
+    /** The drone's low tones. Each is a whole number of cycles in the loop, so they run straight on at the seam. */
+    private fun droneTones(out: FloatArray) {
         for (i in out.indices) {
             val x = t(i)
             val beat = (0.6 + 0.4 * sin(2 * PI * x / SECONDS * 2.0)).toFloat()
-            out[i] += (0.5f * sin(2 * PI * 55.0 * x).toFloat() + 0.45f * sin(2 * PI * 55.5 * x).toFloat() * beat + 0.2f * sin(2 * PI * 82.5 * x).toFloat()) * 0.7f + air[i] * 0.9f
+            out[i] += (0.5f * sin(2 * PI * 55.0 * x).toFloat() + 0.45f * sin(2 * PI * 55.5 * x).toFloat() * beat + 0.2f * sin(2 * PI * 82.5 * x).toFloat()) * 0.7f
         }
-        for (k in 0 until 3) tone(out, 1.0 + k * 2.4 + random.nextDouble(), 0.7, 1500.0 + random.nextInt(900), 1500.0 + random.nextInt(900), 0.09f, decay = 5.0)
     }
 
     private fun sea(out: FloatArray, random: Random) {

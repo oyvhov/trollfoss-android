@@ -90,7 +90,7 @@ class Designer(private val sim: Sim, private val random: Random) {
             if (b.mode == Mode.INSIDE && b.holder == f.id) {
                 b.mode = Mode.FREE
                 b.holder = -1
-                b.x = f.x
+                b.x = f.x + f.shiftX
                 b.y = f.top
             }
             if (b.restOwner == f.id || b.inside == f.id) {
