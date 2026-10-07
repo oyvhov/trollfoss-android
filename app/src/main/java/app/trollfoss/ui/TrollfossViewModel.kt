@@ -17,6 +17,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import app.trollfoss.audio.MusicPlayer
 import app.trollfoss.audio.MusicTheme
+import app.trollfoss.audio.Soundscape
+import app.trollfoss.audio.SoundscapePlayer
 import app.trollfoss.audio.Sfx
 import app.trollfoss.audio.SoundFx
 import app.trollfoss.data.Settings
@@ -79,6 +81,8 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     /** The builder panel of Mitt hus (see docs/BYGG.md): open or not, and which tab. */
     val mineUi = app.trollfoss.ui.screens.MineUi()
     private val music = MusicPlayer(application.cacheDir)
+    /** The soft place sounds under the music; they follow the music switch. */
+    private val ambient = SoundscapePlayer()
     val updater = AppUpdater(application, viewModelScope)
 
     private val navigation = ScreenHistory()
@@ -328,6 +332,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     private fun applySettings() {
         sfx.enabled = settings.sound
         music.enabled = settings.music
+        ambient.enabled = settings.music
         val today = java.time.LocalDate.now().toEpochDay()
         season = debugSeason ?: Seasons.resolve(settings.season, today)
         festival = debugFestival ?: if (settings.festive) Seasons.festival(today) else Festival.NONE
@@ -692,6 +697,8 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
             }
         }
         music.play(theme)
+        val bed = Soundscape.bedFor(place, night, onMap = screen == Screen.Map)
+        ambient.play(bed, Soundscape.gain(bed, Progression.level(world)))
     }
 
     // ---------------------------------------------------------------------------------- saving and lifecycle
@@ -712,6 +719,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     fun onForeground() {
         sim.today = LocalDate.now().toEpochDay()
         music.resume()
+        ambient.resume()
         updateMusic()
     }
 
@@ -719,6 +727,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         engine?.cancel()
         sim.mine.leave()
         music.pause()
+        ambient.pause()
         saveJob?.cancel()
         val json = WorldStore.encode(world, settings).toString()
         runCatching { store.write(json) }
@@ -727,6 +736,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     override fun onCleared() {
         sfx.release()
         music.release()
+        ambient.release()
     }
 
     /** Debug builds only: jump straight to a place or screen for screenshots. */
