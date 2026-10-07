@@ -128,6 +128,9 @@ class ShowPlay(private val sim: Sim) {
         const val BEAT = 0.8f
         /** The flat dance floor is hard for small fingers to hit; it gets a taller touch area than it looks. */
         fun hitHeight(f: Fixture): Float = if (f.type == FixtureType.PLAY_DANCE_FLOOR) maxOf(f.spec.h, 0.12f) else f.spec.h
+        /** Where a tap counts as a hit, left to right from the toy's middle. The light rig is a thin stand, so it leaves the piano behind it alone. */
+        fun hitSpan(f: Fixture): ClosedFloatingPointRange<Float> =
+            if (f.type == FixtureType.PLAY_LIGHT_RIG) -0.1f..0.15f else -f.spec.w / 2f..f.spec.w / 2f
         fun echoNote(kind: Int, pitch: Int): Int = kind * 16 + pitch
         fun echoKind(param: Int): Int = param / 16
         fun echoPitch(param: Int): Int = param % 16

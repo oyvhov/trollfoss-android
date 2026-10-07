@@ -91,6 +91,17 @@ class ShowPlayTest {
         s.tap(place, floor, 0f, -0.02f); assertFalse(s.musicOn(place))
     }
 
+    @Test fun theLightRigIsOnlyHitWhereItIsDrawn() {
+        val s = sim(); val rig = s.toys.claim(ToyReward.LIGHT_RIG, place, 1.2f)!!
+        val span = ShowPlay.hitSpan(rig)
+        assertTrue("the stand base is hit", -0.1f in span && 0f in span)
+        assertTrue("so is the spotlight head to the right", 0.14f in span)
+        assertFalse("a tap beside the stand goes to what stands behind it", -0.14f in span)
+        assertFalse(0.17f in span)
+        val box = s.toys.claim(ToyReward.ECHO_BOX, place, 2.4f)!!
+        assertEquals("other toys keep their full width", -box.spec.w / 2..box.spec.w / 2, ShowPlay.hitSpan(box))
+    }
+
     @Test fun theThinDanceFloorIsEasyToHit() {
         val s = sim(); val floor = s.toys.claim(ToyReward.DANCE_FLOOR, place, 1.2f)!!
         assertTrue(ShowPlay.hitHeight(floor) >= 0.12f)

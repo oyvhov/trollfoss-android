@@ -1263,7 +1263,8 @@ class Engine(
             val dy = p.y - fy
             if (FixtureDoors.hit(f, dx, dy, pad) || TreasureBoxLid.hit(f, dx, dy, pad) || StairDoorways.hit(f, dx, dy, pad) ||
                 f.type == FixtureType.TRACTOR && TractorCab.contains(dx, dy - f.bob, pad)) return f
-            if (p.x in (fx - f.spec.w / 2 - pad)..(fx + f.spec.w / 2 + pad) && p.y in (fy - ShowPlay.hitHeight(f) - pad)..(fy + pad)) return f
+            val span = ShowPlay.hitSpan(f)
+            if (dx in (span.start - pad)..(span.endInclusive + pad) && p.y in (fy - ShowPlay.hitHeight(f) - pad)..(fy + pad)) return f
         }
         return null
     }

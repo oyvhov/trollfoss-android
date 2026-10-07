@@ -62,4 +62,19 @@ class ShowPlayUiTest {
         repeat(30) { e.update(1f / 60f) }
         assertNotEquals("disco from the rig", 0f, p.anim.dance)
     }
+
+    @Test fun aTapBesideTheLightRigStandLeavesItAloneButTheStandOpensIt() {
+        val w = World(); val s = Sim(w); val place = PlaceId.HOME
+        val rig = s.designer.add(place, FixtureType.PLAY_LIGHT_RIG, 0, 1.2f, place.floor)!!
+        val e = engine(w, s, place)
+        repeat(20) { e.update(0.016f) }
+        fun tap(x: Float) {
+            val p = at(e, x, rig.y - 0.3f)
+            e.down(1, p, 5000); repeat(2) { e.update(0.016f) }; e.up(1, p, 5060); repeat(3) { e.update(0.016f) }
+        }
+        tap(rig.x - 0.14f)
+        assertEquals("a tap well beside the stand is not for the rig", -1, e.toyFixtureId)
+        tap(rig.x)
+        assertEquals("the stand itself opens it", rig.id, e.toyFixtureId)
+    }
 }
