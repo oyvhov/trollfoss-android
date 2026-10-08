@@ -490,7 +490,12 @@ object SC {
         app.trollfoss.domain.FriendAction.HIGH_FIVE -> Txt("High five","High five")
         app.trollfoss.domain.FriendAction.HOLD_HANDS -> Txt("Halde hender","Holde hender")
     }
+    val descend = Txt("Ned", "Ned")
     fun toyName(t:FixtureType):Txt=when(t) {
+        FixtureType.PLAY_DRAGON_CART -> Txt("Drakevogn","Dragevogn")
+        FixtureType.PLAY_AIRSHIP -> Txt("Luftskip","Luftskip")
+        FixtureType.PLAY_HIDE_TROLL -> Txt("Gøymetroll","Gjemmetroll")
+        FixtureType.PLAY_TROLL_PARTY -> Txt("Trollfest","Trollfest")
         FixtureType.PLAY_CABLE_CAR -> Txt("Taubane","Taubane")
         FixtureType.PLAY_ECHO_BOX -> Txt("Ekkoboks","Ekkoboks")
         FixtureType.PLAY_DANCE_FLOOR -> Txt("Danseteppe","Dansematte")
@@ -526,6 +531,10 @@ object SC {
         else -> Txt("Leike","Leke")
     }
     fun toyUse(t:FixtureType):Txt=when(t) {
+        FixtureType.PLAY_DRAGON_CART -> Txt("Set to venner i vogna og køyr med pilene. Draken nys bobler!","Sett to venner i vogna og kjør med pilene. Dragen nyser bobler!")
+        FixtureType.PLAY_AIRSHIP -> Txt("Set vennene om bord og legg ein ting i korga bak. Bruk pilene for å fly opp, ned og bortover.","Sett vennene om bord og legg en ting i kurven bak. Bruk pilene for å fly opp, ned og bortover.")
+        FixtureType.PLAY_HIDE_TROLL -> Txt("Trykk for å starte. Sjå etter augo og finn trollet tre gonger. Du har god tid!","Trykk for å starte. Se etter øynene og finn trollet tre ganger. Du har god tid!")
+        FixtureType.PLAY_TROLL_PARTY -> Txt("Trykk på trollknappen for ein liten fest. Trykk igjen for å stoppe.","Trykk på trollknappen for en liten fest. Trykk igjen for å stoppe.")
         FixtureType.PLAY_ECHO_BOX -> Txt("Spel noko i nærleiken, og trykk Bruk. Boksen syng det att – med pipestemme!","Spill noe i nærheten, og trykk Bruk. Boksen synger det tilbake – med pipestemme!")
         FixtureType.PLAY_DANCE_FLOOR -> Txt("Trykk Bruk for musikk, og set vennene på teppet. To saman hoppar i takt!","Trykk Bruk for musikk, og sett vennene på matta. To sammen hopper i takt!")
         FixtureType.PLAY_CONFETTI -> Txt("Trykk Bruk: pang! Konfetti over heile rommet, og vennene hoppar.","Trykk Bruk: pang! Konfetti over hele rommet, og vennene hopper.")

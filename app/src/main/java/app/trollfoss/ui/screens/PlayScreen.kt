@@ -364,11 +364,11 @@ fun PlayScreen(vm: TrollfossViewModel) {
                     drawRect(T.Ink, Offset(size.width * 0.3f, size.height * 0.3f), androidx.compose.ui.geometry.Size(size.width * 0.4f, size.height * 0.4f))
                 })
                 RoundButton(S.driveRight.str(), onClick = { engine.drive(1) }, size = btn, tone = Tones.Sea, icon = { driveArrow(true) })
-                if (engine.vehicle?.type == app.trollfoss.domain.FixtureType.SUBMARINE) {
+                if (engine.vehicle?.let(app.trollfoss.domain.Vehicles::vertical) == true) {
                     RoundButton(S.rise.str(), onClick = { engine.dive(-1) }, size = btn, tone = Tones.Mint, icon = {
                         rotate(-90f) { driveArrow(true) }
                     })
-                    RoundButton(S.dive.str(), onClick = { engine.dive(1) }, size = btn, tone = Tones.Grape, icon = {
+                    RoundButton((if (engine.vehicle?.type == app.trollfoss.domain.FixtureType.PLAY_AIRSHIP) app.trollfoss.ui.SC.descend else S.dive).str(), onClick = { engine.dive(1) }, size = btn, tone = Tones.Grape, icon = {
                         rotate(90f) { driveArrow(true) }
                     })
                 }

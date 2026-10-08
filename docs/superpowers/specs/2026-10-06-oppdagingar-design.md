@@ -332,3 +332,29 @@ med nivå** (`Soundscape.mapGain(level)`).
 ### 17.3 Kontroll
 Einingstestar for kvar leike, nye grenser og lydbilete (val per stad, lengd, ingen klipping, saumlaus løkke, aukande foss-
 styrke); Android-test med ekte trykk på reaksjonsbana og oppskyting; visuell kontroll på mobil og nettbrett.
+
+## 18. Utgåve 1.14: nivå 10 og regnbogefinale
+
+Vidareført etter «Jobb vidare» 8. oktober 2026, frå den ferdige lokale 1.13-kjelda. Detaljane står i
+`../plans/2026-10-08-niva-10-1-14.md`. Nivå 10 krev 40 merke; nivået har fire leiker:
+
+1. **Drakevogn (`PLAY_DRAGON_CART`)** med to separate sitjeplassar og dei vanlege køyrepilene. Vogna
+   nys nokre bobler medan ho køyrer; lasta er dei same vennene og kleda deira.
+2. **Luftskip (`PLAY_AIRSHIP`)** med to passasjerar og ei korg for éin ting. Pilene styrer sidelengs
+   og opp/ned, med grenser som held heile skipet på skjermen. Lagring bevarer høgd, posisjon,
+   passasjerar og last; køyringa ventar på barnet ved neste opning. Pakking slepper innhaldet trygt.
+3. **Gøymetroll (`PLAY_HIDE_TROLL`)** med tre stubbar. Augo viser kvar trollet er. Tre funn gir
+   konfetti og ei oppdaging. Ingen tidsfrist, og feil trykk kostar ingenting. Bruk-handlinga hjelper
+   dei som ikkje kan sikte. Mellombels framgang høyrer til dette møbelet i denne økta.
+4. **Trollfest (`PLAY_TROLL_PARTY`)**: trykk startar ein ni sekund lang fest med tre konfettidryss,
+   musikk og dans for frie venner i same rom. Trykk igjen stoppar. Sovande, sitjande og haldne
+   figurar blir respekterte. Ingen nye ting eller permanente figurar blir laga av festen.
+
+Fire nye `First`-verdiar, til sist i enumen; alle tidlegare verdiar og fixture-ordinalar blir bevarte.
+Regnbogen og tre småtroll blir viste i fossen ved nivå 10, også som regnbogevatn i boka. Dette gir
+ingen tvungen reise eller ny meny. Spelet held fram. Glans og skuggar blir teikna i kode med få
+primitivar; ingen nye bilete eller nettverk. Ved redusert rørsle er regnbogefinalen stille.
+
+Kontroll omfattar lagring, last, to passasjerar, angring, éingongsmerke, føreseieleg stopp, griperuter,
+mobil/nettbrett og begge målformer. Barnetest av tempo og forståing står framleis att. Ingen release
+er bestilt i denne runden.

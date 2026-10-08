@@ -63,7 +63,7 @@ class FirstsTest {
     }
 
     @Test fun everyGroupHasFirsts() {
-        assertEquals(76, First.entries.size)
+        assertEquals(80, First.entries.size)
         FirstGroup.entries.forEach { g -> assertTrue(First.entries.any { it.group == g }) }
     }
 
@@ -79,7 +79,7 @@ class FirstsTest {
     }
 
     @Test fun lowerThresholdsNeverLowerALevel() {
-        assertEquals(listOf(0, 2, 4, 7, 10, 14, 19, 25, 32), Progression.thresholds)
+        assertEquals(listOf(0, 2, 4, 7, 10, 14, 19, 25, 32, 40), Progression.thresholds)
         val w = World(); repeat(20) { w.stickers += it }
         assertEquals(7, Progression.level(w))
         for ((i, n) in listOf(0, 2, 4, 7).withIndex()) { w.stickers.clear(); repeat(n) { w.stickers += it }; assertEquals(i + 1, Progression.level(w)) }

@@ -227,7 +227,7 @@ fun MapScreen(vm: TrollfossViewModel) {
         )
         // Trollfossen is the way to level 10: a tap opens the discoveries. It keeps clear of the yawning troll.
         val fallLeft = maxOf(w * 0.41f + 52.dp, w * 0.44f - 8.dp)
-        val fallLabel = app.trollfoss.ui.SO.fallLabel.str()
+        val fallLabel = (if (app.trollfoss.domain.Progression.level(vm.world) >= 10) app.trollfoss.ui.SO.rainbowFall else app.trollfoss.ui.SO.fallLabel).str()
         Box(
             Modifier
                 .offset(x = fallLeft, y = h * 0.13f)

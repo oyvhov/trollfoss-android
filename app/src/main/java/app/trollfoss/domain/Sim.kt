@@ -192,7 +192,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
 
     /** Music plays in [place] while any music maker is on: the radio, a disco ball, a dance floor or a light rig in disco. */
     fun musicOn(place: PlaceId): Boolean = world.fixturesIn(place).any {
-        it.on && (it.type == FixtureType.RADIO || it.type == FixtureType.DISCO_BALL || it.type == FixtureType.PLAY_DANCE_FLOOR) ||
+        it.on && (it.type == FixtureType.RADIO || it.type == FixtureType.DISCO_BALL || it.type == FixtureType.PLAY_DANCE_FLOOR || it.type == FixtureType.PLAY_TROLL_PARTY) ||
             it.type == FixtureType.PLAY_LIGHT_RIG && it.mode == 2
     }
 
@@ -270,6 +270,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     val adventure = AdventurePlay(this)
     val show = ShowPlay(this)
     val inventor = InventorPlay(this, random)
+    val finale = FinalePlay(this, random)
     /** Funny surprises; switched on by the engine, so rule tests stay quiet and repeatable. */
     val mischief = Mischief(this, random)
     val playerFollow = PlayerFollow(this)
@@ -1901,8 +1902,8 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         if (place.mine) cx = Mine.clampX(world.mine, place, cx, half)
         val cy = if (f.spec.wall) {
             y.coerceIn(place.ceiling + f.spec.h + 0.02f, place.back - 0.01f)
-        } else if (f.type == FixtureType.SUBMARINE) {
-            // A submarine has free height, also when the child plays with it in a room.
+        } else if (Vehicles.vertical(f)) {
+            // A submarine or airship has free height, also when the child plays with it in a room.
             val top = max(place.ceiling + f.spec.h + 0.02f, if (underwater(place)) place.floor - 0.3f else 0f)
             y.coerceIn(top, PlaceId.FRONT)
         } else if (f.type == FixtureType.BOAT && Places.spec(place).water != null) {
@@ -1932,7 +1933,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     private fun shiftFixture(place: PlaceId, f: Fixture, dx: Float, dy: Float) {
         f.x += dx
         f.y += dy
-        f.depth += dy
+        if (f.type != FixtureType.PLAY_AIRSHIP) f.depth += dy
         for (b in world.bodiesIn(place)) {
             if (b.held || b.mode != Mode.FREE) continue
             if ((b.resting && b.restOwner == f.id) || b.inside == f.id) {

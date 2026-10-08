@@ -1,6 +1,6 @@
 # Plan: nivå, oppdagingar og nye leiker i Trollfoss
 
-Status 2026-10-07: 1.13.0 (lokalt) har nivå 1–9 med grensene 0/2/4/7/10/14/19/25/32; 1.12.0 (publisert) har nivå 1–8; 1.11.0 har nivå 1–7 og merke frå oppdagingar i fri leik (sjå `superpowers/specs/2026-10-06-oppdagingar-design.md`). Tidlegare: publisert 1.7.0 har nivå 1–6. Utgåva legg til nivå 4–6, 12 nivåleiker og åtte frie leiker. Sjå `FLOW_POLISH_2026-10-03.md` for faktisk kontroll og `OVERLEVERING.md` for release-/oppdateringskontroll. Nivå 7–10 og dei åtte historiebonusane nedanfor er vidare utviklingsplan, ikkje utgitt innhald.
+Status 2026-10-08: lokal 1.14.0 legg til nivå 10 ved 40 merke, drakevogn, luftskip, gøymetroll, trollfest og regnbogefinale. Grensene er no 0/2/4/7/10/14/19/25/32/40. Godkjend utforming og endelege leikeval står i `superpowers/specs/2026-10-06-oppdagingar-design.md`; gjennomføring og kontroll i `superpowers/plans/2026-10-08-niva-10-1-14.md`. Lokal 1.13 har nivå 9; publisert 1.12 har nivå 1–8. Sjå `OVERLEVERING.md` for verifisert status. Dette dokumentet bevarer den opphavlege planen: tabellen og historiebonusane nedanfor er ikkje ei liste over det som er utgjeve.
 
 ## 1. Målet
 
@@ -18,7 +18,7 @@ Gamle lagringar brukar alle eksisterande klistremerke. Versjon 1.7.0 har nivå 1
 
 ## 3. Nivå og 36 nye interaktive ting
 
-Dette er foreslått startbalanse. Nivå 1–6 er utgitte i 1.7.0; nivå 7–10 er planlagde. Tabellen skildrar målbildet: den første klinkekulebana har tre vendbare renner, ikkje frie banedelar; vindmølla blir driven av fønaren, og hjelp har bilete/tekst og henting av råvarer. Animerte demonstreringar, opplesing og vidare fleirstegsoppdrag står att. Tala skal prøvast med barn før dei blir endelege. «Totalt» er alle merka barnet har, ikkje merka som skal betalast.
+Tabellen er den opphavlege startbalansen, erstatta av oppdagingsspesifikasjonen frå 6. oktober. Mellom anna vart nivågrensene senka og leikevala på nivå 7–10 endra. Tabellen skildrar det tidlege målbildet: den første klinkekulebana har tre vendbare renner, ikkje frie banedelar; vindmølla blir driven av fønaren, og hjelp har bilete/tekst og henting av råvarer. Animerte demonstreringar, opplesing og vidare fleirstegsoppdrag står att. «Totalt» er alle merka barnet har, ikkje merka som skal betalast.
 
 | Nivå | Namn | Merke totalt | Nye merke frå førre nivå | Fire nye ting og det dei gjer |
 | --- | --- | ---: | ---: | --- |

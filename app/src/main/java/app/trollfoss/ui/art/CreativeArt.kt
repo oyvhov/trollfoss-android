@@ -52,6 +52,7 @@ fun DrawScope.drawCreativeBack(f:Fixture,u:Float,pen:Pen):Boolean {
     if(f.type in app.trollfoss.domain.AdventurePlay.TYPES) return drawAdventureBack(f,u,pen)
     if(f.type in app.trollfoss.domain.ShowPlay.TYPES) return drawShowBack(f,u,pen)
     if(f.type in app.trollfoss.domain.InventorPlay.TYPES) return drawInventorBack(f,u,pen)
+    if(f.type in app.trollfoss.domain.FinalePlay.TYPES) return drawFinaleBack(f,u,pen)
     if(f.type !in CreativePlay.TYPES) return false
     val wood=Color(0xFFDEA66C);val pale=Color(0xFFFFF0CC);val dark=Color(0xFF564768)
     fun box(l:Float,t:Float,r:Float,b:Float,c:Color) {
@@ -175,6 +176,7 @@ fun DrawScope.drawCreativeFront(f:Fixture,u:Float,pen:Pen):Boolean {
     if(f.type in app.trollfoss.domain.AdventurePlay.TYPES) return drawAdventureFront(f,u,pen)
     if(f.type in app.trollfoss.domain.ShowPlay.TYPES) return drawShowFront(f,u,pen)
     if(f.type in app.trollfoss.domain.InventorPlay.TYPES) return drawInventorFront(f,u,pen)
+    if(f.type in app.trollfoss.domain.FinalePlay.TYPES) return drawFinaleFront(f,u,pen)
     if(f.type !in CreativePlay.TYPES) return false
     if(f.type==FixtureType.PLAY_PUPPETS) for(side in listOf(-1f,1f)) inkedRound(Rect((side*0.21f-0.035f)*u,-0.41f*u,(side*0.21f+0.035f)*u,-0.1f*u),0.016f*u,ToyColors[0],pen)
     return true

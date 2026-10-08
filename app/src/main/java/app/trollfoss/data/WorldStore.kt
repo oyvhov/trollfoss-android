@@ -362,6 +362,7 @@ class WorldStore(private val file: File) {
                 f.count = o.optInt("count", 0)
                 if(f.type==FixtureType.PLAY_TRAIN && "train:broken:${f.id}" in world.flags) f.variant=1
                 if(f.type in app.trollfoss.domain.AdventurePlay.ANGLED) { f.angle=o.optDouble("toyAngle",f.mode.coerceIn(0,1).toDouble()).toFloat().coerceIn(0f,1f);if(f.type!=FixtureType.PLAY_LIFT) f.on=false }
+                if (f.type in app.trollfoss.domain.FinalePlay.TYPES) { f.on = false; f.mode = 0 } // Wait for the child after loading.
                 if (f.type == FixtureType.PLAY_CART) f.count = 0 // Touches belong to this session only.
                 if (o.has("x")) {
                     f.x = o.optDouble("x", f.x.toDouble()).toFloat()

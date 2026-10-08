@@ -1,5 +1,13 @@
 # Endringslogg
 
+## 1.14.0 – Trollfest og regnbogefoss (lokalt)
+
+- Nivå 10 ved 40 merke: drakevogn med to plassar og boblenys, luftskip med to passasjerar og ei korg, gøymetroll utan tidspress og ein trollfest-knapp.
+- Fire nye oppdagingar, 80 i alt. Nye leiker kan flyttast og leggjast på lager som dei andre.
+- Trollfossen får regnbogevatn og feirande småtroll når nivå 10 er nådd. Boka viser den same regnbogen. Fri leik held fram.
+- Svak glans på leiker og tydelegare skuggar under dei. Redusert rørsle held regnbogefinalen stille.
+- Luftskipet tek vare på passasjerar og last, og står roleg etter omstart. Angring bevarer oppdagingar og opplåsingar. Nynorsk og bokmål.
+
 ## 1.13.0 – Oppfinnarar og lydbilete
 
 - Nivå 9 «Oppfinnar» ved 32 merke: robotverkstad som byggjer ein robotkompis av to ting, hjelperobot som hentar noko frå golvet og gir det til ein venn, rakettsett med nedtelling og ein passasjer som flyg opp og kjem ned att, og reaksjonsbane der du trykkjer det feltet som lyser – fem på rad gir fest.

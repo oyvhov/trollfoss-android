@@ -92,6 +92,7 @@ class ToyPlay(private val sim: Sim) {
     }
     fun tap(f: Fixture, dx: Float, dy: Float): Boolean {
         if(f.type==FixtureType.PLAY_REACTION_COURSE) return sim.inventor.tap(f,dx,dy)
+        if(f.type in FinalePlay.DIRECT) return sim.finale.tap(f,dx,dy)
         if(f.type in CreativePlay.TYPES) return sim.creative.tap(f)
         if(f.type !in TYPES) return false
         if(f.type==FixtureType.PLAY_BUS || f.type==FixtureType.PLAY_TRAIN && !broken(f)) return false
@@ -223,7 +224,7 @@ class ToyPlay(private val sim: Sim) {
         val VISIBLE_INSIDE=setOf(FixtureType.PLAY_LIFT,FixtureType.PLAY_MARBLES,FixtureType.PLAY_LAUNCHER,FixtureType.PLAY_POPCORN,
             FixtureType.PLAY_CRANE,FixtureType.PLAY_CONVEYOR,FixtureType.PLAY_BUILD,FixtureType.PLAY_HOVER,FixtureType.PLAY_RESCUE,
             FixtureType.PLAY_CABLE_CAR,FixtureType.PLAY_DIVING_BELL,FixtureType.PLAY_TREASURE_TABLE,
-            FixtureType.PLAY_ROBOT_WORKSHOP,FixtureType.PLAY_HELPER_ROBOT)
+            FixtureType.PLAY_ROBOT_WORKSHOP,FixtureType.PLAY_HELPER_ROBOT,FixtureType.PLAY_AIRSHIP)
         fun accepts(f: Fixture,t: Thing): Boolean = when(f.type) {
             FixtureType.PLAY_WINDMILL -> t.type==ThingType.HAIR_DRYER
             FixtureType.PLAY_COLORS -> t.type.variants>1 && t.type.cat !in setOf(Cat.HAT,Cat.GARMENT)

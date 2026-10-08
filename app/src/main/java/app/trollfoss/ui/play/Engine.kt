@@ -83,6 +83,7 @@ import app.trollfoss.ui.art.TractorCab
 import app.trollfoss.ui.art.Pen
 import app.trollfoss.ui.art.drawFixtureBack
 import app.trollfoss.ui.art.drawFixtureFront
+import app.trollfoss.ui.art.drawToySheen
 import app.trollfoss.ui.art.drawHouseXray
 import app.trollfoss.ui.art.drawPerson
 import app.trollfoss.ui.art.drawPlaceBack
@@ -665,7 +666,7 @@ class Engine(
             a.lookY += (ly - a.lookY) * min(1f, dt * 7f)
 
             // Dancing to the radio.
-            a.dance = if (sim.community.dances(p) || a.cheer > 0f || (discoOn && a.pose == Pose.STAND) || floors.any { sim.show.onFloor(p, it) } || (radio != null && a.pose == Pose.STAND && p.resting && abs(p.x - radio.x) < 1.6f)) {
+            a.dance = if (sim.community.dances(p) || (motion && sim.finale.dances(p)) || a.cheer > 0f || (discoOn && a.pose == Pose.STAND) || floors.any { sim.show.onFloor(p, it) } || (radio != null && a.pose == Pose.STAND && p.resting && abs(p.x - radio.x) < 1.6f)) {
                 time * 2.07f * PI.toFloat() + 0.001f
             } else {
                 0f
@@ -1744,8 +1745,8 @@ class Engine(
         }
         // A fixture? Front-most first, wall fixtures last.
         fixtureAt(p)?.let { f ->
-            // The reaction course takes taps straight onto its pads; every other toy opens its dialog.
-            if(f.type in ToyPlay.TYPES && f.type != FixtureType.PLAY_REACTION_COURSE && (!Vehicles.controllable(f) || sim.toys.broken(f))) { cancel();toyFixtureId=f.id;return }
+            // Games with visible targets take taps directly; other toys open their dialog or vehicle arrows.
+            if(f.type in ToyPlay.TYPES && f.type != FixtureType.PLAY_REACTION_COURSE && f.type !in app.trollfoss.domain.FinalePlay.DIRECT && (!Vehicles.controllable(f) || sim.toys.broken(f))) { cancel();toyFixtureId=f.id;return }
             if (f.type == FixtureType.PLAY_FORT || f.type == FixtureType.PLAY_CART) { playFixtureId = f.id; return }
             if (Vehicles.controllable(f) && vehicleId != f.id) vehicle?.let { sim.vehicles.drive(it, 0) }
             sim.tap(place, f, p.x - (f.x + f.shiftX), p.y - (f.y + f.shiftY))
@@ -1969,8 +1970,9 @@ class Engine(
             }
             Fx.CONFETTI -> {
                 s(Sfx.POP, 0.9f, 0.8f)
-                particles.burst(PKind.CONFETTI, x, y, if (motion) 50 else 16, 1.1f, 0.012f, up = 0.9f, life = 2.4f)
-                laughAround(x, null)
+                if (motion || fixture?.type !in app.trollfoss.domain.FinalePlay.TYPES)
+                    particles.burst(PKind.CONFETTI, x, y, if (motion) 50 else 16, 1.1f, 0.012f, up = 0.9f, life = 2.4f)
+                if (fixture?.type !in app.trollfoss.domain.FinalePlay.TYPES) laughAround(x, null)
             }
             Fx.COUNTDOWN -> s(Sfx.BEEP, 0.7f, 0.8f + (3 - param) * 0.25f)
             Fx.KIT_LAUNCH -> {
@@ -2219,6 +2221,7 @@ class Engine(
             Fx.STORE -> {
                 s(Sfx.ZIP, 0.8f)
                 particles.burst(PKind.DUST, x, y, 12, 0.4f, 0.018f, up = 0.1f, life = 0.7f)
+                if (fixture?.type == FixtureType.PLAY_TROLL_PARTY) host.radio(sim.musicOn(place))
             }
             Fx.PAINT -> {
                 s(Sfx.SWISH, 0.8f, if (param == 0) 1.2f else 0.8f)
@@ -2314,7 +2317,8 @@ class Engine(
             }
             Fx.BUBBLES -> {
                 s(Sfx.BUBBLE, 0.6f, 0.9f + random.nextFloat() * 0.4f)
-                particles.burst(PKind.BUBBLE, x, y, if (param == 1) 12 else 6, 0.2f, 0.012f, Color.White, up = 0.25f, life = 1.6f)
+                if (motion || fixture?.type != FixtureType.PLAY_DRAGON_CART)
+                    particles.burst(PKind.BUBBLE, x, y, if (param == 1) 12 else 6, 0.2f, 0.012f, Color.White, up = 0.25f, life = 1.6f)
             }
             Fx.INK -> {
                 s(Sfx.SPLAT, 0.7f, 1.3f)
@@ -2793,11 +2797,17 @@ class Engine(
                 0 -> timed(1, f0(l)) {
                     val f = l.ref as Fixture
                     if (f.lift > 0f) drawLifted(f)
+                    if (f.type in ToyPlay.TYPES && !f.spec.wall && f.lift <= 0f) {
+                        val ground = if(f.type==FixtureType.PLAY_AIRSHIP) place.floor else f.y
+                        val width = f.spec.w*u*0.82f
+                        drawOval(Ink.line.copy(alpha=0.13f),Offset(sx(f.x+f.shiftX)-width/2,sy(ground)-u*0.008f),Size(width,u*0.023f))
+                    }
                     translate(sx(f.x + f.shiftX), sy(f.y + f.shiftY)) {
                         val bounce = (if (motion) 1f + f.anim * 0.05f else 1f) + f.lift * 0.03f
                         scale(bounce, 2f - bounce + f.lift * 0.06f, pivot = Offset.Zero) {
                             val contents = if (f.spec.machine == app.trollfoss.domain.Machine.BLENDER || f.spec.machine == app.trollfoss.domain.Machine.CAULDRON || f.spec.machine == app.trollfoss.domain.Machine.BUILD) world.inMachine(f) else emptyList()
                             if (!stampFixture(f, 0, pen, contents.isEmpty())) drawFixtureBack(f, u, pen, contents)
+                            if(f.type in ToyPlay.TYPES) drawToySheen(f, u, pen, motion)
                         }
                     }
                 }
@@ -3114,15 +3124,18 @@ class Engine(
     /** What a piece of furniture looks like right now, as far as its picture goes. */
     private data class FixtureLook(
         val type: FixtureType, val variant: Int, val layer: Int, val open: Boolean, val on: Boolean, val mode: Int, val count: Int,
-        val night: Int, val weather: Weather, val rainbow: Int, val size: Int,
+        val night: Int, val weather: Weather, val rainbow: Int, val size: Int, val restingAngle: Int = 0,
     )
 
     private data class ThingLook(val type: ThingType, val variant: Int, val used: Int, val night: Int, val weather: Weather, val rainbow: Int, val size: Int)
 
     /** Stamps a cached picture of [f]'s [layer] (0 back, 1 front); false when it must be drawn live. */
     private fun DrawScope.stampFixture(f: Fixture, layer: Int, pen: Pen, empty: Boolean): Boolean {
-        if (!empty || f.anim > 0.01f || f.lift > 0f || f.type in LIVE_FIXTURES || f.type in CreativePlay.TYPES || f.type==FixtureType.PICTURE && f.variant>=Community.ART_BASE || f.type==FixtureType.PLAY_LIFT || f.type==FixtureType.PLAY_WINDMILL || (f.on && f.type in LIVE_WHEN_ON)) return false
-        val look = FixtureLook(f.type, f.variant, layer, f.open, f.on, f.mode, f.count, (pen.night * 10f).toInt(), pen.weather, (pen.rainbow * 5f).toInt(), u.toInt())
+        val liveToy = f.type in CreativePlay.TYPES && (f.type !in app.trollfoss.domain.FinalePlay.TYPES || f.on)
+        if (!empty || f.anim > 0.01f || f.lift > 0f || f.type in LIVE_FIXTURES || liveToy || f.type==FixtureType.PICTURE && f.variant>=Community.ART_BASE || f.type==FixtureType.PLAY_LIFT || f.type==FixtureType.PLAY_WINDMILL || (f.on && f.type in LIVE_WHEN_ON)) return false
+        // Parked finale toys are still pictures. Keep the dragon's final wheel angle in its cache key.
+        val restingAngle = if (f.type == FixtureType.PLAY_DRAGON_CART) f.angle.toBits() else 0
+        val look = FixtureLook(f.type, f.variant, layer, f.open, f.on, f.mode, f.count, (pen.night * 10f).toInt(), pen.weather, (pen.rainbow * 5f).toInt(), u.toInt(), restingAngle)
         val w = f.spec.w * u
         val h = f.spec.h * u
         val bounds = Rect(-w / 2 - 0.14f * u, -h - 0.4f * u, w / 2 + 0.34f * u, 0.12f * u)

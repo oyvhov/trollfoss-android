@@ -16,10 +16,12 @@ enum class ToyReward(val level: Int, val type: FixtureType) {
     CABLE_CAR(7,FixtureType.PLAY_CABLE_CAR), DIVING_BELL(7,FixtureType.PLAY_DIVING_BELL), DIGGER(7,FixtureType.PLAY_DIGGER), TREASURE_TABLE(7,FixtureType.PLAY_TREASURE_TABLE),
     ECHO_BOX(8,FixtureType.PLAY_ECHO_BOX), DANCE_FLOOR(8,FixtureType.PLAY_DANCE_FLOOR), CONFETTI(8,FixtureType.PLAY_CONFETTI), LIGHT_RIG(8,FixtureType.PLAY_LIGHT_RIG),
     ROBOT_WORKSHOP(9,FixtureType.PLAY_ROBOT_WORKSHOP), HELPER_ROBOT(9,FixtureType.PLAY_HELPER_ROBOT), ROCKET_KIT(9,FixtureType.PLAY_ROCKET_KIT), REACTION_COURSE(9,FixtureType.PLAY_REACTION_COURSE),
+    DRAGON_CART(10,FixtureType.PLAY_DRAGON_CART), AIRSHIP(10,FixtureType.PLAY_AIRSHIP),
+    HIDE_TROLL(10,FixtureType.PLAY_HIDE_TROLL), TROLL_PARTY(10,FixtureType.PLAY_TROLL_PARTY),
 }
 
 object Progression {
-    val thresholds = listOf(0, 2, 4, 7, 10, 14, 19, 25, 32)
+    val thresholds = listOf(0, 2, 4, 7, 10, 14, 19, 25, 32, 40)
     fun level(world: World): Int = thresholds.count { world.stickers.size >= it }.coerceAtLeast(1)
     fun missing(world: World): Int = thresholds.getOrNull(level(world))?.let { (it - world.stickers.size).coerceAtLeast(0) } ?: 0
     fun unlocked(world: World, reward: ToyReward): Boolean = "toy:${reward.name}" in world.flags || reward.level > 0 && level(world) >= reward.level

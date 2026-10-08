@@ -17,6 +17,8 @@ import kotlin.math.sin
 object FallProgress {
     const val STONES = 10
 
+    fun complete(stickers: Int, thresholds: List<Int>): Boolean = thresholds.count { stickers >= it } >= STONES
+
     /** Height of stone [i] on the fall, 0 at the bottom and 1 at the top. */
     fun stone(i: Int): Float = i.coerceIn(0, STONES - 1) / (STONES - 1f)
 
@@ -41,7 +43,9 @@ fun DrawScope.drawMiniFall(stickers: Int, thresholds: List<Int>) {
     val fx = w * 0.6f; val fw = w * 0.5f
     drawRoundRect(Color(0xFFE4F6FD), Offset(fx - fw / 2, 0f), Size(fw, h), CornerRadius(fw * 0.3f))
     val top = h * (1f - FallProgress.fill(stickers, thresholds))
-    drawRoundRect(Brush.verticalGradient(listOf(Color(0xFFB8F0FF), Color(0xFF5FD4FF)), top, h), Offset(fx - fw / 2, top), Size(fw, h - top), CornerRadius(fw * 0.3f))
+    val water = if (FallProgress.complete(stickers, thresholds)) Brush.horizontalGradient(FinaleRainbow, fx - fw / 2, fx + fw / 2)
+        else Brush.verticalGradient(listOf(Color(0xFFB8F0FF), Color(0xFF5FD4FF)), top, h)
+    drawRoundRect(water, Offset(fx - fw / 2, top), Size(fw, h - top), CornerRadius(fw * 0.3f))
     drawRoundRect(T.Ink, Offset(fx - fw / 2, 0f), Size(fw, h), CornerRadius(fw * 0.3f), style = Stroke(lw))
     val level = thresholds.count { stickers >= it }.coerceAtLeast(1)
     for (i in 0 until FallProgress.STONES) drawCircle(if (i < level) T.Sun else T.Cream, w * 0.09f, Offset(w * 0.14f, h * 0.06f + (h * 0.88f) * (1f - FallProgress.stone(i))))
@@ -58,6 +62,7 @@ internal fun DrawScope.drawFallProgress(g: MapGeo, pen: Pen, stickers: Int, thre
     // The glow: brighter water that rises from the pool.
     drawRoundRect(Brush.verticalGradient(listOf(Color(0xFFB8F0FF), Color(0xFF5FD4FF)), glowTop, fall.bottom),
         Offset(fall.cx - gw / 2, glowTop), Size(gw, fall.bottom - glowTop), CornerRadius(gw * 0.3f), alpha = 0.55f)
+    if (FallProgress.complete(stickers, thresholds)) drawRainbowFinale(fall.cx, fall.top, gw, span, t, motion, pen)
     for (i in 0 until 6) {
         val k = if (motion) ((t * 0.25f + i / 6f) % 1f) else i / 6f
         val y = fall.bottom - (fall.bottom - glowTop) * k
@@ -102,4 +107,32 @@ internal fun DrawScope.drawFallProgress(g: MapGeo, pen: Pen, stickers: Int, thre
         else drawCircle(T.Ink, tr * 0.12f, e)
     }
     drawArc(T.Ink, 20f, 140f, false, Offset(tc.x - tr * 0.45f, tc.y - tr * 0.05f), Size(tr * 0.9f, tr * 0.6f), style = Stroke(pen.lw))
+}
+
+private val FinaleRainbow = listOf(Color(0xFFF27D92), Color(0xFFFFB16B), Color(0xFFFFDD76), Color(0xFF7DD3A5), Color(0xFF79CBF2), Color(0xFFB79CE7))
+
+/** Permanent level-ten water and a little troll party. Motion-off renders exactly the same frame at any time. */
+internal fun DrawScope.drawRainbowFinale(cx: Float, top: Float, width: Float, height: Float, t: Float, motion: Boolean, pen: Pen) {
+    val left = cx - width / 2
+    drawRoundRect(Brush.horizontalGradient(FinaleRainbow, left, left + width),Offset(left,top),Size(width,height),CornerRadius(width*0.25f),alpha=0.85f)
+    val phase = if(motion) t else 0f
+    for(i in 0 until 12) {
+        val y = top + ((i / 12f + phase * 0.12f) % 1f) * height
+        val x = cx + sin(i*2.4f) * width * 0.38f
+        val r = width * 0.028f
+        drawLine(Color.White.copy(alpha=0.8f),Offset(x-r,y),Offset(x+r,y),pen.lw*0.5f,StrokeCap.Round)
+        drawLine(Color.White.copy(alpha=0.8f),Offset(x,y-r),Offset(x,y+r),pen.lw*0.5f,StrokeCap.Round)
+    }
+    val arcW = width*1.55f
+    for(i in FinaleRainbow.indices) {
+        val inset = i*width*0.038f
+        drawArc(FinaleRainbow[i],185f,170f,false,Offset(cx-arcW/2+inset,top+height*0.50f+inset),Size(arcW-inset*2,arcW*0.60f-inset*2),style=Stroke(width*0.04f,cap=StrokeCap.Round))
+    }
+    for(i in 0..2) {
+        val r = width*0.10f
+        val x = cx+(i-1)*width*0.34f
+        val y = top+height-r*0.7f - (if(motion) abs(sin(phase*2.4f+i))*r*0.28f else 0f)
+        finaleTroll(Offset(x,y),r,pen,true)
+        drawCircle(FinaleRainbow[i*2],r*0.35f,Offset(x,y-r*1.15f))
+    }
 }

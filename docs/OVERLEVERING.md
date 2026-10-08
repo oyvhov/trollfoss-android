@@ -1,5 +1,24 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – NIVÅ 10 OG 1.14 IMPLEMENTERT LOKALT (2026-10-08, Codex):** Vidareført etter «Jobb vidare»,
+> frå lokal 1.13 (`claude/niva-9`, b75554a). Grein `codex/niva-10` i
+> `C:/Users/Øyvind/.codex/worktrees/rainbow-finale/topa`; ASCII-kopling
+> `C:/topa/.gradle-tmp/rainbow-finale`. Versjon 1.14.0 / kode 19. Ingen publisering.
+> **Gjort:** nivå 10 ved 40 merke, drakevogn med to plassar og boblenys, luftskip med to passasjerar
+> og éi last, gøymetroll utan tidsfrist og ein ni sekund lang trollfest. Fire nye oppdagingar (80 i alt).
+> Regnbogefoss og småtroll på kartet, regnbogevatn i boka, roleg glans og skuggar under leikene.
+> Stilleståande nye leiker bruker teiknebufferen. Begge målformer og redusert rørsle er tekne vare på.
+> **Kontroll:** 622 JVM-testar og 77 Android-testar på kvar av mobil/nettbrett grøne; lint 0 feil / 32 åtvaringar.
+> Debug- og test-APK er bygde og arkiverte i `C:/topa/dist/niva-10/`. Faktiske køyreknappar,
+> to opphavlege spelarar, klede, last og lagring er prøvde. Full rapport og status for siste bygg/lint:
+> `docs/superpowers/plans/2026-10-08-niva-10-1-14.md`. Bilete/loggar i `C:/topa/screenshots/niva-10/`.
+> **Står att før release:** rein kaldstartkontroll på roleg eiga AVD eller fysisk eining. Den delte
+> emulatoren gav tidvis «svarar ikkje», også med den uendra 1.13-APK-en. Sporet viser venting i Android
+> si teikning; årsaka er ikkje fastslått. Ingen GitHub-CI, signert oppdateringsprøve eller barnetest i
+> denne runden. Lyd frå 1.13 er framleis ikkje høyrd av menneske. Sjå rapporten før eventuell release.
+> **Vidare arbeid:** bruk denne greina, som inkluderer den lokale 1.13-kjelda. Rotarbeidskopien
+> `C:/topa` på `codex/magic-rest` har eldre uferdige endringar; berre ein peikar i overleveringa er lagd til der.
+
 > **NYAST – 1.13.0 FERDIG LOKALT, IKKJE PUBLISERT (2026-10-07, Claude):** Brukaren sa «Det er ei jente, og ja jobb vidare»
 > (Mailinn er ei jente; ho har lange krøllar og genser og appen nemner ingen pronomen, så ingenting trengde endring).
 > Grein `claude/niva-9` i `C:/topa/.claude/worktrees/oppdagingar` (frå main e0fdcc6). Spesifikasjon §17, plan

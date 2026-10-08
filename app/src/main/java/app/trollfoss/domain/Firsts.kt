@@ -23,7 +23,8 @@ enum class First(val group: FirstGroup) {
     SLEEP(FirstGroup.LIFE), READ(FirstGroup.LIFE), PHONE(FirstGroup.LIFE), BRUSH_TEETH(FirstGroup.LIFE), THROW_BALL(FirstGroup.LIFE),
     CATCH_BALL(FirstGroup.LIFE), TIDY(FirstGroup.LIFE), PAINT_ROOM(FirstGroup.LIFE), BUILD_ROOM(FirstGroup.LIFE),
     FIRST_TRIP(FirstGroup.WORLD), TRIP_5(FirstGroup.WORLD), TRIP_12(FirstGroup.WORLD), TREASURE_BOX(FirstGroup.WORLD),
-    ATTIC_CHEST(FirstGroup.WORLD), PEEK_TROLL(FirstGroup.WORLD);
+    ATTIC_CHEST(FirstGroup.WORLD), PEEK_TROLL(FirstGroup.WORLD),
+    DRAGON_CART(FirstGroup.DRIVE), AIRSHIP(FirstGroup.DRIVE), HIDE_TROLL(FirstGroup.PLAY), TROLL_PARTY(FirstGroup.FRIENDS);
 
     companion object { fun byName(name: String): First? = entries.firstOrNull { it.name == name } }
 }

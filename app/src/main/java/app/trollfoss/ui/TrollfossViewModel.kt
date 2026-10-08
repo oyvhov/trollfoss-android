@@ -761,6 +761,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         toys?.let { list ->
             val types = if (list == "show") app.trollfoss.domain.ShowPlay.TYPES.toList()
             else if (list == "inventor") app.trollfoss.domain.InventorPlay.TYPES.toList()
+            else if (list == "finale") app.trollfoss.domain.FinalePlay.TYPES.toList()
             else list.split(',').mapNotNull { n -> FixtureType.entries.firstOrNull { it.name.equals(n.trim(), true) } }
             types.forEachIndexed { i, type -> sim.designer.add(place, type, 0, 0.5f + i * 0.6f, place.floor) }
             // Two loose things on the floor, so the helper robot has something to fetch.

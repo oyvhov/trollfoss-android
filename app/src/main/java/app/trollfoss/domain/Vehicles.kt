@@ -17,9 +17,9 @@ class Vehicles(private val sim: Sim) {
         if (f.on) sim.listener.onFx(if (f.type == FixtureType.BOAT) Fx.TOOT else Fx.VROOM, f.x, f.top, f, param = 2)
     }
 
-    /** The submarine can rise and dive; a new arrow replaces the previous direction. */
+    /** Submarines and airships share vertical arrows; a new arrow replaces the previous direction. */
     fun dive(f: Fixture, direction: Int) {
-        if (f.type != FixtureType.SUBMARINE || world.fixtures[f.id] !== f) return
+        if (!vertical(f) || world.fixtures[f.id] !== f) return
         drive(f, 0)
         f.angleV = direction.coerceIn(-1, 1).toFloat()
         f.on = f.angleV != 0f
@@ -54,7 +54,7 @@ class Vehicles(private val sim: Sim) {
             else -> 0.55f
         }
         val at = sim.clampFixture(place, f, f.x + f.mode * speed * dt,
-            f.y + (if (f.type == FixtureType.SUBMARINE) f.angleV * 0.28f * dt else 0f))
+            f.y + (if (vertical(f)) f.angleV * 0.28f * dt else 0f))
         val dx = at[0] - f.x
         val dy = at[1] - f.y
         if (abs(dx) + abs(dy) < 0.00001f) { drive(f, 0); return }
@@ -93,7 +93,8 @@ class Vehicles(private val sim: Sim) {
 
     companion object {
         fun controllable(f: Fixture): Boolean = f.type in TYPES
-        private val TYPES = setOf(FixtureType.TRACTOR, FixtureType.BOAT, FixtureType.SUBMARINE, FixtureType.BUMPER_CAR, FixtureType.PLAY_BUS, FixtureType.PLAY_TRAIN,FixtureType.PLAY_TANDEM,FixtureType.PLAY_DIGGER)
+        fun vertical(f: Fixture): Boolean = f.type == FixtureType.SUBMARINE || f.type == FixtureType.PLAY_AIRSHIP
+        private val TYPES = setOf(FixtureType.TRACTOR, FixtureType.BOAT, FixtureType.SUBMARINE, FixtureType.BUMPER_CAR, FixtureType.PLAY_BUS, FixtureType.PLAY_TRAIN,FixtureType.PLAY_TANDEM,FixtureType.PLAY_DIGGER,FixtureType.PLAY_DRAGON_CART,FixtureType.PLAY_AIRSHIP)
         private val FINDS = listOf(ThingType.COIN, ThingType.GEM, ThingType.SHELL, ThingType.COIN, ThingType.BOOT)
         const val MAX_FINDS = 8
     }

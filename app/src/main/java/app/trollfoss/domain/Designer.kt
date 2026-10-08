@@ -51,7 +51,7 @@ class Designer(private val sim: Sim, private val random: Random) {
         val spot = settle(place, f, x, y)
         f.x = spot[0]
         f.y = spot[1]
-        f.depth = if (f.spec.wall) f.y else spot[1]
+        f.depth = if (f.type == FixtureType.PLAY_AIRSHIP) place.floor else if (f.spec.wall) f.y else spot[1]
         f.anim = 1f
         if (type == FixtureType.LAMP_POST) f.on = true
         sim.invalidate(place)

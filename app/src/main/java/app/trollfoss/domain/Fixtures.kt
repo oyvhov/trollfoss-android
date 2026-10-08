@@ -178,6 +178,8 @@ enum class FixtureType {
     PLAY_ECHO_BOX, PLAY_DANCE_FLOOR, PLAY_CONFETTI, PLAY_LIGHT_RIG,
     // Level 9 «Oppfinnar»: a robot workshop, a helper robot, a rocket kit and a reaction course (see [InventorPlay]).
     PLAY_ROBOT_WORKSHOP, PLAY_HELPER_ROBOT, PLAY_ROCKET_KIT, PLAY_REACTION_COURSE,
+    // Append level ten so existing fixture ordinals stay unchanged.
+    PLAY_DRAGON_CART, PLAY_AIRSHIP, PLAY_HIDE_TROLL, PLAY_TROLL_PARTY,
     ;
 
     val spec: FixtureSpec get() = specs.getValue(this)
@@ -222,6 +224,10 @@ enum class FixtureType {
             PLAY_HELPER_ROBOT -> FixtureSpec(0.20f,0.26f,dropZone=RRect(-0.14f,-0.34f,0.14f,0f))
             PLAY_ROCKET_KIT -> FixtureSpec(0.30f,0.46f,front=true,spots=listOf(seat(0f,-0.13f)))
             PLAY_REACTION_COURSE -> FixtureSpec(0.64f,0.07f)
+            PLAY_DRAGON_CART -> FixtureSpec(0.68f,0.29f,front=true,spots=listOf(seat(-0.15f,-0.12f),seat(0.06f,-0.12f)))
+            PLAY_AIRSHIP -> FixtureSpec(0.70f,0.62f,front=true,spots=listOf(seat(-0.13f,-0.12f),seat(0.08f,-0.12f)),dropZone=RRect(0.16f,-0.23f,0.32f,-0.06f))
+            PLAY_HIDE_TROLL -> FixtureSpec(0.66f,0.18f)
+            PLAY_TROLL_PARTY -> FixtureSpec(0.28f,0.26f)
             PLAY_BUS, PLAY_TRAIN -> FixtureSpec(0.58f, 0.29f, front = true,
                 spots = listOf(seat(-0.12f, -0.09f), seat(0.12f, -0.09f)),
                 surfaces = listOf(SurfaceSpec(-0.20f, 0.20f, -0.09f)))
