@@ -145,6 +145,7 @@ private fun SecretsPage(vm: TrollfossViewModel) {
     ) {
         // Fourteen places: five small cards a row, so the whole village fits on a phone.
         for (place in PlaceId.entries) {
+            if (place == PlaceId.LAB && !app.trollfoss.domain.WaterfallSecret.known(vm.world)) continue
             val secrets = Secrets.inPlace(place)
             if (secrets.isEmpty()) continue
             Column(

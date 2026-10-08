@@ -33,7 +33,7 @@ fun mapSpot(place: PlaceId): Offset = when (place) {
     PlaceId.MOUNTAIN -> Offset(0.17f, 0.25f)
     // Left of the cable car, so the cable and its pylon do not cross the child's house.
     PlaceId.MINE_YARD, PlaceId.MINE_GROUND, PlaceId.MINE_UPPER -> Offset(0.29f, 0.36f)
-    PlaceId.LAB -> Offset(0.62f, 0.25f)
+    PlaceId.LAB -> mapSpot(PlaceId.FOREST)
     PlaceId.SPACE -> Offset(0.85f, 0.19f)
     PlaceId.TIVOLI -> Offset(0.12f, 0.54f)
     PlaceId.SHOP -> Offset(0.26f, 0.55f)

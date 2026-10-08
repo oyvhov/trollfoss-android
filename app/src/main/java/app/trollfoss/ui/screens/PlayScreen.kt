@@ -153,6 +153,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
         val playLabel=S.playCards.str()
         val previousBagLabel = S.bagPrevious.str()
         val nextBagLabel = S.bagNext.str()
+        val waterfallLabel = (if (place == PlaceId.LAB) S.waterfallExit else S.waterfallTouch).str()
         engine.visibleRoom // Refresh alternative actions when the camera enters another room.
         val fixtureActions=vm.world.fixturesIn(place).filter { kotlin.math.abs(it.x-(engine.cam+engine.visibleViewport/2))<engine.visibleViewport/2+0.1f }.take(12).map { f ->
             val name=app.trollfoss.ui.FurnitureLabels.name(f.type).str()
@@ -168,6 +169,8 @@ fun PlayScreen(vm: TrollfossViewModel) {
                         CustomAccessibilityAction(helpLabel) { vm.open(Screen.Tasks);true },
                         CustomAccessibilityAction(playLabel) { playCardsOpen=true;true },
                     ) + listOfNotNull(
+                        if (app.trollfoss.domain.WaterfallSecret.passage(place) != null)
+                            CustomAccessibilityAction(waterfallLabel) { engine.throughWaterfall() } else null,
                         if (engine.canPreviousBagPage) CustomAccessibilityAction(previousBagLabel) { engine.turnBagPage(-1) } else null,
                         if (engine.canNextBagPage) CustomAccessibilityAction(nextBagLabel) { engine.turnBagPage(1) } else null,
                     ) + vm.world.people().filter { it.place==place && it.name.isNotBlank() }.take(12).map { p ->

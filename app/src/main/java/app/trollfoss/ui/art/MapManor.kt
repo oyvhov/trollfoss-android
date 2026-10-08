@@ -140,9 +140,8 @@ internal fun buildTunnel(g: MapGeo): TunnelGeo {
     val h = g.h
     val u = manorUnit(w, h)
     val s = manorCellar(w, h)
-    val cave = g.bases[PlaceId.LAB]!!
-    val cu = g.S * (0.84f + 0.22f * ((cave.y / h - 0.25f) / 0.6f).coerceIn(0f, 1f))
-    val e = Offset(cave.x + 0.02f * cu, cave.y + 0.17f * cu)
+    // The discovered tunnel ends behind the great waterfall, not at a signed cave on the map.
+    val e = Offset(w * 0.475f, h * 0.34f)
     val dx = e.x - s.x
     val dy = e.y - s.y
     val len = kotlin.math.hypot(dx, dy).coerceAtLeast(1f)

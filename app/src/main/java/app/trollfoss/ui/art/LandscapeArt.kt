@@ -624,6 +624,7 @@ private fun DrawScope.cliffAndFall(st: Stage, pen: Pen) {
             drawPoints(blue, PointMode.Lines, Color(0xFF8FCDEE).atNight(n, 0.3f), strokeWidth = u * 0.009f, cap = StrokeCap.Round, alpha = 0.7f)
         }
         drawPath(cl.fallEdges, Ink.line, alpha = 0.7f, style = pen.stroke)
+        waterfallGlimmer(Offset(3.02f * u, 0.59f * u), 0.025f * u, pen)
         if (n > 0f) {
             drawPath(cl.fall, Color(0xFFD6EEFF), alpha = 0.25f * n)
             val base = Offset(3.02f * u, 0.76f * u)

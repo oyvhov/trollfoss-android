@@ -179,6 +179,8 @@ object S {
     }
 
     val map = txt("Kart")
+    val waterfallTouch = txt("Rør fossen", "Berør fossen")
+    val waterfallExit = txt("Ut gjennom fossen", "Ut gjennom fossen")
     val workshop = txt("Figurverkstaden")
     val players = txt("Spelarar", "Spillere")
     val choosePlayers = txt("Kven vil de vere?", "Hvem vil dere være?")

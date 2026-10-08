@@ -63,6 +63,7 @@ internal fun DrawScope.drawFallProgress(g: MapGeo, pen: Pen, stickers: Int, thre
     drawRoundRect(Brush.verticalGradient(listOf(Color(0xFFB8F0FF), Color(0xFF5FD4FF)), glowTop, fall.bottom),
         Offset(fall.cx - gw / 2, glowTop), Size(gw, fall.bottom - glowTop), CornerRadius(gw * 0.3f), alpha = 0.55f)
     if (FallProgress.complete(stickers, thresholds)) drawRainbowFinale(fall.cx, fall.top, gw, span, t, motion, pen)
+    waterfallGlimmer(Offset(fall.cx, fall.bottom - span * 0.18f), h * 0.014f, pen, if (motion) t else 0f)
     for (i in 0 until 6) {
         val k = if (motion) ((t * 0.25f + i / 6f) % 1f) else i / 6f
         val y = fall.bottom - (fall.bottom - glowTop) * k

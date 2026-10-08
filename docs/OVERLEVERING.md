@@ -1,5 +1,18 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – HEMMELEGE FOSSAR (2026-10-08, Codex):** Brukaren bad om hemmelege plassar i den store
+> kartfossen og fossen inne på ein stad. Begge er no inngangar til den same eksisterande Trollhola;
+> den indre fossen er tolka som skogsfossen. Eit lite glimt i vatnet viser trykkstaden. Vassgardina
+> inne i hola har ei pil ut til skogen. Kartskilt/landemerke er fjerna, boka skjuler hola til første
+> besøk, og reisehint dit før oppdaginga leier til fossen. Gamle besøk, figurar, ting og Storhus-tunnelen
+> er bevarte. Same grein `codex/rumles-skattar`, same arbeidskopi og versjon 1.15.0 / kode 20.
+> **Kontroll:** 634 JVM-testar og 89 Android-testar på kvar av mobil/nettbrett grøne. Kart, skogsfoss
+> og utgang er visuelt gjennomgåtte. Faktiske mobiltrykk gjekk gjennom kartfoss → hola → skogen →
+> hola, og lagringa bevarer spelarane 25/45. Oppstarts-ANR og UI-hierarkiproblem på den delte emulatoren
+> står framleis att; dette er ikkje ein friskmeld release. Sjå full kontrollstatus og lintresultat i
+> `docs/superpowers/plans/2026-10-08-hemmelege-fossar.md`. Arkiv `C:/topa/dist/hemmelege-fossar/`.
+> Testpakkane er fjerna, innstillingane tilbakeførte og emulatoren ikkje stoppa. Ingen push/publisering.
+
 > **NYAST – RUMLE SINE SKATTAR / 1.15 LOKALT (2026-10-08, Codex):** Vidareført etter
 > «Jobb vidare med spennande ting», frå `af7a987` (lokal 1.14). Grein `codex/rumles-skattar` i
 > `C:/Users/Øyvind/.codex/worktrees/rainbow-finale/topa`, ASCII-kopling `C:/topa/.gradle-tmp/rainbow-finale`.

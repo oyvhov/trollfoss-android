@@ -2,6 +2,8 @@
 
 ## 1.15.0 – Rumle sine skattar (lokalt)
 
+- Trollhola er no hemmeleg: trykk på den store fossen på kartet eller på vatnet inne i skogen for å finne inngangen. Vassgardina i hola fører ut att til tørr grunn.
+- Kartskiltet og landemerket for Trollhola er borte. Boka skjuler hola til ho er oppdaga; reisehint dit viser først fossen. Gamle figurar, ting og oppdagingar blir bevarte.
 - Ei frivillig skattejakt i Leik og eventyr, tilgjengeleg frå starten: finn tre biletspor ved ugla, sandslottet og krystallane, i valfri rekkjefølgje.
 - Spora er ekte ting som kan flyttast, berast og pakkast. Kortet finn att sporet der barnet har lagt det. Ingen tidsfrist eller tap av framgang.
 - Premien er ei trollykt med tre lysbilete: stjerner, fisk og eit lite troll. Ho kan stå på golvet eller haldast av ein venn, og lyser opp mørke rom.

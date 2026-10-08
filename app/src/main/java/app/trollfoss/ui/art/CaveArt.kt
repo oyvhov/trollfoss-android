@@ -188,6 +188,7 @@ internal fun DrawScope.labBack(st: Stage, pen: Pen) {
     glowShrooms(st, pen, 1.19f, 0.84f, Color(0xFFFFA8F0), 1.9f)
     glowShrooms(st, pen, 2.33f, 0.825f, Color(0xFF5FF0D0), 3.1f)
     if (st.sees(CURTAIN_X - 0.4f, 3.8f)) waterCurtain(st, pen, cs)
+    waterfallWayOut(st, pen)
     drawBase(st, pen, Color(0xFF6A56A0), Color(0xFF2C2148))
     drawBaseStones(st, pen, Color(0xFF55437F), 37)
 }

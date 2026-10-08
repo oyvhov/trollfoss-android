@@ -59,10 +59,11 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
     val big: Boolean get() = manor || mine
 
     /** True when the place has a button on the map. The other floors are reached from inside the house. */
-    val onMap: Boolean get() = !big || this == MANOR_GROUND || this == MINE_YARD
+    val onMap: Boolean get() = this != LAB && (!big || this == MANOR_GROUND || this == MINE_YARD)
 
     /** Floors share one landmark. Used for the balloon and highlight when opening the map from inside. */
     val mapPlace: PlaceId get() = when {
+        this == LAB -> FOREST
         mine -> MINE_YARD
         manor -> MANOR_GROUND
         else -> this

@@ -1,5 +1,13 @@
 # Trollfoss – designunderlag
 
+Lokalt tillegg 2026-10-08: **Den hemmelege plassen bak fossane.** Den store fossen på kartet og
+fossen inne på skogstaden Fossen er to inngangar til same Trollhola. Hola har ikkje eige skilt eller
+landemerke på kartet. Eit lite glimt i vatnet er hintet; eitt trykk opnar hola utan nivåkrav.
+Vassgardina inne i hola, med ei lita pil, fører ut til tørr grunn i skogen. Spelarane og det dei ber
+følgjer med. Boka viser hola først etter eit besøk, og reisehint før oppdaginga leier til fossen.
+Den eksisterande tunnelen frå Storhuset er òg ein gyldig inngang. Gamle besøk og innhaldet i hola
+blir bevarte. Kartknappen og oppdagingsboka er framleis tilgjengelege på vanleg vis.
+
 Lokalt tillegg 2026-10-08 (1.15): **Rumle sine skattar** er ei frivillig skattejakt frå starten i
 Leik og eventyr. Tre flyttbare biletspor ved ugla, sandslottet og krystallane kan finnast i valfri
 rekkjefølgje. Biletkortet viser funne spor og finn det neste på den faktiske staden eller i sekken.
@@ -62,7 +70,7 @@ trolla er det einaste eventyret.
 
 ## 2. Verda: bygda Trollfoss
 
-Kartet viser bygda ovanfrå med **19 reisemål**: dei femten opphavlege stadene, Storhuset, Mitt hus, Vagstaddalen og Skyøya. Kartet er 60 prosent breiare enn skjermen og kan dragast sidelengs. Fjella med trollhola og romstasjonen ligg
+Kartet viser bygda ovanfrå med **18 synlege reisemål**, med Storhuset, Mitt hus, Vagstaddalen og Skyøya. Trollhola er eit hemmeleg reisemål bak fossen. Kartet er 60 prosent breiare enn skjermen og kan dragast sidelengs. Fjella med romstasjonen ligg
 øvst, dalen med tivoli, butikk, foss, lege, bakeri og gard i midten, og strandlinja med frisør,
 Familiehuset, konserthus, strand og dykkebøya ytst – og bak alt saman det store, lange fjellet **Heileberget**. Kvar stad er ei brei scene i skrå-3D (sjå §5) som ein
 sveipar sidelengs i.

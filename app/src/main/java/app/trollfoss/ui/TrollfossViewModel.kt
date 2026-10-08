@@ -383,6 +383,10 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     private var pendingFocus: Float? = null
     var balloonDestination: PlaceId? = null
     fun flyTo(to: PlaceId) {
+        if (app.trollfoss.domain.WaterfallSecret.destination(world, to) != to) {
+            travelPlayCard(to)
+            return
+        }
         balloonDestination = to
         open(Screen.Map)
     }
@@ -404,18 +408,25 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
 
 
     fun travelPlayCard(to: PlaceId, x: Float = 1.15f) {
-        pendingFocus = x
+        pendingFocus = if (app.trollfoss.domain.WaterfallSecret.destination(world, to) != to) app.trollfoss.domain.WaterfallSecret.FOREST_ARRIVAL else x
         travel(to)
-        engine?.takeIf { it.place == to }?.focusOn(x)
+    }
+
+    fun waterfallFromMap() {
+        sfx(Sfx.SPLASH, 0.6f)
+        val passage = app.trollfoss.domain.WaterfallSecret.entrance
+        passage(passage, app.trollfoss.domain.WaterfallSecret.arrival(passage))
     }
 
     override fun passage(passage: Passage, arrivalX: Float) {
         pendingFocus = arrivalX
-        travel(passage.to)
+        travel(passage.to, throughPassage = true)
         passageStamp++
     }
 
-    fun travel(to: PlaceId) {
+    fun travel(requested: PlaceId, throughPassage: Boolean = false) {
+        val to = if (throughPassage) requested else app.trollfoss.domain.WaterfallSecret.destination(world, requested)
+        if (to != requested) pendingFocus = app.trollfoss.domain.WaterfallSecret.FOREST_ARRIVAL
         engine?.let { cams[it.place] = it.cam }
         // Whatever the builder is busy with is finished before the child goes; a housewarming ends when they leave the house.
         sim.mine.finishJob()
@@ -756,7 +767,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
             mineUi.open = b == "on"
             sim.mine.setBuildMode(b == "on", PlaceId.entries.firstOrNull { it.name.equals(placeName, true) } ?: world.place)
         }
-        placeName?.let { name -> PlaceId.entries.firstOrNull { it.name.equals(name, true) }?.let { travel(it) } }
+        placeName?.let { name -> PlaceId.entries.firstOrNull { it.name.equals(name, true) }?.let { travel(it, throughPassage = true) } }
         // `--es toys show|inventor` (or fixture type names joined by commas) sets those toys out in a row in the current place.
         toys?.let { list ->
             val types = if (list == "show") app.trollfoss.domain.ShowPlay.TYPES.toList()

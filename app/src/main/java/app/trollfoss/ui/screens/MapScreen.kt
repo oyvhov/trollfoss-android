@@ -137,7 +137,7 @@ fun MapScreen(vm: TrollfossViewModel) {
         LaunchedEffect(mapWidth, from) { scroll.scrollTo(centered(from)) }
         fun fly(place: PlaceId) {
             if(target!=null) return
-            if(place==from) { vm.open(Screen.Play); return }
+            if(place==from && vm.place != PlaceId.LAB) { vm.open(Screen.Play); return }
             target=place
             vm.sfx(Sfx.WHOOSH,0.8f)
             scope.launch {
@@ -225,14 +225,16 @@ fun MapScreen(vm: TrollfossViewModel) {
                     vm.sim.egg("mountain")
                 },
         )
-        // Trollfossen is the way to level 10: a tap opens the discoveries. It keeps clear of the yawning troll.
+        // No sign gives away the cave: the water itself is the secret entrance.
         val fallLeft = maxOf(w * 0.41f + 52.dp, w * 0.44f - 8.dp)
-        val fallLabel = (if (app.trollfoss.domain.Progression.level(vm.world) >= 10) app.trollfoss.ui.SO.rainbowFall else app.trollfoss.ui.SO.fallLabel).str()
+        val fallLabel = S.waterfallTouch.str()
         Box(
             Modifier
                 .offset(x = fallLeft, y = h * 0.13f)
                 .size(w * 0.485f + 44.dp - fallLeft, h * 0.27f)
-                .clickable(remember { MutableInteractionSource() }, indication = null) { vm.sfx(Sfx.SPLASH, 0.6f); vm.openFirsts() }
+                .clickable(remember { MutableInteractionSource() }, indication = null) {
+                    if (target == null) vm.waterfallFromMap()
+                }
                 .semantics { contentDescription = fallLabel; role = Role.Button },
         )
         // Storhuset (the widest place) goes first, so the other places stay on top where their touch areas meet.

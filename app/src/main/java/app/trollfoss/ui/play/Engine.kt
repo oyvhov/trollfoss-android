@@ -1768,6 +1768,11 @@ class Engine(
             host.changed()
             return
         }
+        if (!designMode && !bagOpen && grabs.isEmpty() &&
+            app.trollfoss.domain.WaterfallSecret.at(place, p.x, p.y)) {
+            throughWaterfall()
+            return
+        }
         // Mitt hus: a tap on an empty slot or the shed (build mode), before the plain sparkle.
         if (place.mine && sim.mine.tapScene(place, p.x, p.y)) {
             host.changed()
@@ -1782,6 +1787,15 @@ class Engine(
             tapHintNext = time + TapHint.PAUSE
             host.sfx(Sfx.CHIME, 0.35f, 1.3f)
         }
+    }
+
+    /** The same journey serves a touch on the water and the screen reader's scene action. */
+    fun throughWaterfall(): Boolean {
+        if (designMode || bagOpen || grabs.isNotEmpty()) return false
+        val passage = app.trollfoss.domain.WaterfallSecret.passage(place) ?: return false
+        host.sfx(Sfx.SPLASH, 0.65f)
+        host.passage(passage, app.trollfoss.domain.WaterfallSecret.arrival(passage))
+        return true
     }
 
     private fun collect(s: Secret) {
