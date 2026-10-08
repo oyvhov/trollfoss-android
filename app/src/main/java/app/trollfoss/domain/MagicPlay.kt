@@ -14,12 +14,14 @@ enum class Adventure(val place: PlaceId, val reward: ThingType) {
     HAT(PlaceId.BEACH, ThingType.AT_FLOWER_HAT),
     CAMP(PlaceId.FOREST, ThingType.STAR_JAR),
     PARADE(PlaceId.FARM, ThingType.MICROPHONE),
+    RUMLE(PlaceId.FOREST, ThingType.TROLL_LANTERN),
 }
 
 /** Repeatable make-believe, with the original parts kept intact inside each creation. */
 class MagicPlay(private val sim: Sim) {
     var revision = 0
         private set
+    internal fun refresh() { revision++ }
     val active: Adventure? get() = Adventure.entries.firstOrNull { "adventure:active:${it.name}" in world.flags }
     private val world get() = sim.world
     fun dismissAdventure() {
@@ -222,12 +224,13 @@ class MagicPlay(private val sim: Sim) {
 
     fun started(a: Adventure) = "adventure:${a.name}:start" in world.flags
     fun stage(a: Adventure): Int = (1..3).count { "adventure:${a.name}:$it" in world.flags }
-    fun nextPlace(a: Adventure) = if (a == Adventure.HAT && stage(a) >= 1) PlaceId.HOME else a.place
+    fun nextPlace(a: Adventure) = if (a == Adventure.RUMLE) sim.trail.nextPlace() else if (a == Adventure.HAT && stage(a) >= 1) PlaceId.HOME else a.place
     fun start(a: Adventure) {
         world.flags.removeAll { it.startsWith("adventure:active:") }
         world.flags.add("adventure:active:${a.name}")
         world.flags.add("adventure:${a.name}:start")
         revision++
+        if (a == Adventure.RUMLE) { sim.trail.prepare(); return }
         if (a == Adventure.HAT && stage(a) < 3 && world.bodies[world.adventureHat] !is Thing) {
             val at = nextPlace(a)
             val hat = Thing(world.adventureHat.takeIf { it > 0 && it !in world.bodies } ?: world.nextId++, ThingType.CAP, 2)
@@ -243,7 +246,10 @@ class MagicPlay(private val sim: Sim) {
             if (stage(a) == 1 && f.spec.spots.indices.count { world.seatedAt(f, it) != null } >= needed) advance(a)
         }
     }
-    fun lifted(t: Thing) { if (t.id == world.adventureHat && started(Adventure.HAT) && stage(Adventure.HAT) == 0) advance(Adventure.HAT) }
+    fun lifted(t: Thing) {
+        sim.trail.find(t)
+        if (t.id == world.adventureHat && started(Adventure.HAT) && stage(Adventure.HAT) == 0) advance(Adventure.HAT)
+    }
     fun wore(p: Person, t: Thing) {
         if (t.id == world.adventureHat && p.species == Species.FOLK && p.place == PlaceId.HOME && stage(Adventure.HAT) == 1) {
             advance(Adventure.HAT); advance(Adventure.HAT)

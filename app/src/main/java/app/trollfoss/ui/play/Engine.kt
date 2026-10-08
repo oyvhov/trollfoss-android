@@ -84,6 +84,8 @@ import app.trollfoss.ui.art.Pen
 import app.trollfoss.ui.art.drawFixtureBack
 import app.trollfoss.ui.art.drawFixtureFront
 import app.trollfoss.ui.art.drawToySheen
+import app.trollfoss.ui.art.drawLanternProjection
+import app.trollfoss.ui.art.lanternColor
 import app.trollfoss.ui.art.drawHouseXray
 import app.trollfoss.ui.art.drawPerson
 import app.trollfoss.ui.art.drawPlaceBack
@@ -199,6 +201,18 @@ class Engine(
     private var fullBagUntil = 0f
     val canPreviousBagPage get() = bagOpen && bagPage > 0
     val canNextBagPage get() = bagOpen && bagPage < app.trollfoss.domain.TravelBag.pages(bagCount) - 1
+    /** Find the same packed item, including something a packed friend is wearing. */
+    fun openBagAt(body: Body): Boolean {
+        val packed = if (body.mode == Mode.WORN) world.bodies[body.holder] ?: body else body
+        val bag = world.bag()
+        val index = bag.indexOf(packed)
+        if (index < 0) return false
+        bagCount = bag.size
+        bagPage = index / app.trollfoss.domain.TravelBag.PAGE_SIZE
+        bagOpen = true
+        return true
+    }
+
     fun turnBagPage(direction: Int): Boolean {
         val next = (bagPage + direction).coerceIn(0, app.trollfoss.domain.TravelBag.pages(world.bag().size) - 1)
         if (next == bagPage) return false
@@ -2120,6 +2134,10 @@ class Engine(
                 }
                 for (o in world.bodiesIn(place)) if (o is Person && !o.held && o.anim.face != Face.SLEEP) faces(o, Face.WOW, 1.5f, Face.GRIN, 2f)
             }
+            Fx.LANTERN -> {
+                s(if (param == 0) Sfx.CLICK else Sfx.CHIME, 0.65f, 0.9f + param * 0.12f)
+                host.haptic()
+            }
             Fx.JIG -> person(param)?.let { elk ->
                 s(Sfx.MOO, 0.9f, 1.4f)
                 for (k in 1..4) pending += (time + k * 0.3f) to { elk.anim.hopV = 2f; s(Sfx.BOING, 0.4f, 1.1f + k * 0.12f) }
@@ -2620,6 +2638,10 @@ class Engine(
         return false
     }
 
+    private fun lanternVisible(t: Thing): Boolean = if (t.mode == Mode.WORN) {
+        (world.bodies[t.holder] as? Person)?.let { it.place == place && !hidden(it) } == true
+    } else !hidden(t)
+
     var photoMode = false
     var guidance: app.trollfoss.domain.Task? = null
 
@@ -2864,6 +2886,11 @@ class Engine(
             drawCircle(Color.White,u*0.007f,center+Offset(-u*0.009f,-u*0.010f))
         }
         timed(6) { drawNight(lw) }
+        // Light falls across the visible surfaces, so a cupboard cannot swallow the picture.
+        for (b in world.bodiesIn(place)) if (b is Thing && app.trollfoss.domain.TreasureTrail.lit(b) && lanternVisible(b) && visible(b)) {
+            val center = Offset(sx(b.x), sy(max(place.ceiling + 0.17f, b.y - 0.55f)))
+            drawLanternProjection(b.used, Offset(sx(b.x), sy(b.y - b.h*0.5f)), center, u*0.32f, pen)
+        }
         drawSeasonGrade()
         lateText = list
         if (app.trollfoss.BuildConfig.DEBUG) {
@@ -3675,7 +3702,12 @@ class Engine(
         for (b in world.bodiesIn(place)) {
             // Sture glows softly, so a ghost in the dark attic is always easy to find.
             if (b is Person && b.species == Species.GHOST && !hidden(b)) out += Triple(Offset(sx(b.x), sy(b.y - b.h * 0.55f)), b.h * 0.95f * u, Color(0xFFBDF1FF))
-            if (b !is Thing || !b.type.glows || hidden(b)) continue
+            if (b !is Thing || !b.type.glows) continue
+            if (b.type == ThingType.TROLL_LANTERN) {
+                if (app.trollfoss.domain.TreasureTrail.lit(b) && lanternVisible(b)) out += Triple(Offset(sx(b.x),sy(b.y-b.h/2)),0.34f*u,lanternColor(b.used))
+                continue
+            }
+            if (hidden(b)) continue
             out += Triple(Offset(sx(b.x), sy(b.y - b.h / 2)), 0.13f * u, Color(0xFFFFE58A))
         }
         return out

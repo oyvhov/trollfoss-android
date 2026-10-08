@@ -232,6 +232,8 @@ private fun DrawScope.thing(type: ThingType, v: Int, used: Int, w: Float, h: Flo
     ThingType.PEARL -> thPearl(w, h, pen)
     ThingType.DIVING_MASK -> thDivingMask(w, h, pen)
     ThingType.ROBOT_PAL -> thRobotPal(v, w, h, pen)
+    ThingType.RUMLE_NOTE -> thRumleNote(v, used > 0, w, h, pen)
+    ThingType.TROLL_LANTERN -> thTrollLantern(used, w, h, pen)
 
     // Storhuset: each floor's art file draws its own things.
     else -> drawManorThing(type, v, used, w, h, pen, cook)

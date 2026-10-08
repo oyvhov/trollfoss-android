@@ -258,6 +258,9 @@ class World {
     val playKits = linkedMapOf<PlayRecipe, List<Int>>()
     val playLightIds = linkedSetOf<Int>()
     var adventureHat = -1
+    /** Rumle's papers and lantern are the same items wherever the child puts them. */
+    val rumleNotes = IntArray(3) { -1 }
+    var rumleLantern = -1
     /** Photographs keep the look at shutter time, including after clothes are changed. */
     val toyPhotos = linkedMapOf<Int, Person>()
     val toyInputs = linkedMapOf<String, Int>()

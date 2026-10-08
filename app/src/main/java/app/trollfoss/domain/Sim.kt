@@ -57,6 +57,7 @@ enum class Fx {
 
     // Level 9 inventor toys: a rocket kit countdown (param 3, 2, 1) and lift-off, and a reaction course hit (param = pad * 16 + streak).
     COUNTDOWN, KIT_LAUNCH, REACT,
+    LANTERN,
 }
 
 interface SimListener {
@@ -271,6 +272,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     val show = ShowPlay(this)
     val inventor = InventorPlay(this, random)
     val finale = FinalePlay(this, random)
+    val trail = TreasureTrail(this)
     /** Funny surprises; switched on by the engine, so rule tests stay quiet and repeatable. */
     val mischief = Mischief(this, random)
     val playerFollow = PlayerFollow(this)
@@ -1535,6 +1537,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
 
     /** A tap on a loose thing. */
     fun use(place: PlaceId, t: Thing) {
+        if (trail.use(t)) return
         val carrier = if (t.mode == Mode.WORN) world.bodies[t.holder] as? Person else null
         if (carrier != null && personPlay.use(carrier, t)) return
         when (t.type) {

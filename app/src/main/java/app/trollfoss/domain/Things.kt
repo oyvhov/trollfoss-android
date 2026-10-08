@@ -235,6 +235,8 @@ enum class ThingType(
     MAGNET(0.06f,0.065f,Cat.TOOL), SPOON(0.025f,0.08f,Cat.TOOL),
     /** A little robot pal from the robot workshop (level 9); the variant is its colour. */
     ROBOT_PAL(0.07f, 0.09f, Cat.TOY, bounce = 0.2f, variants = 4),
+    RUMLE_NOTE(0.115f, 0.085f, Cat.TOY, variants = 3),
+    TROLL_LANTERN(0.095f, 0.14f, Cat.MAGIC, glows = true),
     ;
 
     /** Head width of a grown-up figure; hats and glasses are drawn at this size and scaled to fit a head. */

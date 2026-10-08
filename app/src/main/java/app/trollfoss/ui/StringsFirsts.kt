@@ -77,6 +77,8 @@ object SO {
         First.AIRSHIP -> Txt("Flaug med luftskipet", "Fløy med luftskipet")
         First.HIDE_TROLL -> Txt("Fann gøymetrollet", "Fant gjemmetrollet")
         First.TROLL_PARTY -> Txt("Feira med trolla", "Feiret med trollene")
+        First.RUMLE_TREASURE -> Txt("Fann Rumle sin skatt", "Fant Rumles skatt")
+        First.TROLL_LANTERN -> Txt("Lyste med trollykta", "Lyste med trollykta")
         First.HUG -> Txt("Ein god klem", "En god klem")
         First.HIGH_FIVE -> Txt("High five!", "High five!")
         First.HOLD_HANDS -> Txt("Heldt handa", "Holdt hånden")

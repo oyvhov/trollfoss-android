@@ -30,11 +30,12 @@ private fun PlayAction.label(): Txt = when (this) {
     PlayAction.AWAKEN -> SC.awaken;PlayAction.SECRET -> SC.secret
 }
 private fun PlayRecipe.label() = if (this == PlayRecipe.FORT) S.playFort else S.playCart
-private fun Adventure.label(): Txt = when (this) { Adventure.HAT -> S.playHats; Adventure.CAMP -> S.playCamp; Adventure.PARADE -> S.playParade }
+private fun Adventure.label(): Txt = when (this) { Adventure.HAT -> S.playHats; Adventure.CAMP -> S.playCamp; Adventure.PARADE -> S.playParade; Adventure.RUMLE -> app.trollfoss.ui.ST.title }
 private fun Adventure.hint(stage: Int): Txt = when (this) {
     Adventure.HAT -> if (stage == 0) S.playFindHat else S.playReturnHat
     Adventure.CAMP -> listOf(S.playBuildCamp, S.playSitCamp, S.playLightCamp)[stage.coerceIn(0, 2)]
     Adventure.PARADE -> listOf(S.playBuildCart, S.playSeatCart, S.playPullCart)[stage.coerceIn(0, 2)]
+    Adventure.RUMLE -> app.trollfoss.ui.ST.hint
 }
 
 @Composable
@@ -91,6 +92,7 @@ fun PlayCards(vm: TrollfossViewModel, engine: Engine, onClose: () -> Unit) {
     TrollDialog(onClose = onClose, maxWidth = 620.dp) {
         GameText(S.playCards.str(), fontSize = if (compact) 20.sp else 26.sp, color = T.Ink)
         if (!compact) GameText(S.playOptional.str(), fontSize = 14.sp, color = T.Ink)
+        if(tab != 1 && !vm.sim.trail.started) TreasureTrailCard(vm,engine,onClose)
         if(tab==0) FirstPlayIdeas(vm,onClose)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             for (i in 0..2) Row(Modifier.weight(1f).background(if (tab == i) T.SunTop else Color.White, RoundedCornerShape(16.dp))
@@ -125,7 +127,8 @@ fun PlayCards(vm: TrollfossViewModel, engine: Engine, onClose: () -> Unit) {
                 GameText(S.playKit.str(), fontSize = 12.sp, color = T.Ink)
             }
         }
-        if (tab == 1) for (adventure in Adventure.entries) {
+        if (tab == 1) for (adventure in Adventure.entries.sortedBy { if(it==vm.sim.magic.active) -1 else if(it==Adventure.RUMLE) 0 else 1 }) {
+            if(adventure == Adventure.RUMLE) { TreasureTrailCard(vm,engine,onClose); continue }
             val stage = vm.sim.magic.stage(adventure)
             val done = stage >= 3
             Row(Modifier.fillMaxWidth().background(if (done) T.Mint.copy(alpha = 0.15f) else T.SunTop.copy(alpha = 0.5f), RoundedCornerShape(18.dp))
@@ -175,6 +178,7 @@ fun PlayCards(vm: TrollfossViewModel, engine: Engine, onClose: () -> Unit) {
 fun AdventureReminder(vm: TrollfossViewModel, engine: Engine, modifier: Modifier, onClick: () -> Unit) {
     engine.playVersion
     val a = vm.sim.magic.active ?: return
+    if(a == Adventure.RUMLE) { TreasureTrailReminder(vm,engine,modifier,onClick); return }
     val stage = vm.sim.magic.stage(a)
     LaunchedEffect(a, stage) {
         if (stage >= 3) {

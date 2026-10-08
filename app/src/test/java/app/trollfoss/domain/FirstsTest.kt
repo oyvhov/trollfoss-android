@@ -63,7 +63,7 @@ class FirstsTest {
     }
 
     @Test fun everyGroupHasFirsts() {
-        assertEquals(80, First.entries.size)
+        assertEquals(82, First.entries.size)
         FirstGroup.entries.forEach { g -> assertTrue(First.entries.any { it.group == g }) }
     }
 

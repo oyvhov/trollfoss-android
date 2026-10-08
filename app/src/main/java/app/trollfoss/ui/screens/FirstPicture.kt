@@ -83,6 +83,8 @@ fun firstSubject(f: First): FirstSubject = when (f) {
     First.AIRSHIP -> FirstSubject.Fixture(FixtureType.PLAY_AIRSHIP)
     First.HIDE_TROLL -> FirstSubject.Fixture(FixtureType.PLAY_HIDE_TROLL)
     First.TROLL_PARTY -> FirstSubject.Fixture(FixtureType.PLAY_TROLL_PARTY)
+    First.RUMLE_TREASURE -> FirstSubject.Thing(ThingType.RUMLE_NOTE)
+    First.TROLL_LANTERN -> FirstSubject.Thing(ThingType.TROLL_LANTERN)
     First.HUG, First.HIGH_FIVE, First.HOLD_HANDS, First.PET -> FirstSubject.Friends
     First.LIVING_TEDDY -> FirstSubject.Thing(ThingType.TEDDY)
     First.BAND -> FirstSubject.Thing(ThingType.GUITAR)

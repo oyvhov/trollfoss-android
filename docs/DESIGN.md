@@ -1,5 +1,12 @@
 # Trollfoss – designunderlag
 
+Lokalt tillegg 2026-10-08 (1.15): **Rumle sine skattar** er ei frivillig skattejakt frå starten i
+Leik og eventyr. Tre flyttbare biletspor ved ugla, sandslottet og krystallane kan finnast i valfri
+rekkjefølgje. Biletkortet viser funne spor og finn det neste på den faktiske staden eller i sekken.
+Premien er éi lagra trollykt: trykk vekslar mellom stjerner, fisk, småtroll og av. Ho lyser over seg
+og rundt seg om natta, på golvet og i handa til ein venn. Redusert rørsle held lysbileta stille.
+Jakta har ingen tidsfrist; barnet kan halde fram med fri leik og hente fram den same lykta seinare.
+
 Arbeid etter 1.5.0: «Leik og eventyr» samlar to byggjeoppskrifter og tre frivillige bileteventyr.
 Pute, bamse, laken, bok og lykt får fleire bruksval. Venner i nærleiken reagerer på leik og
 overraskingar. Putehytte og trillevogn bevarer dei opphavlege delane; pakking gir dei tilbake i sekken.

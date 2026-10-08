@@ -1,5 +1,13 @@
 # Endringslogg
 
+## 1.15.0 – Rumle sine skattar (lokalt)
+
+- Ei frivillig skattejakt i Leik og eventyr, tilgjengeleg frå starten: finn tre biletspor ved ugla, sandslottet og krystallane, i valfri rekkjefølgje.
+- Spora er ekte ting som kan flyttast, berast og pakkast. Kortet finn att sporet der barnet har lagt det. Ingen tidsfrist eller tap av framgang.
+- Premien er ei trollykt med tre lysbilete: stjerner, fisk og eit lite troll. Ho kan stå på golvet eller haldast av ein venn, og lyser opp mørke rom.
+- Éi lagra lykt per jakt; «Finn lykta mi» finn den same lykta att i verda eller på rett side i sekken. Angring bevarer funne spor og premien.
+- To nye oppdagingar, 82 i alt. Nynorsk og bokmål. Redusert rørsle held lysbileta stille.
+
 ## 1.14.0 – Trollfest og regnbogefoss (lokalt)
 
 - Nivå 10 ved 40 merke: drakevogn med to plassar og boblenys, luftskip med to passasjerar og ei korg, gøymetroll utan tidspress og ein trollfest-knapp.

@@ -109,6 +109,7 @@ class WorldStore(private val file: File) {
             put("flags", JSONArray(world.flags.toList()))
             put("community", CommunityStore.encode(world.community))
             put("players", JSONArray(world.playerIds.toList()))
+            put("rumle", JSONObject().put("notes", JSONArray(world.rumleNotes.toList())).put("lantern", world.rumleLantern))
             put("toys", JSONObject().apply {
                 put("inputs", JSONObject().apply { world.toyInputs.forEach { (key,id) -> put(key,id) } })
                 put("photos", JSONArray().apply { world.toyPhotos.values.forEach { put(encodeBody(it)) } })
@@ -390,6 +391,16 @@ class WorldStore(private val file: File) {
             }
 
             // Anything that refers to something that is gone falls free where it was.
+            json.optJSONObject("rumle")?.let { trail ->
+                val notes = trail.optJSONArray("notes")
+                for (i in 0..2) world.rumleNotes[i] = notes?.optInt(i, -1) ?: -1
+                world.rumleLantern = trail.optInt("lantern", -1)
+                for (i in 0..2) {
+                    val note = world.bodies[world.rumleNotes[i]] as? Thing ?: continue
+                    if (note.type == ThingType.RUMLE_NOTE && note.variant == i)
+                        note.used = if ("adventure:RUMLE:${i + 1}" in world.flags) 1 else 0
+                }
+            }
             json.optJSONObject("play")?.let { play ->
                 world.adventureHat = play.optInt("hat", -1)
                 play.optJSONArray("lights")?.let { a -> for (i in 0 until a.length()) world.playLightIds += a.optInt(i) }
@@ -466,8 +477,8 @@ class WorldStore(private val file: File) {
                     val type = enumOrNull<ThingType>(o.optString("type")) ?: return null
                     Thing(id, type, o.optInt("variant", 0)).apply {
                         used = o.optInt("used", 0).coerceIn(0, when (type) {
-                            ThingType.CUP, ThingType.BUCKET, ThingType.WATERING_CAN -> 1
-                            ThingType.BOOK -> 3
+                            ThingType.CUP, ThingType.BUCKET, ThingType.WATERING_CAN, ThingType.RUMLE_NOTE -> 1
+                            ThingType.BOOK, ThingType.TROLL_LANTERN -> 3
                             else -> maxOf(0, type.bites - 1)
                         })
                         enumOrNull<PlaceId>(o.optString("home"))?.let { home ->

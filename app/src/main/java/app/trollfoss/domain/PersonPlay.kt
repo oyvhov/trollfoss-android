@@ -10,6 +10,7 @@ class PersonPlay(private val sim: Sim) {
 
     fun given(p: Person, t: Thing) {
         p.anim.activity = 0; p.anim.activityTime = 0f
+        if (t.type == ThingType.TROLL_LANTERN) return // Giving it to a friend keeps the chosen picture.
         if (t.type == ThingType.BALL || t.type == ThingType.BEACH_BALL || t.type == ThingType.SNOWBALL) return
         use(p, t)
     }
@@ -17,6 +18,7 @@ class PersonPlay(private val sim: Sim) {
     fun use(p: Person, t: Thing): Boolean {
         val place = p.place ?: return false
         if (t.mode != Mode.WORN || t.holder != p.id || t.slot != Slot.HAND.ordinal) return false
+        if (sim.trail.use(t)) return true
         val a = p.anim
         val activity = when (t.type) {
             ThingType.BOOK -> READ

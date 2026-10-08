@@ -1,5 +1,24 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – RUMLE SINE SKATTAR / 1.15 LOKALT (2026-10-08, Codex):** Vidareført etter
+> «Jobb vidare med spennande ting», frå `af7a987` (lokal 1.14). Grein `codex/rumles-skattar` i
+> `C:/Users/Øyvind/.codex/worktrees/rainbow-finale/topa`, ASCII-kopling `C:/topa/.gradle-tmp/rainbow-finale`.
+> Versjon 1.15.0 / kode 20. Ingen push eller publisering.
+> **Gjort:** frivillig skattejakt frå starten, tre ekte biletspor ved ugla, sandslottet og krystallane,
+> valfri rekkjefølgje og éi trollykt som premie. Lykta gir stjerner, fisk og troll, i handa og på golvet,
+> lyser opp rom om natta og blir heilt roleg med redusert rørsle. Kortet finn att flytta eller pakka
+> spor og den same lykta. Lagring og angring bevarer framgangen; to nye oppdagingar, 82 i alt.
+> **Kontroll:** 631 JVM-testar og 84 Android-testar på kvar av mobil/nettbrett grøne; lint 0 feil / 32 åtvaringar.
+> Siste APK, test-APK og loggar: `C:/topa/dist/rumles-skattar/`. 14 scenebilete frå spelmotoren er laga;
+> dei nye teikningane er visuelt gjennomgåtte. Opphavlege sceneplasseringar er prøvde med fingertrykk.
+> **Står att før release:** oppstart og full menyflyt på roleg eiga AVD/fysisk eining. Den delte
+> emulatoren gir framleis ANR ved oppstart, også før jakta blir opna. Mobil/bokmål starta jakta via
+> ekte knappar etter «Wait»; heile menyutforminga i begge målformer er ikkje friskmeld. Årsaka til
+> oppstartsproblemet er ikkje fastslått. Ingen barnetest, menneskeleg lytting, GitHub-CI eller signert
+> oppdateringsprøve. Full rapport: `docs/superpowers/plans/2026-10-08-rumles-skattar.md`.
+> Testpakkane er fjerna og skjerminnstillingane tilbakeførte; den delte emulatoren er ikkje stoppa.
+> **Vidare:** bruk `codex/rumles-skattar`; greina inneheld òg alt frå lokal 1.13 og 1.14.
+
 > **NYAST – NIVÅ 10 OG 1.14 IMPLEMENTERT LOKALT (2026-10-08, Codex):** Vidareført etter «Jobb vidare»,
 > frå lokal 1.13 (`claude/niva-9`, b75554a). Grein `codex/niva-10` i
 > `C:/Users/Øyvind/.codex/worktrees/rainbow-finale/topa`; ASCII-kopling
