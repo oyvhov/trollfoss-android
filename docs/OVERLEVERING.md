@@ -1,5 +1,15 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – SANDER ER MED (2026-10-09, Codex):** Siste manglande foto er no brukt til Sander:
+> kort brunt hår, breitt smil, lett skjeggstubb og blå vattert jakke. Ny markør
+> `people:sander:portrait:1` bevarer barnet sine endringar og fungerer etter begge familierundane.
+> Same arbeidskopi/grein som under; kjeldekode i lokal commit `dcad7f2`. 693 JVM-testar og 100
+> Android-testar på kvart av mobil/nettbrett er grøne. Sander- og familiearket er visuelt kontrollerte.
+> Manuell oppstart stoppa på oppstartsbilete/svart skjerm med fokus-ANR på begge format; ikkje friskmeld.
+> Lint er ikkje køyrd på nytt denne runden. Prøve-APK/bilete/rapportar: `C:/topa/dist/sander-figur/`.
+> Testpakkane er fjerna; mellombels diskreserve og skjerminnstillingar er tilbakeførte.
+> Full rapport: `docs/superpowers/plans/2026-10-09-sander-portrett.md`. Ingen push eller publisering.
+
 > **NYAST – SEKS NYE FAMILIEPORTRETT (2026-10-09, Codex):** Sondre, Elise, Sølve, Hedda, Berit og
 > Olvar er teikna i den same figurstilen etter nye foto. Brukaren presiserte at bilete 4 er Hedda;
 > bilete 5 er tolka som Berit. Brukaren stadfesta at det ettersende er Olvar. Foto av Sander manglar framleis.
