@@ -1,5 +1,20 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – LEVANDE FIGURAR (2026-10-09, Codex):** Den godkjende teiknefilmstilen er implementert
+> på `codex/levande-figurar`, frå `b957cd0`, i same `rainbow-finale/topa`-arbeidskopi. Fem prøvefigurar
+> er viste med faktisk Compose-teikning, inkludert Eilev etter dei private fotoreferansane.
+> Alle 14 artar har felles hovudrørsle/festepunkt; folk har mjukare ledd, sko og ansiktsformer.
+> Nye frisyre-/klesval er lagde til sist, og berre urørt standard-Eilev blir migrert.
+> Kjeldekode lagra i `04c19ad`. 645 einingstestar og 96 Android-testar per mobil/nettbrett er grøne.
+> Eilev er sett på Scena i begge format og flytta med fingerdrag på mobil. Siste verkstadretting
+> (ansiktsreaksjon går ut også med rørsle av) er bygd og prøvd med ekte trykk. Lint: 0 feil / 32 uendra
+> åtvaringar. Endeleg byggkontroll brukte eige daemonregister etter avbrot frå delte bygg; sjå rapporten.
+> Oppstarts-ANR på den delte emulatoren og verkstadlayout ved systemskrift 2,0 må følgjast opp før
+> release. Testpakkane er fjerna og innstillingane tilbakeførte; emulatoren er ikkje stoppa.
+> APK og teikneark: `C:/topa/dist/levande-figurar/`. Detaljar:
+> `docs/superpowers/plans/2026-10-09-levande-figurar.md`. Ingen push eller publisering.
+
+
 > **NYAST – HEMMELEGE FOSSAR (2026-10-08, Codex):** Brukaren bad om hemmelege plassar i den store
 > kartfossen og fossen inne på ein stad. Begge er no inngangar til den same eksisterande Trollhola;
 > den indre fossen er tolka som skogsfossen. Eit lite glimt i vatnet viser trykkstaden. Vassgardina
