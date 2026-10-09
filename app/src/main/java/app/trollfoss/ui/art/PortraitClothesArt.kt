@@ -133,6 +133,73 @@ internal fun DrawScope.zipTop(look: Look, color: Color, h: Float, pen: Pen) {
     if(full) for(s in floatArrayOf(-1f,1f)) drawLine(edge,p(s*.097f,-.327f),p(s*.12f,-.276f),pen.lw*.55f,StrokeCap.Round)
 }
 
+/** Broad quilted bands, an open neck and a dark inner layer; readable at ordinary play size. */
+internal fun DrawScope.quiltedJacket(look: Look, color: Color, h: Float, pen: Pen) {
+    fun p(x: Float, y: Float) = Offset(x*h, y*h)
+    val seam = color.darken(.3f)
+    for (k in 0..2) {
+        val y = -.426f + k*.066f
+        val band = Path().apply {
+            moveTo(-.2f*h, y*h)
+            quadraticTo(0f, (y+.024f)*h, .2f*h, y*h)
+        }
+        drawPath(band, seam, style = androidx.compose.ui.graphics.drawscope.Stroke(pen.lw*.65f))
+        drawLine(color.lighten(.18f), p(-.12f,y+.018f), p(-.045f,y+.025f), pen.lw*.5f, StrokeCap.Round)
+    }
+    val opening = Path().apply {
+        moveTo(-.075f*h,-.51f*h);lineTo(.075f*h,-.51f*h)
+        lineTo(.044f*h,-.404f*h);lineTo(0f,-.341f*h)
+        lineTo(-.044f*h,-.404f*h);close()
+    }
+    inked(opening, argb(Palette.cloth[look.accent]), pen, shade = false)
+    drawLine(argb(Palette.cloth[look.accent]).lighten(.25f),p(0f,-.482f),p(0f,-.41f),pen.lw*.55f)
+    for (s in floatArrayOf(-1f,1f)) {
+        val collar = Path().apply {
+            moveTo(s*.075f*h,-.50f*h);lineTo(s*.142f*h,-.466f*h)
+            quadraticTo(s*.093f*h,-.451f*h,s*.068f*h,-.391f*h)
+            lineTo(s*.028f*h,-.427f*h);close()
+        }
+        inked(collar,color.lighten(.1f),pen,shade=false)
+        drawLine(seam,p(s*.11f,-.315f),p(s*.084f,-.266f),pen.lw*.8f,StrokeCap.Round)
+    }
+    drawLine(seam,p(0f,-.341f),p(0f,-.233f),pen.lw*1.5f)
+    drawLine(color.lighten(.48f),p(0f,-.34f),p(0f,-.233f),pen.lw*.5f)
+    inkedRound(Rect(p(-.009f,-.345f),p(.009f,-.32f)),h*.003f,Color(0xFFCBD0CD),pen,shade=false)
+}
+
+/** Seams follow the same curved arm as the sleeve, including a raised waving hand. */
+internal fun DrawScope.quiltedSleeve(start: Offset, elbow: Offset, end: Offset, color: Color, h: Float, pen: Pen) {
+    for (t in floatArrayOf(.3f,.57f,.8f)) {
+        val inv = 1f-t
+        val center = start*(inv*inv) + elbow*(2f*inv*t) + end*(t*t)
+        val direction = (elbow-start)*inv + (end-elbow)*t
+        val normal = Offset(-direction.y,direction.x) / direction.getDistance().coerceAtLeast(1f) * (.03f*h)
+        drawLine(color.darken(.26f),center-normal,center+normal,pen.lw*.6f,StrokeCap.Round)
+    }
+}
+
+/** A soft jaw shadow and a few short hairs keep the mouth and its reactions unobstructed. */
+internal fun DrawScope.lightStubble(look: Look, hair: Color, h: Float, pen: Pen) {
+    fun p(x: Float,y: Float) = Offset(x*h,y*h)
+    val jaw = Path().apply {
+        moveTo(-.235f*h,-.65f*h)
+        quadraticTo(-.17f*h,-.603f*h,-.12f*h,-.596f*h)
+        quadraticTo(0f,-.53f*h,.12f*h,-.596f*h)
+        quadraticTo(.17f*h,-.603f*h,.235f*h,-.65f*h)
+        lineTo(.26f*h,-.46f*h);lineTo(-.26f*h,-.46f*h);close()
+    }
+    clipPath(folkFace(look.face,h)) {
+        drawPath(jaw,hair.copy(alpha=.16f))
+        for (s in floatArrayOf(-1f,1f)) for(k in 0..3) {
+            val x=s*(.118f+k*.025f)
+            val y=-.526f-k*.017f
+            drawLine(hair.copy(alpha=.48f),p(x,y),p(x-s*.004f,y+.012f),pen.lw*.55f,StrokeCap.Round)
+        }
+        for(k in -2..2) drawCircle(hair.copy(alpha=.4f),h*.003f,p(k*.025f,-.499f))
+    }
+    for(s in floatArrayOf(-1f,1f)) drawLine(hair.copy(alpha=.3f),p(s*.018f,-.619f),p(s*.068f,-.611f),pen.lw,StrokeCap.Round)
+}
+
 /** A distinct full beard, without hiding the shared animated mouth. */
 internal fun DrawScope.fullBeard(look: Look, hair: Color, h: Float, pen: Pen) {
     fun p(x: Float,y: Float)=Offset(x*h,y*h)

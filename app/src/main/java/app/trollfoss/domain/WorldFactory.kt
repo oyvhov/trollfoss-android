@@ -42,6 +42,7 @@ object WorldFactory {
         Residents.updateEilev(world)
         Residents.updateFamilyPortraits(world)
         Residents.updateMoreFamilyPortraits(world)
+        Residents.updateSander(world)
         world.bodies.values.forEach { it.age = 10f }
         return world
     }

@@ -317,7 +317,7 @@ object Places {
                 ),
                 people = listOf(
                     PersonDef(Species.FOLK, Residents.eliseLook(), 0.92f, y = 0.94f, name = "Elise"),
-                    PersonDef(Species.FOLK, Look(skin = 4, height = 1.14f, hair = 7, hairColor = 8, top = 1, topColor = 3, bottom = 0, bottomColor = 11, shoes = 2), 1.1f, seat = 6 to 0, name = "Sander"),
+                    PersonDef(Species.FOLK, Residents.sanderLook(), 1.1f, seat = 6 to 0, name = "Sander"),
                 ),
             )
             PlaceId.BEACH -> PlaceSpec(

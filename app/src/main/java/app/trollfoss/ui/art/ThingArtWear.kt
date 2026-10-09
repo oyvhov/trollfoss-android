@@ -502,9 +502,9 @@ internal fun DrawScope.thGarment(v: Int, w: Float, h: Float, pen: Pen) {
     val bar = thSketch(w, h) { m(-0.44f, -0.7f); q(0f, -0.92f, 0.44f, -0.7f) }
     drawPath(bar, Ink.line, style = Stroke(h * 0.07f + pen.lw * 2f, cap = StrokeCap.Round))
     drawPath(bar, ThingInk.wood, style = Stroke(h * 0.07f, cap = StrokeCap.Round))
-    if (style == 1) inkedOval(Rect(-0.22f * w, -0.9f * h, 0.22f * w, -0.7f * h), col.darken(0.15f), pen)
+    if (style == 1 || style == 16) inkedOval(Rect(-0.22f * w, -0.9f * h, 0.22f * w, -0.7f * h), col.darken(0.15f), pen)
     val shape = when (style) {
-        1, 5, 6, 7, 8, 9, 12, 13, 14, 15 -> longPath(w, h)
+        1, 5, 6, 7, 8, 9, 12, 13, 14, 15, 16 -> longPath(w, h)
         2 -> dressPath(w, h)
         else -> teePath(w, h)
     }
@@ -516,6 +516,14 @@ internal fun DrawScope.thGarment(v: Int, w: Float, h: Float, pen: Pen) {
     val dark = col.darken(0.28f)
     clipPath(shape) {
         when (style) {
+            16 -> {
+                for (k in 0..3) drawLine(dark,o(-.49f,-.64f+k*.17f),o(.49f,-.64f+k*.17f),pen.lw*.7f)
+                inked(thSketch(w,h) { m(-.14f,-.82f);l(.14f,-.82f);l(.07f,-.56f);l(0f,-.43f);l(-.07f,-.56f);z() },argb(Palette.cloth[11]),pen,shade=false)
+                drawLine(dark,o(0f,-.43f),o(0f,-.04f),pen.lw*1.6f)
+                drawLine(col.lighten(.5f),o(0f,-.43f),o(0f,-.04f),pen.lw*.55f)
+                for (s in SIDES) inked(thSketch(w,h) { m(s*.14f,-.81f);l(s*.28f,-.74f);l(s*.14f,-.57f);l(s*.055f,-.63f);z() },col.lighten(.1f),pen,shade=false)
+                inkedRound(Rect(o(-.021f,-.46f),o(.021f,-.38f)),w*.008f,ThingInk.silver,pen,shade=false)
+            }
             14, 15 -> {
                 drawLine(dark,o(0f,-.76f),o(0f,if(style==15) -.05f else -.45f),pen.lw*1.6f)
                 drawLine(col.lighten(.5f),o(0f,-.76f),o(0f,if(style==15) -.05f else -.45f),pen.lw*.55f)

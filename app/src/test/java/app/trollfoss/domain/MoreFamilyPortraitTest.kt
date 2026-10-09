@@ -14,6 +14,7 @@ class MoreFamilyPortraitTest(private val name: String, private val old: Look, pr
             arrayOf("Sondre",Look(skin=6,height=1.03f,hair=1,hairColor=0,top=0,topColor=9,bottom=0,bottomColor=11,shoes=11,extra=3),Residents.sondreLook()),
             arrayOf("Elise",Look(skin=0,height=1.03f,hair=6,hairColor=7,eyes=3,top=4,topColor=10,bottom=0,bottomColor=10,shoes=8),Residents.eliseLook()),
             arrayOf("Sølve",Look(skin=3,height=1.14f,hair=1,hairColor=2,top=4,topColor=3,bottom=0,bottomColor=3,shoes=12,extra=3),Residents.solveLook()),
+            arrayOf("Sander",Look(skin=4,height=1.14f,hair=7,hairColor=8,top=1,topColor=3,bottom=0,bottomColor=11,shoes=2),Residents.sanderLook()),
             arrayOf("Hedda",Look(skin=1,height=.78f,hair=3,hairColor=5,top=1,topColor=5,bottom=1,bottomColor=11,shoes=0,extra=1),Residents.heddaLook()),
             arrayOf("Berit",Look(skin=6,height=1.03f,hair=4,hairColor=0,eyes=3,top=1,topColor=8,bottom=2,bottomColor=11,shoes=11),Residents.beritLook()),
             arrayOf("Olvar",Look(skin=4,height=.9f,hair=2,hairColor=0,eyes=1,top=4,topColor=9,bottom=0,bottomColor=9,shoes=10),Residents.olvarLook()),
@@ -21,13 +22,14 @@ class MoreFamilyPortraitTest(private val name: String, private val old: Look, pr
     }
     private fun reload(w: World)=WorldStore.decode(WorldStore.encode(w,Settings())).world
     private fun olderWorld()=WorldFactory.create().also { w ->
-        w.flags -= Residents.MORE_FAMILY_FLAG
+        w.flags -= if(name=="Sander") Residents.SANDER_FLAG else Residents.MORE_FAMILY_FLAG
         w.people().single { it.name==name }.also { p ->
             p.look=old
             if(name=="Berit") w.worn(p,Slot.FACE)?.let { w.bodies.remove(it.id) }
         }
         // The previous family marker stays: this update must work independently.
         assertTrue(Residents.FAMILY_FLAG in w.flags)
+        if(name=="Sander") assertTrue(Residents.MORE_FAMILY_FLAG in w.flags)
     }
 
     @Test fun newWorldAndReloadUseValidPortrait() {

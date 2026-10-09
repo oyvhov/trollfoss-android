@@ -6,6 +6,7 @@ object Residents {
     const val EILEV_FLAG = "people:eilev:portrait:1"
     const val FAMILY_FLAG = "people:family:portraits:1"
     const val MORE_FAMILY_FLAG = "people:family:portraits:2"
+    const val SANDER_FLAG = "people:sander:portrait:1"
 
     /** Family-provided reference: loose light-brown waves and teal/white football kit. */
     fun eilevLook() = Look(skin = 0, height = .9f, hair = 18, hairColor = 14, eyes = 6,
@@ -107,6 +108,21 @@ object Residents {
                 Sim(world).apply { tasks.recording = false }.give(person, glasses, Part.GLASSES)
             }
         }
+    }
+
+    /** Short swept brown hair, a broad smile and the blue outdoor jacket from the family reference. */
+    fun sanderLook() = Look(skin = 0, height = 1.14f, hair = 22, hairColor = 17, eyes = 6,
+        eyeColor = 3, hairSize = .94f, hairLength = .72f, face = 2, nose = 1, mouth = 5, extra = 11,
+        top = 16, topColor = 25, bottom = 0, bottomColor = 11, shoes = 22, accent = 11)
+
+    private val oldSander = Look(skin = 4, height = 1.14f, hair = 7, hairColor = 8,
+        top = 1, topColor = 3, bottom = 0, bottomColor = 11, shoes = 2)
+
+    /** Independent of both family updates: only the untouched old appearance is replaced, once. */
+    fun updateSander(world: World) {
+        if (!world.flags.add(SANDER_FLAG)) return
+        world.people().firstOrNull { it.species == Species.FOLK && it.name == "Sander" && it.look == oldSander }
+            ?.let { it.look = sanderLook() }
     }
 
     /** Long chestnut waves, a green sweater, blue trousers and red shoes; the child can change it all in the workshop. */

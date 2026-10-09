@@ -45,6 +45,11 @@ gir bakovergreidd hår, langt midtskilje, lågt knytt hår og mjuk pannelugg. Fy
 glidelåsgenser/fleece og blomejakke er vanlege verkstadval. Berit sine briller er ein avtakbar ting:
 variant 1 av `ROUND_GLASSES`, med mjuk firkanta brun innfatning; variant 0 er urørt.
 
+Sander har òg fått fotoportrett: kort brunt hår, breitt smil, lett skjeggstubb og blå vattert jakke.
+Jakke (topp 16), stubb (ekstra 11) og turblå farge (25) er nye, gjenbrukbare verkstadval.
+Saumane følgjer erma når han vinkar; munn og ansiktsreaksjonar ligg framfor skjeggstubben.
+Hans eiga migrasjonsmarkør oppdaterer berre urørt gammal Sander, også etter dei to familierundane.
+
 - `FigurePose` er felles for teikninga og `Anatomy.at`: flytt aldri berre ansiktet og la hår/hatt stå att.
 - `PersonAnim.figureTime` er den individuelle klokka, sett av spelmotoren/verkstaden. `motion=false`
   stansar dekorativ rørsle. Reaksjonar, klede og ting må likevel oppdaterast i teiknebufferen.

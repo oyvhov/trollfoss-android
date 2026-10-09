@@ -16,7 +16,7 @@ class PortraitGarmentTest {
     }
 
     @Test fun newShadesSurviveTakingOffSavingAndPuttingBackOn() {
-        for (look in listOf(Residents.eiraLook(), Residents.olveLook(), Residents.oyvindLook())) {
+        for (look in listOf(Residents.eiraLook(), Residents.olveLook(), Residents.oyvindLook(), Residents.sanderLook())) {
             val w = WorldFactory.create(); val sim = Sim(w)
             val p = w.addPerson(Species.FOLK, look, 1f, PlaceId.HOME, 1f, .9f)
             val shirt = w.addThing(ThingType.GARMENT, Garment.pack(0, 6), PlaceId.HOME, 1f, .9f)

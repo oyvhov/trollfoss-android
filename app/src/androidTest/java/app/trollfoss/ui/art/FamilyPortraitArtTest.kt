@@ -23,7 +23,7 @@ import java.io.File
 /** Proof sheets use the exact game renderer, fixed clocks and no private photo assets. */
 @RunWith(AndroidJUnit4::class)
 class FamilyPortraitArtTest {
-    private val moreNames=listOf("Sondre","Elise","Sølve","Hedda","Berit","Olvar")
+    private val moreNames=listOf("Sondre","Elise","Sølve","Sander","Hedda","Berit","Olvar")
     private val world=WorldFactory.create()
     private val out get() = File(InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null), "figure-style").apply { mkdirs() }
     private val paper = Color(0xFFFFF6E8)
@@ -72,9 +72,10 @@ class FamilyPortraitArtTest {
 
     @Test fun captureMoreFamilyPortraits() {
         val family=moreNames.map { name -> world.people().single { it.name==name } }
-        val sheet=Bitmap.createBitmap(2160,1100,Bitmap.Config.ARGB_8888)
+        val width=family.size*360
+        val sheet=Bitmap.createBitmap(width,1100,Bitmap.Config.ARGB_8888)
         try {
-            CanvasDrawScope().draw(Density(1f),LayoutDirection.Ltr,Canvas(sheet.asImageBitmap()),Size(2160f,1100f)) {
+            CanvasDrawScope().draw(Density(1f),LayoutDirection.Ltr,Canvas(sheet.asImageBitmap()),Size(width.toFloat(),1100f)) {
                 drawRect(paper)
                 for((col,p) in family.withIndex()) for(row in 0..1) {
                     val a=PersonAnim().apply {
@@ -87,10 +88,29 @@ class FamilyPortraitArtTest {
                 }
             }
             android.graphics.Canvas(sheet).apply {
-                drawText("Trollfoss · fleire i familien",1080f,60f,labelPaint(38f))
+                drawText("Trollfoss · fleire i familien",width/2f,60f,labelPaint(38f))
                 family.forEachIndexed { i,p -> drawText(p.name,180f+i*360f,126f,labelPaint(34f)) }
             }
             save(sheet,"more-family-portraits.png")
+        } finally { sheet.recycle() }
+    }
+
+    @Test fun captureSanderPortrait() {
+        val p=world.people().single { it.name=="Sander" }
+        val sheet=Bitmap.createBitmap(1000,720,Bitmap.Config.ARGB_8888)
+        try {
+            CanvasDrawScope().draw(Density(1f),LayoutDirection.Ltr,Canvas(sheet.asImageBitmap()),Size(1000f,720f)) {
+                drawRect(paper)
+                for(col in 0..1) {
+                    val a=PersonAnim().apply {
+                        figureTime=1.2f;lookX=if(col==0) .2f else -.2f
+                        face=if(col==0) Face.HAPPY else Face.LAUGH;wave=if(col==0) 0f else .8f
+                    }
+                    translate(250f+col*500f,654f) { drawPortrait(p,a,430f,Pen(4f,1.2f)) }
+                }
+            }
+            android.graphics.Canvas(sheet).drawText("Sander",500f,76f,labelPaint(46f))
+            save(sheet,"sander-portrait.png")
         } finally { sheet.recycle() }
     }
 

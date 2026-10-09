@@ -39,11 +39,11 @@ object Styles {
     /** 0 plain, 1 cat, 2 bunny, 3 bear, 4 troll. */
     const val EARS = 5
     /** Original 0..6, then 7 jacket, 8 button shirt, 9 ribbed sweater, 10 sports shirt, 11 cape. */
-    const val TOPS = 16 // 12 open jacket, 13 soft top, 14 quarter zip, 15 zipped fleece.
+    const val TOPS = 17 // 12 open jacket, 13 soft top, 14 quarter zip, 15 zipped fleece, 16 quilted jacket.
     /** 0 trousers, 1 shorts, 2 skirt, 3 cargo trousers, 4 striped socks. */
     const val BOTTOMS = 5
     /** Original 0..3, then 4 freckles/stubble, 5 cheek stars, 6 patch, 7 earrings, 8 dimples. */
-    const val EXTRAS = 11 // 9 trimmed beard, 10 full beard and moustache.
+    const val EXTRAS = 12 // 9 trimmed beard, 10 full beard and moustache, 11 light stubble.
     const val FACES = 4
     const val NOSES = 4
     const val MOUTHS = 6 // 5 broad smile with a little row of teeth.
@@ -89,6 +89,7 @@ object Palette {
         0xFFB699CE.toInt(), 0xFF597E9F.toInt(), 0xFFC49894.toInt(), // Lilac, denim, dusty rose.
         0xFFCAC5B8.toInt(), 0xFFBE6570.toInt(), 0xFFD9B96F.toInt(), // Stone, berry, warm ochre.
         0xFF373941.toInt(), 0xFF615046.toInt(), 0xFFAFB2B0.toInt(), // Charcoal, cocoa, ash grey.
+        0xFF28699E.toInt(), // Outdoor jacket blue; keep every earlier colour index stable.
     )
 
     /** Fur for cats, dogs and bunnies. */

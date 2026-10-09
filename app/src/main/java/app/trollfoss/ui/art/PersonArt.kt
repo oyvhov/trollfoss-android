@@ -108,6 +108,7 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
 
         // ---- hood behind the neck
         if (look.top == 1) inkedOval(rect(0f, -0.475f * h, 0.36f * h, 0.13f * h), topColor.darken(0.12f), pen)
+        if (look.top == 16) inkedOval(rect(0f, -.48f * h, .41f * h, .15f * h), topColor.darken(.18f), pen)
         if (look.top == 11) inked(blobPath(-0.15f * h, -0.49f * h, -0.3f * h, -0.12f * h, 0f, -0.07f * h, 0.3f * h, -0.12f * h, 0.15f * h, -0.49f * h), topColor.darken(0.12f), pen)
 
         // ---- torso
@@ -132,7 +133,10 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
         }
         inked(torso, shirt, pen, outline = false)
         clipPath(torso) {
-            if (look.top == 8 || look.top == 12 || look.top == 14 || look.top == 15) {
+            if (look.top == 16) {
+                folkPattern(look, h, pen)
+                quiltedJacket(look, topColor, h, pen)
+            } else if (look.top == 8 || look.top == 12 || look.top == 14 || look.top == 15) {
                 folkPattern(look, h, pen)
                 if (look.top >= 14) zipTop(look, topColor, h, pen) else portraitShirt(look, topColor, h, pen)
             } else {
@@ -152,13 +156,14 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
         val right = FigurePose.hand(a, right = true, holding = holding, pose = pose)
         val handL = o(left.x, left.y)
         val handR = o(right.x, right.y)
-        val longSleeves = look.top in setOf(1, 5, 6, 7, 8, 9, 12, 13, 14, 15) || overalls
+        val longSleeves = look.top in setOf(1, 5, 6, 7, 8, 9, 12, 13, 14, 15, 16) || overalls
         val sleeve = if (overalls || look.top == 6) ShirtWhite else topColor
         for ((shoulder, hand) in listOf(shoulderL to handL, shoulderR to handR)) {
             val armColor = if (longSleeves) sleeve else skin
             val side = if (shoulder.x < 0f) -1f else 1f
             val elbow = Offset((shoulder.x + hand.x) * .5f + side * .022f * h, (shoulder.y + hand.y) * .5f + .014f * h)
             bentLimb(shoulder, elbow, hand, .077f * h, armColor, pen)
+            if (look.top == 16) quiltedSleeve(shoulder, elbow, hand, sleeve, h, pen)
             if (longSleeves && look.pattern == 8) {
                 for (dx in floatArrayOf(-.018f, .018f)) {
                     val stripe = Path().apply {
@@ -345,6 +350,7 @@ private fun DrawScope.head(look: Look, a: PersonAnim, pose: Pose, h: Float, pen:
     }
     if (look.extra == 9) trimmedBeard(look, hair, h, pen)
     if (look.extra == 10) fullBeard(look, hair, h, pen)
+    if (look.extra == 11) lightStubble(look, hair, h, pen)
 
     // Cheeks, nose, freckles
     drawOval(Ink.blush, o(-0.205f, -0.65f), Size(0.09f * h, 0.052f * h))
