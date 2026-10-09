@@ -17,6 +17,7 @@ import kotlin.math.sin
 /** Hair grows out from a fixed scalp. Fullness adds thickness; length moves only the free ends. */
 internal fun DrawScope.folkHair(look: Look, back: Boolean, color: Color, c: Offset, r: Float, pen: Pen) {
     val style = look.hair
+    if (style == 18) { tousledHair(look, back, color, c, r, pen); return }
     val fit = HairFit(look)
     val accent = argb(Palette.cloth[look.accent])
     fun p(x: Float, y: Float) = Offset(c.x + x * r * fit.headWidth, c.y + y * r * fit.headHeight)
@@ -152,6 +153,10 @@ internal fun DrawScope.folkPattern(look: Look, h: Float, pen: Pen) {
     val color = argb(Palette.cloth[look.accent])
     fun p(x: Float, y: Float) = Offset(x * h, y * h)
     when (look.pattern) {
+        6 -> {
+            drawRect(color, p(0f, -.50f), Size(.30f * h, .19f * h))
+            drawRect(color, p(-.30f, -.31f), Size(.30f * h, .27f * h))
+        }
         1 -> for (y in 0..4) drawLine(color, p(-0.3f, -0.42f + y * 0.055f), p(0.3f, -0.42f + y * 0.055f), strokeWidth = h * 0.018f)
         2 -> for (row in 0..3) for (col in -2..2) drawCircle(color, h * 0.012f, p(col * 0.07f + row % 2 * 0.035f, -0.43f + row * 0.07f))
         3 -> { twinkle(p(0f, -0.32f), h * 0.09f, color, 1f) }

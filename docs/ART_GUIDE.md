@@ -29,6 +29,22 @@ All grafikk i Trollfoss er teikna i kode på Compose `DrawScope`. Denne rettleii
 | Nordlys | `#7CFFB2`, `#D77BFF` | Himmel om natta, magi |
 | Rosemaling | raud `#D2443A`, gul `#FFC83D`, grøn `#3BC46B`, blå `#2F6FB8` | Pynt på møblar, ker og skap |
 
+## Levande figurar (lokalt designløft, oktober 2026)
+
+Den godkjende figurstilen er sprelsken teiknefilm: forma kinn og hake, samanhengande bogar i ledda,
+tydlege hender og sko, små hovudvinklar og uttrykk som kan lesast i liten storleik. Kvar art bevarer
+sin eigen silhuett. Eilev sin nye standard har lysebrune bølgjer og grønkvite fotballklede.
+
+- `FigurePose` er felles for teikninga og `Anatomy.at`: flytt aldri berre ansiktet og la hår/hatt stå att.
+- `PersonAnim.figureTime` er den individuelle klokka, sett av spelmotoren/verkstaden. `motion=false`
+  stansar dekorativ rørsle. Reaksjonar, klede og ting må likevel oppdaterast i teiknebufferen.
+- `drawPerson` tek ei eksplisitt stilling. Før den vidare til `figureHead` og `FigurePose.hand`, slik at
+  eit portrett kan stå sjølv om den verkelege figuren ligg i ei seng.
+- `Anatomy.at` gir scenepunkt med retninga til figuren. Berre inne i ein teiknetransform som alt speglar
+  figuren skal ein bruke `mirrored=false`. Hattar, briller og ansiktsmåling bruker òg hovudvinkelen.
+- Ei opptatt hand og ei fangsthand held seg ved aktiviteten; den frie handa kan vinke. Rolf sitt brett
+  held seg vassrett når han nikkar. Nye frisyre-/fargeindeksar blir alltid lagde til sist.
+
 ## Koordinatar og kontrakt
 
 Scena er **éi eining høg** (skjermhøgda). `u` = pikslar per eining. Figurar er ca. 0,30 høge (vaksne).

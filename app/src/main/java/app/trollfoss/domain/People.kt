@@ -32,7 +32,7 @@ enum class Species(val height: Float, val widthRatio: Float) {
 object Styles {
     /** Original indices 0..8 stay stable; 9 ponytail, 10 pigtails, 11 afro, 12 space buns,
      * 13 quiff, 14 locks with beads, 15 waves, 16 mohawk, 17 curly pigtails. */
-    const val HAIRS = 18
+    const val HAIRS = 19 // 18: loose, tousled waves (Eilev); previous indices stay stable.
     /** 0 round, 1 bright, 2 sleepy, 3 lashes, 4 dots, 5 narrow, 6 soft oval, 7 star pupils. */
     const val EYES = 8
     /** 0 plain, 1 cat, 2 bunny, 3 bear, 4 troll. */
@@ -46,7 +46,7 @@ object Styles {
     const val FACES = 4
     const val NOSES = 4
     const val MOUTHS = 5
-    const val PATTERNS = 6
+    const val PATTERNS = 7 // 6: quartered football shirt.
 
     /** Figure heights the workshop offers: child, youth, grown-up, tall. */
     val HEIGHTS = floatArrayOf(0.78f, 0.9f, 1.03f, 1.14f)
@@ -68,6 +68,7 @@ object Palette {
         0xFFF4E3B5.toInt(), 0xFFC74B2A.toInt(), 0xFFA9A9B8.toInt(), 0xFFFF6FA8.toInt(),
         0xFF4A8BFF.toInt(), 0xFF3DDC97.toInt(),
         0xFFAD6CE8.toInt(), 0xFFEEF4FF.toInt(), 0xFF20BFC2.toInt(), 0xFFEA925C.toInt(),
+        0xFFA67B50.toInt(), // Light brown waves; appended so old colours keep their meaning.
     )
 
     val eyes = intArrayOf(
@@ -81,6 +82,7 @@ object Palette {
         0xFF1FB5A8.toInt(), 0xFF4AB3FF.toInt(), 0xFF3D6BFF.toInt(), 0xFF8B5CF6.toInt(),
         0xFFFF6FA8.toInt(), 0xFFF7F4EE.toInt(), 0xFF8E93A6.toInt(), 0xFF2F3552.toInt(),
         0xFFA0663B.toInt(), 0xFFF3DDB5.toInt(),
+        0xFFA4D43B.toInt(), 0xFF158783.toInt(), // Lime boots and deep teal sportswear.
     )
 
     /** Fur for cats, dogs and bunnies. */

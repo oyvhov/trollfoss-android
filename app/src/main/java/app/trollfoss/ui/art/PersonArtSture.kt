@@ -38,7 +38,7 @@ private val Blush = Color(0xFFFF8FB0)
 
 /** Sture: the hem floats at -0.14 h, the top of his head at -0.99 h, his eyes at -0.705 h. */
 internal fun DrawScope.sture(look: Look, pose: Pose, a: PersonAnim, h: Float, pen: Pen, holding: Boolean, seed: Float) {
-    val t = pen.t + seed
+    val t = if (a.motion) pen.t + seed else 0f
     fun o(x: Float, y: Float) = Offset(x * h, y * h)
     val tint = argb(Palette.furFor(Species.GHOST, look.skin))
     val face = a.face
@@ -167,12 +167,15 @@ internal fun DrawScope.sture(look: Look, pose: Pose, a: PersonAnim, h: Float, pe
             handR = o(0.40f, -0.52f - sin(a.dance) * 0.18f)
         }
         // Held things ride on his right arm, a little out from his tummy so they never hide his face.
-        holding -> handR = o(0.27f, -0.36f)
         a.wave > 0f -> handR = o(0.405f + sin(t * 14f) * 0.03f, -0.7f)
         face == Face.OOH || face == Face.WOW -> {
             handL = o(-0.42f, -0.62f)
             handR = o(0.42f, -0.62f)
         }
+    }
+    if (holding) {
+        handR = o(.27f, -.38f)
+        if (a.wave > 0f) handL = o(-.405f - sin(t * 14f) * .03f, -.7f)
     }
     capsule(shoulderL, handL, 0.074f * h, armColor, pen)
     capsule(shoulderR, handR, 0.074f * h, armColor, pen)

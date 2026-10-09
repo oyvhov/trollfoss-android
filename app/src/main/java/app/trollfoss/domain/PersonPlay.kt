@@ -55,6 +55,7 @@ class PersonPlay(private val sim: Sim) {
                 val other = world.bodiesIn(place).filterIsInstance<Person>().filter {
                     it !== p && !it.held && it.mode != Mode.BAG && abs(it.x - p.x) in 0.15f..1.2f && world.worn(it, Slot.HAND) == null
                 }.minByOrNull { abs(it.x - p.x) }
+                other?.anim?.catching = true
                 val hand = Anatomy.at(p, Part.HAND)
                 t.mode = Mode.FREE; t.holder = -1; t.resting = false; t.inside = -1
                 t.x = hand[0]; t.y = hand[1]; t.ground = p.y
@@ -88,6 +89,7 @@ class PersonPlay(private val sim: Sim) {
     }
 
     fun step(p: Person, dt: Float) {
+        p.anim.catching = passes.containsValue(p.id)
         p.anim.activityTime = max(0f, p.anim.activityTime - dt)
         if (p.anim.activityTime == 0f || p.held || world.worn(p, Slot.HAND) == null && p.anim.activity != BRUSH) p.anim.activity = 0
     }

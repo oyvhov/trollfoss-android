@@ -90,18 +90,22 @@ object Anatomy {
     }
 
     /** A part's position in the scene. */
-    fun at(person: Person, part: Part): FloatArray {
-        val active = if (person.species == Species.FOLK && part == Part.HAND) PersonPlay.hand(person.anim.activity) else null
-        val f = if (active == null) fraction(person.species, person.anim.pose, part) else when (person.anim.pose) {
-            Pose.SIT -> floatArrayOf(active[0], active[1] + HIPS)
-            Pose.LIE -> floatArrayOf(active[1] + 0.5f, -active[0] - 0.22f)
-            else -> active
+    fun at(person: Person, part: Part, mirrored: Boolean = true): FloatArray {
+        val a = person.anim
+        val base = table(person.species).getValue(part)
+        var p = FigurePose.Point(base[0], base[1])
+        if (person.species == Species.FOLK && part == Part.HAND) {
+            p = FigurePose.hand(a, right = true, holding = a.holding)
+            p = FigurePose.Point(p.x, p.y + FigurePose.bob(a))
+        } else if (FigurePose.headPart(part) || (!upright(person.species) && part == Part.HAND)) {
+            p = FigurePose.head(person.species, a).at(p.x, p.y)
+        } else if (person.species == Species.GHOST) {
+            p = FigurePose.head(person.species, a).at(p.x, p.y)
+        } else if (person.species == Species.ROBOT && part == Part.HAND) {
+            p = FigurePose.Point(p.x, p.y + FigurePose.bob(a))
         }
-        var y = person.y + f[1] * person.h
-        // Rolf bows from the neck: his head, and with it hats and glasses, dips and comes back up.
-        if (person.species == Species.ROBOT && part in bowing) y += FigurarPose.dip(person.anim.pose, person.anim.wave) * person.h
-        return floatArrayOf(person.x + f[0] * person.h, y)
+        p = FigurePose.posed(person.species, a.pose, p)
+        return floatArrayOf(person.x + p.x * person.h * (if (mirrored) a.facing else 1f), person.y + p.y * person.h)
     }
 
-    private val bowing = setOf(Part.HAT, Part.GLASSES, Part.MOUTH, Part.HAIR, Part.HEAD)
 }

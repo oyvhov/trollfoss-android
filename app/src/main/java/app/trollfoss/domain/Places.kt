@@ -644,7 +644,7 @@ object Places {
                     t(ThingType.SODA, 2.8f, 0.83f, 1, on = 7),
                 ),
                 people = listOf(
-                    PersonDef(Species.FOLK, Look(skin = 0, height = 0.9f, hair = 8, hairColor = 5, eyes = 0, top = 3, topColor = 1, bottom = 0, bottomColor = 1, shoes = 10, extra = 1), 1.08f, y = 0.705f, glasses = ThingType.STAR_GLASSES, name = "Eilev"),
+                    PersonDef(Species.FOLK, Residents.eilevLook(), 1.08f, y = 0.705f, name = "Eilev"),
                     PersonDef(Species.DOG, Look(skin = 0), 0.54f, seat = 1 to 0, glasses = ThingType.SUNGLASSES),
                 ),
             )

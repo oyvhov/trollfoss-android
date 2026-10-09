@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.withTransform
 import app.trollfoss.domain.Face
+import app.trollfoss.domain.FigurePose
 import app.trollfoss.domain.FigurarPose
 import app.trollfoss.domain.Look
 import app.trollfoss.domain.Palette
@@ -42,14 +43,12 @@ private val Metal = Color(0xFFB9C0D2)
 private val Boot = Color(0xFF4C5078)
 private val BowRed = Color(0xFFD2443A)
 private val Silver = Color(0xFFDDE2EE)
-private val PanelDark = Color(0xFF22304A)
 
 /** Shapes that depend only on the figure's size, built once per size instead of once per picture. */
 private class RolfGeo(h: Float) {
     val torso: Path = roundedPoly(0.075f * h, -0.185f * h, -0.50f * h, 0.185f * h, -0.50f * h, 0.215f * h, -0.15f * h, -0.215f * h, -0.15f * h)
     val head: Path = roundedPoly(0.115f * h, -0.285f * h, -0.93f * h, 0.285f * h, -0.93f * h, 0.30f * h, -0.52f * h, -0.30f * h, -0.52f * h)
     val screen: Path = roundedPoly(0.08f * h, -0.255f * h, -0.88f * h, 0.255f * h, -0.88f * h, 0.255f * h, -0.575f * h, -0.255f * h, -0.575f * h)
-    val panel: Path = roundedPoly(0.035f * h, -0.125f * h, -0.415f * h, 0.125f * h, -0.415f * h, 0.125f * h, -0.255f * h, -0.125f * h, -0.255f * h)
     val gloss: Path = Path().apply {
         moveTo(-0.235f * h, -0.87f * h)
         lineTo(-0.115f * h, -0.87f * h)
@@ -70,7 +69,7 @@ private fun rolfGeo(h: Float): RolfGeo {
 
 /** Rolf standing: feet at the origin, head centre at -0.725 h, antenna tip at about -1.1 h. */
 internal fun DrawScope.rolf(look: Look, pose: Pose, a: PersonAnim, h: Float, pen: Pen, holding: Boolean, seed: Float) {
-    val t = pen.t + seed
+    val t = if (a.motion) pen.t + seed else 0f
     val g = rolfGeo(h)
     fun o(x: Float, y: Float) = Offset(x * h, y * h)
     val shell = argb(Palette.furFor(Species.ROBOT, look.skin))
@@ -81,12 +80,7 @@ internal fun DrawScope.rolf(look: Look, pose: Pose, a: PersonAnim, h: Float, pen
     val stepL = if (walking) max(0f, sin(a.walkPhase * PI.toFloat())) else 0f
     val stepR = if (walking) max(0f, -sin(a.walkPhase * PI.toFloat())) else 0f
     val bow = if (pose == Pose.STAND || pose == Pose.SIT) FigurarPose.bow(a.wave) else 0f
-    val dip = bow * FigurarPose.DIP
-    val bob = when {
-        dancing -> -abs(sin(a.dance)) * 0.025f
-        pose == Pose.STAND -> breath * 0.004f
-        else -> breath * 0.003f
-    }
+    val bob = FigurePose.bob(a, pose)
 
     // ---- thrusters: only when a float potion lifts him
     if (pose == Pose.FLOAT) {
@@ -135,22 +129,12 @@ internal fun DrawScope.rolf(look: Look, pose: Pose, a: PersonAnim, h: Float, pen
             drawLine(Ink.line.copy(alpha = 0.35f), o(-0.25f, -0.205f), o(0.25f, -0.205f), strokeWidth = pen.lw * 0.5f)
         }
         drawPath(g.torso, Ink.line, style = pen.stroke)
-        // The control panel: a dial, a heart lamp that beats, and two buttons.
-        drawPath(g.panel, PanelDark)
-        drawPath(g.panel, Ink.line, style = pen.thin)
-        val dial = o(-0.068f, -0.338f)
-        drawCircle(Trim, 0.032f * h, dial)
-        drawCircle(Ink.line, 0.032f * h, dial, style = pen.thin)
-        val needle = (-2.2f + sin(t * 1.3f) * 0.5f)
-        drawLine(Ink.line, dial, Offset(dial.x + kotlin.math.cos(needle) * 0.024f * h, dial.y + sin(needle) * 0.024f * h), strokeWidth = pen.lw * 0.7f, cap = StrokeCap.Round)
-        val fast = a.face == Face.GRIN || a.face == Face.LAUGH || a.face == Face.YUM
-        val beat = if (sleeping) 0.1f * (0.5f + 0.5f * sin(t * 1.3f)) else max(0f, sin(t * (if (fast) 9f else 4.6f)))
-        drawCircle(Pink.copy(alpha = 0.18f + 0.22f * beat), 0.052f * h, o(0.05f, -0.335f))
-        drawPath(heartPath(0.05f * h, -0.335f * h, 0.03f * h * (1f + 0.14f * beat)), if (sleeping) Pink.darken(0.4f) else Pink)
-        drawPath(heartPath(0.05f * h, -0.335f * h, 0.03f * h * (1f + 0.14f * beat)), Ink.line, style = pen.thin)
-        drawCircle(Color(0xFFFFD23F), 0.014f * h, o(-0.07f, -0.28f))
-        drawCircle(Color(0xFF3BC46B), 0.014f * h, o(-0.02f, -0.28f))
-        drawCircle(Color(0xFFFF8A5B), 0.014f * h, o(0.03f, -0.28f))
+        // Two large buttons stay readable at dollhouse size.
+        for (i in 0..1) {
+            val c = o(0f, -.37f + i * .075f)
+            inkedCircle(c, .023f * h, if (i == 0) shell.darken(.4f) else Pink, pen, shade = false)
+            drawCircle(Color.White.copy(alpha = .35f), .007f * h, Offset(c.x - .006f * h, c.y - .006f * h))
+        }
 
         // ---- arms
         val armColor = shell.darken(0.07f)
@@ -165,7 +149,10 @@ internal fun DrawScope.rolf(look: Look, pose: Pose, a: PersonAnim, h: Float, pen
             dancing -> handL = o(-0.30f, -0.36f + sin(a.dance) * 0.16f)
             walking -> handL = o(-0.285f, -0.265f - (stepR - stepL) * 0.04f)
         }
-        capsule(shoulderL, handL, 0.064f * h, armColor, pen)
+        val elbowL = Offset((shoulderL.x + handL.x) * .5f - .03f * h, (shoulderL.y + handL.y) * .5f + .03f * h)
+        capsule(shoulderL, elbowL, .064f * h, Metal, pen)
+        capsule(elbowL, handL, .060f * h, Metal, pen)
+        inkedCircle(elbowL, .035f * h, armColor, pen)
         inkedCircle(handL, 0.05f * h, Glove, pen)
         // The right arm never moves: the tray is on it, and whatever is on the tray.
         val elbow = o(0.262f, -0.335f)
@@ -193,16 +180,7 @@ internal fun DrawScope.rolf(look: Look, pose: Pose, a: PersonAnim, h: Float, pen
     }
 
     // ---- head, with the antenna, the ears and the face screen
-    val tilt = when {
-        dancing -> sin(a.dance) * 6f
-        pose == Pose.HELD -> sin(t * 5f) * 5f
-        a.face == Face.DIZZY -> sin(t * 9f) * 5f
-        else -> 0f
-    }
-    withTransform({
-        translate(0f, (bob + dip) * h)
-        if (tilt != 0f) rotate(tilt, pivot = o(0f, -0.52f))
-    }) {
+    figureHead(Species.ROBOT, a, h, pose) {
         // The antenna: it wobbles on its own, more when he walks, dances or is held.
         var wob = sin(t * 3.1f) * 0.02f + sin(t * 1.7f + 1f) * 0.01f
         if (walking) wob += sin(a.walkPhase * PI.toFloat() * 2f) * 0.03f
@@ -218,7 +196,7 @@ internal fun DrawScope.rolf(look: Look, pose: Pose, a: PersonAnim, h: Float, pen
         }
         drawPath(stalk, Ink.line, style = Stroke(0.02f * h + pen.lw * 2f, cap = StrokeCap.Round))
         drawPath(stalk, Metal, style = Stroke(0.02f * h, cap = StrokeCap.Round))
-        val ballColor = if (sleeping) Color(0xFF9A7680) else Color(0xFFFF6B6B)
+        val ballColor = if (sleeping) shell.darken(.25f) else shell.lighten(.12f)
         val ball = o(tipX, tipY - 0.012f)
         val pulse = if (sleeping) 0.1f else 0.5f + 0.5f * sin(t * 4.2f)
         drawCircle(ballColor.copy(alpha = 0.14f + 0.2f * pulse), 0.072f * h, ball)

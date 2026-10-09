@@ -218,6 +218,7 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
     var part by remember { mutableStateOf(Part.HAIR) }
     var beforeRandom by remember { mutableStateOf<Pair<Look, String>?>(null) }
     val anim = remember { PersonAnim() }
+    val motion = app.trollfoss.ui.theme.LocalMotion.current
     var t by remember { mutableFloatStateOf(0f) }
     val spin = remember { Animatable(0f) }
     val hop = remember { Animatable(0f) }
@@ -225,7 +226,8 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
     val feedback = LocalFeedback.current
     var reactions by remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(motion) {
+        anim.motion = motion
         val start = withFrameNanos { it }
         var last = start
         var nextBlink = 2f
@@ -233,16 +235,17 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
             val dt = (now - last) / 1e9f
             last = now
             t = (now - start) / 1e9f
+            anim.figureTime = if (motion) t else 0f
             nextBlink -= dt
-            if (nextBlink <= 0f) {
+            if (motion && nextBlink <= 0f) {
                 anim.blink = 0.13f
                 nextBlink = 2f + Random.nextFloat() * 3f
             }
-            anim.blink = max(0f, anim.blink - dt)
+            anim.blink = if (motion) max(0f, anim.blink - dt) else 0f
             anim.faceTime -= dt
             if (anim.faceTime <= 0f) anim.face = Face.HAPPY
             anim.wave = max(0f, anim.wave - dt)
-            anim.lookX = kotlin.math.sin(t * 0.7f) * 0.6f
+            anim.lookX = if (motion) kotlin.math.sin(t * 0.7f) * 0.6f else 0f
             anim.lookY = 0.15f
         }
     }
@@ -252,11 +255,11 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
         anim.face = if (big) Face.WOW else if (reactions % 2 == 0) Face.GRIN else Face.LAUGH
         anim.faceTime = 1f
         feedback.sfx(Sfx.GIGGLE, 0.6f, Look.voiceFor(look, Random(reactions)))
-        scope.launch {
+        if (motion) scope.launch {
             hop.snapTo(0f)
             hop.animateTo(1f, spring(dampingRatio = 0.35f, stiffness = Spring.StiffnessMedium))
         }
-        if (big) scope.launch {
+        if (big && motion) scope.launch {
             spin.snapTo(0f)
             spin.animateTo(1f, spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessLow))
         }
@@ -277,7 +280,9 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
                     val mirrorCorner = CornerRadius(mirrorSize.width * 0.48f, mirrorSize.width * 0.48f)
                     drawRoundRect(lerp(T.Cream, T.SeaTop, 0.18f), Offset(inset, inset), mirrorSize, mirrorCorner)
                     drawRoundRect(T.CreamLine, Offset(inset, inset), mirrorSize, mirrorCorner, style = Stroke(3.dp.toPx()))
-                    val pen = Pen(max(2f, size.height * 0.006f), t)
+                    // Observe the frame clock even when decorative motion is off: reactions still expire.
+                    val frameTime = t
+                    val pen = Pen(max(2f, size.height * 0.006f), if (motion) frameTime else 0f)
                     val floor = size.height * 0.94f
                     drawOval(Color(0x332B2140), Offset(size.width / 2 - size.height * 0.2f, floor - size.height * 0.03f), androidx.compose.ui.geometry.Size(size.height * 0.4f, size.height * 0.06f))
                     val crown = max(if (look.ears == 2) 1.24f else 1f, 0.7f + 0.43f * look.hairSize)

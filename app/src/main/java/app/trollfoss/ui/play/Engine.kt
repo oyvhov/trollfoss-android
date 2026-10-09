@@ -109,6 +109,7 @@ import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
+import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -631,16 +632,19 @@ class Engine(
         for (b in world.bodiesIn(place)) {
             val p = b as? Person ?: continue
             val a = p.anim
+            a.figureTime = if (motion) time + p.id * .37f else 0f
+            a.motion = motion
+            a.holding = world.worn(p, Slot.HAND) != null
             a.faceTime -= dt
             if (a.faceTime <= 0f && !p.held) {
                 a.face = if ((a.pose == Pose.LIE || inSauna(p)) && night > 0.5f) Face.SLEEP else Face.HAPPY
             }
             a.nextBlink -= dt
-            if (a.nextBlink <= 0f) {
+            if (motion && a.nextBlink <= 0f) {
                 a.blink = 0.13f
                 a.nextBlink = 2f + random.nextFloat() * 4f
             }
-            a.blink = max(0f, a.blink - dt)
+            a.blink = if (motion) max(0f, a.blink - dt) else 0f
             a.chew = max(0f, a.chew - dt * 1.3f)
             a.talk = max(0f, a.talk - dt)
             a.wave = max(0f, a.wave - dt)
@@ -651,10 +655,10 @@ class Engine(
             a.tickle = max(0f, a.tickle - dt)
             if (a.cheer > 0f) {
                 a.cheer -= dt
-                if (a.hop == 0f && a.pose == Pose.STAND) a.hopV = 1.7f
+                if (motion && a.hop == 0f && a.pose == Pose.STAND) a.hopV = 1.7f
             }
             // Hens peck at the ground now and then.
-            if (p.species == Species.CHICKEN && p.resting && a.walkTo.isNaN() && random.nextFloat() < dt * 0.7f) a.tilt = 32f * a.facing
+            if (motion && p.species == Species.CHICKEN && p.resting && a.walkTo.isNaN() && random.nextFloat() < dt * 0.7f) a.tilt = 32f * a.facing
             a.hopV -= 9f * dt
             a.hop = max(0f, a.hop + a.hopV * dt)
             if (a.hop == 0f) a.hopV = 0f
@@ -672,16 +676,16 @@ class Engine(
                 val dx = target.x - head[0]
                 val dy = target.y - head[1]
                 val d = max(0.001f, hypot(dx, dy))
-                dx / d to dy / d
+                dx / d * a.facing to dy / d
             } else {
-                sin(time * 0.45f + p.id) * 0.7f to 0.15f + sin(time * 0.3f + p.id * 2f) * 0.2f
+                if (motion) sin(time * 0.45f + p.id) * 0.7f to 0.15f + sin(time * 0.3f + p.id * 2f) * 0.2f else 0f to .15f
             }
             a.lookX += (lx - a.lookX) * min(1f, dt * 7f)
             a.lookY += (ly - a.lookY) * min(1f, dt * 7f)
 
             // Dancing to the radio.
             a.dance = if (sim.community.dances(p) || (motion && sim.finale.dances(p)) || a.cheer > 0f || (discoOn && a.pose == Pose.STAND) || floors.any { sim.show.onFloor(p, it) } || (radio != null && a.pose == Pose.STAND && p.resting && abs(p.x - radio.x) < 1.6f)) {
-                time * 2.07f * PI.toFloat() + 0.001f
+                if (motion) time * 2.07f * PI.toFloat() + 0.001f else 1f
             } else {
                 0f
             }
@@ -692,7 +696,7 @@ class Engine(
                 particles.add(Particle(PKind.ZZZ, at[0] + 0.03f, at[1] - 0.04f, 0.05f, -0.08f, 1.8f, 0.012f, Color.White))
             }
             a.nextIdle -= dt
-            if (a.nextIdle <= 0f) {
+            if (motion && a.nextIdle <= 0f) {
                 a.nextIdle = 4f + random.nextFloat() * 8f
                 if (a.face != Face.SLEEP && a.faceTime <= 0f && !p.held && visible(p)) {
                     val friend = if (p.species == Species.FOLK || p.species == Species.ROBOT || p.species == Species.GHOST) chatPartner(p) else null
@@ -1385,20 +1389,22 @@ class Engine(
     }
 
     /** The centre of a carried thing in scene units. */
-    private fun carriedCenter(p: Person, t: Thing): Offset {
+    private fun carriedCenter(p: Person, t: Thing, mirrored: Boolean = true): Offset {
         val s = carriedScale(p, t)
         return when (Slot.entries[t.slot.coerceIn(0, 2)]) {
             Slot.HEAD -> {
                 if (t.type == ThingType.SPACE_HELMET) {
-                    val a = Anatomy.at(p, Part.HEAD)
+                    val a = Anatomy.at(p, Part.HEAD, mirrored)
                     Offset(a[0], a[1] - p.anim.hop)
                 } else {
-                    val a = Anatomy.at(p, Part.HAT)
-                    Offset(a[0], a[1] - t.h * s * 0.45f - p.anim.hop)
+                    val a = Anatomy.at(p, Part.HAT, mirrored)
+                    val angle = app.trollfoss.domain.FigurePose.attachmentAngle(p.species, p.anim, Slot.HEAD) * PI.toFloat() / 180f
+                    val offset = t.h * s * .45f
+                    Offset(a[0] + sin(angle) * offset * (if (mirrored) p.anim.facing else 1f), a[1] - cos(angle) * offset - p.anim.hop)
                 }
             }
-            Slot.FACE -> Anatomy.at(p, Part.GLASSES).let { Offset(it[0], it[1] - p.anim.hop) }
-            Slot.HAND -> Anatomy.at(p, Part.HAND).let { Offset(it[0], it[1] - p.anim.hop - (if (t.type == ThingType.BALLOON) t.h * 0.5f else 0f)) }
+            Slot.FACE -> Anatomy.at(p, Part.GLASSES, mirrored).let { Offset(it[0], it[1] - p.anim.hop) }
+            Slot.HAND -> Anatomy.at(p, Part.HAND, mirrored).let { Offset(it[0], it[1] - p.anim.hop - (if (t.type == ThingType.BALLOON) t.h * 0.5f else 0f)) }
         }
     }
 
@@ -2985,18 +2991,18 @@ class Engine(
                 val ghost = b.species == Species.GHOST
                 val stride = if (a.following) (a.followSpeed / 0.6f).coerceIn(0f, 1f) else 1f
                 val step = if (walking && !ghost) abs(sin(a.walkPhase * PI.toFloat())) * b.h * 0.07f * stride else 0f
-                val bob = (if (a.pose == Pose.FLOAT) sin(time * 1.6f + b.id) * 0.008f else 0f) - step +
+                val bob = (if (motion && a.pose == Pose.FLOAT) sin(time * 1.6f + b.id) * 0.008f else 0f) - step +
                     (if (ghost && motion && a.pose == Pose.STAND) FigurarFx.hover(time, b.id, b.h) else 0f)
                 val sway = if (ghost) (if (walking) sin(time * 2.2f + b.id) * 3.5f else 0f) else if (walking) sin(a.walkPhase * PI.toFloat()) * 4f * stride else 0f
                 translate(sx(b.x), sy(b.y - a.hop + bob)) {
-                    val spin = if (a.spin > 0f) (1f - a.spin) * 360f * (if (b.id % 2 == 0) 1f else -1f) else 0f
-                    val giggle = if (a.tickle > 0f) sin(time * 38f) * 7f * min(1f, a.tickle) else 0f
-                    rotate(a.tilt + sway + spin + giggle + (if (a.pose == Pose.FLOAT) sin(time + b.id) * 6f else 0f), pivot = Offset(0f, -b.h * u * 0.5f)) {
+                    val spin = if (motion && a.spin > 0f) (1f - a.spin) * 360f * (if (b.id % 2 == 0) 1f else -1f) else 0f
+                    val giggle = if (motion && a.tickle > 0f) sin(time * 38f) * 7f * min(1f, a.tickle) else 0f
+                    rotate(a.tilt + sway + spin + giggle + (if (motion && a.pose == Pose.FLOAT) sin(time + b.id) * 6f else 0f), pivot = Offset(0f, -b.h * u * 0.5f)) {
                         scale((1f + sq * 0.22f) * pop * a.facing, (1f - sq * 0.22f) * pop, pivot = Offset.Zero) {
                             val carried = world.carried(b)
                             val holding = carried.any { it.slot == Slot.HAND.ordinal }
                             val figure: DrawScope.(Float) -> Unit = { t ->
-                                val p = Pen(pen.lw, t, pen.night, pen.weather, pen.rainbow, pen.season, pen.festival)
+                                val p = Pen(pen.lw, if (motion) t else 0f, pen.night, pen.weather, pen.rainbow, pen.season, pen.festival)
                                 if (xrayed(b)) drawSkeleton(b, p) else drawPerson(b.species, b.look, a.pose, a, b.h * u, p, holding, seed = b.id * 0.37f)
                                 if (a.cream > 0f) drawCream(b, p)
                                 if (a.ink > 0f) drawInk(b, p)
@@ -3068,54 +3074,60 @@ class Engine(
         for (k in -2..2) drawLine(Ink.line, Offset(c.x + k * r * 0.14f, c.y + r * 0.38f), Offset(c.x + k * r * 0.14f, c.y + r * 0.62f), strokeWidth = pen.lw * 0.7f)
     }
 
+    /** Local face painting; the outer figure already applies its facing and scene transform. */
+    private fun DrawScope.onFigureFace(p: Person, draw: DrawScope.(Offset, Float) -> Unit) {
+        val at = Anatomy.at(p, Part.HEAD, mirrored = false)
+        val c = Offset((at[0] - p.x) * u, (at[1] - p.y) * u)
+        val angle = app.trollfoss.domain.FigurePose.attachmentAngle(p.species, p.anim, Slot.HEAD)
+        rotate(angle, c) { draw(c, Anatomy.headRadius(p.species) * p.h * u) }
+    }
+
     /** Octopus ink: dark splodges round the eyes and a surprised little mouth. */
     private fun DrawScope.drawInk(p: Person, pen: Pen) {
         val alpha = min(1f, p.anim.ink / 0.8f)
-        val f = Anatomy.fraction(p.species, p.anim.pose, Part.HEAD)
-        val c = Offset(f[0] * p.h * u, f[1] * p.h * u)
-        val r = Anatomy.headRadius(p.species) * p.h * u
-        val ink = Color(0xFF3B2A55).copy(alpha = 0.85f * alpha)
-        for ((bx, by, br) in listOf(Triple(-0.45f, 0.05f, 0.42f), Triple(0.45f, 0.05f, 0.42f), Triple(0f, -0.35f, 0.35f), Triple(0.2f, 0.45f, 0.25f), Triple(-0.6f, -0.3f, 0.2f))) {
-            drawCircle(ink, r * br, Offset(c.x + bx * r, c.y + by * r))
+        onFigureFace(p) { c, r ->
+            val ink = Color(0xFF3B2A55).copy(alpha = 0.85f * alpha)
+            for ((bx, by, br) in listOf(Triple(-0.45f, 0.05f, 0.42f), Triple(0.45f, 0.05f, 0.42f), Triple(0f, -0.35f, 0.35f), Triple(0.2f, 0.45f, 0.25f), Triple(-0.6f, -0.3f, 0.2f))) {
+                drawCircle(ink, r * br, Offset(c.x + bx * r, c.y + by * r))
+            }
+            for (s in listOf(-1f, 1f)) {
+                drawCircle(Color.White.copy(alpha = alpha), r * 0.14f, Offset(c.x + s * r * 0.42f, c.y + r * 0.02f))
+                drawCircle(Ink.line.copy(alpha = alpha), r * 0.07f, Offset(c.x + s * r * 0.42f, c.y + r * 0.02f))
+            }
+            if (pen.lw < 0f) Unit
         }
-        for (s in listOf(-1f, 1f)) {
-            drawCircle(Color.White.copy(alpha = alpha), r * 0.14f, Offset(c.x + s * r * 0.42f, c.y + r * 0.02f))
-            drawCircle(Ink.line.copy(alpha = alpha), r * 0.07f, Offset(c.x + s * r * 0.42f, c.y + r * 0.02f))
-        }
-        if (pen.lw < 0f) Unit
     }
 
     /** Cream all over the face after a cake in the face, with a cherry on top. Eyes stay free. */
     private fun DrawScope.drawCream(p: Person, pen: Pen) {
         val a = p.anim
         val alpha = min(1f, a.cream / 0.8f)
-        val f = Anatomy.fraction(p.species, a.pose, Part.HEAD)
-        val c = Offset(f[0] * p.h * u, f[1] * p.h * u)
-        val r = Anatomy.headRadius(p.species) * p.h * u
-        val cream = Color(0xFFFFFBF2).copy(alpha = alpha)
-        val blobs = listOf(-0.62f to 0.3f, 0.62f to 0.3f, 0f to 0.62f, -0.25f to -0.72f, 0.3f to -0.78f, 0f to 0.95f)
-        for ((bx, by) in blobs) {
-            val o = Offset(c.x + bx * r, c.y + by * r)
-            drawCircle(Ink.line.copy(alpha = alpha), r * 0.34f + pen.lw * 0.6f, o)
+        onFigureFace(p) { c, r ->
+            val cream = Color(0xFFFFFBF2).copy(alpha = alpha)
+            val blobs = listOf(-0.62f to 0.3f, 0.62f to 0.3f, 0f to 0.62f, -0.25f to -0.72f, 0.3f to -0.78f, 0f to 0.95f)
+            for ((bx, by) in blobs) {
+                val o = Offset(c.x + bx * r, c.y + by * r)
+                drawCircle(Ink.line.copy(alpha = alpha), r * 0.34f + pen.lw * 0.6f, o)
+            }
+            for ((bx, by) in blobs) drawCircle(cream, r * 0.34f, Offset(c.x + bx * r, c.y + by * r))
+            // Drips, and the cherry.
+            val drip = min(1f, (Jokes.CREAM_SECONDS - a.cream) / 2f)
+            drawLine(cream, Offset(c.x - r * 0.1f, c.y + r * 0.95f), Offset(c.x - r * 0.1f, c.y + r * (1.05f + drip * 0.35f)), strokeWidth = r * 0.14f, cap = StrokeCap.Round)
+            drawCircle(Color(0xFFE8304A).copy(alpha = alpha), r * 0.16f, Offset(c.x + r * 0.3f, c.y - r * 1.02f))
+            drawCircle(Ink.line.copy(alpha = alpha), r * 0.16f, Offset(c.x + r * 0.3f, c.y - r * 1.02f), style = Stroke(pen.lw * 0.8f))
+            shine(Offset(c.x + r * 0.25f, c.y - r * 1.07f), r * 0.08f, r * 0.06f, alpha * 0.9f)
         }
-        for ((bx, by) in blobs) drawCircle(cream, r * 0.34f, Offset(c.x + bx * r, c.y + by * r))
-        // Drips, and the cherry.
-        val drip = min(1f, (Jokes.CREAM_SECONDS - a.cream) / 2f)
-        drawLine(cream, Offset(c.x - r * 0.1f, c.y + r * 0.95f), Offset(c.x - r * 0.1f, c.y + r * (1.05f + drip * 0.35f)), strokeWidth = r * 0.14f, cap = StrokeCap.Round)
-        drawCircle(Color(0xFFE8304A).copy(alpha = alpha), r * 0.16f, Offset(c.x + r * 0.3f, c.y - r * 1.02f))
-        drawCircle(Ink.line.copy(alpha = alpha), r * 0.16f, Offset(c.x + r * 0.3f, c.y - r * 1.02f), style = Stroke(pen.lw * 0.8f))
-        shine(Offset(c.x + r * 0.25f, c.y - r * 1.07f), r * 0.08f, r * 0.06f, alpha * 0.9f)
     }
 
     /** Draws a carried thing inside the figure's own transform, so it moves and squashes with it. */
     private fun DrawScope.drawCarried(p: Person, t: Thing, pen: Pen) {
         val s = carriedScale(p, t)
-        val c = carriedCenter(p, t)
+        val c = carriedCenter(p, t, mirrored = false)
         val lx = (c.x - p.x) * u
         val ly = (c.y - p.y + p.anim.hop) * u
-        val lie = p.anim.pose == Pose.LIE
+        val angle = app.trollfoss.domain.FigurePose.attachmentAngle(p.species, p.anim, Slot.entries[t.slot.coerceIn(0, 2)])
         translate(lx, ly + t.h * s * u * 0.5f) {
-            rotate(if (lie) -90f else 0f, pivot = Offset(0f, -t.h * s * u * 0.5f)) {
+            rotate(angle, pivot = Offset(0f, -t.h * s * u * 0.5f)) {
                 scale(s, s, pivot = Offset.Zero) {
                     drawThing(t.type, t.variant, t.used, t.w * u, t.h * u, Pen(pen.lw / s, pen.t, pen.night, pen.weather, pen.rainbow, pen.season, pen.festival))
                 }
@@ -3224,7 +3236,8 @@ class Engine(
             !b.anim.walkTo.isNaN() -> 20f
             else -> 13f
         }
-        return with(sprites) { stampSlow(SlowKey(b.id, 3), bounds, pen.t, hz, draw) }
+        // Actions and clothes still refresh when the decorative drawing clock is stopped.
+        return with(sprites) { stampSlow(SlowKey(b.id, 3), bounds, time, hz, draw) }
     }
 
     // ---------------------------------------------------------------------------------- thunder and greetings

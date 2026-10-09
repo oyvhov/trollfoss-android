@@ -46,7 +46,7 @@ internal fun DrawScope.drawHouseFigure(
 }
 
 private fun DrawScope.upright(species: Species, look: Look, pose: Pose, a: PersonAnim, h: Float, pen: Pen, holding: Boolean, seed: Float) {
-    if (species == Species.ROBOT) rolf(look, pose, a, h, pen, holding, seed) else sture(look, pose, a, h, pen, holding, seed)
+    if (species == Species.ROBOT) rolf(look, pose, a, h, pen, holding, seed) else figureHead(species, a, h, pose) { sture(look, pose, a, h, pen, holding, seed) }
 }
 
 /**

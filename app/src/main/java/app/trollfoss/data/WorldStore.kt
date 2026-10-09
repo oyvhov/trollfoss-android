@@ -467,6 +467,7 @@ class WorldStore(private val file: File) {
             // After everything is loaded: what the save shows the child has done, and new villagers.
             app.trollfoss.domain.FirstsRetro.upgrade(world)
             app.trollfoss.domain.Residents.addMailinn(world)
+            app.trollfoss.domain.Residents.updateEilev(world)
             return Saved(world, settings)
         }
 

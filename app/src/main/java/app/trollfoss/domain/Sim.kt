@@ -744,6 +744,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     }
 
     private fun stepPerson(p: Person, dt: Float) {
+        p.anim.holding = world.worn(p, Slot.HAND) != null
         PlayConnections.step(p, dt)
         personPlay.step(p, dt)
         jokes.step(p, dt)
@@ -1849,6 +1850,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         t.resting = false
         t.inside = -1
         t.rot = 0f
+        if (slot == Slot.HAND) p.anim.holding = true
         if (slot == Slot.HEAD) magic.wore(p, t)
     }
 
