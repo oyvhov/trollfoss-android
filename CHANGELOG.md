@@ -1,5 +1,14 @@
 # Endringslogg
 
+## 1.16.0 – Familien, hemmelege fossar og nye eventyr
+
+- Alle figurartane har meir liv i hovud, kropp og rørsler, og menneska har mjukare ledd, sko og ansiktsformer i den same teiknefilmstilen.
+- Eilev, Eira, Olve, Tuva, Øyvind, Sondre, Elise, Sølve, Hedda, Berit, Olvar og Sander har nye personlege utsjånader. Nye hår, klede, mønster, skjegg og briller er òg tilgjengelege i figurverkstaden.
+- Berre urørte gamle standardfigurar får den nye utsjånaden automatisk. Barnet sine eigne endringar, figurar, klede, ting og framgang blir bevarte.
+- Samlar innhaldet frå dei lokale utgåvene 1.13–1.15: hemmelege inngangar bak fossane, Rumle si skattejakt med trollykt, oppfinnarleiker på nivå 9 og trollfest med regnbogefoss på nivå 10.
+- Robotkompis, hjelperobot, rakettsett, reaksjonsbane, drakevogn, luftskip og gøymetroll gir fleire måtar å leike saman på. 82 oppdagingar i alt.
+- Nye lydbilete for stadene. Nynorsk og bokmål, og støtte for redusert rørsle.
+
 ## 1.15.0 – Rumle sine skattar (lokalt)
 
 - Trollhola er no hemmeleg: trykk på den store fossen på kartet eller på vatnet inne i skogen for å finne inngangen. Vassgardina i hola fører ut att til tørr grunn.
