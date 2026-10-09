@@ -1,5 +1,16 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – 1.16.0 ER PUBLISERT (2026-10-09, Codex):**
+> [Release](https://github.com/oyvhov/trollfoss-android/releases/tag/v1.16.0), kode 21,
+> APK-kjelde/tagg `75826df`. Alle familieportretta, Sander, hemmelege fossar og arbeidet etter 1.12
+> er med. Figurverkstaden er retta ved stor skrift. 693 JVM-testar, lint og CI på taggen er grøne.
+> Mobil/nettbrett og ekte nedlasting/installasjon gjennom appen er prøvde; redigeringar og ting er bevarte.
+> Eitt oppstartsheng etter installasjon på programvareemulator er dokumentert; native-sporet ventar
+> i emulatorgrafikken. Seinare kontroll med Skia/Vulkan gav ingen nye heng. Ingen fysisk eining er testa,
+> og årsaka er ikkje endeleg fastslått. Full rapport: `docs/superpowers/plans/2026-10-09-release-1-16-0.md`.
+> Arkiv: `C:/topa/dist/release-v1.16.0/`. Eigne testemulatorar og byggdaemonar er stoppa; delte er urørte.
+> Arbeidskopi `rainbow-finale/topa`, grein `codex/levande-figurar`; main er oppdatert.
+
 > **NYAST – SANDER ER MED (2026-10-09, Codex):** Siste manglande foto er no brukt til Sander:
 > kort brunt hår, breitt smil, lett skjeggstubb og blå vattert jakke. Ny markør
 > `people:sander:portrait:1` bevarer barnet sine endringar og fungerer etter begge familierundane.
