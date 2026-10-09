@@ -1,5 +1,18 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – SEKS NYE FAMILIEPORTRETT (2026-10-09, Codex):** Sondre, Elise, Sølve, Hedda, Berit og
+> Olvar er teikna i den same figurstilen etter nye foto. Brukaren presiserte at bilete 4 er Hedda;
+> bilete 5 er tolka som Berit. Brukaren stadfesta at det ettersende er Olvar. Foto av Sander manglar framleis.
+> Kjeldekode i lokal commit `fd15f50`, same `codex/levande-figurar` / `rainbow-finale/topa`.
+> Nye hårval, fyldig skjegg, breitt smil, glidelåsgenser/fleece, blomar og avtakbare briller.
+> Ny migrasjonsmarkør `people:family:portraits:2` bevarer gamle redigeringar og identitetar.
+> 689 JVM-testar og 99 Android-testar per mobil/nettbrett er grøne; figurarka er visuelt kontrollerte.
+> Berit er sett i den verkelege butikkscena på mobil. Manuell nettbrettoppstart gav svart skjerm og
+> fokus-ANR; oppstart er framleis ikkje friskmeld. Endeleg lint: 0 feil / 32 uendra åtvaringar.
+> APK/bilete/rapportar: `C:/topa/dist/fleire-familiefigurar/`. Testpakkane er fjerna og
+> emulatorinnstillingane tilbakeførte. Full rapport: `docs/superpowers/plans/2026-10-09-fleire-familiefigurar.md`.
+> Ingen push eller publisering. Neste nye fotoportrett treng ein ny migrasjonsmarkør.
+
 > **NYAST – FAMILIEFIGURAR (2026-10-09, Codex):** Eira, Olve, Tuva og Øyvind er teikna etter
 > fotoreferansane, i same godkjende stil som Eilev og resten av flokken. Arbeidskopi og grein er
 > framleis `rainbow-finale/topa` / `codex/levande-figurar`. Nye hår-, skjegg-, kles- og mønsterval
