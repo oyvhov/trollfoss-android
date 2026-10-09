@@ -33,21 +33,21 @@ object Styles {
     /** Original indices 0..8 stay stable; 9 ponytail, 10 pigtails, 11 afro, 12 space buns,
      * 13 quiff, 14 locks with beads, 15 waves, 16 mohawk, 17 curly pigtails. */
     // Appended portraits: 18 tousled waves, 19 long side part, 20 shoulder waves, 21 short crop.
-    const val HAIRS = 22
+    const val HAIRS = 26 // 22 swept crop, 23 long centre part, 24 tied back, 25 soft fringe.
     /** 0 round, 1 bright, 2 sleepy, 3 lashes, 4 dots, 5 narrow, 6 soft oval, 7 star pupils. */
     const val EYES = 8
     /** 0 plain, 1 cat, 2 bunny, 3 bear, 4 troll. */
     const val EARS = 5
     /** Original 0..6, then 7 jacket, 8 button shirt, 9 ribbed sweater, 10 sports shirt, 11 cape. */
-    const val TOPS = 14 // 12 open jacket over a tee, 13 soft long-sleeved top.
+    const val TOPS = 16 // 12 open jacket, 13 soft top, 14 quarter zip, 15 zipped fleece.
     /** 0 trousers, 1 shorts, 2 skirt, 3 cargo trousers, 4 striped socks. */
     const val BOTTOMS = 5
     /** Original 0..3, then 4 freckles/stubble, 5 cheek stars, 6 patch, 7 earrings, 8 dimples. */
-    const val EXTRAS = 10 // 9 short, trimmed beard and moustache.
+    const val EXTRAS = 11 // 9 trimmed beard, 10 full beard and moustache.
     const val FACES = 4
     const val NOSES = 4
-    const val MOUTHS = 5
-    const val PATTERNS = 10 // 6 quartered football, 7 flowers/sun, 8 pinstripes, 9 sun.
+    const val MOUTHS = 6 // 5 broad smile with a little row of teeth.
+    const val PATTERNS = 11 // 6 football, 7 flowers/sun, 8 pinstripes, 9 sun, 10 meadow flowers.
 
     /** Figure heights the workshop offers: child, youth, grown-up, tall. */
     val HEIGHTS = floatArrayOf(0.78f, 0.9f, 1.03f, 1.14f)
@@ -71,6 +71,7 @@ object Palette {
         0xFFAD6CE8.toInt(), 0xFFEEF4FF.toInt(), 0xFF20BFC2.toInt(), 0xFFEA925C.toInt(),
         0xFFA67B50.toInt(), // Light brown waves; appended so old colours keep their meaning.
         0xFFCBB58D.toInt(), 0xFF6C675F.toInt(), 0xFF775744.toInt(), // Natural blonde, salt/pepper, soft brown.
+        0xFFC67A3C.toInt(), // Soft copper.
     )
 
     val eyes = intArrayOf(
@@ -87,6 +88,7 @@ object Palette {
         0xFFA4D43B.toInt(), 0xFF158783.toInt(), // Lime boots and deep teal sportswear.
         0xFFB699CE.toInt(), 0xFF597E9F.toInt(), 0xFFC49894.toInt(), // Lilac, denim, dusty rose.
         0xFFCAC5B8.toInt(), 0xFFBE6570.toInt(), 0xFFD9B96F.toInt(), // Stone, berry, warm ochre.
+        0xFF373941.toInt(), 0xFF615046.toInt(), 0xFFAFB2B0.toInt(), // Charcoal, cocoa, ash grey.
     )
 
     /** Fur for cats, dogs and bunnies. */

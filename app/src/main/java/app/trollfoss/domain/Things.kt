@@ -78,7 +78,7 @@ enum class ThingType(
     BOW(0.08f, 0.05f, Cat.HAT, variants = 4),
     NISSE_HAT(0.12f, 0.13f, Cat.HAT),
     SUNGLASSES(0.13f, 0.05f, Cat.GLASSES),
-    ROUND_GLASSES(0.13f, 0.05f, Cat.GLASSES),
+    ROUND_GLASSES(0.13f, 0.05f, Cat.GLASSES, variants = 2), // 0 round gold, 1 soft rectangular brown.
     SPACE_HELMET(0.17f, 0.15f, Cat.HAT),
     STAR_GLASSES(0.14f, 0.065f, Cat.GLASSES),
 

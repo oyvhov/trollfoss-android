@@ -19,6 +19,7 @@ internal fun DrawScope.folkHair(look: Look, back: Boolean, color: Color, c: Offs
     val style = look.hair
     if (style == 18) { tousledHair(look, back, color, c, r, pen); return }
     if (style in 19..21) { portraitHair(look, back, color, c, r, pen); return }
+    if (style in 22..25) { familyHair(look, back, color, c, r, pen); return }
     val fit = HairFit(look)
     val accent = argb(Palette.cloth[look.accent])
     fun p(x: Float, y: Float) = Offset(c.x + x * r * fit.headWidth, c.y + y * r * fit.headHeight)
@@ -154,7 +155,7 @@ internal fun DrawScope.folkPattern(look: Look, h: Float, pen: Pen) {
     val color = argb(Palette.cloth[look.accent])
     fun p(x: Float, y: Float) = Offset(x * h, y * h)
     when (look.pattern) {
-        7, 8, 9 -> portraitPattern(look, h, pen)
+        7, 8, 9, 10 -> portraitPattern(look, h, pen)
         6 -> {
             drawRect(color, p(0f, -.50f), Size(.30f * h, .19f * h))
             drawRect(color, p(-.30f, -.31f), Size(.30f * h, .27f * h))

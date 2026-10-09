@@ -75,7 +75,12 @@ class StarterLayoutTest {
         assertTrue(StarterLayout.FLAG in w.flags)
         val expected = PlaceId.entries.sumOf { Places.spec(it).things.size + Places.spec(it).people.sumOf { p ->
             (if(p.hat != null) 1 else 0) + (if(p.glasses != null) 1 else 0) + (if(p.hand != null) 1 else 0) } }
-        assertEquals(expected, w.bodies.values.filterIsInstance<Thing>().size)
+        // The portrait update adds Berit's removable glasses after the blueprints, preserving old ids.
+        val berit = w.people().single { it.name == "Berit" }
+        val portraitGlasses = w.worn(berit, Slot.FACE)!!
+        assertEquals(ThingType.ROUND_GLASSES, portraitGlasses.type)
+        assertEquals(1, portraitGlasses.variant)
+        assertEquals(expected + 1, w.bodies.values.filterIsInstance<Thing>().size)
         val blocks = w.bodiesIn(PlaceId.MANOR_UPPER).filterIsInstance<Thing>().filter { it.type == ThingType.UP_BLOCK }
         assertEquals(3, blocks.size); assertTrue(blocks.count { it.homeOwner >= 0 } >= 2)
         val laundry = w.bodiesIn(PlaceId.MANOR_CELLAR).filterIsInstance<Thing>().first { it.type == ThingType.CE_SOCK }

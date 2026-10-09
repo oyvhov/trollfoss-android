@@ -137,7 +137,7 @@ private fun DrawScope.thing(type: ThingType, v: Int, used: Int, w: Float, h: Flo
     ThingType.BOW -> thBow(v, w, h, pen)
     ThingType.NISSE_HAT -> thNisseHat(w, h, pen)
     ThingType.SUNGLASSES -> thSunglasses(w, h, pen)
-    ThingType.ROUND_GLASSES -> thRoundGlasses(w, h, pen)
+    ThingType.ROUND_GLASSES -> if (v.mod(2) == 1) thRectangleGlasses(w, h, pen) else thRoundGlasses(w, h, pen)
     ThingType.SPACE_HELMET -> thSpaceHelmet(w, h, pen)
     ThingType.STAR_GLASSES -> thStarGlasses(w, h, pen)
     ThingType.GARMENT -> thGarment(v, w, h, pen)

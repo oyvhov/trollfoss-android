@@ -469,6 +469,7 @@ class WorldStore(private val file: File) {
             app.trollfoss.domain.Residents.addMailinn(world)
             app.trollfoss.domain.Residents.updateEilev(world)
             app.trollfoss.domain.Residents.updateFamilyPortraits(world)
+            app.trollfoss.domain.Residents.updateMoreFamilyPortraits(world)
             return Saved(world, settings)
         }
 

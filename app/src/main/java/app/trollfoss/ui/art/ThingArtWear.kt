@@ -414,6 +414,20 @@ internal fun DrawScope.thSunglasses(w: Float, h: Float, pen: Pen) {
     }
 }
 
+internal fun DrawScope.thRectangleGlasses(w: Float, h: Float, pen: Pen) {
+    fun p(x: Float,y: Float)=Offset(x*w,y*h)
+    val frame=Color(0xFF60423D)
+    for(s in SIDES) {
+        val lens=Rect(p(s*.235f-.2f,-.93f),p(s*.235f+.2f,-.07f))
+        drawRoundRect(Color(0x20DAE8E6),lens.topLeft,lens.size,androidx.compose.ui.geometry.CornerRadius(h*.23f))
+        drawRoundRect(Ink.line,lens.topLeft,lens.size,androidx.compose.ui.geometry.CornerRadius(h*.23f),style=Stroke(pen.lw*2.4f))
+        drawRoundRect(frame,lens.topLeft,lens.size,androidx.compose.ui.geometry.CornerRadius(h*.23f),style=Stroke(pen.lw*1.2f))
+        drawLine(frame,p(s*.43f,-.73f),p(s*.5f,-.77f),pen.lw*1.8f,StrokeCap.Round)
+        drawLine(Color.White.copy(alpha=.6f),p(s*.235f-.11f,-.72f),p(s*.235f-.055f,-.82f),pen.lw*.7f,StrokeCap.Round)
+    }
+    drawPath(thSketch(w,h) { m(-.045f,-.63f);q(0f,-.79f,.045f,-.63f) },frame,style=Stroke(pen.lw*1.7f,cap=StrokeCap.Round))
+}
+
 internal fun DrawScope.thRoundGlasses(w: Float, h: Float, pen: Pen) {
     fun o(x: Float, y: Float) = Offset(x * w, y * h)
     val frame = Color(0xFFB07A3A)
@@ -490,7 +504,7 @@ internal fun DrawScope.thGarment(v: Int, w: Float, h: Float, pen: Pen) {
     drawPath(bar, ThingInk.wood, style = Stroke(h * 0.07f, cap = StrokeCap.Round))
     if (style == 1) inkedOval(Rect(-0.22f * w, -0.9f * h, 0.22f * w, -0.7f * h), col.darken(0.15f), pen)
     val shape = when (style) {
-        1, 5, 6, 7, 8, 9, 12, 13 -> longPath(w, h)
+        1, 5, 6, 7, 8, 9, 12, 13, 14, 15 -> longPath(w, h)
         2 -> dressPath(w, h)
         else -> teePath(w, h)
     }
@@ -502,6 +516,12 @@ internal fun DrawScope.thGarment(v: Int, w: Float, h: Float, pen: Pen) {
     val dark = col.darken(0.28f)
     clipPath(shape) {
         when (style) {
+            14, 15 -> {
+                drawLine(dark,o(0f,-.76f),o(0f,if(style==15) -.05f else -.45f),pen.lw*1.6f)
+                drawLine(col.lighten(.5f),o(0f,-.76f),o(0f,if(style==15) -.05f else -.45f),pen.lw*.55f)
+                for(s in SIDES) inked(thSketch(w,h) { m(s*.03f,-.8f);l(s*.14f,-.85f);l(s*.23f,-.72f);l(s*.045f,-.59f);z() },col.lighten(.07f),pen,shade=false)
+                inkedRound(Rect(o(-.023f,-.64f),o(.023f,-.56f)),w*.008f,ThingInk.silver,pen,shade=false)
+            }
             7, 8, 12 -> {
                 if (style == 12) drawRect(SHIRT, o(-.11f, -.79f), Size(.22f * w, .74f * h))
                 else {

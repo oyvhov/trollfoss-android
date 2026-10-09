@@ -44,6 +44,7 @@ internal fun DrawScope.portraitPattern(look: Look, h: Float, pen: Pen) {
             drawLine(accent.copy(alpha = .6f), p(k * .034f + .013f, -.5f), p(k * .034f + .013f, -.2f), strokeWidth = h * .003f)
         }
         9 -> sun(0f, -.356f, .032f, accent.lighten(.72f))
+        10 -> if (look.top != 12) meadowPattern(h, pen)
     }
 }
 
@@ -63,6 +64,7 @@ internal fun DrawScope.portraitShirt(look: Look, color: Color, h: Float, pen: Pe
                 close()
             }
             inked(panel, color, pen)
+            if (look.pattern == 10) clipPath(panel) { meadowPattern(h, pen) }
             drawLine(color.lighten(.4f), p(s * .093f, -.42f), p(s * .084f, -.246f), strokeWidth = pen.lw * .6f)
             inkedRound(Rect(p(s * .126f - .027f, -.395f), p(s * .126f + .027f, -.34f)), h * .005f, color.darken(.05f), pen, shade = false)
             drawLine(seam, p(s * .151f, -.38f), p(s * .101f, -.38f), strokeWidth = pen.lw * .6f)
@@ -88,6 +90,79 @@ internal fun DrawScope.portraitShirt(look: Look, color: Color, h: Float, pen: Pe
         inked(collar, color.lighten(.1f), pen, shade = false)
     }
     drawLine(seam, p(-.13f, -.238f), p(.13f, -.238f), strokeWidth = pen.lw * .5f)
+}
+
+internal fun DrawScope.meadowFlower(c: Offset, r: Float, pen: Pen) {
+    val gold = Color(0xFFD9B96F)
+    for (k in 0..4) {
+        val a = k * Math.PI.toFloat() * .4f
+        drawOval(Color(0xFFFFF4DA), Offset(c.x + cos(a)*r*.55f-r*.4f, c.y + sin(a)*r*.55f-r*.4f), Size(r*.8f,r*.8f))
+    }
+    drawCircle(gold, r*.36f, c)
+    drawLine(gold, Offset(c.x+r*.8f,c.y+r*.4f), Offset(c.x+r*1.12f,c.y+r*.78f), pen.lw*.55f, StrokeCap.Round)
+}
+
+private fun DrawScope.meadowPattern(h: Float, pen: Pen) {
+    for (s in floatArrayOf(-1f,1f)) for (k in 0..2) {
+        meadowFlower(Offset(s*(.111f+(k%2)*.035f)*h,(-.423f+k*.079f)*h), .032f*h, pen)
+    }
+}
+
+/** A stand collar and readable zip; the half zip exposes a little contrasting tee. */
+internal fun DrawScope.zipTop(look: Look, color: Color, h: Float, pen: Pen) {
+    fun p(x: Float,y: Float) = Offset(x*h,y*h)
+    val full = look.top == 15
+    val edge = color.lighten(.36f)
+    val end = if(full) -.233f else -.352f
+    val opening=Path().apply {
+        moveTo(-.056f*h,-.5f*h);lineTo(.056f*h,-.5f*h)
+        lineTo(.025f*h,-.41f*h);lineTo(-.025f*h,-.41f*h);close()
+    }
+    inked(opening,argb(Palette.cloth[look.accent]),pen,shade=false)
+    for(s in floatArrayOf(-1f,1f)) {
+        val collar=Path().apply {
+            moveTo(s*.032f*h,-.486f*h);lineTo(s*.073f*h,-.50f*h)
+            lineTo(s*.12f*h,-.46f*h);lineTo(s*.043f*h,-.395f*h);close()
+        }
+        inked(collar,color.lighten(.06f),pen,shade=false)
+    }
+    drawLine(color.darken(.4f),p(0f,-.418f),p(0f,end),pen.lw*1.5f)
+    drawLine(edge,p(0f,-.415f),p(0f,end),pen.lw*.5f)
+    inkedRound(Rect(p(-.011f,-.412f),p(.011f,-.384f)),.004f*h,Color(0xFFCBD0CD),pen,shade=false)
+    drawLine(color.darken(.25f),p(-.12f,-.244f),p(.12f,-.244f),pen.lw*.5f)
+    if(full) for(s in floatArrayOf(-1f,1f)) drawLine(edge,p(s*.097f,-.327f),p(s*.12f,-.276f),pen.lw*.55f,StrokeCap.Round)
+}
+
+/** A distinct full beard, without hiding the shared animated mouth. */
+internal fun DrawScope.fullBeard(look: Look, hair: Color, h: Float, pen: Pen) {
+    fun p(x: Float,y: Float)=Offset(x*h,y*h)
+    val beard=Path().apply {
+        moveTo(-.232f*h,-.674f*h)
+        cubicTo(-.21f*h,-.65f*h,-.17f*h,-.604f*h,-.092f*h,-.601f*h)
+        quadraticTo(0f,-.633f*h,.092f*h,-.601f*h)
+        cubicTo(.17f*h,-.604f*h,.21f*h,-.65f*h,.232f*h,-.674f*h)
+        cubicTo(.26f*h,-.568f*h,.22f*h,-.414f*h,.127f*h,-.39f*h)
+        quadraticTo(.081f*h,-.337f*h,.029f*h,-.363f*h)
+        quadraticTo(-.02f*h,-.329f*h,-.067f*h,-.365f*h)
+        cubicTo(-.17f*h,-.357f*h,-.268f*h,-.486f*h,-.232f*h,-.674f*h);close()
+    }
+    inked(beard,hair,pen)
+    for(s in floatArrayOf(-1f,1f)) for(k in 0..3) {
+        val strand=Path().apply {
+            moveTo(s*(.087f+k*.036f)*h,(-.497f-k*.014f)*h)
+            quadraticTo(s*(.105f+k*.027f)*h,-.435f*h,s*(.034f+k*.028f)*h,(-.38f-k*.005f)*h)
+        }
+        drawPath(strand,hair.lighten(.28f),style=androidx.compose.ui.graphics.drawscope.Stroke(pen.lw*.6f,cap=StrokeCap.Round))
+    }
+    drawOval(argb(Palette.skins[look.skin]),p(-.097f,-.625f),Size(.194f*h,.13f*h))
+    for(s in floatArrayOf(-1f,1f)) {
+        val moustache=Path().apply {
+            moveTo(0f,-.63f*h)
+            cubicTo(s*.043f*h,-.65f*h,s*.098f*h,-.613f*h,s*.12f*h,-.603f*h)
+            quadraticTo(s*.069f*h,-.59f*h,0f,-.617f*h);close()
+        }
+        drawPath(moustache,hair.darken(.12f))
+    }
 }
 
 internal fun DrawScope.trimmedBeard(look: Look, hair: Color, h: Float, pen: Pen) {

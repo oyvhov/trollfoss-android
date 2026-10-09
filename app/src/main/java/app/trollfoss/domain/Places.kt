@@ -229,7 +229,7 @@ object Places {
                 ),
                 people = listOf(
                     PersonDef(Species.FOLK, Residents.oyvindLook(), 1.3f, seat = 7 to 0, name = "Øyvind"),
-                    PersonDef(Species.FOLK, Look(skin = 1, height = 0.78f, hair = 3, hairColor = 5, top = 1, topColor = 5, bottom = 1, bottomColor = 11, shoes = 0, extra = 1), 0.4f, seat = 2 to 0, name = "Hedda"),
+                    PersonDef(Species.FOLK, Residents.heddaLook(), 0.4f, seat = 2 to 0, name = "Hedda"),
                     PersonDef(Species.CAT, Look(skin = 0), 1.62f, y = 0.95f),
                 ),
             )
@@ -277,7 +277,7 @@ object Places {
                     t(ThingType.PEPPER, 1.2f, 0.73f, on = 4),
                 ),
                 people = listOf(
-                    PersonDef(Species.FOLK, Look(skin = 6, height = 1.03f, hair = 1, hairColor = 0, top = 0, topColor = 9, bottom = 0, bottomColor = 11, shoes = 11, extra = 3), 1.22f, y = 0.86f, hat = ThingType.CHEF_HAT, name = "Sondre"),
+                    PersonDef(Species.FOLK, Residents.sondreLook(), 1.22f, y = 0.86f, hat = ThingType.CHEF_HAT, name = "Sondre"),
                     PersonDef(Species.FOLK, Look(skin = 3, height = 0.78f, hair = 5, hairColor = 3, eyes = 1, top = 3, topColor = 8, bottom = 2, bottomColor = 6, shoes = 5), 2.06f, seat = 11 to 0, name = "Alva"),
                 ),
             )
@@ -316,7 +316,7 @@ object Places {
                     t(ThingType.STAR_GLASSES, 1.3f, 0.95f),
                 ),
                 people = listOf(
-                    PersonDef(Species.FOLK, Look(skin = 0, height = 1.03f, hair = 6, hairColor = 7, eyes = 3, top = 4, topColor = 10, bottom = 0, bottomColor = 10, shoes = 8), 0.92f, y = 0.94f, name = "Elise"),
+                    PersonDef(Species.FOLK, Residents.eliseLook(), 0.92f, y = 0.94f, name = "Elise"),
                     PersonDef(Species.FOLK, Look(skin = 4, height = 1.14f, hair = 7, hairColor = 8, top = 1, topColor = 3, bottom = 0, bottomColor = 11, shoes = 2), 1.1f, seat = 6 to 0, name = "Sander"),
                 ),
             )
@@ -470,7 +470,7 @@ object Places {
                     t(ThingType.TIRE, 3.42f, 0.93f),
                 ),
                 people = listOf(
-                    PersonDef(Species.FOLK, Look(skin = 3, height = 1.14f, hair = 1, hairColor = 2, top = 4, topColor = 3, bottom = 0, bottomColor = 3, shoes = 12, extra = 3), 0.38f, seat = 0 to 0, hat = ThingType.CAP, hatVariant = 1, name = "Sølve"),
+                    PersonDef(Species.FOLK, Residents.solveLook(), 0.38f, seat = 0 to 0, hat = ThingType.CAP, hatVariant = 1, name = "Sølve"),
                     PersonDef(Species.FOLK, Residents.eiraLook(), 3.5f, y = 0.93f, hand = ThingType.WRENCH, name = "Eira"),
                     PersonDef(Species.HORSE, Look(skin = 0), 1.28f, y = 0.9f),
                     PersonDef(Species.CHICKEN, Look(skin = 0), 1.9f, y = 0.92f),
@@ -509,7 +509,7 @@ object Places {
                     t(ThingType.ROCKET, 1.6f, 0.62f),
                 ),
                 people = listOf(
-                    PersonDef(Species.FOLK, Look(skin = 4, height = 0.9f, hair = 2, hairColor = 0, eyes = 1, top = 4, topColor = 9, bottom = 0, bottomColor = 9, shoes = 10), 0.35f, seat = 0 to 0, hat = ThingType.SPACE_HELMET, name = "Olvar"),
+                    PersonDef(Species.FOLK, Residents.olvarLook(), 0.35f, seat = 0 to 0, hat = ThingType.SPACE_HELMET, name = "Olvar"),
                     PersonDef(Species.CAT, Look(skin = 1), 2.6f, y = 0.4f, hat = ThingType.SPACE_HELMET),
                 ),
             )
@@ -585,7 +585,7 @@ object Places {
                     t(ThingType.APPLE, 3.16f, 0.78f, on = 7),
                 ),
                 people = listOf(
-                    PersonDef(Species.FOLK, Look(skin = 6, height = 1.03f, hair = 4, hairColor = 0, eyes = 3, top = 1, topColor = 8, bottom = 2, bottomColor = 11, shoes = 11), 2.92f, seat = 6 to 0, name = "Berit"),
+                    PersonDef(Species.FOLK, Residents.beritLook(), 2.92f, seat = 6 to 0, name = "Berit"),
                     PersonDef(Species.CAT, Look(skin = 2), 3.3f, seat = 7 to 0),
                 ),
             )

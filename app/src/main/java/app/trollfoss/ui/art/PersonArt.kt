@@ -132,9 +132,9 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
         }
         inked(torso, shirt, pen, outline = false)
         clipPath(torso) {
-            if (look.top == 8 || look.top == 12) {
+            if (look.top == 8 || look.top == 12 || look.top == 14 || look.top == 15) {
                 folkPattern(look, h, pen)
-                portraitShirt(look, topColor, h, pen)
+                if (look.top >= 14) zipTop(look, topColor, h, pen) else portraitShirt(look, topColor, h, pen)
             } else {
                 garmentDetails(look, topColor, h, pen)
                 folkPattern(look, h, pen)
@@ -152,7 +152,7 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
         val right = FigurePose.hand(a, right = true, holding = holding, pose = pose)
         val handL = o(left.x, left.y)
         val handR = o(right.x, right.y)
-        val longSleeves = look.top in setOf(1, 5, 6, 7, 8, 9, 12, 13) || overalls
+        val longSleeves = look.top in setOf(1, 5, 6, 7, 8, 9, 12, 13, 14, 15) || overalls
         val sleeve = if (overalls || look.top == 6) ShirtWhite else topColor
         for ((shoulder, hand) in listOf(shoulderL to handL, shoulderR to handR)) {
             val armColor = if (longSleeves) sleeve else skin
@@ -172,6 +172,7 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
                 drawCircle(argb(Palette.cloth[look.accent]), .026f * h, elbow)
                 drawCircle(ShirtWhite, .012f * h, elbow)
             }
+            if (longSleeves && look.pattern == 10) meadowFlower(elbow, .028f * h, pen)
             if (!longSleeves) {
                 val end = Offset(shoulder.x + (hand.x - shoulder.x) * 0.42f, shoulder.y + (hand.y - shoulder.y) * 0.42f)
                 capsule(shoulder, end, 0.104f * h, if (look.pattern == 6 && side < 0f) argb(Palette.cloth[look.accent]) else sleeve, pen)
@@ -343,6 +344,7 @@ private fun DrawScope.head(look: Look, a: PersonAnim, pose: Pose, h: Float, pen:
         inked(beard, hair, pen)
     }
     if (look.extra == 9) trimmedBeard(look, hair, h, pen)
+    if (look.extra == 10) fullBeard(look, hair, h, pen)
 
     // Cheeks, nose, freckles
     drawOval(Ink.blush, o(-0.205f, -0.65f), Size(0.09f * h, 0.052f * h))
@@ -372,6 +374,22 @@ private fun DrawScope.head(look: Look, a: PersonAnim, pose: Pose, h: Float, pen:
             1 -> drawArc(Ink.line, 0f, 180f, false, o(-0.08f, -0.61f), Size(h * 0.16f, h * 0.1f), style = pen.thin)
             2 -> { inkedOval(rect(0f, -0.57f * h, h * 0.095f, h * 0.058f), MouthDark, pen, shade = false); inkedRound(Rect(o(-0.035f, -0.597f), o(0.035f, -0.572f)), h * 0.006f, Color.White, pen, shade = false) }
             3 -> drawArc(Ink.line, 10f, 140f, false, o(-0.025f, -0.59f), Size(h * 0.09f, h * 0.045f), style = pen.thin)
+            5 -> {
+                val smile = Path().apply {
+                    moveTo(-.094f*h,-.606f*h)
+                    quadraticTo(0f,-.574f*h,.094f*h,-.606f*h)
+                    cubicTo(.077f*h,-.514f*h,-.077f*h,-.514f*h,-.094f*h,-.606f*h);close()
+                }
+                drawPath(smile,MouthDark)
+                clipPath(smile) {
+                    val teeth=Path().apply {
+                        moveTo(-.11f*h,-.63f*h);lineTo(.11f*h,-.63f*h);lineTo(.10f*h,-.576f*h)
+                        quadraticTo(0f,-.55f*h,-.10f*h,-.576f*h);close()
+                    }
+                    drawPath(teeth,ShirtWhite)
+                }
+                drawPath(smile,Ink.line,style=pen.thin)
+            }
             else -> inkedOval(rect(0f, -0.575f * h, h * 0.055f, h * 0.04f), Color(0xFFC5647E), pen, shade = false)
         }
     } else mouth(a, h, pen, t)

@@ -40,6 +40,11 @@ same figurteikning og rørsler. `PortraitHairArt` og `PortraitClothesArt` gir gj
 verkstaden: sideskilje, skulderbølgjer, kort hår, trimma skjegg, open jakke, sol/blomar og smale
 skjortestriper. Kragar og saumar ligg over mønsteret. Foto blir aldri bygde inn i appen.
 
+Sondre, Elise, Sølve, Hedda, Berit og Olvar har fått same behandling i neste runde. `FamilyHairArt`
+gir bakovergreidd hår, langt midtskilje, lågt knytt hår og mjuk pannelugg. Fyldig skjegg, breitt smil,
+glidelåsgenser/fleece og blomejakke er vanlege verkstadval. Berit sine briller er ein avtakbar ting:
+variant 1 av `ROUND_GLASSES`, med mjuk firkanta brun innfatning; variant 0 er urørt.
+
 - `FigurePose` er felles for teikninga og `Anatomy.at`: flytt aldri berre ansiktet og la hår/hatt stå att.
 - `PersonAnim.figureTime` er den individuelle klokka, sett av spelmotoren/verkstaden. `motion=false`
   stansar dekorativ rørsle. Reaksjonar, klede og ting må likevel oppdaterast i teiknebufferen.
