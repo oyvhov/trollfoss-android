@@ -269,7 +269,15 @@ enum class ThingType(
 
 /** Garments: the tops a figure can wear. The variant of a [ThingType.GARMENT] packs style and colour. */
 object Garment {
-    fun pack(style: Int, color: Int): Int = style.coerceIn(0, Styles.TOPS - 1) * 16 + color.coerceIn(0, 15)
-    fun style(variant: Int): Int = (variant / 16).coerceIn(0, Styles.TOPS - 1)
-    fun color(variant: Int): Int = (variant % 16).coerceIn(0, Palette.cloth.size - 1)
+    // Old garments keep their four-bit colour encoding. New shades use a tagged, wider payload.
+    private const val EXTENDED = 65536
+    fun pack(style: Int, color: Int): Int {
+        val s = style.coerceIn(0, Styles.TOPS - 1)
+        val c = color.coerceIn(0, Palette.cloth.size - 1)
+        return if (c < 16) s * 16 + c else EXTENDED + s * 256 + c
+    }
+    fun style(variant: Int): Int = (if (variant >= EXTENDED) (variant - EXTENDED) / 256 else variant / 16)
+        .coerceIn(0, Styles.TOPS - 1)
+    fun color(variant: Int): Int = (if (variant >= EXTENDED) (variant - EXTENDED) % 256 else variant % 16)
+        .coerceIn(0, Palette.cloth.size - 1)
 }

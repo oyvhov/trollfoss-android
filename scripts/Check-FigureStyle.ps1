@@ -1,8 +1,10 @@
-param([switch]$Baseline, [switch]$Full, [ValidateSet('phone','tablet')][string]$Only, [switch]$SkipInstall)
+param([switch]$Baseline, [switch]$Full, [ValidateSet('phone','tablet')][string]$Only, [switch]$SkipInstall,
+    [string]$OutputDirectory = 'C:/topa/dist/levande-figurar',
+    [string]$TestClass = 'app.trollfoss.ui.art.FigureStyleArtTest')
 $ErrorActionPreference = 'Stop'
 $adb = 'C:/Android/sdk/platform-tools/adb.exe'
 $repo = Split-Path $PSScriptRoot -Parent
-$out = 'C:/topa/dist/levande-figurar'
+$out = $OutputDirectory
 New-Item -ItemType Directory -Force -Path $out | Out-Null
 function Adb([string[]]$Arguments) {
     & $adb -s emulator-5554 @Arguments
@@ -20,7 +22,7 @@ try {
         if ($format -eq 'phone') { Adb @('shell','wm','size','2400x1080'); Adb @('shell','wm','density','420') }
         if ($format -eq 'tablet') { Adb @('shell','wm','size','1920x1200'); Adb @('shell','wm','density','240') }
         $args = @('shell','am','instrument','-w','-r')
-        if (!$Full) { $args += @('-e','class','app.trollfoss.ui.art.FigureStyleArtTest') }
+        if (!$Full) { $args += @('-e','class',$TestClass) }
         $args += 'app.trollfoss.figurar.test/androidx.test.runner.AndroidJUnitRunner'
         $result = Adb $args
         $result | Set-Content -Encoding UTF8 "$out/$format-tests.txt"

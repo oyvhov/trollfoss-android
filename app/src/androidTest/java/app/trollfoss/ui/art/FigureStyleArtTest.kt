@@ -72,9 +72,10 @@ class FigureStyleArtTest {
     }
 
     @Test fun captureHairAndClothesAtWorkshopExtremes() {
-        val bitmap=Bitmap.createBitmap(1800,1800,Bitmap.Config.ARGB_8888)
+        val rows=(Styles.HAIRS*2+7)/8
+        val bitmap=Bitmap.createBitmap(1800,rows*355+25,Bitmap.Config.ARGB_8888)
         try {
-            CanvasDrawScope().draw(Density(1f),LayoutDirection.Ltr,Canvas(bitmap.asImageBitmap()),Size(1800f,1800f)) {
+            CanvasDrawScope().draw(Density(1f),LayoutDirection.Ltr,Canvas(bitmap.asImageBitmap()),Size(bitmap.width.toFloat(),bitmap.height.toFloat())) {
                 drawRect(Color(0xFFFFF6E8))
                 for (i in 0 until Styles.HAIRS*2) {
                     val large=i%2==1

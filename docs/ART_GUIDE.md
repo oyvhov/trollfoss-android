@@ -35,6 +35,11 @@ Den godkjende figurstilen er sprelsken teiknefilm: forma kinn og hake, samanheng
 tydlege hender og sko, små hovudvinklar og uttrykk som kan lesast i liten storleik. Kvar art bevarer
 sin eigen silhuett. Eilev sin nye standard har lysebrune bølgjer og grønkvite fotballklede.
 
+Eira, Olve, Tuva og Øyvind har òg standardutsjånader etter familien sine fotoreferansar. Dei bruker
+same figurteikning og rørsler. `PortraitHairArt` og `PortraitClothesArt` gir gjenbrukbare val i
+verkstaden: sideskilje, skulderbølgjer, kort hår, trimma skjegg, open jakke, sol/blomar og smale
+skjortestriper. Kragar og saumar ligg over mønsteret. Foto blir aldri bygde inn i appen.
+
 - `FigurePose` er felles for teikninga og `Anatomy.at`: flytt aldri berre ansiktet og la hår/hatt stå att.
 - `PersonAnim.figureTime` er den individuelle klokka, sett av spelmotoren/verkstaden. `motion=false`
   stansar dekorativ rørsle. Reaksjonar, klede og ting må likevel oppdaterast i teiknebufferen.

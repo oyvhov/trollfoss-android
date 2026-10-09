@@ -468,6 +468,7 @@ class WorldStore(private val file: File) {
             app.trollfoss.domain.FirstsRetro.upgrade(world)
             app.trollfoss.domain.Residents.addMailinn(world)
             app.trollfoss.domain.Residents.updateEilev(world)
+            app.trollfoss.domain.Residents.updateFamilyPortraits(world)
             return Saved(world, settings)
         }
 

@@ -40,6 +40,7 @@ object WorldFactory {
         TreasureStart.upgrade(world, sim)
         Residents.addMailinn(world)
         Residents.updateEilev(world)
+        Residents.updateFamilyPortraits(world)
         world.bodies.values.forEach { it.age = 10f }
         return world
     }

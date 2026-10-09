@@ -490,7 +490,7 @@ internal fun DrawScope.thGarment(v: Int, w: Float, h: Float, pen: Pen) {
     drawPath(bar, ThingInk.wood, style = Stroke(h * 0.07f, cap = StrokeCap.Round))
     if (style == 1) inkedOval(Rect(-0.22f * w, -0.9f * h, 0.22f * w, -0.7f * h), col.darken(0.15f), pen)
     val shape = when (style) {
-        1, 5, 6 -> longPath(w, h)
+        1, 5, 6, 7, 8, 9, 12, 13 -> longPath(w, h)
         2 -> dressPath(w, h)
         else -> teePath(w, h)
     }
@@ -502,6 +502,17 @@ internal fun DrawScope.thGarment(v: Int, w: Float, h: Float, pen: Pen) {
     val dark = col.darken(0.28f)
     clipPath(shape) {
         when (style) {
+            7, 8, 12 -> {
+                if (style == 12) drawRect(SHIRT, o(-.11f, -.79f), Size(.22f * w, .74f * h))
+                else {
+                    drawLine(dark, o(0f, -.76f), o(0f, -.04f), pen.lw * .7f)
+                    for (k in 0..3) drawCircle(SHIRT, w * .018f, o(.06f, -.64f + k * .16f))
+                }
+                for (s in SIDES) {
+                    val collar = thSketch(w, h) { m(s * .11f, -.80f); l(s * .27f, -.73f); l(s * .18f, -.58f); l(s * .04f, -.73f); z() }
+                    inked(collar, col.lighten(.14f), pen, shade = false)
+                }
+            }
             0 -> {
                 drawPath(starPath(o(0f, -0.46f), w * 0.1f, w * 0.045f), Color.White.copy(alpha = 0.85f))
                 drawLine(dark, o(0.34f, -0.5f), o(0.45f, -0.6f), pen.lw * 0.5f)
