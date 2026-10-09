@@ -9,5 +9,6 @@ Familien har fått nye, levande figurar – no også Sander! Finn hemmelege inng
 - Nivå 10 ved 40 merke: drakevogn, luftskip, gøymetroll og trollfest. Trollfossen får regnbogevatn. 82 oppdagingar i alt.
 - Lydbilete med mellom anna bølgjer, vind, fuglar og drypp gir stadene meir liv.
 - Nynorsk og bokmål, og støtte for redusert rørsle.
+- Figurverkstaden gir plass til vala og lagreknappen også med stor systemskrift på mobil.
 
 Installer APK-en over den gamle appen. Du treng ikkje avinstallere Trollfoss.

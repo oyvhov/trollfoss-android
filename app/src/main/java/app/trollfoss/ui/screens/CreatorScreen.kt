@@ -337,6 +337,12 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
                         }
                     }
                 }
+                // Scroll the selectors and their choices together so large text cannot squeeze
+                // the choice area to zero. The figure picker and save action stay in view.
+                Column(
+                    Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
                 // What: the parts.
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     for ((i, label) in listOf(S.hairGroup, S.faceGroup, S.clothesGroup).withIndex()) {
@@ -363,7 +369,7 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
                 // Choices for that part.
                 val partLabel = part.label.str()
                 GameText(partLabel, fontSize = 16.sp, color = T.Ink)
-                Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (look.hair == 0 && (part == Part.HAIR_SIZE || part == Part.HAIR_LENGTH)) {
                     GameText(S.chooseHairFirst.str(), fontSize = 16.sp, color = T.Ink)
                 } else if (part.count == 0 || part == Part.HEIGHT) {
@@ -389,6 +395,7 @@ fun CreatorScreen(vm: TrollfossViewModel, startId: Int?) {
                             react(part == Part.TOP || part == Part.HEIGHT)
                         }
                     }
+                }
                 }
                 }
                 }

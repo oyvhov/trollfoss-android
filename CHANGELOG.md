@@ -8,6 +8,7 @@
 - Samlar innhaldet frå dei lokale utgåvene 1.13–1.15: hemmelege inngangar bak fossane, Rumle si skattejakt med trollykt, oppfinnarleiker på nivå 9 og trollfest med regnbogefoss på nivå 10.
 - Robotkompis, hjelperobot, rakettsett, reaksjonsbane, drakevogn, luftskip og gøymetroll gir fleire måtar å leike saman på. 82 oppdagingar i alt.
 - Nye lydbilete for stadene. Nynorsk og bokmål, og støtte for redusert rørsle.
+- Figurverkstaden held lagreknappen synleg og lèt valpanelet rulle, også med stor systemskrift på mobil.
 
 ## 1.15.0 – Rumle sine skattar (lokalt)
 
