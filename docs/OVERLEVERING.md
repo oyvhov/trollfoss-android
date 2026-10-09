@@ -1,5 +1,18 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – FAMILIEFIGURAR (2026-10-09, Codex):** Eira, Olve, Tuva og Øyvind er teikna etter
+> fotoreferansane, i same godkjende stil som Eilev og resten av flokken. Arbeidskopi og grein er
+> framleis `rainbow-finale/topa` / `codex/levande-figurar`. Nye hår-, skjegg-, kles- og mønsterval
+> finst i verkstaden. Berre urørte gamle standardfigurar blir oppdaterte; redigeringar og identitetar
+> er bevarte. Utvida klespalett overlever av-/påkleding med bakoverkompatibel lagring.
+> 663 JVM-testar og 98 Android-testar på kvar av mobil/nettbrett er grøne. Familie og heile flokken
+> er visuelt gjennomgåtte. Lint: 0 feil / 32 uendra åtvaringar. Kjeldekode i lokal commit `9f3df4a`.
+> APK, bilete og kontrollrapportar: `C:/topa/dist/familie-figurar/`.
+> Kjend ANR kom att i manuell kontroll, også etter omstart; fleire klare scenebilete og fingerdrag
+> av Eira er kontrollerte, men heile oppstarts-/reiseflyten er ikkje friskmeld. Testpakkane er
+> fjerna og skjerminnstillingane tilbakeførte. Sjå `docs/superpowers/plans/2026-10-09-familiefigurar.md`.
+> Ingen push eller publisering.
+
 > **NYAST – LEVANDE FIGURAR (2026-10-09, Codex):** Den godkjende teiknefilmstilen er implementert
 > på `codex/levande-figurar`, frå `b957cd0`, i same `rainbow-finale/topa`-arbeidskopi. Fem prøvefigurar
 > er viste med faktisk Compose-teikning, inkludert Eilev etter dei private fotoreferansane.
