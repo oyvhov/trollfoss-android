@@ -450,6 +450,7 @@ class WorldStore(private val file: File) {
             Mine.returnGuests(world)
             Mine.syncFixtures(world)
             WorldFactory.addMissingPlaces(world, known)
+            app.trollfoss.domain.Vagstaddalen.upgrade(world)
             app.trollfoss.domain.StarterLayout.upgrade(world)
             app.trollfoss.domain.TreasureStart.upgrade(world)
             world.visited += world.place

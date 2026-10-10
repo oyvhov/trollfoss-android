@@ -7,6 +7,42 @@ object Vagstaddalen {
     const val WATERLINE = 0.83f
     const val BED = 0.97f
     const val CABIN = 0
+    // 0..7 and the secret nook at 8 retain their saved identities.
+    const val RIVER_FIRE = 9
+    const val RIVER_FISHING = 10
+    const val DINGHY = 11
+    const val SANDCASTLE = 12
+    const val RIVER_LIFE = "layout:valley-river-life:1"
+    val riversideFixtures = listOf(
+        FixtureDef(FixtureType.CAMPFIRE, 4.05f, 0.92f),
+        FixtureDef(FixtureType.FISHING_SPOT, 3.77f, 0.80f, variant = 1),
+        FixtureDef(FixtureType.BOAT, 3.46f, WATERLINE + 0.02f, variant = 1),
+        FixtureDef(FixtureType.SANDCASTLE, 2.27f, 0.91f),
+    )
+    val riversideThings = listOf(
+        ThingDef(ThingType.GARMENT, 2.28f, 0.96f, Garment.pack(Garment.SWIM_SUIT, 4)),
+        ThingDef(ThingType.GARMENT, 2.43f, 0.96f, Garment.pack(Garment.SWIM_SET, 8)),
+        ThingDef(ThingType.BUCKET, 2.66f, 0.91f, 1),
+        ThingDef(ThingType.SPADE, 2.72f, 0.95f),
+        ThingDef(ThingType.SWIM_RING, 2.59f, 0.97f),
+        ThingDef(ThingType.BEACH_BALL, 2.40f, 0.84f),
+        ThingDef(ThingType.MARSHMALLOW, 4.53f, 0.94f),
+        ThingDef(ThingType.SAUSAGE, 4.63f, 0.94f),
+        ThingDef(ThingType.PINECONE, 4.83f, 0.91f),
+        ThingDef(ThingType.MUSHROOM, 5.20f, 0.91f),
+        ThingDef(ThingType.STICK, 3.99f, 0.97f),
+    )
+
+    /** Only new loose belongings are gifted once. Existing furniture, clothes and packed things stay put. */
+    fun upgrade(world: World) {
+        if (!world.flags.add(RIVER_LIFE)) return
+        for (def in riversideThings) {
+            val t = world.addThing(def.type, def.variant, PlaceId.VAGSTADDALEN, def.x, def.y)
+            t.age = 10f
+            t.ground = def.y
+            WorldFactory.remember(world, t)
+        }
+    }
     val cabinSpec = FixtureSpec(0.92f, 0.42f,
         container = RRect(-0.3f, -0.30f, 0.3f, -0.02f),
         surfaces = listOf(SurfaceSpec(-0.3f, 0.3f, -0.02f, interior = true), SurfaceSpec(-0.46f, 0.46f, -0.42f)),
@@ -37,7 +73,7 @@ object Vagstaddalen {
                 ThingDef(ThingType.ROCK, 3.65f, 0.91f),
                 ThingDef(ThingType.APPLE, 4.25f, 0.87f, on = 6),
                 ThingDef(ThingType.FLOWER_CROWN, 4.5f, 0.88f),
-            ),
+            ) + riversideThings,
             // The family's named figures can be brought here in the bag. The valley has a cat of its own.
             people = listOf(PersonDef(Species.CAT, Look(skin = 2), 1.5f, y = 0.94f)),
         )

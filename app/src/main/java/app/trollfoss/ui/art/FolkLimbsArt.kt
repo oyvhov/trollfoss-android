@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import app.trollfoss.domain.Look
+import app.trollfoss.domain.Garment
 import app.trollfoss.domain.PersonAnim
 import app.trollfoss.domain.Pose
 import kotlin.math.sin
@@ -22,7 +23,8 @@ internal fun DrawScope.bentLimb(start: Offset, bend: Offset, end: Offset, width:
 internal fun DrawScope.folkLegs(look: Look, pose: Pose, a: PersonAnim, h: Float, pen: Pen, t: Float,
     skin: Color, trousers: Color, shoe: Color, overalls: Boolean, bob: Float, stepL: Float, stepR: Float) {
     fun o(x: Float, y: Float) = Offset(x * h, y * h)
-    val dressed = look.bottom == 0 || look.bottom == 3 || overalls
+    val swimwear = Garment.swimwear(look.top)
+    val dressed = !swimwear && (look.bottom == 0 || look.bottom == 3 || overalls)
     val color = if (dressed) trousers else skin
     val dancing = a.motion && a.dance > 0f
     for (side in floatArrayOf(-1f, 1f)) {
@@ -33,12 +35,17 @@ internal fun DrawScope.folkLegs(look: Look, pose: Pose, a: PersonAnim, h: Float,
         val ankle = o(side * (if (pose == Pose.FLOAT) .12f else .088f), -.051f + lift)
         val knee = o(side * .102f, (if (sit) -.075f else -.14f) + lift * .7f)
         bentLimb(hip, knee, ankle, .089f * h, color, pen)
-        if (look.bottom == 1 && !overalls) capsule(hip, o(side * .087f, -.17f + bob), .10f * h, trousers, pen)
-        if (look.bottom == 4 && !overalls) {
+        if (swimwear || (look.bottom == 1 && !overalls)) capsule(hip, o(side * .087f, -.17f + bob), .10f * h, trousers, pen)
+        if (look.bottom == 4 && !overalls && !swimwear) {
             for (k in 0..2) drawLine(trousers, o(side * .088f - .042f, -.095f + k * .018f + lift),
                 o(side * .088f + .042f, -.095f + k * .018f + lift), .012f * h)
         }
         val x = side * .094f
+        if (swimwear) {
+            inkedOval(rect(x * h, (-.025f + lift) * h, .115f * h, .063f * h), skin, pen)
+            drawLine(skin.darken(.23f), o(x + .017f, -.035f + lift), o(x + .022f, -.018f + lift), pen.lw * .6f)
+            continue
+        }
         val boot = Path().apply {
             moveTo((x - .061f) * h, (-.065f + lift) * h)
             quadraticTo(x * h, (-.083f + lift) * h, (x + .043f) * h, (-.051f + lift) * h)

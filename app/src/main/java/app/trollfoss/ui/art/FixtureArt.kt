@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.drawscope.scale
 import app.trollfoss.domain.Fixture
 import app.trollfoss.domain.FixtureType
 import app.trollfoss.domain.Thing
@@ -86,8 +87,8 @@ fun DrawScope.drawFixtureBack(f: Fixture, u: Float, pen: Pen, contents: List<Thi
             FixtureType.SPELLBOOK -> fxSpellbook(f, u, pen)
 
             FixtureType.PIER -> fxPier(f, u, pen)
-            FixtureType.FISHING_SPOT -> fxFishingSpot(f, u, pen)
-            FixtureType.BOAT -> fxBoat(f, u, pen)
+            FixtureType.FISHING_SPOT -> if (f.variant == 1) scale(-1f, 1f, pivot = Offset.Zero) { fxFishingSpot(f, u, pen) } else fxFishingSpot(f, u, pen)
+            FixtureType.BOAT -> if (f.variant == 1) drawDinghy(u, pen, front = false) else fxBoat(f, u, pen)
             FixtureType.UMBRELLA -> fxUmbrella(f, u, pen)
             FixtureType.LOUNGER -> fxLounger(f, u, pen)
             FixtureType.SANDCASTLE -> fxSandcastle(f, u, pen)
@@ -98,7 +99,7 @@ fun DrawScope.drawFixtureBack(f: Fixture, u: Float, pen: Pen, contents: List<Thi
             FixtureType.STUMP -> fxStump(f, u, pen)
             FixtureType.OWL_TREE -> fxOwlTree(f, u, pen)
 
-            FixtureType.PINE_TREE -> fxPineTree(f, u, pen)
+            FixtureType.PINE_TREE -> if (f.place == app.trollfoss.domain.PlaceId.VAGSTADDALEN) valleyPine(f, u, pen) else fxPineTree(f, u, pen)
             FixtureType.SAUNA -> fxSauna(f, u, pen)
             FixtureType.SLED_HILL -> fxSledHill(f, u, pen)
             FixtureType.SNOWMAN -> fxSnowman(f, u, pen)
@@ -150,7 +151,7 @@ fun DrawScope.drawFixtureFront(f: Fixture, u: Float, pen: Pen) {
         when (f.type) {
             FixtureType.BED -> fxBedFront(f, u, pen)
             FixtureType.BATH -> fxBathFront(f, u, pen)
-            FixtureType.BOAT -> fxBoatFront(f, u, pen)
+            FixtureType.BOAT -> if (f.variant == 1) drawDinghy(u, pen, front = true) else fxBoatFront(f, u, pen)
             FixtureType.DRYER_HOOD -> fxDryerFront(f, u, pen)
             FixtureType.DISPLAY_CASE -> fxDisplayGlass(f, u, pen)
             FixtureType.TREASURE_BOX -> fxTreasureGlass(f, u, pen)

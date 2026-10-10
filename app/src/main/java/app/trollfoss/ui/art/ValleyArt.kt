@@ -20,18 +20,18 @@ import kotlin.math.sin
 /** The photo's grey cliff and birch meadow, with the winding river below the horizon. */
 private val valleyRiver = Memo { u ->
     Path().apply {
-        moveTo(3.43f * u, 0.70f * u)
+        moveTo(3.48f * u, 0.68f * u)
         cubicTo(3.56f * u, 0.73f * u, 2.82f * u, 0.74f * u, 3.06f * u, 0.77f * u)
         cubicTo(3.25f * u, 0.79f * u, 2.8f * u, 0.80f * u, Vagstaddalen.RIVER_LEFT * u, 0.83f * u)
         lineTo(Vagstaddalen.RIVER_LEFT * u, 0.97f * u)
         lineTo(Vagstaddalen.RIVER_RIGHT * u, 0.97f * u)
         lineTo(Vagstaddalen.RIVER_RIGHT * u, 0.83f * u)
         cubicTo(3.7f * u, 0.80f * u, 3.46f * u, 0.79f * u, 3.34f * u, 0.76f * u)
-        cubicTo(3.03f * u, 0.74f * u, 3.69f * u, 0.73f * u, 3.47f * u, 0.70f * u)
+        cubicTo(3.44f * u, 0.73f * u, 3.88f * u, 0.74f * u, 3.77f * u, 0.68f * u)
         close()
     }
 }
-private val valleyCoverLeft = GroundCover(0.06f, 2.7f, 0.8f, 0.96f, 2051, 0.65f)
+private val valleyCoverLeft = GroundCover(0.06f, 2.10f, 0.8f, 0.96f, 2051, 0.65f)
 private val valleyCoverRight = GroundCover(3.97f, 5.35f, 0.8f, 0.96f, 2052, 0.65f)
 
 internal fun DrawScope.valleyBack(st: Stage, pen: Pen) {
@@ -54,6 +54,7 @@ internal fun DrawScope.valleyBack(st: Stage, pen: Pen) {
         clipPath(cliff) {
             for (k in 0..25) {
                 val x = -0.2f + k * 0.23f + hash01(k, 2062) * 0.12f
+                if (!st.sees(x - 0.15f, x + 0.18f)) continue
                 val y = 0.29f + hash01(k, 2060) * 0.18f
                 val lean = -0.035f + hash01(k, 2063) * 0.09f
                 val length = 0.08f + hash01(k, 2064) * 0.13f
@@ -74,6 +75,7 @@ internal fun DrawScope.valleyBack(st: Stage, pen: Pen) {
     inScene(st) {
         for (k in 0..14) {
             val x = k * 0.39f + hash01(k, 2065) * 0.15f
+            if (x in 3.25f..4.03f) continue // Leave the falling water visible.
             if (st.sees(x - 0.12f, x + 0.12f)) drawBirch(x * u, 0.71f * u,
                 (0.12f + hash01(k, 2066) * 0.07f) * u, pen, Color(0xFF83AE72), 2090 + k, n)
         }
@@ -81,6 +83,7 @@ internal fun DrawScope.valleyBack(st: Stage, pen: Pen) {
     val grass = pen.ground(Color(0xFF83B86A)).atNight(n, 0.5f)
     drawRect(Brush.verticalGradient(listOf(grass.lighten(0.12f), grass, grass.darken(0.12f)), startY = 0.7f * u, endY = u), Offset(0f, 0.7f * u), Size(st.w, 0.3f * u))
     drawBase(st, pen, Pal.woodDark, Color(0xFF5E4636))
+    valleyBeach(st, pen)
     inScene(st) {
         val river = valleyRiver.of(u)
         drawPath(river, pen.ground(Color(0xFF4B8C54)).atNight(n, 0.6f), style = Stroke(0.026f * u, cap = StrokeCap.Round))
@@ -102,12 +105,15 @@ internal fun DrawScope.valleyBack(st: Stage, pen: Pen) {
         }
     }
     drawWaterPlane(st, pen, Vagstaddalen.RIVER_LEFT, Vagstaddalen.RIVER_RIGHT, 0.78f, Vagstaddalen.WATERLINE, Color.White, 4, 1f, 1f, 0.45f)
+    valleyFalls(st, pen)
+    valleyFish(st, pen)
     valleyCoverLeft.draw(this, st, pen)
     valleyCoverRight.draw(this, st, pen)
     // Birch trees frame the valley without covering the cabin or the fishing bank.
     for (x in floatArrayOf(0.12f, 2.35f, 4.65f, 5.3f)) if (st.sees(x - 0.2f, x + 0.2f)) {
-        drawBirch(st.x(x), 0.76f * u, 0.38f * u, pen, Color(0xFF8DB85E), 2100 + (x * 10).toInt(), n)
+        valleyBirch(st.x(x), 0.76f * u, 0.38f * u, pen, 2100 + (x * 10).toInt())
     }
+    valleyBankDetails(st, pen)
 }
 
 internal fun DrawScope.valleyFront(st: Stage, pen: Pen) {

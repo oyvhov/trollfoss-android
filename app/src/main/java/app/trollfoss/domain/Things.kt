@@ -269,6 +269,9 @@ enum class ThingType(
 
 /** Garments: the tops a figure can wear. The variant of a [ThingType.GARMENT] packs style and colour. */
 object Garment {
+    const val SWIM_SUIT = 17
+    const val SWIM_SET = 18
+    fun swimwear(style: Int): Boolean = style == SWIM_SUIT || style == SWIM_SET
     // Old garments keep their four-bit colour encoding. New shades use a tagged, wider payload.
     private const val EXTENDED = 65536
     fun pack(style: Int, color: Int): Int {

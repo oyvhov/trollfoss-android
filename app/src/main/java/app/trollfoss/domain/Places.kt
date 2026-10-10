@@ -156,7 +156,9 @@ object Places {
         }
         val things = raw.things.map { t -> if (t.on >= 0) t.copy(y = t.y + fixtures[t.on].shift) else t }
         val nook = PlaySecrets.nooks[raw.id]?.let { (x, variant) -> FixtureDef(FixtureType.SECRET_NOOK, x, raw.id.back + 0.012f, variant) }
-        return PlaceSpec(raw.id, raw.grounds, raw.water, fixtures + listOfNotNull(nook), things, raw.people)
+        // Valley additions follow its existing nook, so saved fixture 3908 remains the secret rock.
+        val riverside = if (raw.id == PlaceId.VAGSTADDALEN) Vagstaddalen.riversideFixtures else emptyList()
+        return PlaceSpec(raw.id, raw.grounds, raw.water, fixtures + listOfNotNull(nook) + riverside, things, raw.people)
     }
 
     private fun f(type: FixtureType, x: Float, y: Float = Float.NaN, variant: Int = 0, on: Int = -1) = FixtureDef(type, x, y, variant, 0f, on)

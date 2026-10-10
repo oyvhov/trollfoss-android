@@ -1161,10 +1161,11 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
                 else -> Made(ThingType.SWIM_RING)
             }
         }
-        val t = world.addThing(made.type, made.variant, place, f.x + 0.12f, f.y + 0.06f)
+        val facing = if (f.variant == 1) -1f else 1f
+        val t = world.addThing(made.type, made.variant, place, f.x + facing * 0.12f, f.y + 0.06f)
         t.vy = -2.0f
-        t.vx = -0.55f
-        t.vrot = -300f
+        t.vx = -0.55f * facing
+        t.vrot = -300f * facing
         capPlace(place, keep = t)
         listener.onSpawn(t)
         listener.onFx(Fx.CATCH, t.x, t.y, f, t)
@@ -1901,7 +1902,8 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
      */
     fun clampFixture(place: PlaceId, f: Fixture, x: Float, y: Float): FloatArray {
         // The projected hull and propeller extend beyond the seat/hit box.
-        val half = f.spec.w / 2f + if (f.type == FixtureType.BOAT || f.type == FixtureType.SUBMARINE) 0.08f else 0f
+        val projectsPastSeats = (f.type == FixtureType.BOAT && f.variant != 1) || f.type == FixtureType.SUBMARINE
+        val half = f.spec.w / 2f + if (projectsPastSeats) 0.08f else 0f
         var cx = x.coerceIn(half + 0.01f, place.width - half - 0.01f)
         // Furniture stays inside the rooms that stand: an empty slot of Mitt hus is open air.
         if (place.mine) cx = Mine.clampX(world.mine, place, cx, half)

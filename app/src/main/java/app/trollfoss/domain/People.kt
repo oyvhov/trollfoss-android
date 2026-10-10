@@ -39,7 +39,7 @@ object Styles {
     /** 0 plain, 1 cat, 2 bunny, 3 bear, 4 troll. */
     const val EARS = 5
     /** Original 0..6, then 7 jacket, 8 button shirt, 9 ribbed sweater, 10 sports shirt, 11 cape. */
-    const val TOPS = 17 // 12 open jacket, 13 soft top, 14 quarter zip, 15 zipped fleece, 16 quilted jacket.
+    const val TOPS = 19 // 12..16 portraits, 17 swim suit, 18 swim shirt and shorts. Never reorder saved styles.
     /** 0 trousers, 1 shorts, 2 skirt, 3 cargo trousers, 4 striped socks. */
     const val BOTTOMS = 5
     /** Original 0..3, then 4 freckles/stubble, 5 cheek stars, 6 patch, 7 earrings, 8 dimples. */

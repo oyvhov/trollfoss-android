@@ -2033,7 +2033,8 @@ class Engine(
             Fx.OWL -> s(Sfx.OWL, 0.8f)
             Fx.SHAKE -> {
                 s(Sfx.SWISH, 0.6f)
-                val kind = if (param == 1) PKind.SNOW else PKind.LEAF
+                val snowyTree = param == 1 && (fixture?.place != PlaceId.VAGSTADDALEN || season == Season.WINTER)
+                val kind = if (snowyTree) PKind.SNOW else PKind.LEAF
                 repeat(8) {
                     particles.add(Particle(kind, x + (random.nextFloat() - 0.5f) * 0.3f, y + (random.nextFloat() - 0.5f) * 0.15f, (random.nextFloat() - 0.5f) * 0.1f, 0.05f, 2.5f, 0.012f, listOf(Color(0xFF3BC46B), Color(0xFFFFC83D), Color(0xFFFF9F43))[random.nextInt(3)]))
                 }

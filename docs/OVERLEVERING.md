@@ -1,5 +1,18 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – VAGSTADDALEN MED BADELIV (2026-10-10, Codex):** Lokal grein
+> `codex/vagstaddalen-elveliv` i `rainbow-finale/topa`, frå `178b519`. Foss over to fjellhyller,
+> fiskar, strand og meir natur-/hyttedetaljar; ny fiskeplass og bål på høgre breidd.
+> To badedrakter kan dragast på figurane, og ein gul gummibåt tek to barn over elva.
+> Bading, klesbyte, gamle lagringar, den hemmelege steinen og pakka/flytta ting er bevarte.
+> **Kontroll:** 698 JVM-testar, 102 Android-testar på kvart av mobil/nettbrett og lint (0 feil,
+> 32 åtvaringar) grøne. Faktiske drag for påkleding, bading, ombordstiging og ilandstiging er prøvde.
+> Ti scenebilete med dag/natt/vinter er visuelt gjennomgåtte. Ingen prøveapp-krasj/ANR i øktloggane.
+> Rapport: `docs/superpowers/plans/2026-10-10-vagstaddalen-elveliv.md`.
+> APK/bilete/loggar: `C:/topa/dist/vagstaddalen-elveliv/`. Prøvepakkane er fjerna, skjermval tilbakeførte
+> og eigen emulator stoppa. Ingen fysisk eining eller GitHub-CI i denne runden.
+> Versjon framleis 1.16.0 / 21; dette tillegget er ikkje pusha eller publisert.
+
 > **NYAST – 1.16.0 ER PUBLISERT (2026-10-09, Codex):**
 > [Release](https://github.com/oyvhov/trollfoss-android/releases/tag/v1.16.0), kode 21,
 > APK-kjelde/tagg `75826df`. Alle familieportretta, Sander, hemmelege fossar og arbeidet etter 1.12

@@ -115,7 +115,16 @@ mjølk blir deig i mjølbollen på kjøkenbenken, og deigen kan bakast med bæra
 pinnar av ein planke; pinnane kan bli ein gitar på arbeidsbenken. Resultata er vanlege flyttbare ting som
 kan serverast, spelast på og takast med mellom rom og stader. Bilettips og oppdagingsboka viser oppskriftene.
 
-**Vagstaddalen** (`VAGSTADDALEN`) er ein roleg dal med ei lita laftehytte, ei svingande elv frå fjellet og grøne elvebreidder. Hyttedørene kan opnast; det finst fiskeplass, bål, benk, ved og ein katt. Scena er 5,4 einingar brei, med plass til å leike på begge sider av elva.
+**Vagstaddalen** (`VAGSTADDALEN`) er ein roleg dal med ei lita laftehytte og ei svingande elv.
+På høgresida fell ein foss over to fjellhyller ned i elva, med vassprut, skum og fiskar i kulpen.
+Ei lita sandstrand har sandslott, bøtte, spade, badeball, badering og to badedrakter på ei matte.
+Dra badekleda på ein venn; dei gamle kleda kjem tilbake som ein laus ting og kan takast på att.
+Med badekleda får figurane nakne føter og korte buksebein, medan dei lagra buksene og skoa blir bevarte.
+Venner flyt og sym når dei blir sleppte i elva, og kan dragast i land att. Ein liten gul gummibåt
+har plass til to og bruker dei vanlege køyrepilene; han stoppar ved elvebreidda.
+Begge breidder har fiskeplass og bål, og fangsten kan steikjast. Hyttedørene, benken, veden, katten
+og den hemmelege steinen er bevarte. Bjørker, gran, mose, bregner, steinar og hytte har fine detaljar.
+Scena er 5,4 einingar brei. Nye ting kjem éin gong i gamle lagringar, utan å flytte barnet sine ting.
 
 Verda har **76 glimt**. Vagstaddalen og dei femten opphavlege stadene har tre kvar: under ting, inni ting, eller dei dukkar opp når du gjer noko
 (fiskar opp ei kiste, køyrer traktoren, sender opp raketten, slår av tyngdekrafta, tek pariserhjulet

@@ -1,5 +1,13 @@
 # Endringslogg
 
+## I arbeid – meir liv i Vagstaddalen
+
+- Foss over to fjellhyller på høgresida, skum, sprut og synlege fiskar i elva. Ny fiskeplass og bål ved kulpen; fisk kan steikjast på bålet.
+- Lita elvestrand med sandslott, bøtte, spade, badeball, badering og to slags badeklede. Venner kan skifte, bade og dragast i land att.
+- Gul gummibåt med to sitjeplassar og dei vanlege køyrepilene. Båten held seg i elva og kan lagrast og hentast fram att.
+- Fleire blad, greiner, barnåler, mose, bregner, steinar, konglar og detaljar i hytteveggar og vindauge.
+- Gamle figurar, utsjånader, klede, flytta ting og den hemmelege steinen blir bevarte. Nye lause ting blir berre lagde til éin gong.
+
 ## 1.16.0 – Familien, hemmelege fossar og nye eventyr
 
 - Alle figurartane har meir liv i hovud, kropp og rørsler, og menneska har mjukare ledd, sko og ansiktsformer i den same teiknefilmstilen.

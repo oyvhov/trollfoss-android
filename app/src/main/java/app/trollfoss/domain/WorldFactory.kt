@@ -18,6 +18,7 @@ object WorldFactory {
                 if (def.type == FixtureType.CAROUSEL) f.angle = 1.5708f
                 // Street lamps are lit, so the park and the beach glow when night falls.
                 if (def.type == FixtureType.LAMP_POST) f.on = true
+                if (place == PlaceId.VAGSTADDALEN && index == Vagstaddalen.RIVER_FIRE) f.on = true
                 world.fixtures[f.id] = f
             }
         }
@@ -83,6 +84,7 @@ object WorldFactory {
         // Where each thing lies now is its home, for tidying up later.
         for (t in loose) remember(world, t)
         StarterLayout.tidyPlace(world, place)
+        if (place == PlaceId.VAGSTADDALEN) world.flags += Vagstaddalen.RIVER_LIFE
     }
 
     /** Makes the spot where [t] rests its home: on its furniture (following it if moved) or on the floor. */

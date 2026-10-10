@@ -496,6 +496,10 @@ internal fun DrawScope.thGarment(v: Int, w: Float, h: Float, pen: Pen) {
     fun o(x: Float, y: Float) = Offset(x * w, y * h)
     val style = Garment.style(v)
     val col = argb(Palette.cloth[Garment.color(v)])
+    if (Garment.swimwear(style)) {
+        drawSwimGarment(style, col, w, h, pen)
+        return
+    }
     val hook = thSketch(w, h) { m(0f, -0.8f); l(0f, -0.88f); q(0f, -0.99f, 0.08f, -0.99f); q(0.15f, -0.99f, 0.15f, -0.92f) }
     drawPath(hook, Ink.line, style = Stroke(w * 0.035f + pen.lw * 1.6f, cap = StrokeCap.Round))
     drawPath(hook, ThingInk.silver, style = Stroke(w * 0.035f, cap = StrokeCap.Round))

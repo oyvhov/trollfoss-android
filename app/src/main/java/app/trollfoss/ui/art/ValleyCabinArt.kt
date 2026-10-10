@@ -22,11 +22,21 @@ private fun DrawScope.valleyCabinFace(f: Fixture, u: Float, pen: Pen) {
     groundShadow(0f, 0.01f * u, 0.48f * u)
     fxBox(u, -0.43f, -0.50f, 0.43f, 0f, 0.14f, wall, pen, top = wall.lighten(0.12f), side = wall.darken(0.16f))
     for (k in 1..8) drawLine(wall.darken(0.3f), Offset(-0.43f * u, -k * 0.055f * u), Offset(0.43f * u, -k * 0.055f * u), pen.lw * 0.65f)
+    val grain = Path()
+    for (k in 0..7) {
+        val x = -.36f + hash01(k, 5177) * .53f
+        val y = -.035f - k * .055f
+        grain.moveTo(x*u,y*u)
+        grain.cubicTo((x+.025f)*u,(y-.009f)*u,(x+.07f)*u,(y+.006f)*u,(x+.12f)*u,y*u)
+        if (k % 3 == 0) grain.addOval(Rect((x+.036f)*u,(y-.009f)*u,(x+.067f)*u,(y+.003f)*u))
+    }
+    drawPath(grain,wall.lighten(.2f),style=pen.thin)
     for (x in floatArrayOf(-0.43f, 0.42f)) inkedRound(Rect(x * u, -0.51f * u, (x + 0.025f) * u, 0f), 0.003f * u, red, pen, shade = false)
     for (x in floatArrayOf(-0.31f, 0.12f)) {
         inkedRound(Rect((x - 0.015f) * u, -0.415f * u, (x + 0.185f) * u, -0.15f * u), 0.006f * u, red, pen)
         val r = Rect(x * u, -0.4f * u, (x + 0.17f) * u, -0.165f * u)
         inkedRound(r, 0.004f * u, Color(0xFFC2D9CA).atNight(pen.night, 0.45f), pen, shade = false)
+        drawLine(Color.White.copy(alpha=.42f),Offset((x+.027f)*u,-.37f*u),Offset((x+.075f)*u,-.31f*u),pen.lw*1.9f)
         drawLine(blue, Offset(r.center.x, r.top), Offset(r.center.x, r.bottom), pen.lw * 1.8f)
         for (y in floatArrayOf(-0.322f, -0.245f)) drawLine(blue, Offset(r.left, y * u), Offset(r.right, y * u), pen.lw * 1.8f)
         drawRect(blue, r.topLeft, r.size, style = androidx.compose.ui.graphics.drawscope.Stroke(pen.lw * 1.6f))
@@ -49,6 +59,7 @@ private fun DrawScope.valleyCabinFace(f: Fixture, u: Float, pen: Pen) {
         }
     }
     fxBox(u, -0.22f, -0.72f, -0.14f, -0.56f, 0.07f, Color(0xFF535D64), pen, z = 0.09f)
+    for (k in 0..2) drawLine(Color(0xFF869197),Offset(-.175f*u,(-.705f+k*.043f)*u),Offset(-.095f*u,(-.705f+k*.043f)*u),pen.lw*.6f)
     fxBox(u, -0.23f, -0.735f, -0.13f, -0.715f, 0.09f, Color(0xFFAAB5BC), pen, z = 0.08f)
     // Small side gable, with the blue shutter from the reference.
     val gable = Path().apply {

@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import app.trollfoss.domain.Anatomy
 import app.trollfoss.domain.Face
 import app.trollfoss.domain.FigurePose
+import app.trollfoss.domain.Garment
 import app.trollfoss.domain.Look
 import app.trollfoss.domain.Palette
 import app.trollfoss.domain.PersonAnim
@@ -75,7 +76,8 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
     val hair = argb(Palette.hairs[look.hairColor])
     val topColor = argb(Palette.cloth[look.topColor])
     val overalls = look.top == 4
-    val bottomColor = if (overalls) topColor else argb(Palette.cloth[look.bottomColor])
+    val swimwear = Garment.swimwear(look.top)
+    val bottomColor = if (overalls || swimwear) topColor else argb(Palette.cloth[look.bottomColor])
     val shoe = argb(Palette.cloth[look.shoes])
     val sleeping = a.face == Face.SLEEP
 
@@ -94,7 +96,7 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
 
     withTransform({ translate(0f, bob * h) }) {
         // ---- skirt sits under the top
-        if (look.bottom == 2 && !overalls && look.top != 2) {
+        if (look.bottom == 2 && !overalls && !swimwear && look.top != 2) {
             val skirt = Path().apply {
                 moveTo(-0.17f * h, -0.2f * h)
                 lineTo(0.17f * h, -0.2f * h)
@@ -133,7 +135,9 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
         }
         inked(torso, shirt, pen, outline = false)
         clipPath(torso) {
-            if (look.top == 16) {
+            if (swimwear) {
+                swimwearDetails(topColor, h, pen, look.top == Garment.SWIM_SET)
+            } else if (look.top == 16) {
                 folkPattern(look, h, pen)
                 quiltedJacket(look, topColor, h, pen)
             } else if (look.top == 8 || look.top == 12 || look.top == 14 || look.top == 15) {
@@ -178,9 +182,9 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
                 drawCircle(ShirtWhite, .012f * h, elbow)
             }
             if (longSleeves && look.pattern == 10) meadowFlower(elbow, .028f * h, pen)
-            if (!longSleeves) {
+            if (!longSleeves && look.top != Garment.SWIM_SUIT) {
                 val end = Offset(shoulder.x + (hand.x - shoulder.x) * 0.42f, shoulder.y + (hand.y - shoulder.y) * 0.42f)
-                capsule(shoulder, end, 0.104f * h, if (look.pattern == 6 && side < 0f) argb(Palette.cloth[look.accent]) else sleeve, pen)
+                capsule(shoulder, end, 0.104f * h, if (!swimwear && look.pattern == 6 && side < 0f) argb(Palette.cloth[look.accent]) else sleeve, pen)
             }
             if (look.top == 5) {
                 val cuff = Offset(shoulder.x + (hand.x - shoulder.x) * 0.84f, shoulder.y + (hand.y - shoulder.y) * 0.84f)
