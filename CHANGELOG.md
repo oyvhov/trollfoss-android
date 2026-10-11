@@ -1,6 +1,6 @@
 # Endringslogg
 
-## I arbeid – meir liv i Vagstaddalen
+## 1.17.0 – Foss og badeliv i Vagstaddalen
 
 - Foss over to fjellhyller på høgresida, skum, sprut og synlege fiskar i elva. Ny fiskeplass og bål ved kulpen; fisk kan steikjast på bålet.
 - Lita elvestrand med sandslott, bøtte, spade, badeball, badering og to slags badeklede. Venner kan skifte, bade og dragast i land att.

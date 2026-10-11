@@ -44,7 +44,7 @@ påske og graskartid. Storhuset og Mitt hus har fleire etasjar bak kvart sitt re
 | **Heileberget** | Det store, lange fjellet: ta taubana opp, rop mot ekko-steinen, møt geitene og plant flagget på toppen. |
 | **Storhuset** | Utforske fire etasjar og ein hage, ta heisen og rutsjebanane, møte roboten Rolf og spøkelset Sture og finne fem gylne nøklar. |
 | **Mitt hus** | Byggje eit eige hus rom for rom, velje tak og fargar, møblere og lage ein etasje til. Dyrke bær, bake og snikre ein gitar. |
-| **Vagstaddalen** | Opne den brune hytta med blå vindauge og torvtak, fiske i elva, grille fangsten og hente venner på tur. |
+| **Vagstaddalen** | Utforske hytta og fossen, skifte til badeklede, bade frå sandstranda, køyre gummibåt for to, fiske og grille fangsten. |
 
 ## Det som gjer det spesielt
 
