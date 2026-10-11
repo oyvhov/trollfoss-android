@@ -1,5 +1,16 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – 1.17.0 ER PUBLISERT (2026-10-11, Codex):**
+> [Release](https://github.com/oyvhov/trollfoss-android/releases/tag/v1.17.0), kode 22,
+> APK-kjelde/tagg `008d647`. Foss, strand, fisk/bål, badeklede, bading, gummibåt for to og
+> fleire natur-/hyttedetaljar i Vagstaddalen er med. 698 JVM-testar og CI på grein, main og tagg grøne.
+> Ekte nedlasting/installasjon gjennom appen er bestått; installert APK har same hash som utgivinga.
+> Gamle lagringar og dei 371 figurane/tinga før oppdateringa er bevarte. Mobil/nettbrett er visuelt
+> kontrollerte, med faktiske drag for bading, to båtpassasjerar og ilandstiging. Ingen krasj/ANR i økta.
+> Full rapport: `docs/superpowers/plans/2026-10-11-release-1-17-0.md`.
+> Arkiv: `C:/topa/dist/release-v1.17.0/`. Eigen emulator stoppa og skjermval tilbakeførte.
+> Arbeidskopi `rainbow-finale/topa`, no på `main`. Ingen fysisk eining er testa.
+
 > **NYAST – VAGSTADDALEN MED BADELIV (2026-10-10, Codex):** Lokal grein
 > `codex/vagstaddalen-elveliv` i `rainbow-finale/topa`, frå `178b519`. Foss over to fjellhyller,
 > fiskar, strand og meir natur-/hyttedetaljar; ny fiskeplass og bål på høgre breidd.
