@@ -33,142 +33,18 @@ private fun lerpF(a: Float, b: Float, t: Float) = a + (b - a) * t
 
 /** A stairwell in the floor with banisters round it: warm light from the hall below, steps going down out of sight. */
 internal fun DrawScope.upStairsDown(f: Fixture, u: Float, pen: Pen) {
-    fun q(x: Float, y: Float, z: Float) = fxQ(u, x, y, z)
-    val opening = StairDoorways.upperDown
-    val z0 = opening.near
-    val z1 = opening.far
     upShadow(u, 0.84f, 0.1f, 0.4f)
-    // The trim of the floor round the opening, then the opening itself.
-    fxFace(fxFlat(u, -0.42f, 0.42f, 0f, z0 - 0.03f, z1 + 0.03f, 0.014f), UpC.walnut, pen)
-    val hole = fxFlat(u, opening.left, opening.right, 0f, z0, z1, 0.01f)
-    val a = q(opening.left, 0f, z0)
-    val b = q(opening.right, 0f, z1)
-    drawPath(hole, Brush.verticalGradient(0f to Color(0xFFFFC76B), 0.35f to Color(0xFF8A4F2C), 1f to Color(0xFF2A1810), startY = b.y, endY = a.y))
-    clipPath(hole) {
-        // The left wall of the shaft, in shade, and the steps going down away from us, darker and darker.
-        val wall = Path().apply {
-            val p1 = q(-0.38f, 0f, z0)
-            val p2 = q(-0.38f, 0f, z1)
-            val p3 = q(-0.38f, 0.22f, z1)
-            val p4 = q(-0.38f, 0.22f, z0)
-            moveTo(p1.x, p1.y); lineTo(p2.x, p2.y); lineTo(p3.x, p3.y); lineTo(p4.x, p4.y); close()
-        }
-        drawPath(wall, Color(0xFF7A5A44))
-        for (k in 0 until 7) {
-            val z = z0 + 0.008f + k * 0.033f
-            val y = 0.004f * k
-            val shade = lerp(Color(0xFFF3D3A0), Color(0xFF4A2F20), k / 7f)
-            drawPath(fxFlat(u, -0.35f, 0.37f, y, z, z + 0.026f), shade)
-            drawPath(fxFlat(u, -0.35f, 0.37f, y, z, z + 0.026f), Ink.line.copy(alpha = 0.55f), style = pen.thin)
-        }
-        // Light and a faint hum of dust from the hall.
-        val glowAt = q(0.1f, 0f, z1 - 0.02f)
-        fxGlow(glowAt, 0.3f * u, Color(0xFFFFD27A), 0.6f)
-    }
-    drawPath(hole, Ink.line, style = pen.stroke)
-    // Rails at the two sides running back, and the front rail with its balusters and newel posts.
-    val railY = -0.19f
-    for (side in listOf(-1f, 1f)) {
-        val x = side * 0.4f
-        for (k in 1..3) fxPost(u, x, 0.03f + k * 0.07f, -0.01f, railY + 0.012f, 0.0055f, UpC.oak, pen)
-        capsule(q(x, railY, 0f), q(x, railY, z1 + 0.02f), 0.02f * u, UpC.walnut, pen)
-    }
-    fxBox(u, -0.4f, -0.022f, 0.4f, 0f, 0.025f, UpC.walnut, pen, rad = 0.004f)
-    for (k in 0..10) {
-        val x = -0.35f + k * 0.07f
-        fxPost(u, x, 0.012f, -0.02f, railY + 0.012f, 0.0065f, UpC.oak, pen)
-    }
-    fxBox(u, -0.43f, railY - 0.022f, 0.43f, railY + 0.002f, 0.034f, UpC.walnut, pen, rad = 0.008f, z = -0.004f, top = UpC.walnut.lighten(0.22f))
-    for (x in listOf(-0.4f, 0.4f)) {
-        fxPost(u, x, 0.014f, 0f, -0.27f, 0.017f, UpC.wood, pen)
-        inkedCircle(q(x, -0.29f, 0.014f), 0.022f * u, UpC.brass, pen)
-        shine(q(x - 0.006f, -0.298f, 0.014f), 0.008f * u, 0.006f * u, 0.8f)
-    }
+    stairWell(u, StairDoorways.upperDown, pen)
 }
 
 // ---------------------------------------------------------------------------------------------- stairs up
 
 /** A wooden flight rising to the right up to a little door in the wall: the way to the attic. */
 internal fun DrawScope.upStairsUp(f: Fixture, u: Float, pen: Pen) {
-    fun p(x: Float, y: Float) = Offset(x * u, y * u)
-    fun q(x: Float, y: Float, z: Float) = fxQ(u, x, y, z)
-    val n = 8
-    val rise = 0.0625f
-    val run = 0.0875f
-    val x0 = -0.4f
-    val depth = 0.075f
-    upShadow(u, 0.84f, depth, 0.8f)
-    // The doorway at the top of the stairs, in the back wall: a dark attic with a bulb and a trunk, and the light that sleeps in it.
-    // Shared with the touch area (see [StairDoorways]).
-    val wx = StairDoorways.ATTIC_LEFT
-    val wr = StairDoorways.ATTIC_RIGHT
-    val sill = StairDoorways.ATTIC_SILL
-    val doorTop = StairDoorways.ATTIC_TOP
-    val arch = Path().apply {
-        val l = q(wx, sill, 0.07f)
-        val r = q(wr, sill, 0.07f)
-        val tl = q(wx, doorTop + 0.07f, 0.07f)
-        val tr = q(wr, doorTop + 0.07f, 0.07f)
-        val m = q((wx + wr) / 2f, doorTop - 0.02f, 0.07f)
-        moveTo(l.x, l.y); lineTo(tl.x, tl.y); quadraticTo(tl.x, m.y, m.x, m.y); quadraticTo(tr.x, m.y, tr.x, tr.y); lineTo(r.x, r.y); close()
-    }
-    fxFace(arch, Color(0xFF241A33), pen)
-    clipPath(arch) {
-        val c = q((wx + wr) / 2f, sill - 0.12f, 0.07f)
-        fxGlow(c, 0.2f * u, Color(0xFFFFC96B), 0.55f)
-        // A bulb on a cord and the lid of a trunk.
-        val bulb = q((wx + wr) / 2f + 0.01f, doorTop + 0.1f, 0.07f)
-        drawLine(Ink.line.copy(alpha = 0.7f), Offset(bulb.x, bulb.y - 0.1f * u), bulb, strokeWidth = pen.lw * 0.6f)
-        drawCircle(Color(0xFFFFE9A8), 0.009f * u, bulb)
-        val trunk = q(wx + 0.05f, sill, 0.07f)
-        inkedRound(Rect(trunk.x, trunk.y - 0.05f * u, trunk.x + 0.09f * u, trunk.y), 0.008f * u, Color(0xFF6B4A33), pen, shade = false)
-        drawLine(UpC.brass, Offset(trunk.x, trunk.y - 0.028f * u), Offset(trunk.x + 0.09f * u, trunk.y - 0.028f * u), strokeWidth = pen.lw)
-    }
-    drawPath(arch, Ink.line, style = pen.stroke)
-    // The frame round the opening.
-    drawPath(arch, UpC.cream, style = Stroke(0.012f * u, join = StrokeJoin.Round))
-    drawPath(arch, Ink.line, style = pen.thin)
-
-    // The flight itself, a solid with a stepped top.
-    val pts = ArrayList<Float>()
-    pts += x0 * u; pts += 0f
-    for (k in 1..n) {
-        pts += (x0 + run * (k - 1)) * u; pts += -rise * k * u
-        pts += (x0 + run * k) * u; pts += -rise * k * u
-    }
-    pts += (x0 + run * n) * u; pts += 0f
-    prism(pts.toFloatArray(), depth * u, UpC.oakDark, pen, shadeFront = true) { _, up -> if (up) UpC.oak.lighten(0.1f) else UpC.oakDark.darken(0.2f) }
-    // Treads show a lighter edge and the side shows the stringer's grain.
-    for (k in 1..n) {
-        val a = q(x0 + run * (k - 1), -rise * k, 0f)
-        val b = q(x0 + run * k, -rise * k, 0f)
-        drawLine(UpC.oak.lighten(0.5f), Offset(a.x, a.y + pen.lw), Offset(b.x, b.y + pen.lw), strokeWidth = pen.lw * 0.8f, cap = StrokeCap.Round)
-    }
-    for (k in 0 until 6) {
-        val gx = x0 + 0.07f + k * 0.1f
-        val gy = -0.02f - k * 0.0625f
-        fxLine(p(gx, gy), p(gx + 0.05f, gy - 0.004f), UpC.oakDark.darken(0.3f), pen.lw * 0.5f)
-    }
-    // Banisters and the handrail along the front.
-    val slope = -(rise * (n - 1)) / (run * (n - 1))
-    fun rail(x: Float) = -rise - 0.175f + slope * (x - x0)
-    val xa = x0 + 0.04f
-    val xb = x0 + run * n - 0.03f
-    for (k in 1..n) {
-        val x = x0 + run * (k - 0.5f)
-        fxPost(u, x, 0.005f, -rise * k, rail(x) + 0.01f, 0.0055f, UpC.oak, pen)
-    }
-    capsule(p(xa, rail(xa)), p(xb, rail(xb)), 0.02f * u, UpC.walnut, pen)
-    for (x in listOf(x0 + 0.015f, x0 + run * n - 0.012f)) {
-        val top = if (x < 0f) rail(x) - 0.07f else rail(x) - 0.06f
-        val base = if (x < 0f) 0f else -rise * n
-        fxPost(u, x, 0.005f, base, top, 0.016f, UpC.wood, pen)
-        inkedCircle(q(x, top - 0.018f, 0.005f), 0.02f * u, UpC.brass, pen)
-    }
-    // A little star hangs on the door at the top.
-    val star = q((wx + wr) / 2f, doorTop + 0.02f, 0.07f)
-    drawPath(starPath(star, 0.016f * u, 0.007f * u), UpC.yellow)
-    drawPath(starPath(star, 0.016f * u, 0.007f * u), Ink.line, style = pen.thin)
+    upShadow(u, 0.84f, 0.12f, 0.8f)
+    stairPortal(u, StairDoorways.attic, pen)
+    fxBox(u, 0.1f, -0.53f, 0.33f, -0.5f, 0.07f, Color(0xFFE3B984), pen, rad = 0.005f)
+    stairFlight(u, pen, low = -0.4f, high = 0.3f, height = 0.5f, depth = 0.075f)
 }
 
 // ---------------------------------------------------------------------------------------------- the lift

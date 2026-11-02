@@ -24,7 +24,8 @@ stort hus å utforske; Mitt hus (`MINE_*`) er det barnet byggjer sjølv.
 1. **Tomta** (`MINE_YARD`, knapp på kartet, nytt «Mitt hus»). Fyrste gong: ei grøn tomt med eit skilt, eit lite
    byggjeskur med reiskapar, ein haug planker og ein hammar. Ein pil og ei boble peikar på hammar-knappen.
 2. **Grunnmur.** Hammar-knappen opnar byggjepanelet. Fyrste val: **malen** (fire typar: hytte, villa, tårnhus,
-   gamalt bondehus), kvar med eigne fargar, tak og form. Når barnet vel, spelar ein byggjesekvens: reiskapar
+   gamalt bondehus), kvar med eigne fargar, tak og form. Eit trykk viser huset i større format; barnet kan
+   velje eit anna utan å endre verda. Først «Bygg huset» startar byggjesekvensen: reiskapar
    flyg, hamring, støv, planker som reiser seg, og huset spretter opp med konfetti. Entré (slot 0) finst no.
 3. **Rom for rom.** Inne (`MINE_GROUND`, fem slot à to einingar; slot 0 er entréen med trappa) viser tomme slot ein
    «bygg her»-ramme med eit +. Trykk, vel romtype (ti typar), og sjå rommet bli bygd: stillas, hamring, sag,

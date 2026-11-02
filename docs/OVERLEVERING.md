@@ -1,5 +1,18 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – TRAPPER OG HUSBYGGING (2026-11-02, Codex):**
+> Lokal grein `codex/stairs-building-redesign` i `C:/topa/.gradle-tmp/rainbow-finale`,
+> frå `ef4cef5` (ytingsarbeidet er med). Nye opne trapper i lyst tre og grønt rekkverk,
+> med piler ved inngangane. Husbygging: vel → sjå → bygg, byte før bygg, tydelegare
+> romknappar og kompakt etasjeoversikt på mobil. Passasjar og lagringsformat er uendra.
+> 701 JVM-testar, 106 Android-testar per mobil/nettbrett og lint (0 feil / 32 eksisterande
+> åtvaringar) grøne. Dei tre nye testane er køyrde på nytt etter siste finpuss. Faktiske trykk
+> for villa, stove, kjøken, ny etasje og trappereiser er bestått; lagring over prøveoppdatering
+> er kontrollert. Stova_TV er starta att; eigen emulator og prøvepakkar er rydda.
+> Rapport: `docs/STAIRS_BUILDING_2026-11-02.md`. APK/bilete/loggar:
+> `C:/topa/dist/stairs-building-2026-11-02/`. Lokal prøve, ingen release/versjonsauke/push.
+> Rotkopien sine eldre uferdige kodeendringar er urørte.
+
 > **NYAST – YTING PÅ TREIGARE EININGAR (2026-11-02, Codex):**
 > Lokal grein `codex/performance-slow-devices` i `C:/topa/.gradle-tmp/rainbow-finale`
 > (arbeidskopi `C:/Users/Øyvind/.codex/worktrees/rainbow-finale/topa`), frå `f80479f`.

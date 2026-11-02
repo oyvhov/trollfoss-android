@@ -26,65 +26,13 @@ import kotlin.math.sin
 
 /** A wooden flight of stairs going down to the right from a lit door in the hall above. */
 internal fun DrawScope.ceStairs(f: Fixture, u: Float, pen: Pen) {
-    fun p(x: Float, y: Float) = Offset(x * u, y * u)
-    fun q(x: Float, y: Float, z: Float) = fxQ(u, x, y, z)
-    val t = pen.t
-    val d = 0.2f
-    val steps = 9
-    val run = 0.78f / steps
-    val rise = 0.47f / steps
-    ceShadow(u, 0.84f, d)
-    // The door at the top, left ajar: warm light spills down the steps.
-    val door = Rect(p(-0.42f, -0.78f), p(-0.27f, -0.5f))
-    // The frame of the door is also where a tap on it counts (see [StairDoorways]).
-    val way = StairDoorways.cellar
-    fxBox(u, way.left, way.top, way.right, way.bottom, 0.04f, Color(0xFFE9E1D3), pen, rad = 0.005f, z = d - 0.02f)
-    val leaf = Rect(p(-0.415f, -0.775f), p(-0.275f, -0.5f))
-    drawRect(Brush.verticalGradient(listOf(Color(0xFFFFF0B8), Color(0xFFFFD27A)), startY = leaf.top, endY = leaf.bottom), leaf.topLeft, leaf.size)
-    drawRect(Ink.line, leaf.topLeft, leaf.size, style = pen.thin)
-    val beam = Path().apply {
-        moveTo(p(-0.41f, -0.5f).x, p(-0.41f, -0.5f).y); lineTo(p(-0.28f, -0.5f).x, p(-0.28f, -0.5f).y)
-        lineTo(p(0.25f, -0.06f).x, p(0.25f, -0.06f).y); lineTo(p(-0.12f, -0.06f).x, p(-0.12f, -0.06f).y); close()
-    }
-    drawPath(beam, Brush.linearGradient(listOf(Color(0xFFFFF0B8).copy(alpha = 0.35f), Color(0xFFFFF0B8).copy(alpha = 0f)), p(-0.34f, -0.5f), p(0.1f, -0.06f)))
-    // Dust motes drift in the light.
-    for (k in 0 until 7) {
-        val ph = ceFrac(t * 0.15f, 1f, hash01(k, 921))
-        val x = -0.36f + 0.5f * ph + sin(t + k) * 0.01f
-        val y = -0.5f + 0.4f * ph * (0.6f + 0.4f * hash01(k, 922))
-        drawCircle(Color.White, 0.003f * u, p(x, y), alpha = 0.6f * (1f - ph))
-    }
-    // The steps, high end on the left. Each one is a block: its profile faces us, its tread is the top.
-    val wood = CeC.wood
-    for (k in 0 until steps) {
-        val l = -0.4f + k * run
-        val top = -0.5f + k * rise
-        fxBox(u, l, top, l + run, 0f, d, if (k % 2 == 0) wood else wood.darken(0.06f), pen, rad = 0.003f, top = CeC.woodLight, side = CeC.woodDark)
-        // A worn edge along the tread, and grain on the profile.
-        val a = q(l, top, 0f)
-        val b = q(l + run, top, 0f)
-        drawLine(Color.White.copy(alpha = 0.35f), Offset(a.x, a.y + pen.lw), Offset(b.x, b.y + pen.lw), strokeWidth = pen.lw * 0.8f)
-        if (k % 3 == 1) drawLine(CeC.woodDark.copy(alpha = 0.55f), p(l + run * 0.2f, top + (0f - top) * 0.4f), p(l + run * 0.8f, top + (0f - top) * 0.4f + 0.004f), strokeWidth = pen.lw * 0.6f)
-    }
-    // A hand rail on posts along the near edge, rising to the left.
-    val railFrom = p(-0.4f + 0.02f, -0.5f - 0.19f)
-    val railTo = p(0.37f, -0.19f + 0.0f)
-    for (k in 0..3) {
-        val f0 = k / 3f
-        val x = -0.38f + f0 * 0.74f
-        val topY = -0.69f + f0 * 0.5f
-        val stepIndex = ((x + 0.4f) / run).toInt().coerceIn(0, steps - 1)
-        val floorY = -0.5f + stepIndex * rise
-        capsule(p(x, floorY), p(x, topY), 0.006f * u, CeC.woodDark, pen)
-    }
-    drawLine(Ink.line, railFrom, railTo, strokeWidth = 0.014f * u + pen.lw * 2f, cap = StrokeCap.Round)
-    drawLine(CeC.woodLight, railFrom, railTo, strokeWidth = 0.014f * u, cap = StrokeCap.Round)
-    drawLine(Color.White.copy(alpha = 0.5f), Offset(railFrom.x, railFrom.y - 0.004f * u), Offset(railTo.x, railTo.y - 0.004f * u), strokeWidth = pen.lw)
-    // A small lantern hangs at the bottom of the rail; a mat lies at the foot of the stairs.
-    val lan = p(0.36f, -0.215f)
-    fxGlow(lan, 0.08f * u, CeC.gold, 0.4f + 0.15f * cePulse(t, 1.6f))
-    inkedRound(Rect(lan.x - 0.008f * u, lan.y, lan.x + 0.008f * u, lan.y + 0.022f * u), 0.003f * u, Color(0xFFFFE9A8), pen, shade = false)
-    inkedRound(Rect(p(0.2f, -0.012f), p(0.4f, 0.004f)), 0.003f * u, CeC.teal, pen, shade = false)
+    ceShadow(u, 0.84f, 0.2f)
+    stairPortal(u, StairDoorways.cellar, pen)
+    stairFlight(u, pen, low = 0.38f, high = -0.4f, height = 0.5f, depth = 0.2f, steps = 9)
+    // A still amber lamp replaces the animated dust and glow: warm, inexpensive to cache.
+    val lamp = Offset(0.34f * u, -0.25f * u)
+    inkedCircle(lamp, 0.018f * u, Color(0xFFFFE6A7), pen)
+    shine(lamp - Offset(0.005f * u, 0.005f * u), 0.005f * u, 0.006f * u, 0.8f)
 }
 
 // ======================================================================================= the tunnel door

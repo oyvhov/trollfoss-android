@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Color
@@ -88,42 +89,31 @@ fun BuildPanel(vm: TrollfossViewModel, engine: Engine, place: PlaceId, compact: 
             .fillMaxHeight()
             .width(width)
             .clip(shape)
-            .background(T.Cream.copy(alpha = 0.97f))
-            .border(3.dp, T.Ink, shape)
-            .padding(horizontal = 8.dp, vertical = 8.dp),
+            .background(T.Cream)
+            .border(1.5.dp, T.CreamLine, shape)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         if (version < 0) Unit
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            GameText(if (h.started) SM.myHouse.str() else SM.chooseHouse.str(), fontSize = 20.sp, color = T.Ink)
-            CloseButton(onClose, size = if (compact) 40.dp else 48.dp)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                GameText(if (h.started) SM.myHouse.str() else SM.chooseHouse.str(), fontSize = 20.sp, color = T.Ink)
+                if (h.started) GameText((when (place) {
+                    PlaceId.MINE_GROUND -> SM.groundFloor
+                    PlaceId.MINE_UPPER -> SM.upperFloor
+                    else -> SM.houseYard
+                }).str(), fontSize = 12.sp, color = T.InkSoft)
+            }
+            CloseButton(onClose, size = 48.dp)
         }
-        if (h.started) GameText((when (place) {
-            PlaceId.MINE_GROUND -> SM.groundFloor
-            PlaceId.MINE_UPPER -> SM.upperFloor
-            else -> SM.houseYard
-        }).str(), fontSize = 15.sp, color = T.Ink)
         val tabs = buildList {
             add(BuildTab.ROOMS); add(BuildTab.FLOOR); add(BuildTab.LOOK)
             if (Mine.canParty(h)) add(BuildTab.PARTY)
         }
         if (!h.started) {
-            // The foundation: four houses to choose from.
-            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                for (row in 0 until 2) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        for (col in 0 until 2) {
-                            val i = row * 2 + col
-                            Tile(size = tile, desc = SM.template(i).str(), onClick = {
-                                if (sim.mine.layFoundation(i)) { focusX(Mine.FACADE_X0 + 0.7f); vm.changed() }
-                            }) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    CachedThumb("mine:tpl:$i", tile - 32.dp) { drawTemplateThumb(i) }
-                                    GameText(SM.template(i).str(), fontSize = 11.sp, color = T.Ink, maxLines = 2)
-                                }
-                            }
-                        }
-                    }
+            Box(Modifier.weight(1f).fillMaxWidth()) {
+                FoundationChooser(compact, sim.mine.busy) { template ->
+                    if (sim.mine.layFoundation(template)) { focusX(Mine.FACADE_X0 + 0.7f); vm.changed() }
                 }
             }
         } else {
@@ -132,9 +122,9 @@ fun BuildPanel(vm: TrollfossViewModel, engine: Engine, place: PlaceId, compact: 
                 for (t in tabs) {
                     val on = t == tab
                     val label = when (t) { BuildTab.ROOMS -> SM.rooms; BuildTab.FLOOR -> SM.anotherFloor; BuildTab.LOOK -> SM.paint; BuildTab.PARTY -> SM.partyTab }.str()
-                    Column(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(if (on) T.SunTop else Color.White)
-                        .border(if (on) 3.dp else 1.dp, if (on) T.Sun else T.Ink.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-                        .clickable { ui.tab = tabs.indexOf(t) }.padding(vertical = 5.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(if (on) BuildPale else Color.White)
+                        .border(if (on) 2.dp else 1.dp, if (on) BuildTeal else T.CreamLine, RoundedCornerShape(12.dp))
+                        .semantics { selected = on }.clickable { ui.tab = tabs.indexOf(t) }.padding(vertical = 5.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         IconCanvas(when (t) { BuildTab.ROOMS -> BuildIcons.RoomPlus; BuildTab.FLOOR -> BuildIcons.Crane; BuildTab.LOOK -> BuildIcons.Brush; BuildTab.PARTY -> BuildIcons.Party }, Modifier.size(30.dp))
                         GameText(label, fontSize = if (compact) 11.sp else 14.sp, color = T.Ink, maxLines = 1)
                     }
@@ -149,25 +139,22 @@ fun BuildPanel(vm: TrollfossViewModel, engine: Engine, place: PlaceId, compact: 
                 }
             }
         }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-            GameText(SM.done.str(), fontSize = 16.sp, color = T.Ink, modifier = Modifier.padding(end = 8.dp))
-            RoundButton(SM.done.str(), onClick = onClose, size = 40.dp, tone = Tones.Mint, icon = Icons.Check)
-        }
+
     }
 }
 
 /** A square card in the panel. */
 @Composable
-private fun Tile(size: Dp, desc: String = "", chosen: Boolean = false, enabled: Boolean = true, onClick: () -> Unit, content: @Composable () -> Unit) {
+internal fun Tile(size: Dp, desc: String = "", chosen: Boolean = false, enabled: Boolean = true, onClick: () -> Unit, content: @Composable () -> Unit) {
     val feedback = LocalFeedback.current
     Box(
         Modifier
             .size(size)
-            .semantics { if (desc.isNotEmpty()) contentDescription = desc }
+            .semantics { if (desc.isNotEmpty()) contentDescription = desc; selected = chosen }
             .alpha(if (enabled) 1f else 0.45f)
             .clip(RoundedCornerShape(18.dp))
-            .background(if (chosen) T.SunTop else Color.White)
-            .border(if (chosen) 4.dp else 2.5.dp, if (chosen) T.Sun else T.Ink, RoundedCornerShape(18.dp))
+            .background(if (chosen) BuildPale else Color.White)
+            .border(if (chosen) 2.5.dp else 1.dp, if (chosen) BuildTeal else T.CreamLine, RoundedCornerShape(18.dp))
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, enabled = enabled) {
                 feedback.sfx(Sfx.TAP, 0.5f, 1f)
                 onClick()
@@ -187,9 +174,8 @@ private fun RoomsTab(vm: TrollfossViewModel, engine: Engine, place: PlaceId, til
     if (place == PlaceId.MINE_YARD) {
         // Rooms are built from the inside: a door takes you there.
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)) {
-            RoundButton(SM.goInside.str(), onClick = { vm.travel(PlaceId.MINE_GROUND) }, size = 96.dp, tone = Tones.Sea, icon = BuildIcons.DoorIn)
-            GameText(SM.goInside.str(), fontSize = 18.sp, color = T.Ink)
-            CachedThumb("mine:house:${h.hash()}", 110.dp) { drawHouseThumb(h) }
+            CachedThumb("mine:house:${h.hash()}", if (tile < 100.dp) 110.dp else 180.dp) { drawHouseThumb(h) }
+            BuildAction(SM.goInside.str(), BuildIcons.DoorIn, onClick = { vm.travel(PlaceId.MINE_GROUND) })
         }
         return
     }
@@ -199,85 +185,84 @@ private fun RoomsTab(vm: TrollfossViewModel, engine: Engine, place: PlaceId, til
     val roomScope = rememberCoroutineScope()
     Column(Modifier.fillMaxWidth().verticalScroll(roomScroll), verticalArrangement = Arrangement.spacedBy(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         if (preview == null) {
-        GameText(SM.houseOverview.str(), fontSize = 14.sp, color = T.Ink)
-        // The five slots of the floor: tap one to look at it.
-        for (floor in listOf(PlaceId.MINE_UPPER, PlaceId.MINE_GROUND)) {
-        GameText((if (floor == PlaceId.MINE_UPPER) SM.upperFloor else SM.groundFloor).str(), fontSize = 12.sp, color = T.Ink)
-        Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-            for (i in 0 until Mine.SLOTS) {
-                val standing = h.standing(floor, i)
-                val can = Mine.canBuild(h, floor, i)
-                val chosen = floor == place && i == selected
-                val chip = if (tile < 100.dp) 38.dp else 48.dp
-                val label = (if (floor == PlaceId.MINE_UPPER) SM.upperFloor else SM.groundFloor).str() + " · " + (if (i == 0) SM.hall.str() else h.kind(floor, i)?.let { SM.kind(it).str() } ?: (SM.chooseSlot.str() + " ${i + 1}"))
-                Box(
-                    Modifier
-                        .weight(1f).height(if (tile < 100.dp) 48.dp else 64.dp)
-                        .semantics { contentDescription = label }
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (chosen) T.SunTop else if (standing) Color.White else T.CreamDeep)
-                        .border(if (chosen) 3.dp else 2.dp, if (chosen) T.Sun else T.Ink, RoundedCornerShape(8.dp))
-                        .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
-                            feedback.sfx(Sfx.TAP, 0.5f, 1f)
-                            if (floor == PlaceId.MINE_UPPER && !h.upperBuilt) { vm.mineUi.tab = 1; return@clickable }
-                            // An unsupported upstairs slot leads straight to the room it needs below.
-                            if (floor == PlaceId.MINE_UPPER && !standing && !can) {
-                                vm.travelMineRoom(PlaceId.MINE_GROUND, i)
-                                sim.mine.select(PlaceId.MINE_GROUND, i)
-                                return@clickable
+            GameText(SM.houseOverview.str(), fontSize = 14.sp, color = T.Ink)
+            // The five slots of the floor: tap one to look at it.
+            for (floor in listOf(PlaceId.MINE_UPPER, PlaceId.MINE_GROUND)) {
+                if (tile >= 100.dp) GameText((if (floor == PlaceId.MINE_UPPER) SM.upperFloor else SM.groundFloor).str(), fontSize = 12.sp, color = T.Ink)
+                Row(horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.CenterVertically) {
+                    if (tile < 100.dp) GameText(if (floor == PlaceId.MINE_UPPER) "2" else "1",
+                        fontSize = 12.sp, color = BuildTeal, modifier = Modifier.width(14.dp))
+                    for (i in 0 until Mine.SLOTS) {
+                        val standing = h.standing(floor, i)
+                        val can = Mine.canBuild(h, floor, i)
+                        val chosen = floor == place && i == selected
+                        val chip = if (tile < 100.dp) 38.dp else 48.dp
+                        val label = (if (floor == PlaceId.MINE_UPPER) SM.upperFloor else SM.groundFloor).str() + " · " + (if (i == 0) SM.hall.str() else h.kind(floor, i)?.let { SM.kind(it).str() } ?: (SM.chooseSlot.str() + " ${i + 1}"))
+                        Box(
+                            Modifier
+                                .weight(1f).height(if (tile < 100.dp) 48.dp else 64.dp)
+                                .semantics { contentDescription = label; this.selected = chosen }
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (chosen) BuildPale else if (standing) Color.White else T.CreamDeep)
+                                .border(if (chosen) 2.5.dp else 1.dp, if (chosen) BuildTeal else T.CreamLine, RoundedCornerShape(8.dp))
+                                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                                    feedback.sfx(Sfx.TAP, 0.5f, 1f)
+                                    if (floor == PlaceId.MINE_UPPER && !h.upperBuilt) { vm.mineUi.tab = 1; return@clickable }
+                                    // An unsupported upstairs slot leads straight to the room it needs below.
+                                    if (floor == PlaceId.MINE_UPPER && !standing && !can) {
+                                        vm.travelMineRoom(PlaceId.MINE_GROUND, i)
+                                        sim.mine.select(PlaceId.MINE_GROUND, i)
+                                        return@clickable
+                                    }
+                                    if (floor != place) vm.travelMineRoom(floor, i)
+                                    sim.mine.select(floor, i)
+                                    if (floor == place) focusSlot(i)
+                                },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            val kind = if (i == 0) null else h.kind(floor, i)
+                            when {
+                                i == 0 && standing -> IconCanvas(Icons.House, Modifier.size(chip - 8.dp))
+                                kind != null -> CachedThumb("mine:kind:${kind.name}", chip - 6.dp) { drawKindThumb(kind) }
+                                can -> IconCanvas(BuildIcons.RoomPlus, Modifier.size(chip - 8.dp))
+                                else -> IconCanvas(Icons.Lock, Modifier.size(chip - 12.dp).alpha(0.5f))
                             }
-                            if (floor != place) vm.travelMineRoom(floor, i)
-                            sim.mine.select(floor, i)
-                            if (floor == place) focusSlot(i)
-                        },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    val kind = if (i == 0) null else h.kind(floor, i)
-                    when {
-                        i == 0 && standing -> IconCanvas(Icons.House, Modifier.size(chip - 8.dp))
-                        kind != null -> CachedThumb("mine:kind:${kind.name}", chip - 6.dp) { drawKindThumb(kind) }
-                        can -> IconCanvas(BuildIcons.RoomPlus, Modifier.size(chip - 8.dp))
-                        else -> IconCanvas(Icons.Lock, Modifier.size(chip - 12.dp).alpha(0.5f))
+                        }
                     }
                 }
             }
-        }
-        }
         }
         val kind = if (selected >= 0) h.kind(place, selected) else null
         if (selected >= 0) GameText(if (kind == null && selected > 0) SM.buildingSlot.str() + " ${selected + 1}" else SM.youAreHere.str() + ": " + (kind?.let { SM.kind(it).str() } ?: SM.hall.str()), fontSize = 14.sp, color = T.Ink)
         when {
             kind != null -> {
-                // A built room: its picture and the way to tear it down.
                 if (tile >= 100.dp) CachedThumb("mine:kind:${kind.name}", tile) { drawKindThumb(kind) }
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Column(Modifier.width(tile), horizontalAlignment = Alignment.CenterHorizontally) {
-                        RoundButton(SM.playInRoom.str(), onClick = { vm.mineUi.open = false;vm.travelMineRoom(place,selected) }, size = 48.dp, tone = Tones.Mint, icon = Icons.Friends)
-                        GameText(SM.playInRoom.str(), fontSize = 11.sp, color = T.Ink, maxLines = 2)
-                    }
-                    val next = Mine.buildable(h, place).firstOrNull()
-                    if (next != null) Column(Modifier.width(tile), horizontalAlignment = Alignment.CenterHorizontally) {
-                        RoundButton(SM.buildNext.str(), onClick = { sim.mine.select(place, next); focusSlot(next) }, size = 48.dp, tone = Tones.Sun, icon = BuildIcons.RoomPlus)
-                        GameText(SM.buildNext.str(), fontSize = 11.sp, color = T.Ink, maxLines = 2)
-                    }
-                }
-                RoundButton(
-                    SM.tearDown.str(), onClick = { sim.mine.askDemolish(place, selected) },
-                    size = 64.dp, tone = Tones.Berry, enabled = Mine.canDemolish(h, place, selected), icon = BuildIcons.Smash,
-                )
+                BuildAction(SM.playInRoom.str(), Icons.Friends, onClick = {
+                    vm.mineUi.open = false; vm.travelMineRoom(place, selected)
+                })
+                val next = Mine.buildable(h, place).firstOrNull()
+                if (next != null) BuildAction(SM.buildNext.str(), BuildIcons.RoomPlus, primary = false,
+                    onClick = { sim.mine.select(place, next); focusSlot(next) })
+                BuildAction(SM.tearDown.str(), BuildIcons.Smash, primary = false,
+                    onClick = { sim.mine.askDemolish(place, selected) },
+                    enabled = Mine.canDemolish(h, place, selected))
             }
             selected >= 0 && Mine.canBuild(h, place, selected) -> {
+                BuildSteps(preview != null)
                 preview?.let { k ->
-                    GameText(SM.previewRoom.str(), fontSize = 14.sp, color = T.Ink)
-                    // Keep the whole hammer and its caption above the footer on a landscape phone.
-                    CachedThumb("mine:preview:${k.name}", if (tile < 100.dp) 80.dp else 200.dp) { drawKindThumb(k) }
-                    GameText(SM.kind(k).str(), fontSize = 18.sp, color = T.Ink)
-                    RoundButton(SM.buildThisRoom.str(), onClick = {
-                        if (sim.mine.buildRoom(place, selected, k)) { focusSlot(selected); vm.changed() }
-                    }, enabled = !vm.sim.mine.busy, size = 56.dp, tone = Tones.Mint, icon = BuildIcons.Hammer)
-                    GameText(SM.buildThisRoom.str(), fontSize = 13.sp, color = T.Ink)
+                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Color.White)
+                        .border(1.dp, T.CreamLine, RoundedCornerShape(20.dp)).padding(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally) {
+                        CachedThumb("mine:preview:${k.name}", if (tile < 100.dp) 80.dp else 176.dp) { drawKindThumb(k) }
+                        GameText(SM.kind(k).str(), fontSize = 18.sp, color = T.Ink)
+                    }
+                    BuildAction((if (sim.mine.busy) SM.buildingNow else SM.buildThisRoom).str(), BuildIcons.Hammer,
+                        onClick = { if (sim.mine.buildRoom(place, selected, k)) { focusSlot(selected); vm.changed() } },
+                        enabled = !sim.mine.busy)
+                    BuildAction(SM.chooseAnotherRoom.str(), BuildIcons.RoomPlus, primary = false,
+                        enabled = !sim.mine.busy, onClick = { preview = null })
                 }
-                for (row in RoomKind.entries.chunked(2)) {
+                if (preview == null) for (row in RoomKind.entries.chunked(2)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         for (k in row) {
                             Tile(size = tile, desc = SM.kind(k).str(), chosen = preview == k, enabled = !vm.sim.mine.busy, onClick = {
@@ -311,21 +296,21 @@ private fun FloorTab(vm: TrollfossViewModel, place: PlaceId, tile: Dp) {
     val h = remember(vm.mineVersion) { vm.world.mine }
     val can = Mine.canBuildUpper(h)
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)) {
-        CachedThumb("mine:floors:${h.shape}:${h.upperBuilt}:${h.wall}:${h.roof}", tile - 24.dp) { drawHouseThumb(h) }
+        CachedThumb("mine:floors:${h.hash()}", tile) { drawHouseThumb(h) }
         when {
             h.upperBuilt -> {
                 GameText(SM.floorReady.str(), fontSize = 18.sp, color = T.Ink)
-                RoundButton(SM.upstairs.str(), onClick = { vm.travel(PlaceId.MINE_UPPER) }, size = 64.dp, tone = Tones.Mint, icon = Icons.Up)
+                BuildAction(SM.upstairs.str(), Icons.Up, onClick = { vm.travel(PlaceId.MINE_UPPER) })
             }
             else -> {
                 GameText(if (can) SM.floor.str() else SM.needRooms.str(), fontSize = 14.sp, color = T.Ink)
-                RoundButton(
-                    SM.floor.str(), onClick = {
+                BuildAction(
+                    SM.floor.str(), BuildIcons.Crane, onClick = {
                         // The crane works in the yard: the child is taken there to watch.
                         if (place != PlaceId.MINE_YARD) vm.travel(PlaceId.MINE_YARD)
                         if (vm.sim.mine.buildUpper()) vm.changed()
                     },
-                    size = 64.dp, tone = if (can) Tones.Mint else Tones.Cream, enabled = can && !vm.sim.mine.busy, icon = BuildIcons.Crane,
+                    enabled = can && !vm.sim.mine.busy,
                 )
                 // Two rooms are needed first: two little houses that fill up.
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -463,7 +448,7 @@ fun BuildHint(pointDown: Boolean, modifier: Modifier = Modifier) {
     ) {
         if (!pointDown) Arrow(up = true)
         Row(
-            Modifier.clip(shape).background(Color.White).border(3.dp, T.Ink, shape).padding(horizontal = 10.dp, vertical = 6.dp),
+            Modifier.clip(shape).background(Color.White).border(1.5.dp, T.CreamLine, shape).padding(horizontal = 10.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically,
         ) {
             IconCanvas(BuildIcons.Hammer, Modifier.size(34.dp))

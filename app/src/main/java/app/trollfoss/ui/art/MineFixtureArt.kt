@@ -724,41 +724,16 @@ private fun DrawScope.miDoor(f: Fixture, u: Float, pen: Pen) {
 
 /** Light open wooden steps below, a proper stairwell above. The travel buttons stay reachable from any room. */
 private fun DrawScope.miStairs(f: Fixture, u: Float, pen: Pen) {
-    val built = f.mode == 1
-    val upstairs = f.place == PlaceId.MINE_UPPER
-    val wood = FxC.oak.lighten(0.18f)
-    if (upstairs) {
-        val bounds = StairDoorways.mineDown
-        val opening = fxFlat(u, bounds.left, bounds.right, 0f, bounds.near, bounds.far)
-        drawPath(opening, Color(0xFF403447)); drawPath(opening, Ink.line, style = pen.stroke)
-        clipPath(opening) {
-            for (k in 0 until 6) {
-                val y = -0.01f + k * 0.022f
-                fxBox(u, -0.31f, y, 0.31f, y + 0.016f, 0.035f, wood.darken(k * 0.07f), pen, z = 0.2f - k * 0.033f)
-            }
-        }
-        // Railings surround the far edge; the near edge stays open to walk into.
-        for (x in floatArrayOf(-0.38f, -0.19f, 0f, 0.19f, 0.38f)) {
-            capsule(fxQ(u, x, 0f, 0.22f), fxQ(u, x, -0.16f, 0.22f), 0.007f * u, FxC.paint, pen)
-        }
-        capsule(fxQ(u, -0.4f, -0.16f, 0.22f), fxQ(u, 0.4f, -0.16f, 0.22f), 0.012f * u, wood, pen)
+    if (f.place == PlaceId.MINE_UPPER) {
+        stairWell(u, StairDoorways.mineDown, pen)
         return
     }
     miShadow(u, 0.78f, 0.18f)
-    val side = Path().apply {
-        moveTo(-0.39f * u, 0f); lineTo(0.39f * u, -0.42f * u)
-        lineTo(0.39f * u, -0.34f * u); lineTo(-0.39f * u, 0.05f * u); close()
-    }
-    drawPath(side, FxC.oakDark); drawPath(side, Ink.line, style = pen.thin)
-    for (k in 0 until 6) {
-        val x = -0.39f + k * 0.13f
-        val y = -(k + 1) * 0.07f
-        fxBox(u, x, y, x + 0.145f, y + 0.025f, 0.18f, wood, pen, rad = 0.004f, top = wood.lighten(0.1f), side = FxC.oakDark)
-        if (k % 2 == 0) capsule(Offset((x + 0.04f) * u, y * u), Offset((x + 0.04f) * u, (y - 0.15f) * u), 0.007f * u, FxC.paint, pen)
-    }
-    capsule(Offset(-0.35f * u, -0.22f * u), Offset(0.35f * u, -0.6f * u), 0.012f * u, wood, pen)
-    if (!built) {
-        // A small gate at the landing is calmer than construction tape across the whole staircase.
+    stairFlight(u, pen, low = -0.39f, high = 0.39f, height = 0.42f, steps = 6)
+    if (f.mode == 1) {
+        stairDirection(u, 0.32f, -0.50f, false, pen)
+    } else {
+        // The closed landing gate still indicates that the upper floor has not been built.
         fxBox(u, 0.26f, -0.55f, 0.39f, -0.4f, 0.03f, FxC.paint, pen, rad = 0.008f)
         drawCircle(FxC.yellow, 0.016f * u, Offset(0.33f * u, -0.48f * u))
     }

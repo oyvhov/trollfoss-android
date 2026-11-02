@@ -6,6 +6,11 @@ import app.trollfoss.domain.txt
 
 /** The few words of Mitt hus, in nynorsk and bokmål. The builder is made of pictures; these are for descriptions and the one question. */
 object SM {
+    val choose = Txt("Vel", "Velg")
+    val preview = Txt("Sjå", "Se")
+    val chooseAnotherHouse = Txt("Vel eit anna hus", "Velg et annet hus")
+    val chooseAnotherRoom = Txt("Vel eit anna rom", "Velg et annet rom")
+    val buildingNow = Txt("Vi byggjer …", "Vi bygger …")
     val previewRoom = Txt("Sjå rommet før du byggjer", "Se rommet før du bygger")
     val buildThisRoom = Txt("Bygg dette rommet", "Bygg dette rommet")
     val build = txt("Bygg")

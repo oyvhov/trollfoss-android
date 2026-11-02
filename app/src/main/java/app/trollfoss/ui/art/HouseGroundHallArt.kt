@@ -30,123 +30,16 @@ import kotlin.math.sin
 // ------------------------------------------------------------------------------------------------ the grand stairs
 
 internal fun DrawScope.grStairs(f: Fixture, u: Float, pen: Pen) {
-    fun q(x: Float, y: Float, z: Float) = fxQ(u, x, y, z)
-    val d = 0.2f
-    val xf = 0.40f
-    val xt = -0.18f
-    val xl = -0.42f
-    val top = -0.52f
-    val n = 8
-    val rise = -top / n
-    val run = (xf - xt) / n
-    val tread = GrC.oak
-    val carpet = GrC.burgundy
-    grShadow(u, 0.9f, d + 0.04f)
-
-    // The doorway up to the first floor behind the landing, warm with light from above. Its place is shared
-    // with the touch area (see [StairDoorways]): a tap on the doorway is a tap on the stairs.
-    run {
-        val door = StairDoorways.hall
-        val arch = archPath(door.left * u, door.right * u, door.bottom * u, (door.bottom - 0.16f) * u, door.top * u)
-        drawPath(arch, Brush.verticalGradient(listOf(Color(0xFF3A2A4A), Color(0xFFFFD98A)), startY = door.top * u, endY = door.bottom * u))
-        drawPath(arch, Ink.line, style = pen.stroke)
-        drawPath(arch, GrC.ivory, style = Stroke(0.012f * u))
-        drawPath(arch, Ink.line, style = pen.thin)
-        grGlow(Offset((door.left + door.right) / 2f * u, (door.bottom - 0.08f) * u), 0.16f * u, pen, 0.18f)
+    grShadow(u, 0.9f, 0.24f)
+    stairPortal(u, StairDoorways.hall, pen)
+    // The landing stays at its original sill, with room to walk into the doorway.
+    fxBox(u, -0.42f, -0.52f, -0.18f, -0.49f, 0.2f, Color(0xFFE3B984), pen, rad = 0.006f)
+    capsule(fxQ(u, -0.4f, -0.49f, 0f), fxQ(u, -0.4f, 0f, 0f), 0.012f * u, Color(0xFFF2EEE6), pen)
+    stairFlight(u, pen, low = 0.4f, high = -0.18f, height = 0.52f, depth = 0.2f)
+    for (x in floatArrayOf(-0.4f, -0.3f)) {
+        capsule(fxQ(u, x, -0.52f, 0f), fxQ(u, x, -0.67f, 0f), 0.006f * u, Color(0xFFF2EEE6), pen)
     }
-
-    // Treads, risers and the landing as one solid.
-    fxFace(fxFlat(u, xl, xt, top, 0f, d), tread.lighten(0.12f), pen)
-    for (i in 1..n) {
-        val l = xf - i * run
-        val r = xf - (i - 1) * run
-        val y = -i * rise
-        fxFace(fxDeep(u, r, y, y + rise, 0f, d), tread.darken(0.2f), pen)
-        fxFace(fxFlat(u, l, r, y, 0f, d), tread.lighten(0.1f), pen)
-        // The runner and its brass rod.
-        drawPath(fxDeep(u, r, y, y + rise, 0.045f, d - 0.05f), carpet.darken(0.12f))
-        drawPath(fxFlat(u, l, r, y, 0.045f, d - 0.05f), carpet)
-        drawLine(Ink.line.copy(alpha = 0.4f), q(l + run * 0.5f, y, 0.045f), q(l + run * 0.5f, y, d - 0.05f), pen.lw * 0.5f)
-        val rodA = q(r, y, 0.04f)
-        val rodB = q(r, y, d - 0.04f)
-        drawLine(Ink.line, rodA, rodB, pen.lw * 2.6f, StrokeCap.Round)
-        drawLine(GrC.brass, rodA, rodB, pen.lw * 1.2f, StrokeCap.Round)
-    }
-    // A rounded first step, because it is a grand stair.
-    fxBox(u, xf - 0.005f, -rise, xf + 0.07f, 0f, d * 0.8f, tread, pen, rad = 0.03f, z = 0.02f, top = tread.lighten(0.15f), side = tread.darken(0.25f))
-
-    // The front of the stringer: dark walnut with a bevelled line along the slope.
-    val face = Path().apply {
-        moveTo(xl * u, top * u)
-        lineTo(xt * u, top * u)
-        for (i in n downTo 1) {
-            lineTo((xf - (i - 1) * run) * u, -i * rise * u)
-            lineTo((xf - (i - 1) * run) * u, -(i - 1) * rise * u)
-        }
-        lineTo(xl * u, 0f)
-        close()
-    }
-    inked(face, GrC.walnut, pen)
-    clipPath(face) {
-        val bevel = Path().apply {
-            moveTo(xl * u, (top + 0.04f) * u)
-            lineTo(xt * u, (top + 0.04f) * u)
-            for (i in n downTo 1) lineTo((xf - (i - 0.5f) * run) * u, (-i * rise + 0.04f) * u)
-        }
-        drawPath(bevel, GrC.walnutLight, style = pen.thin)
-        // Panels under the landing, and a row of small ones along the slope.
-        for (k in 0 until 3) {
-            val px = xl + 0.02f + k * 0.075f
-            drawRect(GrC.walnutDark, Offset(px * u, (top + 0.07f) * u), Size(0.065f * u, 0.4f * u), style = pen.thin)
-        }
-        for (i in 1..n step 2) {
-            val cx = xf - (i - 0.5f) * run
-            val topY = -i * rise + 0.06f
-            drawRect(GrC.walnutDark, Offset((cx - run * 0.38f) * u, topY * u), Size(run * 0.76f * u, (-topY - 0.01f).coerceAtLeast(0.02f) * u), style = pen.thin)
-        }
-    }
-
-    // The balustrade: ivory posts, a walnut handrail, and the big newel posts with a lantern at the foot.
-    val rail = GrC.walnutDark
-    fun railY(i: Int) = -i * rise - 0.115f
-    for (i in 1..n) {
-        val cx = xf - (i - 0.5f) * run
-        val a = q(cx, -i * rise, 0.01f)
-        capsule(a, Offset(a.x, a.y - 0.108f * u), 0.0065f * u, GrC.ivory, pen)
-    }
-    var lx = xl + 0.05f
-    while (lx < xt) {
-        val a = q(lx, top, 0.01f)
-        capsule(a, Offset(a.x, a.y - 0.108f * u), 0.0065f * u, GrC.ivory, pen)
-        lx += 0.045f
-    }
-    val h0 = q(xl + 0.02f, top - 0.115f, 0.01f)
-    val h1 = q(xt, top - 0.115f, 0.01f)
-    val h2 = q(xf - 0.5f * run, railY(1), 0.01f)
-    val hStart = q(xf - (n - 0.5f) * run, railY(n), 0.01f)
-    capsule(h0, h1, 0.013f * u, rail, pen)
-    capsule(h1, hStart, 0.013f * u, rail, pen)
-    capsule(hStart, h2, 0.013f * u, rail, pen)
-    capsule(h2, q(xf + 0.03f, railY(1) + 0.01f, 0.01f), 0.013f * u, rail, pen)
-    // Newel posts: carved, with brass balls.
-    for (x in floatArrayOf(xl + 0.02f, xt)) {
-        fxBox(u, x - 0.016f, top - 0.2f, x + 0.016f, top, 0.03f, rail, pen, rad = 0.004f, z = 0f)
-        val c = q(x, top - 0.213f, 0.015f)
-        grKnob(c, 0.012f * u, pen)
-    }
-    // The grand newel at the foot, with a glass lantern that glows in the evening.
-    run {
-        val x = xf + 0.035f
-        fxBox(u, x - 0.022f, -0.22f, x + 0.022f, 0f, 0.04f, rail, pen, rad = 0.005f, z = 0f)
-        val c = q(x, -0.245f, 0.02f)
-        inkedCircle(c, 0.022f * u, GrC.brass, pen, shade = false)
-        val globe = Offset(c.x, c.y - 0.04f * u)
-        grGlow(globe, 0.11f * u, pen, 0.12f)
-        drawCircle(lerp(Color(0xFFF6F1D8), Color(0xFFFFE9A8), 0.25f + 0.75f * pen.night), 0.024f * u, globe)
-        drawCircle(Ink.line, 0.024f * u, globe, style = pen.thin)
-        shine(Offset(globe.x - 0.007f * u, globe.y - 0.008f * u), 0.008f * u, 0.011f * u, 0.8f)
-        grKnob(Offset(globe.x, globe.y - 0.031f * u), 0.007f * u, pen)
-    }
+    capsule(fxQ(u, -0.41f, -0.67f, 0f), fxQ(u, -0.215f, -0.67f, 0f), 0.011f * u, stairTeal, pen)
 }
 
 // ------------------------------------------------------------------------------------------------ the lift

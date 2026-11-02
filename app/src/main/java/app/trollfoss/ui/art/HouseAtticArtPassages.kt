@@ -19,52 +19,8 @@ import kotlin.math.sin
  */
 
 internal fun DrawScope.atStairs(f: Fixture, u: Float, pen: Pen) {
-    fun q(x: Float, y: Float, z: Float) = fxQ(u, x, y, z)
     atShadow(u, 0.7f, 0.24f, 0.4f)
-    val oak = Color(0xFFC49A62)
-    // The boards around the opening, then the opening itself.
-    fxFace(fxFlat(u, -0.37f, 0.37f, 0f, 0.0f, 0.27f, 0.004f), oak, pen)
-    val hole = fxFlat(u, -0.3f, 0.3f, 0f, 0.05f, 0.22f)
-    drawPath(hole, Color(0xFF2B1E28))
-    clipPath(hole) {
-        // The steps going down, nearest first; the last ones fade into the glow of the room below.
-        for (k in 5 downTo 0) {
-            val z0 = 0.05f + k * 0.028f
-            val shade = lerp(Color(0xFFD7A66B), Color(0xFF5A3B2E), k / 5f)
-            drawPath(fxFlat(u, -0.27f, 0.27f, k * 0.02f, z0, z0 + 0.026f), shade)
-            drawPath(fxFlat(u, -0.27f, 0.27f, k * 0.02f, z0, z0 + 0.026f), Ink.line, alpha = 0.55f, style = pen.thin)
-        }
-        fxGlow(q(0f, 0.05f, 0.2f), 0.33f * u, AtC.warm, 0.75f)
-    }
-    drawPath(hole, Ink.line, style = pen.stroke)
-    // Newel posts with brass knobs, balusters and a handrail along the front and the right side.
-    val rail = Color(0xFF8A5A3A)
-    for (x in listOf(-0.33f, 0.33f)) {
-        fxPost(u, x, 0.03f, 0f, -0.2f, 0.014f, rail, pen)
-        val top = q(x, -0.2f, 0.03f)
-        atDot(top, 0.017f * u, AtC.brass, pen)
-        shine(Offset(top.x - 0.005f * u, top.y - 0.006f * u), 0.006f * u, 0.004f * u, 0.8f)
-    }
-    for (k in 0 until 7) {
-        val x = -0.27f + k * 0.09f
-        fxPost(u, x, 0.03f, 0f, -0.13f, 0.0065f, oak.darken(0.1f), pen)
-    }
-    capsule(q(-0.33f, -0.15f, 0.03f), q(0.33f, -0.15f, 0.03f), 0.014f * u, rail.lighten(0.12f), pen)
-    for (z in listOf(0.1f, 0.17f)) fxPost(u, 0.33f, z, 0f, -0.12f, 0.0065f, oak.darken(0.1f), pen)
-    capsule(q(0.33f, -0.14f, 0.03f), q(0.33f, -0.14f, 0.24f), 0.012f * u, rail.lighten(0.12f), pen)
-    fxPost(u, 0.33f, 0.24f, 0f, -0.18f, 0.012f, rail, pen)
-    // A golden arrow over the opening: «down here». (Still, so the picture is drawn once.)
-    for (k in 0..1) {
-        val c = Offset(0f, (-0.32f - k * 0.035f) * u)
-        val v = Path().apply {
-            moveTo(c.x - 0.04f * u, c.y - 0.026f * u)
-            lineTo(c.x, c.y)
-            lineTo(c.x + 0.04f * u, c.y - 0.026f * u)
-        }
-        val a = 0.95f - k * 0.4f
-        drawPath(v, Ink.line, alpha = a, style = Stroke(0.02f * u + pen.lw * 2f, cap = StrokeCap.Round))
-        drawPath(v, AtC.brassLight, alpha = a, style = Stroke(0.014f * u, cap = StrokeCap.Round))
-    }
+    stairWell(u, StairOpening(-0.3f, 0.3f, 0.05f, 0.22f), pen)
 }
 
 internal fun DrawScope.atSecretDoor(f: Fixture, u: Float, pen: Pen) {
