@@ -1,5 +1,11 @@
 # Endringslogg
 
+## I arbeid – mindre teiknearbeid
+
+- Figurar og ting langt utanfor skjermen blir ikkje teikna eller oppfriska i biletbufferet. Leiken og rørsla deira held fram, og dei blir synlege når kameraet kjem dit.
+- Nye møbelbilete blir samanlikna utan to ekstra pikselkopiar, slik at innlasting krev mindre mellombels minne.
+- Grafiske detaljar, animasjonar og lagra spelverder er bevarte.
+
 ## 1.17.0 – Foss og badeliv i Vagstaddalen
 
 - Foss over to fjellhyller på høgresida, skum, sprut og synlege fiskar i elva. Ny fiskeplass og bål ved kulpen; fisk kan steikjast på bålet.

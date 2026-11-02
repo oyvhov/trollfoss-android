@@ -239,13 +239,10 @@ class SpriteCache(private val maxBytes: Long = 40L * 1024 * 1024) {
         return image
     }
 
-    private fun same(a: ImageBitmap, b: ImageBitmap): Boolean {
-        val pa = IntArray(a.width * a.height)
-        val pb = IntArray(b.width * b.height)
-        a.readPixels(pa)
-        b.readPixels(pb)
-        return pa.contentEquals(pb)
-    }
+    // Compare the software pixels in place. Copying both images to IntArrays doubled the temporary
+    // pixel memory for every new look (especially expensive for large furniture on a tablet).
+    private fun same(a: ImageBitmap, b: ImageBitmap): Boolean =
+        a.asAndroidBitmap().sameAs(b.asAndroidBitmap())
 
     /** Crops away the empty border, so a sprite only costs the memory of what it shows. */
     private fun trim(image: ImageBitmap, left: Float, top: Float): Sprite? {

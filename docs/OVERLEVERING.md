@@ -1,5 +1,20 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – YTING PÅ TREIGARE EININGAR (2026-11-02, Codex):**
+> Lokal grein `codex/performance-slow-devices` i `C:/topa/.gradle-tmp/rainbow-finale`
+> (arbeidskopi `C:/Users/Øyvind/.codex/worktrees/rainbow-finale/topa`), frå `f80479f`.
+> Motoren hoppar over teikning/sprite-oppfrisking av fjerne figurar og ting; simulering og
+> treffprøver er uendra. Sprite-probar samanliknar bitmapane utan to mellombelse pikselkopiar.
+> 701 JVM-testar, 103 Android-testar per mobil/nettbrett og lint (0 feil / 32 åtvaringar)
+> er grøne. Seks scenebilete er
+> samanlikna: fire identiske, to med berre små fargeavrundingar. Målingane viser små utslag
+> etter oppvarming; ingen lovnad om FPS-auke på ekte einingar. Manuell sveipprøve er ikkje
+> bestått: emulatoren viste «System UI isn't responding». Ny stabil manuell prøve trengst
+> før release. Stova_TV vart stoppa med løyve og er starta att; eigen emulator er stoppa.
+> Rapport og vidare leikeidéar: `docs/PERFORMANCE_2026-11-02.md` i arbeidskopien ovanfor.
+> APK-ar/loggar/bilete: `C:/topa/dist/performance-2026-11-02/`. Ingen versjonsauke eller release.
+> Rotkopien sine eldre uferdige kodeendringar er urørte.
+
 > **NYAST – 1.17.0 ER PUBLISERT (2026-10-11, Codex):**
 > [Release](https://github.com/oyvhov/trollfoss-android/releases/tag/v1.17.0), kode 22,
 > APK-kjelde/tagg `008d647`. Foss, strand, fisk/bål, badeklede, bading, gummibåt for to og

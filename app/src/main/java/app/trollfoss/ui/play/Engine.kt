@@ -2599,8 +2599,10 @@ class Engine(
     // ---------------------------------------------------------------------------------- drawing
 
     /** Bodies in drawing order, furthest back first; held bodies always on top. */
-    private fun drawList(): List<Body> =
-        world.bodiesIn(place).filter { !hidden(it) }.sortedWith(compareBy<Body> { if (it.held) 1 else 0 }.thenBy { bodyKey(it) }.thenBy { it.z })
+    private fun drawList(forDrawing: Boolean = false): List<Body> =
+        world.bodiesIn(place).filter {
+            !hidden(it) && (!forDrawing || bodyMayReachViewport(it, cam, viewport))
+        }.sortedWith(compareBy<Body> { if (it.held) 1 else 0 }.thenBy { bodyKey(it) }.thenBy { it.z })
 
     /*
      * «Skrå-3D» drawing order. Everything on the floor band is sorted by its depth line: the further
@@ -2830,7 +2832,9 @@ class Engine(
         }
         // Glimt sit just behind what lies on the same furniture, so a pillow can hide one.
         for (s in sim.visibleSecrets(place)) layers += Layer(glimtKey(s), 2, s)
-        val list = drawList()
+        // Skip distant art before depth queries, shadows and sprite refresh requests. Simulation and
+        // hit testing still see the whole room, so walking, machines and dragging carry on off screen.
+        val list = drawList(forDrawing = true)
         for (b in list) if (!b.held) layers += Layer(bodyKey(b), 3, b)
         if (skip and 2 != 0) layers.removeAll { it.kind < 2 }
         if (skip and 4 != 0) layers.removeAll { it.kind == 3 }
