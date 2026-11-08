@@ -81,6 +81,22 @@ object DesignIcons {
         }
     }
 
+    /** A little box with four arrows nudging it into place. */
+    val Align: DrawScope.() -> Unit = {
+        u { s, pen ->
+            inkedRound(Rect(36f * s, 36f * s, 64f * s, 64f * s), 6f * s, T.SunTop, pen)
+            for ((dx, dy) in listOf(1f to 0f, -1f to 0f, 0f to 1f, 0f to -1f)) {
+                val tip = Offset((50f + dx * 22f) * s, (50f + dy * 22f) * s)
+                val tail = Offset((50f + dx * 42f) * s, (50f + dy * 42f) * s)
+                val side = Offset(dy * 8f * s, dx * 8f * s)
+                val back = Offset(dx * 8f * s, dy * 8f * s)
+                drawLine(Ink.line, tail, tip, 6f * s, StrokeCap.Round)
+                drawLine(Ink.line, tip, tip + back + side, 6f * s, StrokeCap.Round)
+                drawLine(Ink.line, tip, tip + back - side, 6f * s, StrokeCap.Round)
+            }
+        }
+    }
+
     /** Floorboards seen in perspective. */
     val Floor: DrawScope.() -> Unit = {
         u { s, pen ->

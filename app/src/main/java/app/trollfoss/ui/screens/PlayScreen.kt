@@ -410,7 +410,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
             exit = slideOutHorizontally { it } + fadeOut(),
             modifier = Modifier.align(Alignment.CenterEnd),
         ) {
-            DesignerPanel(engine, vm.world, place, onClose = {
+            DesignerPanel(engine, vm.world, place, canUndo = vm.canUndo, onUndo = vm::undoEdit, onClose = {
                 engine.closeDesigner()
                 vm.scheduleSave()
             })

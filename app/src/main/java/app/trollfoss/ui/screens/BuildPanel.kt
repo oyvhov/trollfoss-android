@@ -1,5 +1,6 @@
 package app.trollfoss.ui.screens
 
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
@@ -181,6 +182,10 @@ private fun RoomsTab(vm: TrollfossViewModel, engine: Engine, place: PlaceId, til
     }
     val selected = if (h.selectedPlace == place) h.selected else -1
     var preview by remember(place, selected) { mutableStateOf<RoomKind?>(null) }
+    androidx.compose.runtime.DisposableEffect(engine, place, selected, preview) {
+        engine.roomSuggestion = preview?.let { app.trollfoss.domain.RoomSuggestion(place, selected, it) }
+        onDispose { engine.roomSuggestion = null }
+    }
     val roomScroll = rememberScrollState()
     val roomScope = rememberCoroutineScope()
     Column(Modifier.fillMaxWidth().verticalScroll(roomScroll), verticalArrangement = Arrangement.spacedBy(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -255,6 +260,12 @@ private fun RoomsTab(vm: TrollfossViewModel, engine: Engine, place: PlaceId, til
                         horizontalAlignment = Alignment.CenterHorizontally) {
                         CachedThumb("mine:preview:${k.name}", if (tile < 100.dp) 80.dp else 176.dp) { drawKindThumb(k) }
                         GameText(SM.kind(k).str(), fontSize = 18.sp, color = T.Ink)
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        for (direction in listOf(-1, 1)) RoundButton(
+                            (if (direction < 0) SM.previousRoom else SM.nextRoom).str(),
+                            onClick = { preview = RoomKind.entries[(k.ordinal + direction).mod(RoomKind.entries.size)] },
+                            size = 48.dp, tone = Tones.Cream, icon = { rotate(if (direction < 0) 0f else 180f) { Icons.Back(this) } })
                     }
                     BuildAction((if (sim.mine.busy) SM.buildingNow else SM.buildThisRoom).str(), BuildIcons.Hammer,
                         onClick = { if (sim.mine.buildRoom(place, selected, k)) { focusSlot(selected); vm.changed() } },
@@ -333,6 +344,27 @@ private fun LookTab(vm: TrollfossViewModel, tile: Dp, compact: Boolean) {
     val small = if (compact) 44.dp else 48.dp
     val med = if (compact) 48.dp else 56.dp
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        GameText(SM.colourSets.str(), fontSize = 16.sp, color = T.Ink)
+        Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+            for (palette in app.trollfoss.domain.HousePalette.entries) {
+                val label = when (palette) {
+                    app.trollfoss.domain.HousePalette.MOON -> SM.moonHouse
+                    app.trollfoss.domain.HousePalette.FOREST -> SM.forestHouse
+                    app.trollfoss.domain.HousePalette.SUN -> SM.sunHouse
+                }.str()
+                Tile(size = if (compact) 62.dp else 82.dp, desc = label, chosen = palette.matches(h), onClick = {
+                    sim.mine.applyPalette(palette); vm.changed()
+                }) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                            for (colour in listOf(MineC.wall(palette.wall), MineC.roof(palette.roofColor), MineC.doors[palette.door]))
+                                Box(Modifier.size(if (compact) 16.dp else 22.dp).clip(CircleShape).background(colour))
+                        }
+                        GameText(label, fontSize = 11.sp, color = T.Ink)
+                    }
+                }
+            }
+        }
         GameText(SM.wallColours.str(), fontSize = 16.sp, color = T.Ink)
         // Wall colours.
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
@@ -436,14 +468,16 @@ private fun PartyTab(vm: TrollfossViewModel, engine: Engine) {
 /** A speech bubble with a hammer and a house that points at the build button (down on a tablet, up on a phone). */
 @Composable
 fun BuildHint(pointDown: Boolean, modifier: Modifier = Modifier) {
-    val bounce = androidx.compose.animation.core.rememberInfiniteTransition(label = "hint")
-    val dy by bounce.animateFloat(
+    val dy = if (app.trollfoss.ui.theme.LocalMotion.current) {
+        val bounce = androidx.compose.animation.core.rememberInfiniteTransition(label = "hint")
+        bounce.animateFloat(
         initialValue = 0f, targetValue = 8f,
         animationSpec = androidx.compose.animation.core.infiniteRepeatable(tween(520), androidx.compose.animation.core.RepeatMode.Reverse), label = "hint-bounce",
-    )
+        )
+    } else remember { androidx.compose.runtime.mutableFloatStateOf(0f) }
     val shape = RoundedCornerShape(22.dp)
     Column(
-        modifier.offset(y = (if (pointDown) dy else -dy).dp),
+        modifier.offset { androidx.compose.ui.unit.IntOffset(0, ((if (pointDown) dy.value else -dy.value).dp).roundToPx()) },
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (!pointDown) Arrow(up = true)

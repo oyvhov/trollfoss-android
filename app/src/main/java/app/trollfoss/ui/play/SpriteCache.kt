@@ -39,6 +39,7 @@ class SpriteCache(private val maxBytes: Long = 40L * 1024 * 1024) {
     private val sprites = LinkedHashMap<Any, Sprite>(64, 0.75f, true)
     private val live = HashSet<Any>()
     private var bytes = 0L
+    internal val retainedBytes get() = bytes + slowBytes
     private var madeThisFrame = 0
 
     /**
@@ -54,6 +55,7 @@ class SpriteCache(private val maxBytes: Long = 40L * 1024 * 1024) {
         var layer: GraphicsLayer? = null
         var image: ImageBitmap? = null
         var usedAt = 0L
+        var bytes = 0L
     }
 
     /** One picture that is due for a redraw this frame; the most overdue are served first. */
@@ -62,7 +64,9 @@ class SpriteCache(private val maxBytes: Long = 40L * 1024 * 1024) {
         val draw: DrawScope.(t: Float) -> Unit,
     )
 
-    private val slow = HashMap<Any, Slow>()
+    var animationRate = 1f
+    private var slowBytes = 0L
+    private val slow = LinkedHashMap<Any, Slow>(64, 0.75f, true)
     private val requests = ArrayList<Request>()
     private val byOverdue = compareByDescending<Request> { it.overdue }
     private var frames = 0L
@@ -91,7 +95,7 @@ class SpriteCache(private val maxBytes: Long = 40L * 1024 * 1024) {
     fun DrawScope.stampSlow(key: Any, bounds: Rect, t: Float, hz: Float, draw: DrawScope.(t: Float) -> Unit): Boolean {
         val s = slow[key]
         val usable = s != null && usable(s)
-        val age = if (s == null || !usable || t < s.drawnAt) Float.MAX_VALUE else (t - s.drawnAt) * hz
+        val age = if (s == null || !usable || t < s.drawnAt) Float.MAX_VALUE else (t - s.drawnAt) * hz * animationRate.coerceIn(0.25f, 1f)
         if (age >= 1f) {
             val left = floor(bounds.left)
             val top = floor(bounds.top)
@@ -144,7 +148,18 @@ class SpriteCache(private val maxBytes: Long = 40L * 1024 * 1024) {
     }
 
     private fun DrawScope.refresh(r: Request) {
+        val required = r.w.toLong() * r.h * 4L
+        if (required > maxBytes) return
+        val oldBytes = slow[r.key]?.bytes ?: 0L
+        val victims = slow.entries.iterator()
+        while (slowBytes - oldBytes + required > maxBytes && victims.hasNext()) {
+            val victim = victims.next()
+            if (victim.key == r.key) continue
+            release(victim.value); victims.remove()
+        }
         val s = slow.getOrPut(r.key) { Slow(r.left, r.top, r.t).also { it.usedAt = frames } }
+        slowBytes += required - s.bytes
+        s.bytes = required
         s.left = r.left
         s.top = r.top
         s.drawnAt = r.t
@@ -174,6 +189,8 @@ class SpriteCache(private val maxBytes: Long = 40L * 1024 * 1024) {
     }
 
     private fun release(s: Slow) {
+        slowBytes -= s.bytes
+        s.bytes = 0L
         s.layer?.let { layer -> graphics?.releaseGraphicsLayer(layer) }
         s.layer = null
         s.image = null
@@ -211,6 +228,7 @@ class SpriteCache(private val maxBytes: Long = 40L * 1024 * 1024) {
         val top = floor(bounds.top)
         val w = ceil(bounds.right - left).toInt().coerceIn(1, MAX_SIDE)
         val h = ceil(bounds.bottom - top).toInt().coerceIn(1, MAX_SIDE)
+        if (w.toLong() * h * 4L > maxBytes) { live += key; return null }
         val first = render(w, h, left, top) { draw(t) }
         val second = render(w, h, left, top) { draw(t + 0.61f) }
         if (!same(first, second)) {

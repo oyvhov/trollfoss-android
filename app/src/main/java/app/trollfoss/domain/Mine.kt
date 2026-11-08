@@ -151,6 +151,10 @@ object MineEvent {
     const val PIECE = HouseFx.MINE + 21
     const val CONFETTI = HouseFx.MINE + 22
     const val STARTED_TAP = HouseFx.MINE + 23
+    /** Sawdust up the nose of whoever stood nearest a finished room. */
+    const val SAWDUST_SNEEZE = HouseFx.MINE + 24
+    /** A whole colour set changed the house; arg is the [HousePalette] ordinal. */
+    const val PALETTE = HouseFx.MINE + 25
 
     // What the furniture of the rooms and the yard does when it is tapped.
     const val FLARE = HouseFx.MINE + 30
@@ -186,10 +190,10 @@ object Mine {
 
     const val TEMPLATES = 4
     const val WALL_COLORS = 12
-    const val ROOFS = 4
+    const val ROOFS = 5
     const val ROOF_COLORS = 8
     const val DOORS = 6
-    const val WINDOWS = 4
+    const val WINDOWS = 5
 
     /** Set in the world's flags when the second floor is built: it opens the stairs up. */
     const val FLAG_UPPER = "mine_upper"

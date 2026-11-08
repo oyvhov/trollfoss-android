@@ -1,5 +1,24 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **NYAST – MITT HUS, STORYBOOK-RUNDEN UTAN 3D (2026-11-08, Claude):**
+> Grein `claude/hus-storybook` i `C:/topa/.claude/worktrees/hus-storybook`, frå `906bdf2`. **Ukommitta.**
+> Henta frå den ukommitta delen i `rainbow-finale`; Codex-kopien og 3D-arbeidet er urørte, og ingen
+> `highlands`/`ui.berg`-koplingar er med. Rom-førehandsvising i full storleik med byte fram/tilbake,
+> tre fargepakkar, Månetak og -vindauge, snu bilete, «set fint på plass», angring i møbelpanelet og
+> roligare effektar på svake einingar (`RenderQuality`).
+> Nytt i denne runden: den næraste gjesten får sagflis i nasen når eit rom blir ferdig, kvar fargepakke
+> har eigen lyd (ugle, fuglar/gjøk, høne), og møblar som allereie står fint seier «hmm».
+> Retta: glipe i Månetaket, teppe teikna oppå møblar i førehandsvisinga, uklart ikon på «set fint på plass».
+> 707 JVM-testar, 109 Android-testar på kvart av mobil/nettbrett, lint 0 feil / 32 eksisterande åtvaringar.
+> Faktiske trykk på eigen emulator: byggje villa, Månehuset, førehandsvising, byggje stove, draging,
+> «set på plass» (hmm-grein), angring. Nettbrett: lagra hus, slotval og førehandsvising.
+> **Ikkje prøvd:** høyrde lydar (emulator utan lyd), nysinga med figur til stades på skjermen (berre
+> einingstest), snu bilete med faktisk trykk, «set på plass» når møbelet faktisk flyttar seg, fysisk eining.
+> APK (isolert `app.trollfoss.hus`, debug-signert) og bilete: `C:/topa/dist/hus-storybook-2026-11-08/`.
+> Ingen versjonsauke, release eller push. Prøvepakkar er fjerna, skjermval tilbakeførte, emulatoren stoppa.
+> OBS ved fletting med 3D: `Engine`, `PlayScreen`, `TrollfossViewModel` og `Particles`/`SpriteCache` er same
+> endringar som i `rainbow-finale`; 3D-koplingane i `PlayScreen` og `updateMusic` må takast med derifrå.
+
 > **NYAST – TRAPPER OG HUSBYGGING (2026-11-02, Codex):**
 > Lokal grein `codex/stairs-building-redesign` i `C:/topa/.gradle-tmp/rainbow-finale`,
 > frå `ef4cef5` (ytingsarbeidet er med). Nye opne trapper i lyst tre og grønt rekkverk,

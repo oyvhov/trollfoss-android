@@ -218,11 +218,18 @@ internal fun mineHeartPath(cx: Float, cy: Float, s: Float): Path = Path().apply 
 internal fun DrawScope.drawMineWindow(style: Int, kind: RoomKind?, l: Float, t: Float, r: Float, b: Float, pen: Pen, lit: Float, trim: Color, shutter: Color, time: Float, detail: Int = 2, dark: Float = 0f) {
     val w = r - l
     val h = b - t
-    val s = if (kind == RoomKind.KIDS || kind == RoomKind.MUSIC) 2 else if (kind == RoomKind.LIBRARY) 1 else if (kind == RoomKind.WORKSHOP) 3 else style.mod(4)
+    val s = if (style == 4) 4 else if (kind == RoomKind.KIDS || kind == RoomKind.MUSIC) 2 else if (kind == RoomKind.LIBRARY) 1 else if (kind == RoomKind.WORKSHOP) 3 else style.mod(4)
     val cx = (l + r) / 2f
     val glass = lerp(lerp(MineC.glass, Color(0xFF1D2A5C), dark), MineC.lit, lit)
     val frame = pen.lw * 1.2f
+    fun pointed(left: Float, top: Float, right: Float, bottom: Float) = Path().apply {
+        moveTo(left, bottom); lineTo(left, top + (bottom-top)*0.38f)
+        quadraticTo(left, top+(bottom-top)*0.18f, left+(right-left)*0.57f, top)
+        quadraticTo(right, top+(bottom-top)*0.18f, right, top+(bottom-top)*0.38f)
+        lineTo(right,bottom); close()
+    }
     val glassShape = when (s) {
+        4 -> pointed(l,t,r,b)
         1 -> archPath(l, t, r, b)
         2 -> Path().apply {
             val rad = min(w, h) / 2f
@@ -232,6 +239,19 @@ internal fun DrawScope.drawMineWindow(style: Int, kind: RoomKind?, l: Float, t: 
         else -> Path().apply { addRect(Rect(l, t, r, b)) }
     }
     when (s) {
+        4 -> {
+            val m = w*0.08f
+            val outer = pointed(l-m,t-m,r+m,b+m)
+            drawPath(outer,trim); drawPath(outer,Ink.line,style=pen.stroke)
+            drawPath(glassShape,glass)
+            clipPath(glassShape) {
+                if (detail > 1) windowContents(kind,l,t,r,b,lit,pen,time)
+                drawLine(trim,Offset(cx+w*0.07f,t),Offset(cx-w*0.02f,b),frame)
+                drawLine(trim,Offset(l,t+h*0.52f),Offset(r,t+h*0.48f),frame)
+            }
+            drawPath(glassShape,Ink.line,style=pen.thin)
+            roundFill(trim,pen,l-m*1.5f,b,r+m*1.5f,b+h*0.08f,h*0.025f,thin=true)
+        }
         1 -> {
             val m = w * 0.08f
             val outer = archPath(l - m, t - m, r + m, b + m * 0.6f)

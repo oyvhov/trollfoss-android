@@ -251,13 +251,20 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         private set
     fun parcelDone() { parcelOpening=0 }
     fun dismissLevelGift() { if(levelGift>0) world.flags+="gift:level:seen:$levelGift";levelGift=0;scheduleSave() }
+    private var reopenDesignerAfterUndo = false
+
     fun undoEdit() {
         if(!canUndo) return
+        val beforePlace = world.place
+        val beforeCamera = engine?.cam
+        val wasDecorating = engine?.designMode == true
         engine?.cancel()
         val restored=history.undo() ?: return
         world=restored;sim=Sim(world);sim.journal=history;wireTasks()
         if(world.place==PlaceId.MINE_GROUND && !world.mine.started || world.place==PlaceId.MINE_UPPER && !world.mine.upperBuilt) world.place=PlaceId.MINE_YARD
         if(Players.activeTeam(world).any { it.place!=world.place }) Players.arrive(world,world.place,arrivalCenter(world.place))
+        if (world.place == beforePlace && beforeCamera != null) cams[beforePlace] = beforeCamera
+        reopenDesignerAfterUndo = wasDecorating && world.place == beforePlace
         engine=null;generation++;syncFromWorld();playersVersion++;changed()
         sfx(Sfx.MAGIC,0.65f)
     }
@@ -352,11 +359,14 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         app.trollfoss.ui.art.ToyArt.photos=world.toyPhotos
         app.trollfoss.ui.art.CreativeArt.state=world.community
         app.trollfoss.ui.art.CreativeArt.bodies=world.bodies
-        return Engine(world, place, sim, this, motion, start).also {
+        val memory = getApplication<Application>().getSystemService(android.app.ActivityManager::class.java)
+        val quality = app.trollfoss.ui.play.RenderQuality(memory.isLowRamDevice, memory.memoryClass)
+        return Engine(world, place, sim, this, motion, start, quality).also {
             pendingFocus?.let { x -> it.focusOn(x); pendingFocus = null }
             it.season = season
             it.festival = festival
             it.skip = debugSkip
+            if (reopenDesignerAfterUndo) { it.designMode = true; reopenDesignerAfterUndo = false }
             engine = it
             radioOn = sim.musicOn(place)
             updateMusic()

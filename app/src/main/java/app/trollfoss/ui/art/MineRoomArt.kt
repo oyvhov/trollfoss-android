@@ -1,5 +1,6 @@
 package app.trollfoss.ui.art
 
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -632,4 +633,22 @@ internal fun DrawScope.drawRoomPreview(kind: RoomKind, w: Float, h: Float) {
             }
         }
     }
+}
+
+/** Real-size trial room, drawn behind the inhabitants without entering the world or save file. */
+internal fun DrawScope.drawMineSuggestion(preview: app.trollfoss.domain.RoomSuggestion, house: MineHouse, st: Stage, pen: Pen, piece: (DrawScope.(app.trollfoss.domain.Fixture) -> Unit)? = null) {
+    val i = preview.slot
+    val upper = preview.place == PlaceId.MINE_UPPER
+    drawRoom(house, preview.place, i, preview.kind, st, pen, emptyList(), upper)
+    leftWall(house, st, pen, i, preview.kind, house.standing(preview.place, i - 1), 0, upper)
+    for (f in preview.pieces) translate(st.x(f.x), f.y * st.u) {
+        if (piece != null) piece(f) else {
+            drawFixtureBack(f, st.u, pen)
+            if (f.spec.front || f.spec.glass) drawFixtureFront(f, st.u, pen)
+        }
+    }
+    val l = st.x(i * Mine.SLOT_W + SHIFT)
+    drawRoundRect(Color(0xFF58AA9F).copy(alpha = 0.85f), Offset(l, 0.025f * st.u),
+        Size(2f * st.u, 0.75f * st.u), androidx.compose.ui.geometry.CornerRadius(0.025f * st.u),
+        style = Stroke(pen.lw * 1.4f, pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(st.u * 0.025f, st.u * 0.015f))))
 }

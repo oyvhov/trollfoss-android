@@ -39,18 +39,25 @@ class Particle(
 
 /** All particles of a scene. Scene units in, screen pixels out. */
 class Particles(private val random: Random = Random.Default) {
-    private val list = ArrayList<Particle>(256)
+    private val list = ArrayList<Particle>(128)
+    var limit = 400
+        set(value) {
+            field = value.coerceAtLeast(0)
+            while (list.size > field) list.removeAt(list.lastIndex)
+        }
+    var effectScale = 1f
 
     val count: Int get() = list.size
 
     fun add(p: Particle) {
-        if (list.size < 400) list += p
+        if (list.size < limit) list += p
     }
 
     private val party = listOf(Color(0xFFFFC83D), Color(0xFFFF4D6D), Color(0xFF2F9BFF), Color(0xFF2FD18B), Color(0xFF8B5CF6), Color(0xFFFF9F43))
 
     fun burst(kind: PKind, x: Float, y: Float, n: Int, speed: Float = 0.5f, size: Float = 0.012f, color: Color? = null, up: Float = 0.2f, life: Float = 0.9f) {
-        repeat(n) { i ->
+        val wanted = if (n <= 0) 0 else max(1, (n * effectScale.coerceIn(0f, 1f)).toInt())
+        repeat(min(wanted, (limit - list.size).coerceAtLeast(0))) { i ->
             val a = random.nextFloat() * 2f * PI.toFloat()
             val s = speed * (0.4f + random.nextFloat() * 0.6f)
             add(

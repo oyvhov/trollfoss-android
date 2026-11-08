@@ -21,6 +21,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.inset
+import app.trollfoss.ui.art.drawMineSuggestion
+import app.trollfoss.ui.art.Stage
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
@@ -151,6 +153,7 @@ class Engine(
     private val host: EngineHost,
     private val motion: Boolean,
     startCam: Float,
+    private val quality: RenderQuality = RenderQuality(),
 ) : SimListener {
     private val random = Random.Default
 
@@ -189,7 +192,7 @@ class Engine(
     var rainbow = 0f
     private var flash = 0f
     private val particles = Particles(random)
-    private val sprites = SpriteCache()
+    private val sprites = SpriteCache(quality.cacheBytes)
 
     /** Where the glimt counter sits on screen, so found stars can fly to it. Set by the HUD. */
     var counterTarget = Offset(0f, 0f)
@@ -232,7 +235,7 @@ class Engine(
         set(value) {
             if (value != designModeState) panelTouched()
             designModeState = value
-            if (!value) startWithStorage = false
+            if (!value) { startWithStorage = false; selectedFurnitureId = -1 }
         }
 
     /** The child touched the furniture panel: still decorating. */
@@ -266,6 +269,41 @@ class Engine(
     private var awayWobble = 0f
 
     /** Bumps whenever the designer changes something, so its panel redraws. */
+    var selectedFurnitureId by mutableIntStateOf(-1)
+        private set
+    val selectedFurniture get() = world.fixtures[selectedFurnitureId]?.takeIf { it.place == place && sim.movable(it) }
+
+    fun alignSelectedFurniture() {
+        val f = selectedFurniture ?: return
+        if (touching) return
+        panelTouched()
+        val moved = sim.edit {
+            val spot = sim.designer.settle(place, f)
+            val shifted = abs(spot[0] - f.x) > 0.005f || abs(spot[1] - f.y) > 0.005f
+            sim.moveFixture(place, f, spot[0], spot[1])
+            shifted
+        }
+        f.anim = 1f
+        if (moved) {
+            host.sfx(Sfx.GR_TADA, 0.6f)
+            particles.burst(PKind.SPARK, f.x, f.y - f.spec.h / 2f, 8, 0.35f, 0.012f, Color(0xFFFFD447))
+        } else {
+            // It was standing nicely already, and the furniture would like that noted.
+            host.sfx(Sfx.HMM, 0.6f, 1.25f)
+        }
+        designVersion++; host.changed()
+    }
+
+    fun turnSelectedPicture() {
+        val f = selectedFurniture?.takeIf { it.type == FixtureType.PICTURE } ?: return
+        if (touching) return
+        panelTouched()
+        sim.designer.turnPicture(f)
+        f.anim = 1f
+        host.sfx(Sfx.SWISH, 0.6f, 1.3f)
+        designVersion++; host.changed()
+    }
+
     var designVersion by mutableIntStateOf(0)
     var startWithStorage by mutableStateOf(false)
     var justStored by mutableStateOf(false)
@@ -836,7 +874,7 @@ class Engine(
         // Weather motion.
         val snowing = effectiveWeather() == Weather.SNOW
         if (place.outdoor && world.weather == Weather.RAIN) {
-            for (i in 0 until drops.size / 2) {
+            for (i in 0 until drops.size / 2 step (if (quality.reduced) 2 else 1)) {
                 drops[i * 2 + 1] += dt * 1.6f
                 drops[i * 2] -= dt * 0.12f
                 if (drops[i * 2 + 1] > 1f) {
@@ -847,7 +885,7 @@ class Engine(
             }
         }
         if (place.outdoor && snowing) {
-            for (i in 0 until flakes.size / 2) {
+            for (i in 0 until flakes.size / 2 step (if (quality.reduced) 2 else 1)) {
                 flakes[i * 2 + 1] += dt * (0.08f + (i % 5) * 0.02f)
                 flakes[i * 2] += sin(time * 0.8f + i) * dt * 0.02f
                 if (flakes[i * 2 + 1] > 1f) {
@@ -924,7 +962,7 @@ class Engine(
         when(val target=grab.target) {
             is Target.Hold -> beginEdit(id,target.body.id)
             is Target.FromBag -> beginEdit(id,target.body.id)
-            is Target.Furniture -> beginEdit(id,target.fixture.id)
+            is Target.Furniture -> { selectedFurnitureId = target.fixture.id; beginEdit(id,target.fixture.id) }
             else -> Unit
         }
         grab.tracker.addPosition(uptime, at)
@@ -1207,6 +1245,7 @@ class Engine(
                 val f = fixtureAt(p)
                 if (f != null && sim.movable(f)) {
                     beginEdit(fingerId,f.id)
+                    selectedFurnitureId = f.id
                     g.target = Target.Furniture(f)
                     panelTouched()
                     g.moved = true
@@ -2665,12 +2704,18 @@ class Engine(
         (world.bodies[t.holder] as? Person)?.let { it.place == place && !hidden(it) } == true
     } else !hidden(t)
 
+    var roomSuggestion: app.trollfoss.domain.RoomSuggestion? = null
+
     var photoMode = false
     var guidance: app.trollfoss.domain.Task? = null
 
     fun draw(scope: DrawScope, text: TextMeasurer) = with(scope) {
         runPending()
         if (size.width != widthPx || size.height != heightPx) setSize(size.width, size.height, density)
+        val drawStarted = System.nanoTime()
+        particles.limit = quality.particleLimit
+        particles.effectScale = quality.effectScale
+        sprites.animationRate = if (quality.reduced) 0.65f else 1f
         val lw = max(1.4f, u * 0.0034f)
         val weather = effectiveWeather()
         val pen = Pen(lw, if (motion) time else 0f, night, weather, rainbow, season, festival)
@@ -2697,6 +2742,7 @@ class Engine(
             drawNameTagsLate(text)
         }
         with(sprites) { finish() }
+        quality.recordDraw(System.nanoTime() - drawStarted)
     }
 
     /** While the scene is on screen, the moving pictures live on the graphics card (see [SpriteCache]). */
@@ -2817,6 +2863,12 @@ class Engine(
         val t0 = System.nanoTime()
         sprites.frame()
         if (skip and 1 == 0) timed(0) { drawPlaceBack(place, cam, u, pen, Decor.styles(world, place)) }
+        roomSuggestion?.takeIf { it.visible(world.mine) }?.let {
+            drawMineSuggestion(it, world.mine, Stage(cam, u, widthPx, heightPx, place.width), pen) { f ->
+                if (!stampFixture(f, 0, pen, true)) drawFixtureBack(f, u, pen)
+                if ((f.spec.front || f.spec.glass) && !stampFixture(f, 1, pen, true)) drawFixtureFront(f, u, pen)
+            }
+        }
         drawPartyLights(lw)
         drawWindowLight(pen)
         drawShootingStar()
@@ -2844,6 +2896,13 @@ class Engine(
                 0 -> timed(1, f0(l)) {
                     val f = l.ref as Fixture
                     if (f.lift > 0f) drawLifted(f)
+                    if (designMode && f.id == selectedFurnitureId) {
+                        val spot = sim.designer.settle(place, f)
+                        val origin = Offset(sx(spot[0] - f.spec.w/2f), sy(spot[1]-f.spec.h))
+                        drawRoundRect(Color(0xFF287E79), origin - Offset(dp(5f), dp(5f)),
+                            Size(f.spec.w*u + dp(10f), f.spec.h*u + dp(10f)), androidx.compose.ui.geometry.CornerRadius(dp(8f)),
+                            style = Stroke(dp(2.5f)))
+                    }
                     if (f.type in ToyPlay.TYPES && !f.spec.wall && f.lift <= 0f) {
                         val ground = if(f.type==FixtureType.PLAY_AIRSHIP) place.floor else f.y
                         val width = f.spec.w*u*0.82f
@@ -2853,7 +2912,10 @@ class Engine(
                         val bounce = (if (motion) 1f + f.anim * 0.05f else 1f) + f.lift * 0.03f
                         scale(bounce, 2f - bounce + f.lift * 0.06f, pivot = Offset.Zero) {
                             val contents = if (f.spec.machine == app.trollfoss.domain.Machine.BLENDER || f.spec.machine == app.trollfoss.domain.Machine.CAULDRON || f.spec.machine == app.trollfoss.domain.Machine.BUILD) world.inMachine(f) else emptyList()
-                            if (!stampFixture(f, 0, pen, contents.isEmpty())) drawFixtureBack(f, u, pen, contents)
+                            scale(if (f.type == FixtureType.PICTURE && f.mode % 2 != 0) -1f else 1f, 1f,
+                                pivot = Offset.Zero) {
+                                if (!stampFixture(f, 0, pen, contents.isEmpty())) drawFixtureBack(f, u, pen, contents)
+                            }
                             if(f.type in ToyPlay.TYPES) drawToySheen(f, u, pen, motion)
                         }
                     }
@@ -3402,10 +3464,10 @@ class Engine(
     private fun DrawScope.drawLifted(f: Fixture) {
         val w = (f.spec.w + 0.06f) * u
         val c = Offset(sx(f.x + f.shiftX), sy(f.y))
-        val pulse = 1f + sin(time * 8f) * 0.05f
+        val pulse = if (motion) 1f + sin(time * 8f) * 0.05f else 1f
         val rect = androidx.compose.ui.geometry.Rect(c.x - w / 2 * pulse, c.y - w * 0.09f, c.x + w / 2 * pulse, c.y + w * 0.09f)
         drawOval(T.SunTop.copy(alpha = 0.35f * f.lift), rect.topLeft, rect.size)
-        drawOval(Color.White.copy(alpha = 0.9f * f.lift), rect.topLeft, rect.size, style = Stroke(dp(3f), pathEffect = PathEffect.dashPathEffect(floatArrayOf(dp(10f), dp(7f)), time * dp(30f))))
+        drawOval(Color.White.copy(alpha = 0.9f * f.lift), rect.topLeft, rect.size, style = Stroke(dp(3f), pathEffect = PathEffect.dashPathEffect(floatArrayOf(dp(10f), dp(7f)), (if (motion) time else 0f) * dp(30f))))
     }
 
     /** Coloured spots sweeping over walls and floor from the spinning disco ball. */
@@ -3749,14 +3811,14 @@ class Engine(
         if (!place.outdoor || !motion) return
         if (weather == Weather.RAIN) {
             val c = Color(0xFFB9D9FF).copy(alpha = 0.65f)
-            for (i in 0 until drops.size / 2) {
+            for (i in 0 until drops.size / 2 step (if (quality.reduced) 2 else 1)) {
                 val x = drops[i * 2] * size.width
                 val y = drops[i * 2 + 1] * size.height
                 drawLine(c, Offset(x, y), Offset(x - dp(3f), y + dp(14f)), strokeWidth = dp(1.6f), cap = StrokeCap.Round)
             }
         }
         if (weather == Weather.SNOW) {
-            for (i in 0 until flakes.size / 2) {
+            for (i in 0 until flakes.size / 2 step (if (quality.reduced) 2 else 1)) {
                 val x = flakes[i * 2] * size.width
                 val y = flakes[i * 2 + 1] * size.height
                 drawCircle(Color.White.copy(alpha = 0.9f), dp(1.8f + (i % 4) * 0.8f), Offset(x, y))

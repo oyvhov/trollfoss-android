@@ -104,7 +104,7 @@ private enum class DesignTab { FURNITURE, WALL, FLOOR, STORE, TIDY, TRASH }
  * away) and the broom that tidies the whole place. Everything is pictures; nothing needs reading.
  */
 @Composable
-fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> Unit, modifier: Modifier = Modifier) {
+fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> Unit, modifier: Modifier = Modifier, canUndo: Boolean = false, onUndo: () -> Unit = {}) {
     var tab by remember(place, engine.startWithStorage) { mutableIntStateOf(if(engine.startWithStorage) DesignTab.STORE.ordinal else DesignTab.FURNITURE.ordinal) }
     var group by remember(place) { mutableStateOf(FurnitureGroup.ALL) }
     val feedback = LocalFeedback.current
@@ -168,6 +168,13 @@ fun DesignerPanel(engine: Engine, world: World, place: PlaceId, onClose: () -> U
             // The heading names the open tab, so the pictures below get the room a second heading would take.
             GameText(designTabLabel(DesignTab.entries[tab]).str(), modifier = Modifier.weight(1f), maxLines = 1, fontSize = if(compact) 16.sp else 20.sp, color = T.Ink)
             CloseButton(onClose, size = if (compact) 40.dp else 48.dp)
+        }
+        if (canUndo || engine.selectedFurniture != null) Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            if (canUndo) RoundButton(app.trollfoss.ui.SP.undo.str(), onClick = onUndo, size = 48.dp, tone = Tones.Cream, icon = DesignIcons.Undo)
+            engine.selectedFurniture?.let { selected ->
+                RoundButton(SM.alignFurniture.str(), onClick = engine::alignSelectedFurniture, size = 48.dp, tone = Tones.Mint, icon = DesignIcons.Align)
+                if (selected.type == FixtureType.PICTURE) RoundButton(SM.turnPicture.str(), onClick = engine::turnSelectedPicture, size = 48.dp, tone = Tones.Cream, icon = app.trollfoss.ui.components.Icons.Refresh)
+            }
         }
         if (tab == DesignTab.FURNITURE.ordinal) {
             val availableGroups = remember(place) { FurnitureGroup.entries.filter { g -> g == FurnitureGroup.ALL || Decor.catalogue(place).any { FurnitureGroups.matches(g, it.type) } } }

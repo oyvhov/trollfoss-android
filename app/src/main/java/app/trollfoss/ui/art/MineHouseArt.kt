@@ -1,5 +1,6 @@
 package app.trollfoss.ui.art
 
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -39,6 +40,7 @@ internal fun mineHouseHeight(h: MineHouse): Float {
     val floors = if (h.upperBuilt) s.gh + s.uh else s.gh
     var total = floors + s.rh - Oblique.DY * s.depth / 2f + (if (h.chimney) 0.12f else 0f)
     if (h.shape == 2) total = max(total, s.gh + s.uh + 0.3f + 0.04f)
+    if (h.roof == 4) total = max(total, floors + s.rh * 1.2f - Oblique.DY * s.depth + 0.15f)
     if (h.flag) total += 0.07f
     return total
 }
@@ -461,9 +463,56 @@ private fun DrawScope.drawRoof(
     val ridgeR = Offset(xr + rx, topY + ry)
     val dark = roofC.darken(0.28f)
     val body: DrawScope.() -> Unit = {
-        when (h.roof.mod(4)) {
+        when (h.roof.mod(Mine.ROOFS)) {
+            4 -> {
+                val peak = Offset(l + (r - l) * 0.58f, topY - rh * 1.2f)
+                val roof = Path().apply {
+                    moveTo(l, topY + k * 0.015f)
+                    cubicTo(l + (r-l)*0.22f, topY - rh*0.12f, peak.x-k*0.08f, peak.y+k*0.02f, peak.x, peak.y)
+                    cubicTo(peak.x+k*0.04f, peak.y+rh*0.45f, r-k*0.04f, topY-rh*0.05f, r, topY+k*0.015f)
+                    close()
+                }
+                // The same curved silhouette recedes to the back of the house, covering its side wall.
+                val backRoof = Path().apply { addPath(roof, Offset(dxs, dys)) }
+                drawPath(backRoof, dark)
+                drawPath(backRoof, Ink.line, style = pen.stroke)
+                // The long left slope joins the front curve to the back one, so no sky shows between them.
+                val leftRoof = Path().apply {
+                    moveTo(l, topY + k * 0.015f)
+                    cubicTo(l + (r-l)*0.22f, topY - rh*0.12f, peak.x-k*0.08f, peak.y+k*0.02f, peak.x, peak.y)
+                    lineTo(peak.x + dxs, peak.y + dys)
+                    cubicTo(peak.x+dxs-k*0.08f, peak.y+dys+k*0.02f,
+                        l+(r-l)*0.22f+dxs, topY-rh*0.12f+dys, l+dxs, topY+k*0.015f+dys)
+                    close()
+                }
+                drawPath(leftRoof, androidx.compose.ui.graphics.lerp(roofC, dark, 0.45f)); drawPath(leftRoof, Ink.line, style = pen.stroke)
+                val sideRoof = Path().apply {
+                    moveTo(peak.x, peak.y); lineTo(peak.x + dxs, peak.y + dys)
+                    cubicTo(peak.x+dxs+k*0.04f, peak.y+dys+rh*0.45f,
+                        r+dxs-k*0.04f, topY+dys-rh*0.05f, r+dxs, topY+dys+k*0.015f)
+                    lineTo(r, topY+k*0.015f)
+                    cubicTo(r-k*0.04f, topY-rh*0.05f, peak.x+k*0.04f, peak.y+rh*0.45f, peak.x, peak.y)
+                    close()
+                }
+                drawPath(sideRoof, dark); drawPath(sideRoof, Ink.line, style=pen.stroke)
+                drawPath(roof, roofC)
+                drawPath(roof, Ink.line, style = pen.stroke)
+                val shadow = Path().apply { moveTo(peak.x, peak.y); lineTo(peak.x-k*0.045f, topY); lineTo(r,topY); close() }
+                clipPath(roof) { drawPath(shadow, dark.copy(alpha=0.48f)) }
+                drawLine(trim, Offset(l,topY), Offset(r,topY), pen.lw*1.5f)
+                drawLine(Ink.line, peak, peak - Offset(k*0.014f,k*0.08f), pen.lw)
+                val moon = Path().apply {
+                    moveTo(peak.x+k*0.025f,peak.y-k*0.14f)
+                    cubicTo(peak.x-k*0.07f,peak.y-k*0.15f,peak.x-k*0.07f,peak.y-k*0.045f,peak.x+k*0.025f,peak.y-k*0.06f)
+                    cubicTo(peak.x-k*0.02f,peak.y-k*0.075f,peak.x-k*0.015f,peak.y-k*0.115f,peak.x+k*0.025f,peak.y-k*0.14f)
+                    close()
+                }
+                drawPath(moon, Color(0xFFFFD982).atNight(night, 0.1f))
+                drawPath(moon, Ink.line, style = pen.thin)
+                if (winter) drawLine(Color(0xFFF4F8FF), Offset(l,topY-k*0.012f), Offset(r,topY-k*0.012f), k*0.018f, StrokeCap.Round)
+            }
             0, 2 -> {
-                val turf = h.roof.mod(4) == 2
+                val turf = h.roof.mod(Mine.ROOFS) == 2
                 val fill = if (turf) Color(0xFF6FAE5A).atNight(night, 0.45f) else roofC
                 // The gable end on the right.
                 if (!rightTaller) {
@@ -545,8 +594,8 @@ private fun DrawScope.drawRoof(
     if (firstRun) {
         if (h.chimney && h.shape != 2) {
             val cx = xl + Mine.FACADE_MW * k * 0.78f + rx
-            val flat = h.roof.mod(4) == 3
-            val baseY = if (flat) topY + dys * 0.55f - k * 0.04f else topY + ry + k * 0.045f
+            val flat = h.roof.mod(Mine.ROOFS) == 3
+            val baseY = if (h.roof == 4) topY else if (flat) topY + dys * 0.55f - k * 0.04f else topY + ry + k * 0.045f
             val cw = k * 0.095f
             val chH = k * 0.17f
             box(cx - cw / 2f, baseY - chH, cx + cw / 2f, baseY, Color(0xFFB7664F).atNight(night, 0.4f), pen, k)

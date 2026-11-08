@@ -102,15 +102,23 @@ class Designer(private val sim: Sim, private val random: Random) {
             }
         }
         for (child in world.fixturesIn(place).filter { it.host == f.id }) {
-            world.storage += Stored(child.type, child.variant)
+            world.storage += Stored(child.type, child.variant, if (child.type == FixtureType.PICTURE) child.mode else 0)
             world.fixtures.remove(child.id)
         }
         world.fixtures.remove(f.id)
-        world.storage += Stored(f.type, f.variant, if(f.type in CreativePlay.TYPES) f.mode else 0, world.community.doors.remove(f.id))
+        world.storage += Stored(f.type, f.variant, if(f.type in CreativePlay.TYPES || f.type == FixtureType.PICTURE) f.mode else 0, world.community.doors.remove(f.id))
         if(f.type==FixtureType.PLAY_TRAIN) world.flags.remove("train:broken:${f.id}")
         sim.invalidate(place)
         listener.onFx(Fx.STORE, f.x, f.y - f.spec.h / 2, f)
         return true
+    }
+
+    /** Mirroring a picture keeps its original frame and hit area. */
+    fun turnPicture(f: Fixture): Boolean = sim.edit {
+        if (f.type != FixtureType.PICTURE || world.fixtures[f.id] !== f) false else {
+            f.mode = (f.mode + 1).mod(2)
+            true
+        }
     }
 
     /** Takes a piece out of the store and places it. */

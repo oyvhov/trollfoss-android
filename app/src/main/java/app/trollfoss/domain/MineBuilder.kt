@@ -167,10 +167,10 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
             if (!sim.designer.store(place, f)) {
                 // Whatever the designer would not take still goes to the store: nothing is lost.
                 for (child in world.fixturesIn(place).filter { it.host == f.id }) {
-                    world.storage += Stored(child.type, child.variant)
+                    world.storage += Stored(child.type, child.variant, if (child.type == FixtureType.PICTURE) child.mode else 0)
                     world.fixtures.remove(child.id)
                 }
-                world.storage += Stored(f.type, f.variant)
+                world.storage += Stored(f.type, f.variant, if (f.type == FixtureType.PICTURE) f.mode else 0)
                 world.fixtures.remove(f.id)
             }
         }
@@ -202,6 +202,12 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
         fx(MineEvent.LOOK, if (wall != null) 0 else if (roof != null || roofColor != null) 1 else 2, yardDoorX(), 0.5f)
         sim.tasks.record(Deed.MI_LOOK, PlaceId.MINE_YARD)
         touch()
+    }
+
+    fun applyPalette(palette: HousePalette) {
+        restyle(wall = palette.wall, roof = palette.roof, roofColor = palette.roofColor,
+            door = palette.door, windows = palette.windows)
+        fx(MineEvent.PALETTE, palette.ordinal, yardDoorX(), 0.5f)
     }
 
     /** Completes the running job at once. */
@@ -285,7 +291,9 @@ class MineBuilder(private val sim: Sim, private val random: Random) {
         when (job.kind) {
             JobKind.FOUNDATION -> fx(MineEvent.FOUNDATION_DONE, job.shape, yardDoorX(), 0.5f)
             JobKind.ROOM -> {
+                val sneezer = RoomWelcome.greet(world, place, slotCenter(job))
                 fx(MineEvent.ROOM_DONE, job.room?.ordinal ?: 0, slotCenter(job), 0.6f)
+                sneezer?.let { fx(MineEvent.SAWDUST_SNEEZE, 0, it.x, it.y - it.h * 0.8f) }
                 sim.tasks.record(Deed.MI_ROOM, PlaceId.MINE_YARD)
                 sim.firstTime(First.BUILD_ROOM)
                 select(job.place, job.slot)

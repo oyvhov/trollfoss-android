@@ -103,6 +103,27 @@ object MineFx {
                 s.after(0.1f) { s.sfx(Sfx.SPARKLE, 0.5f) }
                 s.burst(PKind.SPARK, x, 0.45f, 10, 0.5f, 0.013f, up = 0.3f)
             }
+            MineEvent.SAWDUST_SNEEZE -> s.after(app.trollfoss.domain.RoomWelcome.SNEEZE_AFTER) {
+                s.sfx(Sfx.SNEEZE, 0.8f, pitch())
+                s.burst(PKind.DUST, x, y, 12, 0.55f, 0.016f, sawdust, up = 0.15f, life = 0.9f)
+            }
+            MineEvent.PALETTE -> when (arg) {
+                // The moon house hoots, the forest house has moved-in birds, the sun house has a very proud hen.
+                0 -> {
+                    s.after(0.2f) { s.sfx(Sfx.OWL, 0.8f) }
+                    s.burst(PKind.STAR, x, 0.35f, 10, 0.5f, 0.013f, Color(0xFFFFD982), up = 0.5f, life = 1.3f)
+                }
+                1 -> {
+                    s.after(0.2f) { s.sfx(Sfx.UP_TWEET, 0.7f, pitch()) }
+                    s.after(0.5f) { s.sfx(Sfx.CUCKOO, 0.7f) }
+                    s.burst(PKind.HEART, x, 0.4f, 4, 0.3f, 0.014f, Color(0xFF6FAE5A), up = 0.4f, life = 1.2f)
+                }
+                else -> {
+                    s.after(0.2f) { s.sfx(Sfx.CLUCK, 0.8f, 1.2f) }
+                    s.after(0.55f) { s.sfx(Sfx.GR_TADA, 0.6f) }
+                    s.burst(PKind.SPARK, x, 0.35f, 14, 0.7f, 0.014f, Color(0xFFFFD447), up = 0.6f, life = 1.1f)
+                }
+            }
             MineEvent.PARTY_START -> {
                 s.sfx(Sfx.MI_DINGDONG, 0.9f)
                 s.after(0.9f) { s.sfx(Sfx.FANFARE, 0.8f) }
