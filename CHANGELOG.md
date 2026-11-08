@@ -1,8 +1,14 @@
 # Endringslogg
 
-## I arbeid – mindre teiknearbeid
+## 1.18.0 – Sjå rommet før du byggjer
 
-- Figurar og ting langt utanfor skjermen blir ikkje teikna eller oppfriska i biletbufferet. Leiken og rørsla deira held fram, og dei blir synlege når kameraet kjem dit.
+- Mitt hus viser rommet i full storleik før det blir bygd. Barnet kan bla mellom romtypane og velje vel éin gong til.
+- Tre fargepakkar for huset: Månehuset, Skogly og Solstova, med nytt svungent tak og spisse vindauge.
+- Møbelpanelet har angreknapp, «set fint på plass» og «snu biletet». Valt møbel får ei tydeleg ramme.
+- Når eit rom blir ferdig, vinkar vennene, og den som står nærast får sagflis i nasen. Kvar fargepakke har sin eigen lyd.
+- Nye opne trapper i lyst tre med grønt rekkverk, og enklare husbygging i tre steg: vel, sjå, bygg.
+- Roligare effektar på svake einingar. Støtte for redusert rørsle i fleire byggjeanimasjonar.
+- Figurar og ting langt utanfor skjermen blir ikkje teikna eller oppfriska i biletbufferet. Leiken og rørsla deira held fram, og dei blir synlege når kameraet kjem dit. langt utanfor skjermen blir ikkje teikna eller oppfriska i biletbufferet. Leiken og rørsla deira held fram, og dei blir synlege når kameraet kjem dit.
 - Nye møbelbilete blir samanlikna utan to ekstra pikselkopiar, slik at innlasting krev mindre mellombels minne.
 - Grafiske detaljar, animasjonar og lagra spelverder er bevarte.
 
