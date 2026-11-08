@@ -1,6 +1,20 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
-> **NYAST – MITT HUS, STORYBOOK-RUNDEN UTAN 3D (2026-11-08, Claude):**
+> **NYAST – 1.18.0 ER PUBLISERT (2026-11-08, Claude):**
+> [Release](https://github.com/oyvhov/trollfoss-android/releases/tag/v1.18.0), kode 23, APK-kjelde/tagg
+> `55a62f5`. Med: yting (`ef4cef5`), trapper og husbygging (`906bdf2`) og Mitt hus-runden nedanfor. **Ikkje** med:
+> Heileberget 3D, som framleis er ukommitta i `rainbow-finale` og må flettast mot ny `main`.
+> Universal APK 3 500 447 byte, SHA-256 `c391c982dc7472cbb332a8f8a52d0cb7e750a280fc259e6f6a7999f2c8e856ba`,
+> rett sertifikat, `app.trollfoss`, min Android 26, ikkje debuggable. 707 JVM-testar, 109 Android-testar per format
+> (kjelda før versjonsauken), `lintRelease` 0 feil / 23 åtvaringar, CI grøn på main og tagg.
+> Offentleg API og nedlasting utan token kontrollerte. Ekte oppdatering på `TrollfossRelease180`:
+> 1.12.0 / 17 → 1.18.0 / 23 gjennom For vaksne → Last ned → Installer → Android Update, Play Protect-skanning «looks safe».
+> Installert APK har same hash. Kaldstart opnar Kartet. Ingen Trollfoss-krasj/ANR i økta.
+> Sveipprøva som mangla frå 2. november er bestått i Storstova på mobil og nettbrettformat (12 sveip kvar), utan
+> «System UI»-dialog, på emulator. Lagring over oppdatering er sett på Kartet og dekt av einingstestar; produksjons-JSON er
+> ikkje lesen. Ingen fysisk eining. Arkiv: `C:/topa/dist/release-v1.18.0/`. Emulatoren er stoppa, skjermval tilbakeførte.
+
+> **MITT HUS, STORYBOOK-RUNDEN UTAN 3D (2026-11-08, Claude; no utgjeven i 1.18.0, «ukommitta» under er historikk):**
 > Grein `claude/hus-storybook` i `C:/topa/.claude/worktrees/hus-storybook`, frå `906bdf2`. **Ukommitta.**
 > Henta frå den ukommitta delen i `rainbow-finale`; Codex-kopien og 3D-arbeidet er urørte, og ingen
 > `highlands`/`ui.berg`-koplingar er med. Rom-førehandsvising i full storleik med byte fram/tilbake,
