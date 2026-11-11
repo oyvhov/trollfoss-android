@@ -37,6 +37,19 @@ internal fun MapPen.drawLandmark(d: DrawScope, g: MapGeo, place: PlaceId) {
     val b = g.bases[place]!!
     val yf = b.y / h
     if (place == PlaceId.SPACE) return
+    if(place==PlaceId.CHRISTMAS_SQUARE) {
+        val sc=S*depthScale(yf)
+        d.withTransform({ translate(b.x,b.y);scale(sc,sc,Offset.Zero) }) {
+            val p=Pen(lw/sc)
+            inkedRound(Rect(-0.48f,-0.55f,0.35f,0f),0.04f,XmasRed,p)
+            inked(Path().apply {moveTo(-0.58f,-0.53f);lineTo(-0.06f,-0.96f);lineTo(0.46f,-0.53f);close()},XmasSnow,p)
+            inkedRound(Rect(-0.15f,-0.4f,0.05f,0f),0.03f,XmasGreen,p)
+            inkedRound(Rect(-0.4f,-0.4f,-0.23f,-0.2f),0.02f,XmasGold,p)
+            xmasTree(Offset(0.45f,0.01f),0.66f,p)
+        }
+        return
+    }
+
     val sc = S * depthScale(yf) * landmarkScale(place)
     if (place == PlaceId.MINE_YARD) {
         mine?.let { d.drawMapMine(it, b.x, b.y, sc * MAP_MINE_SCALE, lw, n, snow, grass(Color(0xFF6FAE5A), Color(0xFFEAF0FA))) }

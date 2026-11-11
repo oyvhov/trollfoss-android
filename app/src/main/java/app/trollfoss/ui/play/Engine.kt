@@ -554,7 +554,7 @@ class Engine(
         if (time > storedUntil) justStored = false
     }
 
-    private fun accepts(f: Fixture, t: Thing): Boolean = PlayInteractions.accepts(f, t) || f.type == FixtureType.TREASURE_BOX ||
+    private fun accepts(f: Fixture, t: Thing): Boolean = sim.christmas.accepts(f,t) || PlayInteractions.accepts(f, t) || f.type == FixtureType.TREASURE_BOX ||
         (f.type == FixtureType.SECRET_NOOK && (t.type == ThingType.WAND || t.type == ThingType.GOLDEN_KEY || t.type == ThingType.CROWN)) ||
         app.trollfoss.domain.MinePlay.accepts(world, f, t) || when (f.spec.machine) {
         app.trollfoss.domain.Machine.STOVE -> app.trollfoss.domain.Recipes.stove(t.type) != null
@@ -581,7 +581,9 @@ class Engine(
             if (onBag(g)) continue
             when (body) {
                 is Thing -> {
-                    val center = Offset(body.x, body.y - body.h / 2)
+                    val stock = world.bodiesIn(place).filterIsInstance<Thing>().firstOrNull { it.type == ThingType.XM_STOCKING && it.id != body.id && kotlin.math.abs(it.x-body.x)<0.08f && kotlin.math.abs(it.y-body.y)<0.12f }
+            if(stock != null && sim.christmas.fillStocking(stock,body)) { host.changed();return }
+            val center = Offset(body.x, body.y - body.h / 2)
                     val finger = toScene(g.finger)
                     val machine = world.fixturesIn(place).firstOrNull { f ->
                         val zone = PlayInteractions.zone(f, body) ?: f.spec.dropZone ?: return@firstOrNull false
@@ -662,7 +664,7 @@ class Engine(
 
     private fun updatePeople(dt: Float) {
         listen(dt)
-        val radio = world.fixturesIn(place).firstOrNull { it.type == FixtureType.RADIO && it.on }
+        val radio = world.fixturesIn(place).firstOrNull { it.type in setOf(FixtureType.RADIO,FixtureType.XM_MUSICBOX) && it.on }
         val discoOn = disco() != null
         val floors = sim.show.floorsOn(place)
         val held = grabs.values.filter { it.moved }.mapNotNull { heldBody(it) }
@@ -803,7 +805,8 @@ class Engine(
             val x = f.x + f.shiftX
             if (x < cam - 0.5f || x > cam + viewport + 0.5f) continue
             when {
-                f.type == FixtureType.RADIO && f.on && random.nextFloat() < dt * 2.2f ->
+                f.type==FixtureType.XM_SNOWGLOBE && f.on && random.nextFloat()<dt*10f -> particles.add(Particle(PKind.SNOW,x+(random.nextFloat()-0.5f)*0.6f,f.top-0.15f,(random.nextFloat()-0.5f)*0.04f,0.08f,2f,0.007f,Color.White))
+                f.type in setOf(FixtureType.RADIO,FixtureType.XM_MUSICBOX) && f.on && random.nextFloat() < dt * 2.2f ->
                     particles.add(Particle(PKind.NOTE, x + (random.nextFloat() - 0.5f) * 0.05f, f.top, (random.nextFloat() - 0.5f) * 0.08f, -0.12f, 1.8f, 0.012f, listOf(T.Grape, T.Berry, T.Sea)[random.nextInt(3)]))
                 (f.type == FixtureType.CAMPFIRE || f.type == FixtureType.WOOD_STOVE) && f.on && random.nextFloat() < dt * 4f ->
                     particles.add(Particle(PKind.SPARK, x + (random.nextFloat() - 0.5f) * 0.05f, f.top - 0.03f, (random.nextFloat() - 0.5f) * 0.1f, -0.25f, 0.9f, 0.006f, Color(0xFFFFB02E)))
@@ -1116,6 +1119,7 @@ class Engine(
         if(grabs.isNotEmpty()) return false
         focusOn(f.x)
         when {
+            f.type in app.trollfoss.domain.Christmas.benches || f.type in setOf(FixtureType.XM_SLEIGH,FixtureType.XM_CALENDAR,FixtureType.XM_MARKET) -> christmasFixtureId=f.id
             f.type in ToyPlay.TYPES && (!Vehicles.controllable(f) || sim.toys.broken(f)) -> toyFixtureId=f.id
             f.type in listOf(FixtureType.PLAY_FORT,FixtureType.PLAY_CART) -> playFixtureId=f.id
             else -> {
@@ -1336,7 +1340,7 @@ class Engine(
 
     fun cancel() {
         sim.magic.cancel()
-        playThingId = -1; playFixtureId = -1; toyFixtureId = -1
+        playThingId = -1; playFixtureId = -1; toyFixtureId = -1; christmasFixtureId = -1
         sim.playerFollow.cancel()
         camV = 0f
         cancelCatalogueDrag()
@@ -1721,6 +1725,7 @@ class Engine(
 
     var playThingId by mutableIntStateOf(-1)
     var toyFixtureId by mutableIntStateOf(-1)
+    var christmasFixtureId by mutableIntStateOf(-1)
     var wantedToy by mutableStateOf<ToyReward?>(null)
     var playVersion by mutableIntStateOf(0)
         private set
@@ -1738,6 +1743,7 @@ class Engine(
             is Person -> {
                 markPlayer(b)
                 val a = b.anim
+                if(sim.christmas.found(b)) { host.changed();return }
                 a.nameTag = 2.2f
                 a.taps = if (time - a.lastTap < 1.6f) a.taps + 1 else 1
                 a.lastTap = time
@@ -1804,6 +1810,7 @@ class Engine(
         }
         // A fixture? Front-most first, wall fixtures last.
         fixtureAt(p)?.let { f ->
+            if(f.type in app.trollfoss.domain.Christmas.benches || f.type in setOf(FixtureType.XM_SLEIGH,FixtureType.XM_CALENDAR,FixtureType.XM_MARKET)) { cancel();christmasFixtureId=f.id;return }
             // Games with visible targets take taps directly; other toys open their dialog or vehicle arrows.
             if(f.type in ToyPlay.TYPES && f.type != FixtureType.PLAY_REACTION_COURSE && f.type !in app.trollfoss.domain.FinalePlay.DIRECT && (!Vehicles.controllable(f) || sim.toys.broken(f))) { cancel();toyFixtureId=f.id;return }
             if (f.type == FixtureType.PLAY_FORT || f.type == FixtureType.PLAY_CART) { playFixtureId = f.id; return }
@@ -1987,13 +1994,13 @@ class Engine(
             Fx.CLOSE -> s(Sfx.SHUT, 0.6f)
             Fx.ON -> {
                 s(Sfx.CLICK, 0.6f)
-                if (fixture?.type == FixtureType.RADIO) host.radio(sim.musicOn(place))
+                if (fixture?.type in setOf(FixtureType.RADIO,FixtureType.XM_MUSICBOX)) host.radio(sim.musicOn(place))
                 if (fixture?.type == FixtureType.CAMPFIRE || fixture?.type == FixtureType.WOOD_STOVE) s(Sfx.POOF, 0.4f, 1.3f)
                 if (fixture?.type == FixtureType.BATH || fixture?.type == FixtureType.SINK || fixture?.type == FixtureType.HAIR_WASH) s(Sfx.SPLASH, 0.4f, 1.3f)
             }
             Fx.OFF -> {
                 s(Sfx.CLICK, 0.5f, 0.8f)
-                if (fixture?.type == FixtureType.RADIO) host.radio(sim.musicOn(place))
+                if (fixture?.type in setOf(FixtureType.RADIO,FixtureType.XM_MUSICBOX)) host.radio(sim.musicOn(place))
             }
             Fx.CHANNEL -> s(Sfx.CLICK, 0.5f, 1.2f)
             Fx.DISPENSE -> s(Sfx.POP, 0.7f, 0.9f + random.nextFloat() * 0.3f)
@@ -2541,7 +2548,7 @@ class Engine(
             Species.DOG -> Sfx.WOOF
             Species.BUNNY -> Sfx.CHIRP
             Species.DRAGON -> Sfx.ROAR
-            Species.ELK -> Sfx.MOO
+            Species.ELK, Species.REINDEER -> Sfx.MOO
             Species.PUFFIN -> Sfx.CHIRP
             Species.COW -> Sfx.MOO
             Species.SHEEP -> Sfx.BAA
@@ -2555,7 +2562,7 @@ class Engine(
         }
         val rate = when (p.species) {
             Species.GOAT -> 1.3f
-            Species.ELK -> 1.25f
+            Species.ELK, Species.REINDEER -> 1.25f
             Species.PUFFIN -> 0.75f
             Species.FOLK -> p.voice
             Species.GHOST -> p.voice * 0.7f
@@ -2651,7 +2658,7 @@ class Engine(
     private fun fixtureKey(f: Fixture): Float = when {
         f.spec.wall -> -10f + f.id * 0.00001f
         // Rugs lie flat under everything on the floor.
-        f.type == FixtureType.RUG -> -1f + f.id * 0.00001f
+        f.type in setOf(FixtureType.RUG,FixtureType.XM_RUG) -> -1f + f.id * 0.00001f
         else -> f.depth
     }
 
@@ -2911,10 +2918,10 @@ class Engine(
                     translate(sx(f.x + f.shiftX), sy(f.y + f.shiftY)) {
                         val bounce = (if (motion) 1f + f.anim * 0.05f else 1f) + f.lift * 0.03f
                         scale(bounce, 2f - bounce + f.lift * 0.06f, pivot = Offset.Zero) {
-                            val contents = if (f.spec.machine == app.trollfoss.domain.Machine.BLENDER || f.spec.machine == app.trollfoss.domain.Machine.CAULDRON || f.spec.machine == app.trollfoss.domain.Machine.BUILD) world.inMachine(f) else emptyList()
+                            val contents = if (f.type in app.trollfoss.domain.Christmas.types || f.spec.machine == app.trollfoss.domain.Machine.BLENDER || f.spec.machine == app.trollfoss.domain.Machine.CAULDRON || f.spec.machine == app.trollfoss.domain.Machine.BUILD) world.inMachine(f) else emptyList()
                             scale(if (f.type == FixtureType.PICTURE && f.mode % 2 != 0) -1f else 1f, 1f,
                                 pivot = Offset.Zero) {
-                                if (!stampFixture(f, 0, pen, contents.isEmpty())) drawFixtureBack(f, u, pen, contents)
+                                if (!stampFixture(f, 0, pen, contents.isEmpty() && f.type !in app.trollfoss.domain.Christmas.trees)) drawFixtureBack(f, u, pen, contents)
                             }
                             if(f.type in ToyPlay.TYPES) drawToySheen(f, u, pen, motion)
                         }

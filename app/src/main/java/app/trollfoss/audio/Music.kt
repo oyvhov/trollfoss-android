@@ -11,7 +11,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /** One loop per place, one for the map, a lullaby for the night and dance music for the radio. */
-enum class MusicTheme { MAP, HOME, CAFE, SALON, BEACH, FOREST, LAB, PARK, FARM, SPACE, RADIO, NIGHT, TIVOLI, SHOP, DOCTOR, STAGE, SEA, BERG, MANOR, ATTIC, CELLAR, GARDEN }
+enum class MusicTheme { MAP, HOME, CAFE, SALON, BEACH, FOREST, LAB, PARK, FARM, SPACE, RADIO, NIGHT, TIVOLI, SHOP, DOCTOR, STAGE, SEA, BERG, MANOR, ATTIC, CELLAR, GARDEN, CHRISTMAS }
 
 /**
  * Composes calm, looping background music in code: chords on a soft pad, a plucked arpeggio or bell
@@ -44,6 +44,7 @@ object MusicComposer {
 
     private val recipes: Map<MusicTheme, Recipe> = mapOf(
         // Adventurous and bright: flying over the island.
+        MusicTheme.CHRISTMAS to Recipe(bpm=84.0,chords=listOf(intArrayOf(60,64,67),intArrayOf(53,57,60),intArrayOf(55,59,62),intArrayOf(60,64,67)),bass=intArrayOf(36,29,31,36),arpeggio=intArrayOf(0,2,1,-1,2,1,0,-1),bells=intArrayOf(72,76,79,81,84),bellChance=0.65,padLevel=0.12,seed=1224),
         MusicTheme.MAP to Recipe(
             bpm = 92.0,
             chords = listOf(intArrayOf(62, 66, 69), intArrayOf(57, 61, 64, 69), intArrayOf(59, 62, 66), intArrayOf(55, 59, 62, 67)),

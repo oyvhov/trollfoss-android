@@ -321,14 +321,14 @@ private fun designTabLabel(tab: DesignTab) = when(tab) {
 private fun groupLabel(group: FurnitureGroup) = when(group) {
     FurnitureGroup.ALL -> S.allFurniture; FurnitureGroup.SEATING -> S.furnitureSeats; FurnitureGroup.TABLES -> S.furnitureTables;
     FurnitureGroup.STORAGE -> S.furnitureStorage; FurnitureGroup.KITCHEN -> S.furnitureKitchen;
-    FurnitureGroup.PLAY -> S.furniturePlay; FurnitureGroup.DECOR -> S.furnitureDecor
+    FurnitureGroup.CHRISTMAS -> app.trollfoss.ui.SX.title; FurnitureGroup.PLAY -> S.furniturePlay; FurnitureGroup.DECOR -> S.furnitureDecor
 }
 private fun groupIcon(group: FurnitureGroup): DrawScope.() -> Unit = {
     if(group == FurnitureGroup.ALL) DesignIcons.Sofa(this) else {
         val type = when(group) {
             FurnitureGroup.SEATING -> FixtureType.BED; FurnitureGroup.TABLES -> FixtureType.TABLE;
             FurnitureGroup.STORAGE -> FixtureType.WARDROBE; FurnitureGroup.KITCHEN -> FixtureType.SINK;
-            FurnitureGroup.PLAY -> FixtureType.PIANO; else -> FixtureType.LAMP
+            FurnitureGroup.CHRISTMAS -> FixtureType.XM_TREE; FurnitureGroup.PLAY -> FixtureType.PIANO; else -> FixtureType.LAMP
         }
         drawFixtureThumb(type, 0, Rect(0f, 0f, size.width, size.height))
     }

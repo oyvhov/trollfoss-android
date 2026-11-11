@@ -42,6 +42,8 @@ enum class Sfx {
 
     // ---- garden ----
     GA_CROAK, GA_CREAK, GA_WINK, GA_GROW, GA_SPRAY, GA_DIG,
+    BERG_STONE, BERG_OCARINA,
+    BERG_STEP_WOOL, BERG_STEP_STONE, BERG_STEP_WOOD, BERG_DRIP, BERG_EMBER, BERG_MOUSE,
 }
 
 /**
@@ -768,6 +770,54 @@ object Synth {
         // The sprinkler: tsch-tsch-tsch.
         Sfx.GA_SPRAY -> (0 until 5).map { i -> Noise(i * 0.13, 0.12, 0.35, 5200.0, 3400.0, decay = 14.0, seed = 40 + i) } +
             Noise(0.0, 0.7, 0.12, 6500.0, 5800.0, swell = true, seed = 47)
+        // The echo stones and Rumle's little ceramic bird share a register.
+        Sfx.BERG_STONE -> listOf(
+            Tone(392.0,0.0,.55,.43,bell,decay=5.5,attack=.010),
+            Tone(784.0,.037,.30,.10,soft,decay=7.0),
+        )
+        Sfx.BERG_OCARINA -> listOf(
+            Tone(391.0,0.0,.41,.48,soft,decay=1.9,slideTo=394.0,vibrato=.007,attack=.051),
+            Tone(784.0,.025,.32,.07,soft,decay=3.0,attack=.049),
+            Tone(392.0,.18,.43,.095,soft,decay=4.8,attack=.045),
+        )
+        // A heel plants and the toe rolls off. Wool absorbs the bright contact of the sole.
+        Sfx.BERG_STEP_WOOL -> listOf(
+            Noise(0.0, .095, .28, 490.0, 220.0, decay = 24.0, attack = .012, seed = 81),
+            Noise(.045, .11, .09, 760.0, 350.0, swell = true, seed = 82),
+            Tone(131.0, .008, .075, .14, soft, decay = 30.0, slideTo = 85.0, attack = .012),
+        )
+        Sfx.BERG_STEP_STONE -> listOf(
+            Noise(0.0, .040, .33, 2050.0, 860.0, decay = 67.0, seed = 83),
+            Tone(196.0, .002, .076, .22, soft, decay = 32.0, slideTo = 118.0),
+            Noise(.039, .095, .16, 1480.0, 605.0, decay = 23.0, seed = 84),
+            Noise(.106, .080, .044, 850.0, 320.0, decay = 36.0, seed = 85),
+        )
+        Sfx.BERG_STEP_WOOD -> listOf(
+            Tone(224.0, 0.0, .14, .42, listOf(1.0 to 1.0, 1.61 to .43, 2.78 to .20), decay = 32.0),
+            Tone(104.0, .010, .17, .22, soft, decay = 18.0),
+            Noise(0.0, .045, .15, 1270.0, 570.0, decay = 49.0, seed = 86),
+            Noise(.052, .08, .08, 990.0, 415.0, decay = 24.0, seed = 87),
+        )
+        // A drop pinches off a bubble. Two early wall reflections give way to a darker tail.
+        Sfx.BERG_DRIP -> listOf(
+            Noise(0.0, .032, .12, 2540.0, 1140.0, decay = 70.0, seed = 88),
+            Tone(945.0, .003, .075, .45, soft, decay = 35.0, slideTo = 1620.0),
+            Tone(603.0, .024, .16, .13, soft, decay = 18.0, slideTo = 670.0),
+            Tone(952.0, .079, .081, .10, soft, decay = 30.0, slideTo = 1510.0),
+            Tone(751.0, .153, .12, .052, soft, decay = 24.0, slideTo = 1000.0),
+            Noise(.172, .37, .027, 980.0, 510.0, decay = 9.0, seed = 89),
+        )
+        Sfx.BERG_EMBER -> listOf(
+            Noise(0.0, .46, .075, 820.0, 415.0, swell = true, seed = 90),
+            Crackle(.065, .36, .11, .19, seed = 91),
+            Tone(174.0, .07, .075, .055, soft, decay = 40.0, slideTo = 98.0),
+        )
+        // A mouse gives two short, breathy calls in a register separate from the flute.
+        Sfx.BERG_MOUSE -> listOf(
+            Tone(1330.0, 0.0, .075, .31, soft, decay = 11.0, slideTo = 1790.0, attack = .014),
+            Tone(1610.0, .115, .10, .23, soft, decay = 17.0, slideTo = 1225.0, attack = .018),
+            Noise(.004, .16, .038, 1890.0, 1110.0, swell = true, seed = 92),
+        )
         // A spade in the sand.
         Sfx.GA_DIG -> listOf(
             Noise(0.0, 0.12, 0.5, 1500.0, 500.0, decay = 22.0, seed = 51),

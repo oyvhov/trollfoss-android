@@ -1,5 +1,15 @@
 # Trollfoss – designunderlag
 
+Lokalt tillegg 2026-11-11: **Den store jula** – Nissegrenda med fire område, 180 juleval,
+24 frie kalenderluker og aktivitetar som bevarer barnet sine ting. Sjå [julekontrakten](JUL.md).
+
+Lokalt tillegg 2026-11-02: **Det Store Heileberget i ekte 3D.** Brukaren valde forslag 2,
+«Vatna på høgfjellet»: fri vandring i alle retningar, høgder, fjellvatn, bjørk, bru, utsiktsplass
+og ei hole inne i fjellet. Dei same valde figurane blir med. Eit stort snilt troll, brus, kaker,
+godteri, gull og diamantar gir leikehandlingar. Dette erstattar den gamle skrått teikna
+Heileberget-visinga; dei gamle figurane og tinga blir bevarte i lagringa. Resten av stadene
+bruker framleis dukkehuset si skråprojeksjon. Sjå [Heileberget 3D](HEILEBERGET_3D.md).
+
 Lokalt tillegg 2026-10-08: **Den hemmelege plassen bak fossane.** Den store fossen på kartet og
 fossen inne på skogstaden Fossen er to inngangar til same Trollhola. Hola har ikkje eige skilt eller
 landemerke på kartet. Eit lite glimt i vatnet er hintet; eitt trykk opnar hola utan nivåkrav.

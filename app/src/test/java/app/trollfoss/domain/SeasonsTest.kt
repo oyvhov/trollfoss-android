@@ -39,7 +39,7 @@ class SeasonsTest {
     fun `feasts last a week or two`() {
         assertEquals(Festival.CHRISTMAS, Seasons.festival(day(2026, 12, 24)))
         assertEquals(Festival.CHRISTMAS, Seasons.festival(day(2027, 1, 3)))
-        assertEquals(Festival.NONE, Seasons.festival(day(2026, 12, 5)))
+        assertEquals(Festival.CHRISTMAS, Seasons.festival(day(2026, 12, 5)))
         assertEquals(Festival.EASTER, Seasons.festival(day(2026, 3, 30)))
         assertEquals(Festival.EASTER, Seasons.festival(day(2026, 4, 6)))
         assertEquals(Festival.NONE, Seasons.festival(day(2026, 4, 20)))

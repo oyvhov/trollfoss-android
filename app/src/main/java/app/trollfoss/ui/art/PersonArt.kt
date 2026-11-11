@@ -114,7 +114,7 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
         if (look.top == 11) inked(blobPath(-0.15f * h, -0.49f * h, -0.3f * h, -0.12f * h, 0f, -0.07f * h, 0.3f * h, -0.12f * h, 0.15f * h, -0.49f * h), topColor.darken(0.12f), pen)
 
         // ---- torso
-        val dress = look.top == 2
+        val dress = look.top == 2 || look.top in setOf(20,22,25)
         val bottomY = if (dress) -0.10f else -0.225f
         val hipHalf = if (dress) 0.235f else 0.165f
         val torso = Path().apply {
@@ -148,6 +148,7 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
                 folkPattern(look, h, pen)
             }
         }
+        if(look.top >= app.trollfoss.domain.Christmas.FIRST_TOP) clipPath(torso) { christmasClothes(look.top,h,pen) }
         drawPath(torso, Ink.line, style = pen.stroke)
         if (look.top == 0 || look.top == 3 || look.top == 10 || look.top == 13) {
             drawArc(Ink.line, 20f, 140f, false, o(-0.07f, -0.53f), Size(0.14f * h, 0.07f * h), style = pen.thin)
@@ -160,7 +161,7 @@ private fun DrawScope.folk(look: Look, pose: Pose, a: PersonAnim, h: Float, pen:
         val right = FigurePose.hand(a, right = true, holding = holding, pose = pose)
         val handL = o(left.x, left.y)
         val handR = o(right.x, right.y)
-        val longSleeves = look.top in setOf(1, 5, 6, 7, 8, 9, 12, 13, 14, 15, 16) || overalls
+        val longSleeves = look.top >= app.trollfoss.domain.Christmas.FIRST_TOP || look.top in setOf(1, 5, 6, 7, 8, 9, 12, 13, 14, 15, 16) || overalls
         val sleeve = if (overalls || look.top == 6) ShirtWhite else topColor
         for ((shoulder, hand) in listOf(shoulderL to handL, shoulderR to handR)) {
             val armColor = if (longSleeves) sleeve else skin
@@ -635,6 +636,7 @@ private fun DrawScope.drawPet(species: Species, look: Look, pose: Pose, a: Perso
     if (species == Species.DRAGON) {
         for (k in 0 until 3) drawLine(fur.darken(0.1f), o(-0.1f, -0.28f + k * 0.07f), o(0.1f, -0.28f + k * 0.07f), strokeWidth = pen.lw * 0.6f)
     }
+    if(species==Species.REINDEER) { drawLine(XmasRed,o(-0.22f,-0.42f),o(0.22f,-0.42f),0.035f*h);inkedCircle(o(0f,-0.4f),0.022f*h,XmasGold,pen) }
     // Paws
     val dangle = if (held) sin(t * 12f) * 0.02f else 0f
     inkedOval(rect(-0.1f * h, (-0.03f + dangle) * h, 0.15f * h, 0.085f * h), fur.lighten(0.1f), pen)
@@ -686,11 +688,15 @@ private fun DrawScope.drawPet(species: Species, look: Look, pose: Pose, a: Perso
                 }
                 inked(horn, Color(0xFFFFE9B0), pen)
             }
-            Species.ELK -> {
+            Species.ELK, Species.REINDEER -> {
                 for (side in listOf(-1f, 1f)) {
                     rotate(side * (22f + sin(t * 2.2f + side) * 6f), pivot = Offset(c.x + side * r * 0.75f, c.y - r * 0.45f)) {
                         inkedOval(Rect(c.x + side * r * 0.75f - r * 0.32f, c.y - r * 0.62f, c.x + side * r * 0.75f + r * 0.32f, c.y - r * 0.3f), fur, pen)
                         drawOval(EarPink.copy(alpha = 0.7f), Offset(c.x + side * r * 0.75f - r * 0.18f, c.y - r * 0.53f), Size(r * 0.36f, r * 0.14f))
+                    }
+                    if(species==Species.REINDEER) {
+                        val horn=Path().apply { moveTo(c.x+side*r*0.35f,c.y-r*0.8f);lineTo(c.x+side*r*0.6f,c.y-r*1.5f);moveTo(c.x+side*r*0.5f,c.y-r*1.2f);lineTo(c.x+side*r*0.92f,c.y-r*1.35f);moveTo(c.x+side*r*0.56f,c.y-r*1.35f);lineTo(c.x+side*r*0.3f,c.y-r*1.6f) }
+                        drawPath(horn,Color(0xFFD9B98C),style=Stroke(r*0.1f,cap=StrokeCap.Round))
                     }
                     // Velvet antler buds.
                     inkedCircle(Offset(c.x + side * r * 0.36f, c.y - r * 0.95f), r * 0.16f, Color(0xFFD9B98C), pen)
@@ -738,7 +744,7 @@ private fun DrawScope.drawPet(species: Species, look: Look, pose: Pose, a: Perso
             }
         }
         // Muzzle: the moose has its big soft nose, the others a pale patch.
-        val elk = species == Species.ELK
+        val elk = species == Species.ELK || species == Species.REINDEER
         if (elk) {
             inkedOval(Rect(c.x - r * 0.52f, c.y + r * 0.12f, c.x + r * 0.52f, c.y + r * 1.02f), fur.lighten(0.18f), pen)
         } else {
@@ -772,7 +778,7 @@ private fun DrawScope.drawPet(species: Species, look: Look, pose: Pose, a: Perso
                 drawCircle(fur.darken(0.4f), r * 0.04f, Offset(nose.x - r * 0.12f, nose.y))
                 drawCircle(fur.darken(0.4f), r * 0.04f, Offset(nose.x + r * 0.12f, nose.y))
             }
-            Species.ELK -> {
+            Species.ELK, Species.REINDEER -> {
                 drawOval(fur.darken(0.45f), Offset(c.x - r * 0.3f, c.y + r * 0.42f), Size(r * 0.16f, r * 0.2f))
                 drawOval(fur.darken(0.45f), Offset(c.x + r * 0.14f, c.y + r * 0.42f), Size(r * 0.16f, r * 0.2f))
             }

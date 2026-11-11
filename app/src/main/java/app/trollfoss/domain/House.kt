@@ -112,7 +112,7 @@ object HouseKeys {
 }
 
 object House {
-    val floors: List<Floor> by lazy { listOf(GroundFloor, UpperFloor, AtticFloor, CellarFloor, GardenFloor, MineYardFloor, MineGroundFloor, MineUpperFloor) }
+    val floors: List<Floor> by lazy { listOf(GroundFloor, UpperFloor, AtticFloor, CellarFloor, GardenFloor, MineYardFloor, MineGroundFloor, MineUpperFloor) + ChristmasPlaces.floors }
 
     fun floor(place: PlaceId): Floor? = if (place.big) floors.firstOrNull { it.place == place } else null
 

@@ -27,6 +27,16 @@ class SoundscapeTest {
         assertEquals(SoundBed.DRIPS, Soundscape.bedFor(PlaceId.MANOR_CELLAR, false, false))
     }
 
+    @Test fun theCaveHasItsOwnRoomToneAndLeavingRestoresTheOutdoorBed() {
+        for (night in listOf(false, true)) {
+            assertEquals(SoundBed.WIND, Soundscape.bedFor(PlaceId.HEILEBERGET, night, false))
+            assertEquals(SoundBed.CAVERN, Soundscape.bedFor(PlaceId.HEILEBERGET, night, false, heileCave = true))
+            assertEquals(SoundBed.WIND, Soundscape.bedFor(PlaceId.HEILEBERGET, night, false, heileCave = false))
+            assertEquals(SoundBed.FALL, Soundscape.bedFor(PlaceId.HEILEBERGET, night, true, heileCave = true))
+            assertEquals(SoundBed.WAVES, Soundscape.bedFor(PlaceId.BEACH, night, false, heileCave = true))
+        }
+    }
+
     @Test fun theWaterfallOnTheMapGrowsWithEveryLevel() {
         val gains = (1..10).map { Soundscape.mapGain(it) }
         for (i in 1 until gains.size) assertTrue("level ${i + 1} is louder", gains[i] > gains[i - 1])

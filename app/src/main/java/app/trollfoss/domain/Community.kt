@@ -128,7 +128,7 @@ class Community(private val sim: Sim) {
             House.moveTo(world,p,home.place,home.x,home.y)
             if(home.mode==Mode.SEATED) world.fixtures[home.holder]?.let { sim.seat(p,it,home.slot) }
         }
-        state.guests.clear();state.partyPlace=null;true
+        state.guests.clear();state.partyPlace=null;world.flags.remove("christmas:party");true
     }
     fun addMark(id:Int,shape:Int,color:Int,x:Float,y:Float):Boolean {
         val marks=state.art[id] ?: return false

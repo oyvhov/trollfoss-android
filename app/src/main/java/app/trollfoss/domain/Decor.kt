@@ -4,7 +4,7 @@ package app.trollfoss.domain
 data class RoomStyle(val wall: Int = 0, val floor: Int = 0)
 
 /** Furniture put away in the home designer's store, ready to be placed again. */
-data class Stored(val type: FixtureType, val variant: Int, val mode: Int = 0, val door: RoomLink? = null)
+data class Stored(val type: FixtureType, val variant: Int, val mode: Int = 0, val door: RoomLink? = null, val contents: List<Int> = emptyList(), val on: Boolean = false, val count: Int = 0)
 
 /** Something the catalogue offers: a piece of furniture and, for special pieces, the stickers it takes. */
 data class CatalogueItem(val type: FixtureType, val variant: Int = 0, val stickers: Int = 0)
@@ -14,8 +14,8 @@ data class CatalogueItem(val type: FixtureType, val variant: Int = 0, val sticke
  * store for furniture that is put away. Indoor places can be redecorated; every place can get furniture.
  */
 object Decor {
-    const val WALLS = 12
-    const val FLOORS = 9
+    const val WALLS = 24
+    const val FLOORS = 17
 
     fun reward(item: CatalogueItem): ToyReward? = ToyReward.entries.firstOrNull { it.type == item.type }
     fun available(world: World, item: CatalogueItem): Boolean = reward(item)?.let {
@@ -75,7 +75,7 @@ object Decor {
         val toys = ToyReward.entries.map { reward -> CatalogueItem(reward.type,
             stickers = Progression.thresholds.getOrNull(reward.level - 1) ?: 0) }
         // The treasure box is free everywhere: a child collects wherever it plays.
-        return toys + CatalogueItem(FixtureType.TREASURE_BOX) + when {
+        return Christmas.catalogue + toys + CatalogueItem(FixtureType.TREASURE_BOX) + when {
             place == PlaceId.UNDERWATER -> listOf(
                 CatalogueItem(FixtureType.CORAL, 0), CatalogueItem(FixtureType.CORAL, 1), CatalogueItem(FixtureType.KELP),
                 CatalogueItem(FixtureType.SUBMARINE),

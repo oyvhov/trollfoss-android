@@ -6,6 +6,7 @@ import android.media.SoundPool
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.thread
+import kotlin.math.sqrt
 
 /**
  * Plays the synthesised effects. Rendering happens once per install, on a background thread. The
@@ -42,9 +43,17 @@ class SoundFx(context: Context) {
     }
 
     fun play(sfx: Sfx, volume: Float = 0.9f, rate: Float = 1f) {
+        play(sfx, volume, rate, pan = 0f)
+    }
+
+    fun play(sfx: Sfx, volume: Float, rate: Float, pan: Float) {
         if (!enabled) return
         val id = ids[sfx] ?: return
-        pool.play(id, volume.coerceIn(0f, 1f), volume.coerceIn(0f, 1f), 1, 0, rate.coerceIn(0.5f, 2f))
+        val gain = volume.coerceIn(0f, 1f)
+        val balance = pan.coerceIn(-1f, 1f)
+        val left = gain * sqrt(1f - balance.coerceAtLeast(0f))
+        val right = gain * sqrt(1f + balance.coerceAtMost(0f))
+        pool.play(id, left, right, 1, 0, rate.coerceIn(0.5f, 2f))
     }
 
     fun release() {

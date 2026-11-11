@@ -667,6 +667,7 @@ class HouseAtticRules(private val sim: Sim, private val random: Random) : FloorR
 
         /** Where Sture may hide: each has a container and a hidden spot. */
         val HIDERS = setOf(
+            FixtureType.XM_CHEST,
             FixtureType.AT_SHEETED, FixtureType.AT_TRUNK, FixtureType.AT_CARTON, FixtureType.AT_BLANKET_FORT,
         )
 

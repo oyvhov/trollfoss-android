@@ -2,6 +2,7 @@ package app.trollfoss.update
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -52,6 +53,7 @@ class AppUpdater(context: Context, private val scope: CoroutineScope) {
     private val folder = File(app.cacheDir, "updates").apply { mkdirs() }
     private val apk = File(folder, "trollfoss-update.apk")
     private var job: Job? = null
+    private var automaticCheck: Job? = null
 
     var state by mutableStateOf(
         UpdateState(
@@ -79,53 +81,73 @@ class AppUpdater(context: Context, private val scope: CoroutineScope) {
     }
 
     fun setAutomatic(value: Boolean) {
-        prefs.edit { putBoolean("automatic", value) }
+        if (value == state.automatic) return
+        prefs.edit {
+            putBoolean("automatic", value)
+            if (value) remove(CHECK_COMPLETED_AT)
+        }
         state = state.copy(automatic = value)
+        if (value) checkIfDue() else if (automaticCheck?.isActive == true) cancel()
     }
 
     fun setPreviews(value: Boolean) {
         cancel()
-        prefs.edit { putBoolean("previews", value); remove("release"); remove("last_check") }
+        prefs.edit {
+            putBoolean("previews", value)
+            remove("release")
+            remove(CHECK_COMPLETED_AT)
+        }
         state = state.copy(previews = value, release = null, ready = false)
         check(manual = true)
     }
 
-    /** Called when the app comes to the front. At most one automatic check per twelve hours. */
     fun checkIfDue() = check(manual = false)
 
     fun check(manual: Boolean = true) {
         if (job?.isActive == true) return
-        val due = System.currentTimeMillis() - prefs.getLong("last_check", 0L) >= CHECK_INTERVAL_MS
-        if (!manual && (!state.automatic || !due)) return
+        val schedule = UpdateCheckSchedule(prefs.getLong(CHECK_COMPLETED_AT, 0L), prefs.getLong(CHECK_INTERVAL, 0L))
+        if (!manual && !schedule.isDue(System.currentTimeMillis(), state.automatic)) return
+        val previews = state.previews
         job = scope.launch {
-            prefs.edit { putLong("last_check", System.currentTimeMillis()) }
             state = state.copy(checking = true, message = null)
-            try {
-                val release = withContext(Dispatchers.IO) {
+            val release = try {
+                withContext(Dispatchers.IO) {
                     val connection = connect(RELEASE_API, "application/vnd.github+json")
                     try {
                         val body = connection.inputStream.use { it.readBounded(4 * 1024 * 1024) }
-                        newerRelease(body.toString(Charsets.UTF_8), BuildConfig.VERSION_NAME, state.previews)
+                        newerRelease(body.toString(Charsets.UTF_8), BuildConfig.VERSION_NAME, previews)
                     } finally {
                         connection.disconnect()
                     }
                 }
-                ensureActive()
-                prefs.edit { putString("release", release?.encode()) }
-                state = state.copy(
-                    checking = false,
-                    release = release,
-                    ready = state.ready && state.release == release,
-                    message = if (release == null && manual) UpdateMessage.CURRENT else null,
-                )
             } catch (error: CancellationException) {
                 throw error
-            } catch (failure: UpdateFailure) {
-                state = state.copy(checking = false, message = if (manual) failure.reason else null)
-            } catch (_: Exception) {
-                state = state.copy(checking = false, message = if (manual) UpdateMessage.NETWORK else null)
+            } catch (error: Exception) {
+                ensureActive()
+                val failure = (error as? UpdateFailure)?.reason ?: UpdateMessage.NETWORK
+                prefs.edit { recordCheck(failure) }
+                state = state.copy(checking = false, message = if (manual) failure else null)
+                return@launch
             }
+            ensureActive()
+            prefs.edit {
+                recordCheck(null)
+                putString("release", release?.encode())
+            }
+            state = state.copy(
+                checking = false,
+                release = release,
+                ready = state.ready && state.release == release,
+                message = if (release == null && manual) UpdateMessage.CURRENT else null,
+            )
         }
+        if (!manual) automaticCheck = job
+    }
+
+    private fun SharedPreferences.Editor.recordCheck(failure: UpdateMessage?) {
+        val schedule = UpdateCheckSchedule.after(System.currentTimeMillis(), failure)
+        putLong(CHECK_COMPLETED_AT, schedule.completedAt)
+        putLong(CHECK_INTERVAL, schedule.intervalMs)
     }
 
     fun cancel() {
@@ -298,7 +320,9 @@ class AppUpdater(context: Context, private val scope: CoroutineScope) {
     }
 
     private companion object {
-        const val CHECK_INTERVAL_MS = 12 * 60 * 60 * 1000L
+        // Up to 1.18, last_check could be an offline attempt. Check afresh once on upgrade.
+        const val CHECK_COMPLETED_AT = "check_completed_at"
+        const val CHECK_INTERVAL = "check_interval_ms"
     }
 }
 

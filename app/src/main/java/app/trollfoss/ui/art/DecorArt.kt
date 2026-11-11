@@ -29,6 +29,12 @@ object DecorPalette {
         Color(0xFFC4ECE4) to Color(0xFF79CBBB), // 9 sea green with waves
         Color(0xFFFFF4F7) to Color(0xFFFF8FB6), // 10 candy stripes
         Color(0xFFD9A46C) to Color(0xFFA9713F), // 11 wood panels
+        Color(0xFFA73748) to Color(0xFFFFD881), Color(0xFF235E4E) to Color(0xFF9BC69F),
+        Color(0xFFDDEFF5) to Color(0xFF85B4CE), Color(0xFFFFF1DC) to Color(0xFFC95E6D),
+        Color(0xFFFFE4E3) to Color(0xFFC95E6D), Color(0xFF3F6958) to Color(0xFFD7BE88),
+        Color(0xFFC48F68) to Color(0xFFFFF1DC), Color(0xFF263D62) to Color(0xFFFFDA8C),
+        Color(0xFFE5CADF) to Color(0xFFB386B4), Color(0xFFFEF8EE) to Color(0xFFA8B5BD),
+        Color(0xFFB95056) to Color(0xFF7B303E), Color(0xFFB4D7CA) to Color(0xFF4A7D66),
     )
 
     /** 0 plain, 1 flowers, 2 clouds, 3 leaves, 4 stars, 5 dots, 6 stripes, 7 hearts, 8 waves, 9 panels. */
@@ -56,6 +62,10 @@ object DecorPalette {
         Color(0xFF8FCB7E) to Color(0xFF6FB164), // 6 green carpet
         Color(0xFFEFE9E3) to Color(0xFFB69AE6), // 7 terrazzo
         Color(0xFFAEB3BB) to Color(0xFF80868F), // 8 grey stone
+        Color(0xFF993B49) to Color(0xFFD8A076), Color(0xFF30634F) to Color(0xFF9DBB8A),
+        Color(0xFFDBBA8D) to Color(0xFFB08C67), Color(0xFFEEE3CD) to Color(0xFFBB947A),
+        Color(0xFFB5D1DE) to Color(0xFFEEEFF2), Color(0xFFEEE7D8) to Color(0xFF4A7462),
+        Color(0xFFC7B1B6) to Color(0xFF93515F), Color(0xFFEDD4AE) to Color(0xFFA87750),
     )
 
     init {

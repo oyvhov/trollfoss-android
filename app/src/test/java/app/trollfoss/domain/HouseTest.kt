@@ -56,7 +56,7 @@ class HouseTest {
         assertFalse(PlaceId.LAB.onMap)
         assertTrue(PlaceId.CLOUD_ISLAND.onMap)
         assertEquals(PlaceId.CLOUD_ISLAND, PlaceId.CLOUD_ISLAND.mapPlace)
-        assertEquals(listOf(PlaceId.MANOR_GROUND, PlaceId.MINE_YARD), PlaceId.entries.filter { it.big && it.onMap })
+        assertEquals(listOf(PlaceId.MANOR_GROUND, PlaceId.MINE_YARD, PlaceId.CHRISTMAS_SQUARE), PlaceId.entries.filter { it.big && it.onMap })
     }
 
     @Test

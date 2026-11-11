@@ -14,6 +14,7 @@ object WorldFactory {
                 val depth = if (def.on >= 0) defs[def.on].y + 0.0004f else def.y
                 val f = Fixture(fixtureId(place, index), place, def.type, def.x, def.y, def.variant, depth)
                 if (def.on >= 0) f.host = fixtureId(place, def.on)
+                if(place.christmas && f.type in setOf(FixtureType.XM_TREE,FixtureType.XM_SMALL_TREE,FixtureType.XM_FIREPLACE,FixtureType.XM_STAR,FixtureType.XM_LIGHTS,FixtureType.XM_LANTERN)) {f.on=true;f.mode=1}
                 // The carousel starts with its first horse at the front.
                 if (def.type == FixtureType.CAROUSEL) f.angle = 1.5708f
                 // Street lamps are lit, so the park and the beach glow when night falls.
@@ -79,6 +80,14 @@ object WorldFactory {
             def.hat?.let { sim.give(person, world.addThing(it, def.hatVariant, place, def.x, y), Part.HAT) }
             def.glasses?.let { sim.give(person, world.addThing(it, 0, place, def.x, y), Part.GLASSES) }
             def.hand?.let { sim.give(person, world.addThing(it, def.handVariant, place, def.x, y), Part.HAND) }
+        }
+        if(place.christmas) {
+            for(tree in fixtures.filter {it.type in Christmas.trees}) {
+                for((slot,type) in listOf(ThingType.XM_BAUBLE,ThingType.XM_HEART,ThingType.XM_BELL,ThingType.XM_MUSHROOM,ThingType.XM_CANDYCANE,ThingType.XM_STAR).withIndex()) {
+                    val t=world.addThing(type,0,place,tree.x,tree.y)
+                    t.mode=Mode.INSIDE;t.holder=tree.id;t.slot=if(type==ThingType.XM_STAR) 11 else slot
+                }
+            }
         }
         sim.settle(place)
         // Where each thing lies now is its home, for tidying up later.

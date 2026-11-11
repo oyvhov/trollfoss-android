@@ -148,7 +148,7 @@ class Life(private val sim: Sim, private val random: Random) {
             // The robot butler likes tools and things to tidy; it has no stomach.
             Species.ROBOT -> type.cat == Cat.TOOL || type.cat == Cat.HAT || type.cat == Cat.TOY
             Species.DOG, Species.CAT -> type == ThingType.BALL || type == ThingType.FISH || type == ThingType.SAUSAGE || type == ThingType.GRILLED_SAUSAGE
-            Species.BUNNY, Species.HORSE, Species.COW, Species.SHEEP, Species.ELK, Species.GOAT -> type == ThingType.CARROT || type == ThingType.APPLE
+            Species.BUNNY, Species.HORSE, Species.COW, Species.SHEEP, Species.ELK, Species.REINDEER, Species.GOAT -> type == ThingType.CARROT || type == ThingType.APPLE
             Species.PUFFIN -> type == ThingType.FISH
             Species.CHICKEN -> type == ThingType.SEEDS
             Species.DRAGON -> type == ThingType.TOASTED_MARSHMALLOW || type == ThingType.GRILLED_SAUSAGE || type == ThingType.COOKIE

@@ -47,6 +47,10 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
     /** A quiet river valley with a small log cabin. Append new places to preserve saved ordinals. */
     VAGSTADDALEN(5.4f, true, 0.88f, 0.02f),
     CLOUD_ISLAND(3.6f,true,0.88f,0.02f),
+    CHRISTMAS_SQUARE(8f, true, 0.88f, 0.02f),
+    CHRISTMAS_HOME(10f, false, 0.90f, 0.07f),
+    CHRISTMAS_WORKSHOP(10f, false, 0.90f, 0.07f),
+    CHRISTMAS_STABLE(8f, true, 0.88f, 0.02f),
     ;
 
     /** True for the five places that make up the big house. */
@@ -56,14 +60,17 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
     val mine: Boolean get() = this in MINE_YARD..MINE_UPPER
 
     /** True for the places that belong to a house with floors and passages: the big house and the child's own. */
-    val big: Boolean get() = manor || mine
+    val christmas: Boolean get() = this in CHRISTMAS_SQUARE..CHRISTMAS_STABLE
+
+    val big: Boolean get() = manor || mine || christmas
 
     /** True when the place has a button on the map. The other floors are reached from inside the house. */
-    val onMap: Boolean get() = this != LAB && (!big || this == MANOR_GROUND || this == MINE_YARD)
+    val onMap: Boolean get() = this != LAB && (!big || this == MANOR_GROUND || this == MINE_YARD || this == CHRISTMAS_SQUARE)
 
     /** Floors share one landmark. Used for the balloon and highlight when opening the map from inside. */
     val mapPlace: PlaceId get() = when {
         this == LAB -> FOREST
+        christmas -> CHRISTMAS_SQUARE
         mine -> MINE_YARD
         manor -> MANOR_GROUND
         else -> this
@@ -79,6 +86,7 @@ enum class PlaceId(val width: Float, val outdoor: Boolean, val floor: Float, val
         mine -> 3000 + (ordinal - MINE_YARD.ordinal) * 300
         this == VAGSTADDALEN -> 3900
         this == CLOUD_ISLAND -> 4200
+        christmas -> 4500 + (ordinal - CHRISTMAS_SQUARE.ordinal) * 300
         else -> ordinal * 100
     }
     val addedFrom: Int get() = if (big) 200 else 40
@@ -167,7 +175,9 @@ object Places {
     private fun build(id: PlaceId): PlaceSpec {
         val floor = id.floor
         fun fl(type: FixtureType, x: Float, variant: Int = 0, depth: Float = 0f) = FixtureDef(type, x, floor + depth, variant, depth)
+        if (id.christmas) return ChristmasPlaces.blueprint(id)
         return when (id) {
+            PlaceId.CHRISTMAS_SQUARE, PlaceId.CHRISTMAS_HOME, PlaceId.CHRISTMAS_WORKSHOP, PlaceId.CHRISTMAS_STABLE -> ChristmasPlaces.blueprint(id)
             PlaceId.HOME -> PlaceSpec(
                 id,
                 grounds = listOf(Ground(0f, id.width, floor)),

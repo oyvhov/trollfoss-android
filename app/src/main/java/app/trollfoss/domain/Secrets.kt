@@ -12,6 +12,19 @@ data class Secret(val id: String, val place: PlaceId, val x: Float, private val 
 
 object Secrets {
     val all: List<Secret> = listOf(
+        Secret("christmas_square_spark",PlaceId.CHRISTMAS_SQUARE,0.75f,0.85f),
+        Secret("christmas_square_hide",PlaceId.CHRISTMAS_SQUARE,6.9f,0.82f,inside=8,on=8),
+        Secret("christmas_calendar",PlaceId.CHRISTMAS_SQUARE,5.5f,0.58f,event=true),
+        Secret("christmas_home_spark",PlaceId.CHRISTMAS_HOME,0.75f,0.85f),
+        Secret("christmas_home_hide",PlaceId.CHRISTMAS_HOME,8.5f,0.82f,inside=10,on=10),
+        Secret("christmas_bake",PlaceId.CHRISTMAS_HOME,5.65f,0.58f,event=true),
+        Secret("christmas_workshop_spark",PlaceId.CHRISTMAS_WORKSHOP,0.75f,0.85f),
+        Secret("christmas_workshop_hide",PlaceId.CHRISTMAS_WORKSHOP,8.5f,0.82f,inside=8,on=8),
+        Secret("christmas_craft",PlaceId.CHRISTMAS_WORKSHOP,2.7f,0.58f,event=true),
+        Secret("christmas_stable_spark",PlaceId.CHRISTMAS_STABLE,0.75f,0.85f),
+        Secret("christmas_stable_hide",PlaceId.CHRISTMAS_STABLE,7.0f,0.85f),
+        Secret("christmas_reindeer",PlaceId.CHRISTMAS_STABLE,1.6f,0.58f,event=true),
+
         Secret("sky_picnic", PlaceId.CLOUD_ISLAND, 1.1f, 0.74f, on=0),
         Secret("sky_edge", PlaceId.CLOUD_ISLAND, 0.3f, 0.9f),
         Secret("sky_telescope", PlaceId.CLOUD_ISLAND, 2.7f, 0.68f, on=1),

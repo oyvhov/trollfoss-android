@@ -30,6 +30,7 @@ import kotlin.math.sin
  * The engine squashes the back layer on a tap, so the art does not bounce by itself.
  */
 fun DrawScope.drawFixtureBack(f: Fixture, u: Float, pen: Pen, contents: List<Thing> = emptyList()) {
+    if (drawChristmasFixture(f, u, pen, contents)) return
     if (drawToyBack(f, u, pen)) return
     if (drawPlayBack(f, u, pen)) return
     if (f.type == FixtureType.SECRET_NOOK) { drawSecretNook(f, u, pen); return }

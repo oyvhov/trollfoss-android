@@ -92,6 +92,18 @@ class WorldHistory(private val world: () -> World, private val changed: () -> Un
             val currentFlags=flags(now).toMutableSet();currentFlags.removeAll(afterBroken-oldBroken);currentFlags.addAll(oldBroken-afterBroken)
             now.put("flags",JSONArray(currentFlags.toList()));edited=true
         }
+        // Wrapped gifts and stockings are reversible containers; earned Christmas discoveries stay earned.
+        for(key in listOf("parcels","stockings")) {
+            val beforeMap=e.before.optJSONObject("christmas")?.optJSONObject(key) ?: JSONObject()
+            val afterMap=e.after.optJSONObject("christmas")?.optJSONObject(key) ?: JSONObject()
+            val current=now.optJSONObject("christmas")?.optJSONObject(key) ?: continue
+            for(id in (beforeMap.keys().asSequence().toSet()+afterMap.keys().asSequence().toSet())) {
+                if(canonical(beforeMap.opt(id))!=canonical(afterMap.opt(id)) && canonical(current.opt(id))==canonical(afterMap.opt(id))) {
+                    if(beforeMap.has(id)) current.put(id,beforeMap.opt(id)) else current.remove(id)
+                    edited=true
+                }
+            }
+        }
         val mineKeys=listOf("started","ground","upper","upperBuilt","shape","wall","roof","roofColor","door","windows","chimney","flag")
         val oldMine=e.before.getJSONObject("mine");val afterMine=e.after.getJSONObject("mine")
         if(mineKeys.any { canonical(oldMine.opt(it))!=canonical(afterMine.opt(it)) }) {

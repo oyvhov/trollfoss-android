@@ -1,5 +1,56 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **1.19.0 · Nissegrenda og Heileberget**
+> Produksjonsutgåva samlar julearbeidet og 3D-besøket hos Rumle med husbygginga frå 1.18.0.
+> Utgivingsnotatet ligg i `docs/release-v1.19.0.md`. Oppføringane under skildrar arbeidsøktene.
+
+> **11. november 2026 · Rumle, lysmøllen og saftturen i Heileberget**
+> Arbeidet ligg på `codex/rumle-heileberget` i `C:/trollfoss-wt/rumle-3d`, bygt vidare på
+> juleutgåva `24b993f`. Rumle grip, et, drikk, skålar og svarar på barnet sin melodi på fuglefløyte.
+> Ekkosteinane finst ute og inne. Lysmøllen kan følgje fingeren, bli med på tur og lande på ei hand.
+> Tursekken viser veg til blåbær, grue og bord. `docs/HEILEBERGET_3D.md` skildrar styring og lagring.
+> Redigerbar modell og eksportscript ligg i `art/heileberget`. Lokal prøvepakke, lydopptak og
+> bilete frå dei to Android-profilane ligg i `C:/topa/dist/rumle-3d`.
+> Rumle si kvardagsrutine, hòlemusa, dryppkjelda og lyssoppane reagerer på barnet og på kvarandre.
+> Glør, dropar og steg har stadbunden lyd. Lydklokke og plassering blir delte med 3D-scena.
+> Sluttkontrollen gav 785 grøne JVM-testar. På kvar av profilane 2400 × 1080 og 1920 × 1200
+> vart 122 Android-testar gjennomførte utan feil, inkludert dei åtte Heileberget-testane. Den valfrie
+> 2D-ytingsmålinga står utanfor denne køyringa. Lint gav 0 feil og 33 åtvaringar med
+> `ThreadConstraint` utelaten som ved juleutgåva. Faktiske spelscener er kontrollerte på begge profilar.
+> APK-en bruker same pakkenamn, versjonskode og debug-sertifikat som den førre lokale juleutgåva.
+
+> **LOKALT JULEARBEID – 11. NOVEMBER 2026:** Eiga grein `codex/christmas` i
+> `C:/trollfoss-wt/christmas`. Nissegrenda, 180 juleval, kalender, gåver, baking og juleaktivitetar.
+> Kontrakt: `docs/JUL.md`; sluttkontroll: `docs/CHRISTMAS_QA_2026-11-11.md`.
+> Grunnlaget inkluderer ein separat kopi av dei tidlegare Heileberget-/husendringane (`9e501cb`).
+> Sluttkontroll: 761 JVM-testar og 119 Android-testar per mobil-/nettbrettprofil, ingen feil.
+> Lint 0 feil / 33 åtvaringar med ThreadConstraint utelaten. Bilete og APK i `C:/topa/dist/christmas`.
+> Dei opphavlege arbeidskopiane og signeringsfilene er urørte. Lokal prøvepakke
+> `app.trollfoss.christmas`; ingen push, release eller versjonsauke.
+
+
+> **NYAST – HEILEBERGET 3D, NATTØKT 2.–3. NOVEMBER 2026:**
+> Lokal grein `codex/heileberget-3d` i `C:/topa/.gradle-tmp/rainbow-finale`.
+> 27 rundar med modellering, spelendringar og faktisk Android-kontroll. Native GLES frå
+> Blender gjennom MCP; same figurar kan gå fritt med to spakar, bakkeval, drag og tofingerzoom.
+> Stor møblert hole med trollstove, øvre bruskasselager og bakre skattkammer. Eira/Eilev har
+> mjuke ansikt, varsam kinnfarge og blunk; Øyvind har eigen Blender-modell. Harmonisert
+> naturpalett, fjord/fjell/himmel, naturstiar, lauv, gras og dag/natt. Gullvasking, smuttkast,
+> krystalltonar, harehelsing og sommarfugl på handa gir frivillig leik utan poeng/tap.
+> Siste runde: **734 JVM-testar, fire Heileberget-Android-testar på både mobil og nettbrett,
+> lint 0 feil / 32 eksisterande åtvaringar**. Brei suite i 26: 111 Android-testar per format.
+> Lange faktiske spakturar fann og retta kameravegg ved rampen, kassetrenging og skjult sikt.
+> Tofingerzoom er kontrollert mot ferdige GL-bilete, med uendra posisjon/vinkel ved fingerslepp.
+> Kompakt geometri sparer 44,44 % vertexbufferstorleik; GL hoppar over identiske bilete i
+> pause/redusert stillstand. Ingen påstand om målt FPS på fysisk Android-maskinvare.
+> **Prøve-APK:** `C:/topa/dist/heileberget-blender/Trollfoss-round27.apk`
+> (isolert `app.trollfoss.heileberg`, debug-signert; erstattar ikkje den vanlege appen).
+> **Blender:** `C:/topa/dist/heileberget-blender/Heileberget.blend`, lagra og open i eiga økt.
+> **Rapport:** `docs/HEILEBERGET_NATTARBEID_2026-11-02.md`; bilete/video/loggar i
+> `C:/topa/dist/heileberget-3d-2026-11-02/`. Ingen release, push eller versjonsauke.
+> Andre uferdige hus-/storybook-endringar er bevarte; rotkopien og brukaren si ulagrede
+> Blender-økt er urørte. Sjå rapporten for avgrensingar og sluttstatus for testmiljøet.
+
 > **NYAST – 1.18.0 ER PUBLISERT (2026-11-08, Claude):**
 > [Release](https://github.com/oyvhov/trollfoss-android/releases/tag/v1.18.0), kode 23, APK-kjelde/tagg
 > `55a62f5`. Med: yting (`ef4cef5`), trapper og husbygging (`906bdf2`) og Mitt hus-runden nedanfor. **Ikkje** med:

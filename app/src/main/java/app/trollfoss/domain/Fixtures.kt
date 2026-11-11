@@ -180,6 +180,8 @@ enum class FixtureType {
     PLAY_ROBOT_WORKSHOP, PLAY_HELPER_ROBOT, PLAY_ROCKET_KIT, PLAY_REACTION_COURSE,
     // Append level ten so existing fixture ordinals stay unchanged.
     PLAY_DRAGON_CART, PLAY_AIRSHIP, PLAY_HIDE_TROLL, PLAY_TROLL_PARTY,
+    // Christmas: append to preserve saved ordinals.
+    XM_SOFA, XM_ARMCHAIR, XM_TABLE, XM_CHAIR, XM_BED, XM_RUG, XM_CUPBOARD, XM_SHELF, XM_TOYBOX, XM_CHEST, XM_SACK, XM_DISPLAY, XM_TREE, XM_SMALL_TREE, XM_WREATH, XM_GARLAND, XM_LIGHTS, XM_STAR, XM_CANDLES, XM_LANTERN, XM_FIREPLACE, XM_SNOWGLOBE, XM_MUSICBOX, XM_PICTURE, XM_BAKE, XM_HOUSE_BENCH, XM_CRAFT, XM_WRAP, XM_TOY_BENCH, XM_BELT, XM_MARKET, XM_COCOA, XM_TROUGH, XM_SLEIGH, XM_CALENDAR, XM_POST,
     ;
 
     val spec: FixtureSpec get() = specs.getValue(this)
@@ -191,7 +193,7 @@ enum class FixtureType {
 
         private fun seat(dx: Float, dy: Float) = SpotSpec(dx, dy, Pose.SIT)
 
-        private fun build(type: FixtureType): FixtureSpec = when (type) {
+        private fun build(type: FixtureType): FixtureSpec = Christmas.specOf(type) ?: when (type) {
             PLAY_SEESAW -> FixtureSpec(0.65f,0.18f,spots=listOf(seat(-0.25f,-0.1f),seat(0.25f,-0.1f)))
             PLAY_PUPPETS -> FixtureSpec(0.52f,0.48f,front=true,spots=listOf(seat(-0.12f,-0.04f),seat(0.12f,-0.04f)))
             PLAY_TANDEM -> FixtureSpec(0.60f,0.25f,front=true,spots=listOf(seat(-0.12f,-0.13f),seat(0.12f,-0.13f)))

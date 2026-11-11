@@ -127,6 +127,7 @@ fun PlayCards(vm: TrollfossViewModel, engine: Engine, onClose: () -> Unit) {
                 GameText(S.playKit.str(), fontSize = 12.sp, color = T.Ink)
             }
         }
+        if (tab == 1) ChristmasStoryCards(vm,onClose)
         if (tab == 1) for (adventure in Adventure.entries.sortedBy { if(it==vm.sim.magic.active) -1 else if(it==Adventure.RUMLE) 0 else 1 }) {
             if(adventure == Adventure.RUMLE) { TreasureTrailCard(vm,engine,onClose); continue }
             val stage = vm.sim.magic.stage(adventure)

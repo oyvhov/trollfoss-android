@@ -17,7 +17,7 @@ object Treasure {
      * made) and never one the caller wants to [spare]. Null when there is nothing it may take.
      */
     fun oldestToDrop(things: List<Thing>, keep: Thing?, spare: (Thing) -> Boolean = { false }): Thing? =
-        things.filter { it !== keep && it.mode == Mode.FREE && it.inside < 0 && !it.held && !isTreasure(it) && !spare(it) }
+        things.filter { it !== keep && it.mode == Mode.FREE && it.inside < 0 && !it.held && !isTreasure(it) && !it.type.name.startsWith("XM_") && !spare(it) }
             .minByOrNull { it.z }
 }
 

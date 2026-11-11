@@ -1,8 +1,15 @@
 # Trollfoss – teiknerettleiing for kode
 
-All grafikk i Trollfoss er teikna i kode på Compose `DrawScope`. Denne rettleiinga er kontrakten for
+All grafikk i Trollfoss er laga i kode. Dukkehusstadene er teikna på Compose `DrawScope`. Denne rettleiinga er kontrakten for
 `ui/art/ThingArt.kt`, `ui/art/FixtureArt.kt`, `ui/art/PlaceArt.kt` og `ui/art/MapArt.kt`. Les òg
 `docs/DESIGN.md` (stil og verd) og `ui/art/Ink.kt` og `ui/art/PersonArt.kt` (ferdige døme).
+
+**Heileberget i ekte 3D (brukarval 2, 2. november 2026):** Brukaren avviste dei første enkle
+meshformene og bad uttrykkeleg om ordentlege Blender-modellar via MCP. Dette er eit autorisert
+unntak frå regelen om berre kunst laga i appkoden. Originale Blender-modellar blir eksporterte frå
+`art/heileberget` til komprimerte ressursar i `assets/heileberget`. OpenGL ES teiknar dei i `ui/berg`.
+Knappar og dialogar bruker framleis Compose. Konseptbilete og familiefoto er ikkje spelressursar.
+Sjå [3D-kontrakten](HEILEBERGET_3D.md).
 
 ## Stilen: «nordisk leikekasse», kvass og detaljert
 

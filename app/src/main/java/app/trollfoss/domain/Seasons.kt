@@ -11,6 +11,8 @@ enum class SeasonChoice { AUTO, WINTER, SPRING, SUMMER, AUTUMN }
 /** Little feasts that decorate the village for a week or two (and can be switched off). */
 enum class Festival { NONE, CHRISTMAS, EASTER, PUMPKIN }
 
+enum class FestivalChoice { AUTO, NONE, CHRISTMAS, EASTER, PUMPKIN }
+
 /** Seasons and feasts from the calendar. Dates are epoch days, set by the app from the device clock. */
 object Seasons {
     fun of(epochDay: Long): Season = when (LocalDate.ofEpochDay(epochDay).monthValue) {
@@ -28,13 +30,19 @@ object Seasons {
         SeasonChoice.AUTUMN -> Season.AUTUMN
     }
 
-    /** Christmas from 10 December to 6 January, Easter from a week before to the day after, pumpkins 20 October to 2 November. */
+    /** The parent's feast choice is independent of the season. */
+    fun resolveFestival(choice: FestivalChoice, epochDay: Long): Festival = when (choice) {
+        FestivalChoice.AUTO -> festival(epochDay)
+        else -> Festival.valueOf(choice.name)
+    }
+
+    /** Christmas 20 November–6 January; Easter from a week before to the day after; pumpkins 20 October–2 November. */
     fun festival(epochDay: Long): Festival {
         val d = LocalDate.ofEpochDay(epochDay)
         val easter = easter(d.year)
         return when {
             !d.isBefore(easter.minusDays(7)) && !d.isAfter(easter.plusDays(1)) -> Festival.EASTER
-            d.monthValue == 12 && d.dayOfMonth >= 10 || d.monthValue == 1 && d.dayOfMonth <= 6 -> Festival.CHRISTMAS
+            d.monthValue == 11 && d.dayOfMonth >= 20 || d.monthValue == 12 || d.monthValue == 1 && d.dayOfMonth <= 6 -> Festival.CHRISTMAS
             d.monthValue == 10 && d.dayOfMonth >= 20 || d.monthValue == 11 && d.dayOfMonth <= 2 -> Festival.PUMPKIN
             else -> Festival.NONE
         }

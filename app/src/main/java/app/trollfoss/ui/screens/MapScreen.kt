@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -56,6 +57,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -265,7 +267,7 @@ fun MapScreen(vm: TrollfossViewModel) {
             }
             ProgressButton(vm)
         }
-        RoundButton(S.parents.str(), onClick = { vm.open(Screen.ParentGate) }, modifier = Modifier.align(Alignment.TopEnd).padding(16.dp), size = 52.dp, tone = Tones.Cream, icon = Icons.Gear)
+        ParentButton(vm, Modifier.align(Alignment.TopEnd).padding(16.dp))
         Row(Modifier.align(Alignment.TopCenter).padding(top = controls.edge.dp)
             .background(T.Cream, RoundedCornerShape(50)).border(2.dp, T.Ink, RoundedCornerShape(50))
             .padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically,
@@ -280,5 +282,25 @@ fun MapScreen(vm: TrollfossViewModel) {
             scope.launch { scroll.animateScrollTo((scroll.value + viewportWidth * .65f).toInt().coerceAtMost(scroll.maxValue), tween(if(motion) 480 else 1)) }
         }, modifier = Modifier.align(Alignment.CenterEnd).padding(controls.edge.dp), size = 48.dp, tone = Tones.Cream,
             icon = { rotate(180f) { Icons.Back(this) } })
+    }
+}
+
+@Composable
+private fun ParentButton(vm: TrollfossViewModel, modifier: Modifier) {
+    val updateAvailable by remember(vm) { derivedStateOf { vm.updater.state.release != null } }
+    val updateLabel = if (updateAvailable) S.newVersion.str() else null
+    Box(modifier) {
+        RoundButton(
+            S.parents.str(),
+            onClick = { vm.open(Screen.ParentGate) },
+            modifier = if (updateLabel == null) Modifier else Modifier.semantics { stateDescription = updateLabel },
+            size = 52.dp,
+            tone = Tones.Cream,
+            icon = Icons.Gear,
+        )
+        if (updateAvailable) {
+            IconCanvas(Icons.Up, Modifier.align(Alignment.TopEnd).size(20.dp)
+                .background(T.Cream, CircleShape).border(1.5.dp, T.Ink, CircleShape).padding(1.dp))
+        }
     }
 }

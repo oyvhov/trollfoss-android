@@ -193,7 +193,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
 
     /** Music plays in [place] while any music maker is on: the radio, a disco ball, a dance floor or a light rig in disco. */
     fun musicOn(place: PlaceId): Boolean = world.fixturesIn(place).any {
-        it.on && (it.type == FixtureType.RADIO || it.type == FixtureType.DISCO_BALL || it.type == FixtureType.PLAY_DANCE_FLOOR || it.type == FixtureType.PLAY_TROLL_PARTY) ||
+        it.on && (it.type == FixtureType.RADIO || it.type == FixtureType.XM_MUSICBOX || it.type == FixtureType.DISCO_BALL || it.type == FixtureType.PLAY_DANCE_FLOOR || it.type == FixtureType.PLAY_TROLL_PARTY) ||
             it.type == FixtureType.PLAY_LIGHT_RIG && it.mode == 2
     }
 
@@ -277,6 +277,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     val mischief = Mischief(this, random)
     val playerFollow = PlayerFollow(this)
     val treasure = TreasureBox(this)
+    val christmas = ChristmasPlay(this)
     var journal: EditJournal? = null
 
     /** Mitt hus: building, the housewarming and what the furniture of the child's own house does. */
@@ -419,6 +420,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         floating = zeroG(place)
         val fixtures = world.fixturesIn(place)
         for (f in fixtures) stepFixture(place, f, dt)
+        christmas.tick(place, dt)
         toys.tick(place, dt)
         treasure.step(place, dt)
         // Read after the machines: an oven that just opened has shelves again.
@@ -1176,6 +1178,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     /** A tap on a fixture at ([dx], [dy]) from its bottom centre. */
     fun tap(place: PlaceId, f: Fixture, dx: Float, dy: Float) {
         here = place
+        if (christmas.tap(f, dx, dy)) return
         if (toys.tap(f, dx, dy)) return
         if (f.type == FixtureType.PLAY_FORT || f.type == FixtureType.PLAY_CART) {
             f.on = !f.on; f.anim = 1f
@@ -1539,6 +1542,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
 
     /** A tap on a loose thing. */
     fun use(place: PlaceId, t: Thing) {
+        if (christmas.use(t)) return
         if (trail.use(t)) return
         val carrier = if (t.mode == Mode.WORN) world.bodies[t.holder] as? Person else null
         if (carrier != null && personPlay.use(carrier, t)) return
@@ -1596,6 +1600,7 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
      */
     fun dropInto(place: PlaceId, f: Fixture, t: Thing): Boolean {
         here = place
+        if (christmas.drop(f, t)) return true
         if (toys.drop(f, t)) return true
         if (f.type == FixtureType.TREASURE_BOX) return treasure.put(place, f, t)
         if (f.type == FixtureType.SECRET_NOOK) return PlaySecrets.drop(this, f, t)
@@ -1713,6 +1718,8 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
         val type = t.type
         p.place?.let { here = it }
         val result = giveTo(p, t, part)
+        if(p.name=="Julenissen" && t.type==ThingType.XM_BELL && result==Give.HELD) christmas.deed("bell:returned")
+        if(p.name=="Julenissen" && t.type==ThingType.XM_PORRIDGE && result in setOf(Give.ATE,Give.FINISHED)) {p.anim.wave=2f;christmas.deed("santa")}
         when (result) {
             Give.ATE, Give.DRANK, Give.FINISHED -> if (p.species.pet) tasks.record(Deed.FED, here, type, species = p.species)
             Give.WORE -> tasks.record(Deed.WORE, here, type)
@@ -1731,6 +1738,15 @@ class Sim(val world: World, listener: SimListener = object : SimListener {}, pri
     }
 
     private fun giveTo(p: Person, t: Thing, part: Part): Give {
+        if (p.species == Species.REINDEER && t.type == ThingType.XM_BRUSH && part in setOf(Part.BODY, Part.HAIR)) {
+            p.anim.face = Face.HAPPY
+            p.anim.faceTime = 2f
+            p.anim.wave = 1f
+            t.held = false
+            christmas.deed("reindeer")
+            listener.onFx(Fx.SPARKLE, p.x, p.y - p.h)
+            return Give.PLAY
+        }
         if (part == Part.MOUTH && personPlay.brush(p, t)) return Give.PLAY
         if ((part == Part.BODY || part == Part.HAIR) && personPlay.tickle(p, t)) return Give.PLAY
         when {

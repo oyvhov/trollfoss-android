@@ -1,5 +1,12 @@
 # Endringslogg
 
+## 1.19.0 – Jul i Trollfoss og besøk hos Rumle
+
+- Reis til Nissegrenda. Pynt treet, bak peparkaker, lag leiker i verkstaden, pakk gåver og køyr dei ut med reinsdyrsleden.
+- Heimedesignaren og julekassa har til saman 180 juleval, mellom anna møblar, småting, klede, tapet og golv. I foreldremenyen kan de velje jul heile året.
+- Gå inn i Heileberget i 3D. Plukk blåbær, lag saft og skål med Rumle. Spel ein melodi på ekkosteinane og høyr trollet svare på fløyte. Lysmøllen kan lande på handa, og hòlemusa kikkar fram når det blir roleg.
+- Den automatiske oppdateringssjekken prøver på nytt etter nettfeil, også medan appen er open. «Sjekk no» i foreldremenyen kan brukast med ein gong.
+
 ## 1.18.0 – Sjå rommet før du byggjer
 
 - Mitt hus viser rommet i full storleik før det blir bygd. Barnet kan bla mellom romtypane og velje vel éin gong til.

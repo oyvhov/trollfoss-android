@@ -17,6 +17,7 @@ fun DrawScope.drawPlaceBack(place: PlaceId, cam: Float, u: Float, pen: Pen, styl
     CreativeArt.place=place
     val st = Stage(cam, u, size.width, size.height, place.width)
     when (place) {
+        PlaceId.CHRISTMAS_SQUARE, PlaceId.CHRISTMAS_HOME, PlaceId.CHRISTMAS_WORKSHOP, PlaceId.CHRISTMAS_STABLE -> christmasBack(place, st, pen, styles)
         PlaceId.BEACH -> beachBack(st, pen)
         PlaceId.FOREST -> forestBack(st, pen)
         PlaceId.MOUNTAIN -> mountainBack(st, pen)
@@ -40,6 +41,7 @@ fun DrawScope.drawPlaceBack(place: PlaceId, cam: Float, u: Float, pen: Pen, styl
     // A doll's house cut through: what is above the ceiling (see CutawayArt.kt).
     cutaway(place, st, pen)
     seasonBack(place, st, pen)
+    christmasVillage(place,st,pen)
 }
 
 /** Draws what lies in front of everything: the water's front face, snowdrifts, grass tufts. */

@@ -27,6 +27,7 @@ import kotlin.math.sqrt
  * flight). Hats are drawn as they sit on a head; glasses are centred in their box.
  */
 fun DrawScope.drawThing(type: ThingType, variant: Int, used: Int, w: Float, h: Float, pen: Pen, cook: Float = 0f) {
+    if(type==ThingType.GARMENT && app.trollfoss.domain.Garment.style(variant)>=app.trollfoss.domain.Christmas.FIRST_TOP) {christmasGarment(variant,w,h,pen);return}
     if(type==ThingType.MAGNET || type==ThingType.SPOON) {
         if(type==ThingType.SPOON) {
             inkedRound(Rect(-w*0.2f,-h*0.6f,w*0.2f,0f),w*0.16f,Color(0xFFB0BAC9),pen)
@@ -83,6 +84,7 @@ fun DrawScope.drawThing(type: ThingType, variant: Int, used: Int, w: Float, h: F
 
 /** One exhaustive `when`: the compiler makes sure every thing has its drawing. */
 private fun DrawScope.thing(type: ThingType, v: Int, used: Int, w: Float, h: Float, pen: Pen, cook: Float): Unit = when (type) {
+    ThingType.XM_BAUBLE, ThingType.XM_HEART, ThingType.XM_BELL, ThingType.XM_MUSHROOM, ThingType.XM_CANDYCANE, ThingType.XM_STAR, ThingType.XM_PAPER_HEART, ThingType.XM_CHAIN, ThingType.XM_SNOWFLAKE, ThingType.XM_CONE, ThingType.XM_BOW, ThingType.XM_RIBBON, ThingType.XM_GINGER_MAN, ThingType.XM_GINGER_HEART, ThingType.XM_GINGER_STAR, ThingType.XM_LUSSEKATT, ThingType.XM_PORRIDGE, ThingType.XM_CLEMENTINE, ThingType.XM_COCOA, ThingType.XM_SPICED_DRINK, ThingType.XM_SODA, ThingType.XM_COOKIE_TIN, ThingType.XM_PLATTER, ThingType.XM_BOWL, ThingType.XM_DOUGH, ThingType.XM_ROLLING_PIN, ThingType.XM_CUTTER, ThingType.XM_ICING, ThingType.XM_BRUSH, ThingType.XM_PAPER, ThingType.XM_TRAIN, ThingType.XM_HORSE, ThingType.XM_TOP, ThingType.XM_BEAR, ThingType.XM_ROBOT, ThingType.XM_WISH, ThingType.XM_HAT, ThingType.XM_FACE, ThingType.XM_PARCEL, ThingType.XM_GINGER_HOUSE, ThingType.XM_STOCKING -> { drawChristmasThing(type, v, used, w, h, pen); Unit }
     // Food
     ThingType.APPLE -> thApple(w, h, pen)
     ThingType.BANANA -> thBanana(w, h, pen)

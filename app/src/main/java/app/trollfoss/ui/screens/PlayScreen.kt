@@ -79,6 +79,10 @@ import kotlinx.coroutines.launch
 /** The scene of the current place, with its buttons in the corners. */
 @Composable
 fun PlayScreen(vm: TrollfossViewModel) {
+    if (vm.place == PlaceId.HEILEBERGET) {
+        app.trollfoss.ui.berg.HighlandsScreen(vm)
+        return
+    }
     val motion = LocalMotion.current
     val place = vm.place
     val engine = remember(place, vm.generation, vm.season, vm.festival) { vm.engineFor(place, motion) }
@@ -402,6 +406,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
         if (playCardsOpen) PlayCards(vm, engine) { playCardsOpen = false }
         (vm.world.bodies[engine.playThingId] as? app.trollfoss.domain.Thing)?.let { PlayActions(vm, engine, it) }
         vm.world.fixtures[engine.playFixtureId]?.let { PlayCreation(vm, engine, it) }
+        vm.world.fixtures[engine.christmasFixtureId]?.let { ChristmasStation(vm,it) { engine.christmasFixtureId=-1 } }
         vm.world.fixtures[engine.toyFixtureId]?.let { ToyControls(vm,engine,it) }
         engine.wantedToy?.let { ToyRewardDetails(vm,it) { engine.wantedToy=null } }
         AnimatedVisibility(

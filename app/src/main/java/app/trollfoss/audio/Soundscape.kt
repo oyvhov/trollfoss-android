@@ -10,7 +10,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /** The soft sound underneath the music: what a place sounds like when nobody is playing anything. */
-enum class SoundBed { WIND, WAVES, FALL, BIRDS, CRICKETS, ROOM, MURMUR, DRIPS, DRONE, SEA }
+enum class SoundBed { WIND, WAVES, FALL, BIRDS, CRICKETS, ROOM, MURMUR, DRIPS, DRONE, SEA, CAVERN }
 
 /**
  * Looping soundscapes made in code, like the music: filtered noise, a few chirps, a ticking clock. Every bed is
@@ -24,14 +24,17 @@ object Soundscape {
     private const val OVERLAP = RATE / 2
 
     /** The bed for [place]; on the map it is always the waterfall. Night turns birdsong into crickets. */
-    fun bedFor(place: PlaceId, night: Boolean, onMap: Boolean): SoundBed {
+    fun bedFor(place: PlaceId, night: Boolean, onMap: Boolean, heileCave: Boolean = false): SoundBed {
         if (onMap) return SoundBed.FALL
         return when (place) {
+            PlaceId.CHRISTMAS_SQUARE, PlaceId.CHRISTMAS_STABLE -> SoundBed.WIND
+            PlaceId.CHRISTMAS_HOME, PlaceId.CHRISTMAS_WORKSHOP -> SoundBed.ROOM
             PlaceId.HOME, PlaceId.SALON, PlaceId.DOCTOR, PlaceId.LAB, PlaceId.MANOR_GROUND, PlaceId.MANOR_UPPER,
             PlaceId.MINE_GROUND, PlaceId.MINE_UPPER -> SoundBed.ROOM
             PlaceId.CAFE, PlaceId.SHOP, PlaceId.STAGE -> SoundBed.MURMUR
             PlaceId.BEACH -> SoundBed.WAVES
-            PlaceId.MOUNTAIN, PlaceId.HEILEBERGET, PlaceId.CLOUD_ISLAND, PlaceId.MANOR_ATTIC -> SoundBed.WIND
+            PlaceId.HEILEBERGET -> if (heileCave) SoundBed.CAVERN else SoundBed.WIND
+            PlaceId.MOUNTAIN, PlaceId.CLOUD_ISLAND, PlaceId.MANOR_ATTIC -> SoundBed.WIND
             PlaceId.SPACE -> SoundBed.DRONE
             PlaceId.UNDERWATER -> SoundBed.SEA
             PlaceId.MANOR_CELLAR -> SoundBed.DRIPS
@@ -47,6 +50,7 @@ object Soundscape {
     fun gain(bed: SoundBed, level: Int): Float = when (bed) {
         SoundBed.FALL -> mapGain(level)
         SoundBed.ROOM, SoundBed.DRONE -> 0.6f
+        SoundBed.CAVERN -> 0.30f
         else -> 0.8f
     }
 
@@ -65,6 +69,7 @@ object Soundscape {
             SoundBed.DRIPS -> drips(raw, random)
             SoundBed.DRONE -> drone(raw, random)
             SoundBed.SEA -> sea(raw, random)
+            SoundBed.CAVERN -> cavern(raw, random)
         }
         val loop = loopable(raw)
         if (bed == SoundBed.DRONE) droneTones(loop)
@@ -179,6 +184,19 @@ object Soundscape {
         val deep = lowPass(white(out.size, random), 0.014f)
         for (i in out.indices) out[i] += deep[i] * 2.4f * (0.75f + 0.25f * sin(2 * PI * t(i) / SECONDS * 2.0).toFloat())
         for (k in 0 until 6) { val at = 0.5 + k * 1.2 + random.nextDouble() * 0.5; val f0 = 320.0 + random.nextInt(260); tone(out, at, 0.12, f0, f0 * 2.6, 0.3f) }
+    }
+
+    /** Air moving through a broad stone vault. Drops and footsteps are sounded by their sources. */
+    private fun cavern(out: FloatArray, random: Random) {
+        val air = highPass(lowPass(white(out.size, random), .075f), .984f)
+        val nearWall = (RATE * .047).toInt()
+        val farWall = (RATE * .129).toInt()
+        for (i in out.indices) {
+            val first = if (i >= nearWall) air[i - nearWall] else 0f
+            val second = if (i >= farWall) air[i - farWall] else 0f
+            val draft = .79f + .17f * sin(2 * PI * t(i) / SECONDS).toFloat()
+            out[i] = draft * (air[i] + first * .29f + second * .12f)
+        }
     }
 
     // ------------------------------------------------------------------ pieces

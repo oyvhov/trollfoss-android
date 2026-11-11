@@ -1,0 +1,519 @@
+{
+  "version": 1,
+  "coordinate_system": "X right, Y up, Z forward",
+  "source": "Blender 5.2; original authored art/heileberget scripts",
+  "meshes": [
+    {
+      "name": "outside",
+      "triangles": 236955,
+      "gpu_bytes": 14217300,
+      "asset_bytes": 3130389,
+      "seconds": 8.34,
+      "sha256": "aa8af58436e5870b1ac6973016bb4aa95b0e5679dc2e558ad71f2c0dfef2eb1c",
+      "format": "HBG2"
+    },
+    {
+      "name": "cave",
+      "triangles": 107962,
+      "gpu_bytes": 6477720,
+      "asset_bytes": 1127276,
+      "seconds": 5.1,
+      "sha256": "f0cbe7c63b67be5650983b161c3279653ea637b4fa29d3e1dc1cae81485e6f90",
+      "format": "HBG2"
+    },
+    {
+      "name": "troll",
+      "triangles": 59658,
+      "gpu_bytes": 3579480,
+      "asset_bytes": 941705,
+      "format": "HBG2",
+      "sha256": "891d07818ddd0a0ccaa37edd11389d178cb82edd8c270c3c9bc1978c07f52299"
+    },
+    {
+      "name": "arm",
+      "triangles": 3816,
+      "gpu_bytes": 228960,
+      "asset_bytes": 40120,
+      "format": "HBG2",
+      "sha256": "3acef5139ce30166f2c0ed540b544fd8733093528a484ceefeca4ecff87f961f"
+    },
+    {
+      "name": "sky",
+      "triangles": 14514,
+      "gpu_bytes": 870840,
+      "asset_bytes": 224934,
+      "seconds": 0.47,
+      "sha256": "6bc7dba3db28b5391ff63d96e319eb8749430f6b5d4509538cdf8d834ea6277c",
+      "format": "HBG2"
+    }
+  ],
+  "mobile_meshes": [
+    {
+      "name": "outside-low",
+      "triangles": 126587,
+      "gpu_bytes": 7595220,
+      "asset_bytes": 1983870,
+      "seconds": 4.62,
+      "sha256": "03d45daa1200cc5eec5ca631de58702c720f5b74a2813b159bbdd2b52d690bbe",
+      "format": "HBG2"
+    },
+    {
+      "name": "cave-low",
+      "triangles": 81028,
+      "gpu_bytes": 4861680,
+      "asset_bytes": 947722,
+      "seconds": 5.04,
+      "sha256": "c0fca7af6e80a0acd03eb177e51b3696993e87ab44a392143360db99aa890ed5",
+      "format": "HBG2"
+    },
+    {
+      "name": "troll-low",
+      "triangles": 21391,
+      "gpu_bytes": 1283460,
+      "asset_bytes": 404145,
+      "format": "HBG2",
+      "sha256": "6c9b7558a77c9d365bc3477d4f43dfb555be40506b2471b328b9001d27e8d989"
+    },
+    {
+      "name": "arm-low",
+      "triangles": 1448,
+      "gpu_bytes": 86880,
+      "asset_bytes": 19008,
+      "format": "HBG2",
+      "sha256": "d45b7f0fc0816d2639e3db6c79838badf18a6e7bc5f1d3852274a7858c1c4926"
+    }
+  ],
+  "characters": [
+    {
+      "name": "eira-body",
+      "triangles": 16624,
+      "gpu_bytes": 997440,
+      "asset_bytes": 160267,
+      "seconds": 0.45,
+      "sha256": "d09ae24eac418de03e0df05eaf965ecec01a8de9a6ce175bcc1287ae968c0a1e",
+      "format": "HBG2"
+    },
+    {
+      "name": "eira-arm-l",
+      "triangles": 1086,
+      "gpu_bytes": 65160,
+      "asset_bytes": 10917,
+      "seconds": 0.03,
+      "sha256": "433d358973814c8db6b18bc7a31f84955e2cc4b873aba9ff14ee915bf7dea707",
+      "format": "HBG2"
+    },
+    {
+      "name": "eira-arm-r",
+      "triangles": 1086,
+      "gpu_bytes": 65160,
+      "asset_bytes": 10918,
+      "seconds": 0.03,
+      "sha256": "3c4fad46a76ec49365eb9a05dae7f0d097692d8e2ba3ec47dae643452f5eec2e",
+      "format": "HBG2"
+    },
+    {
+      "name": "eira-leg-l",
+      "triangles": 1436,
+      "gpu_bytes": 86160,
+      "asset_bytes": 13606,
+      "seconds": 0.04,
+      "sha256": "1f4167901f8b7835a493575feed3379773be85a00ef6333e83d2d422ed758b8a",
+      "format": "HBG2"
+    },
+    {
+      "name": "eira-leg-r",
+      "triangles": 1436,
+      "gpu_bytes": 86160,
+      "asset_bytes": 13624,
+      "seconds": 0.04,
+      "sha256": "e247a6abdb5c61ab33fc7a5a76eb52a378e6ae4449a85a04ff592dfb572e1305",
+      "format": "HBG2"
+    },
+    {
+      "name": "eira-eyes-open",
+      "triangles": 5344,
+      "gpu_bytes": 320640,
+      "asset_bytes": 49976,
+      "seconds": 0.15,
+      "sha256": "77575beca8655ced5824f505fd23a27903643812c4c93dcdcf1a9263999fb1d8",
+      "format": "HBG2"
+    },
+    {
+      "name": "eira-eyes-closed",
+      "triangles": 408,
+      "gpu_bytes": 24480,
+      "asset_bytes": 4213,
+      "seconds": 0.01,
+      "sha256": "cb5859f65c5bb2d9e630a69c5fd67564db37e8b8407325ff6c705288c421acd2",
+      "format": "HBG2"
+    },
+    {
+      "name": "eilev-body",
+      "triangles": 10952,
+      "gpu_bytes": 657120,
+      "asset_bytes": 113956,
+      "seconds": 0.3,
+      "sha256": "769f947e6b0737a3f91ad0141ac838c2f8f200643929210498fa53487210af24",
+      "format": "HBG2"
+    },
+    {
+      "name": "eilev-arm-l",
+      "triangles": 1086,
+      "gpu_bytes": 65160,
+      "asset_bytes": 10914,
+      "seconds": 0.03,
+      "sha256": "8f976c6c43225f1932065c7eff15b59078ea2f9537e68d758333026449593f02",
+      "format": "HBG2"
+    },
+    {
+      "name": "eilev-arm-r",
+      "triangles": 1086,
+      "gpu_bytes": 65160,
+      "asset_bytes": 10927,
+      "seconds": 0.03,
+      "sha256": "8310cabdea365a0ee905222d5d685498345ea5e784c69d3e872750e5a576ed3a",
+      "format": "HBG2"
+    },
+    {
+      "name": "eilev-leg-l",
+      "triangles": 1436,
+      "gpu_bytes": 86160,
+      "asset_bytes": 13608,
+      "seconds": 0.04,
+      "sha256": "1e597600866812f3045a1047dcc17680a44d0ef40006c95f4bf2a761bbbf01b1",
+      "format": "HBG2"
+    },
+    {
+      "name": "eilev-leg-r",
+      "triangles": 1436,
+      "gpu_bytes": 86160,
+      "asset_bytes": 13630,
+      "seconds": 0.04,
+      "sha256": "bbe81c6a2a16d486066342963d0a554407627a056a746f84d9b926822d48f550",
+      "format": "HBG2"
+    },
+    {
+      "name": "eilev-eyes-open",
+      "triangles": 5344,
+      "gpu_bytes": 320640,
+      "asset_bytes": 49976,
+      "seconds": 0.15,
+      "sha256": "ab6f8f96422515e5a8f30fdbbe9daffcc437d00ab2ad9849cb6cfe782e503c9e",
+      "format": "HBG2"
+    },
+    {
+      "name": "eilev-eyes-closed",
+      "triangles": 408,
+      "gpu_bytes": 24480,
+      "asset_bytes": 4213,
+      "seconds": 0.01,
+      "sha256": "cb5859f65c5bb2d9e630a69c5fd67564db37e8b8407325ff6c705288c421acd2",
+      "format": "HBG2"
+    },
+    {
+      "name": "oyvind-body",
+      "triangles": 15396,
+      "gpu_bytes": 923760,
+      "asset_bytes": 157850,
+      "seconds": 0.43,
+      "sha256": "d52e38682c52a3f229d812171493716db0edec05a87919a4c48f6fee39e89de6",
+      "format": "HBG2"
+    },
+    {
+      "name": "oyvind-arm-l",
+      "triangles": 1304,
+      "gpu_bytes": 78240,
+      "asset_bytes": 13009,
+      "seconds": 0.04,
+      "sha256": "86a79ae79b59a5c1fa41bdccf67002c4b27efa223a4795a9f6e78a2c89a304d7",
+      "format": "HBG2"
+    },
+    {
+      "name": "oyvind-arm-r",
+      "triangles": 1304,
+      "gpu_bytes": 78240,
+      "asset_bytes": 13013,
+      "seconds": 0.04,
+      "sha256": "d8d24bbe5fc7df0b9dc28d2b36cfc70ec2f77582f00d8be7fc83eeff837cb92f",
+      "format": "HBG2"
+    },
+    {
+      "name": "oyvind-leg-l",
+      "triangles": 1368,
+      "gpu_bytes": 82080,
+      "asset_bytes": 13117,
+      "seconds": 0.04,
+      "sha256": "1edb9e24256bd8c2672836de38b186dca4a8efe5fb873862673463147bc0840f",
+      "format": "HBG2"
+    },
+    {
+      "name": "oyvind-leg-r",
+      "triangles": 1368,
+      "gpu_bytes": 82080,
+      "asset_bytes": 13113,
+      "seconds": 0.04,
+      "sha256": "2b06ae8e1e3b6a7f06104bbd6106529b2e8e937ef526faa0d35c6d534abfe3d9",
+      "format": "HBG2"
+    },
+    {
+      "name": "oyvind-eyes-open",
+      "triangles": 3520,
+      "gpu_bytes": 211200,
+      "asset_bytes": 32640,
+      "seconds": 0.1,
+      "sha256": "c2d95eec9a96e8c2514c45f3671d58cf13b600046180902f103eb1a166c0f9ac",
+      "format": "HBG2"
+    },
+    {
+      "name": "oyvind-eyes-closed",
+      "triangles": 408,
+      "gpu_bytes": 24480,
+      "asset_bytes": 4219,
+      "seconds": 0.01,
+      "sha256": "4a979e39fa8d5d4c21164f9dbc0f8801d705525856bcc532248632ac3d6ebd37",
+      "format": "HBG2"
+    }
+  ],
+  "creatures": [
+    {
+      "name": "hare",
+      "triangles": 2248,
+      "gpu_bytes": 134880,
+      "asset_bytes": 21412,
+      "seconds": 0.06,
+      "sha256": "e64640c25dd2c3be14ec0a986ecf24957038282ec698ac1eec9eb98dbcf5ef91",
+      "format": "HBG2"
+    },
+    {
+      "name": "butterfly",
+      "triangles": 716,
+      "gpu_bytes": 42960,
+      "asset_bytes": 6821,
+      "seconds": 0.03,
+      "sha256": "4934bff549d2fd58ca7f4c48f47b9cd14b310f4be553d7986a115ea5485c1470",
+      "format": "HBG2"
+    },
+    {
+      "name": "butterfly-wing",
+      "triangles": 808,
+      "gpu_bytes": 48480,
+      "asset_bytes": 7971,
+      "seconds": 0.03,
+      "sha256": "e72f9105e8fcc9e151f5832d494bb5bfe07326db9d943f2c2d28fdbb19e065ea",
+      "format": "HBG2"
+    }
+  ],
+  "birds": [
+    {
+      "name": "bird",
+      "triangles": 2808,
+      "gpu_bytes": 168480,
+      "asset_bytes": 25666,
+      "seconds": 0.07,
+      "sha256": "d438ab5ea266314366e6902a7261bb0b17ee3c68d342558e9c36e7764b10b9ec",
+      "format": "HBG2"
+    },
+    {
+      "name": "bird-wing",
+      "triangles": 1804,
+      "gpu_bytes": 108240,
+      "asset_bytes": 17416,
+      "seconds": 0.05,
+      "sha256": "f92f06790970a6893ce31b830e4aac1a36e7dba7f0b93ef4e31395f627ce19ed",
+      "format": "HBG2"
+    }
+  ],
+  "crystals": [
+    {
+      "name": "crystal-blue",
+      "triangles": 276,
+      "gpu_bytes": 16560,
+      "asset_bytes": 4566,
+      "seconds": 0.01,
+      "sha256": "8131405b998ed917ee7bf0774d0175f5f5c1a213a5f692bc0cccf14547ff924e",
+      "format": "HBG2"
+    },
+    {
+      "name": "crystal-lilac",
+      "triangles": 276,
+      "gpu_bytes": 16560,
+      "asset_bytes": 4554,
+      "seconds": 0.01,
+      "sha256": "72bcac0bcdd07d90c529c9b787a2da6fba9db86425dd20d20cbc0f5c5d171c9b",
+      "format": "HBG2"
+    },
+    {
+      "name": "crystal-honey",
+      "triangles": 276,
+      "gpu_bytes": 16560,
+      "asset_bytes": 4570,
+      "seconds": 0.01,
+      "sha256": "0f3328554a66d44c27e832dd7c3455ef6a699ef919731ccd12f7a0849b4cc844",
+      "format": "HBG2"
+    }
+  ],
+  "props": [
+    {
+      "name": "gold-pan",
+      "triangles": 2712,
+      "gpu_bytes": 162720,
+      "asset_bytes": 22729,
+      "seconds": 0.08,
+      "sha256": "d663079138af947d8e64390c64206723ab84d6551b59ce8502e15de894bc3b21",
+      "format": "HBG2"
+    },
+    {
+      "name": "rumle-eyes",
+      "triangles": 2152,
+      "gpu_bytes": 129120,
+      "asset_bytes": 22749,
+      "format": "HBG2",
+      "sha256": "ba097e6cdf4a6fb85e9c7d87576f7cc9254282775d6cc47105fbfa27a0cc7d30"
+    },
+    {
+      "name": "rumle-gaze",
+      "triangles": 2480,
+      "gpu_bytes": 148800,
+      "asset_bytes": 24881,
+      "format": "HBG2",
+      "sha256": "ef6a94f7617c0651d2eed1a15fac1f835361c5d20713100616dc0ee3203ad0af"
+    },
+    {
+      "name": "rumle-forearm",
+      "triangles": 984,
+      "gpu_bytes": 59040,
+      "asset_bytes": 10082,
+      "format": "HBG2",
+      "sha256": "b4d66e2d200cd5c779ae96b03910cfc030f46030c4916d3368fd013b73ba0445"
+    },
+    {
+      "name": "rumle-hand-open",
+      "triangles": 2528,
+      "gpu_bytes": 151680,
+      "asset_bytes": 25689,
+      "format": "HBG2",
+      "sha256": "9c230cc66bd3af9048d48bcdcfc630c27b1868ca553faa0712f57560efa666a3"
+    },
+    {
+      "name": "rumle-hand-grip",
+      "triangles": 2652,
+      "gpu_bytes": 159120,
+      "asset_bytes": 25886,
+      "format": "HBG2",
+      "sha256": "5e92ecb5d831f03eb8a4d879bb6763db3a249f12714debf214933af831efb3b7"
+    },
+    {
+      "name": "berry-cup",
+      "triangles": 1308,
+      "gpu_bytes": 78480,
+      "asset_bytes": 12098,
+      "format": "HBG2",
+      "sha256": "7d4b2a96af6f4bc180b1b2d17cd5a18d8c82db59c34d8a0bf8980a1606531138"
+    },
+    {
+      "name": "berry-bush",
+      "triangles": 884,
+      "gpu_bytes": 53040,
+      "asset_bytes": 12664,
+      "format": "HBG2",
+      "sha256": "9aca6ff7ed5e24883b8e954f23c975e8c7a0797c6a1effff94942198cc69681a"
+    },
+    {
+      "name": "berry-fruit",
+      "triangles": 4264,
+      "gpu_bytes": 255840,
+      "asset_bytes": 35448,
+      "format": "HBG2",
+      "sha256": "b4bed2d5967b523287f3200962befafddfd97c8f4b8e474177012d0411289665"
+    },
+    {
+      "name": "berry-basket",
+      "triangles": 3080,
+      "gpu_bytes": 184800,
+      "asset_bytes": 28660,
+      "format": "HBG2",
+      "sha256": "616ae7ae1b8bbe5b52adeb6b28e95975ea1f746a29e226b5833ef35304732da6"
+    },
+    {
+      "name": "rumle-pepsi",
+      "triangles": 1056,
+      "gpu_bytes": 63360,
+      "asset_bytes": 9238,
+      "format": "HBG2",
+      "sha256": "0489a49e1a7c479645e8d5ac7a4219d5c2e0683b2b68409e13eda68be4fb1e21"
+    },
+    {
+      "name": "rumle-urge",
+      "triangles": 1056,
+      "gpu_bytes": 63360,
+      "asset_bytes": 9243,
+      "format": "HBG2",
+      "sha256": "64dcf2c4f4acbf0a1b7353a520e7b9a40ac4790b1434fbde113a591aff2066dc"
+    },
+    {
+      "name": "berry-cup-empty",
+      "triangles": 860,
+      "gpu_bytes": 51600,
+      "asset_bytes": 7876,
+      "format": "HBG2",
+      "sha256": "5fa8aef07d4b0dc01e467952b39dc62b0f7ca9ba2ac4056bab84f98dfc82f30e"
+    },
+    {
+      "name": "traveller-kit",
+      "triangles": 1532,
+      "gpu_bytes": 91920,
+      "asset_bytes": 14603,
+      "format": "HBG2",
+      "sha256": "425bca6a49d0361d42c95b476fa4e40c72f885839057507bb8303058448be1bd"
+    },
+    {
+      "name": "rumle-whistle",
+      "triangles": 3132,
+      "gpu_bytes": 187920,
+      "asset_bytes": 29738,
+      "format": "HBG2",
+      "sha256": "8e864a6a6c4710052dae03f40bdb950a686217a22e71ec06fd1d1922be4e8562"
+    },
+    {
+      "name": "echo-sun",
+      "triangles": 840,
+      "gpu_bytes": 50400,
+      "asset_bytes": 8537,
+      "format": "HBG2",
+      "sha256": "bc77d2f3cb04d127168e1f8b77dd09a3926deb909742efb644b4be90d1909399"
+    },
+    {
+      "name": "echo-leaf",
+      "triangles": 854,
+      "gpu_bytes": 51240,
+      "asset_bytes": 7938,
+      "format": "HBG2",
+      "sha256": "08f602fd581a73e0c72ba070296a866d314094360d6419107aee5bc2915cf15d"
+    },
+    {
+      "name": "echo-moon",
+      "triangles": 916,
+      "gpu_bytes": 54960,
+      "asset_bytes": 8252,
+      "format": "HBG2",
+      "sha256": "1f37fdc98b79eb792bcbfcbe0e0e6180e22c4f33614749c4e78f9b06f49fa7e8"
+    },
+    {
+      "name": "echo-moth",
+      "triangles": 900,
+      "gpu_bytes": 54000,
+      "asset_bytes": 9360,
+      "format": "HBG2",
+      "sha256": "958ff0a2daea96fa1fa6ca48c03217e757a2a6a82b0cd9148eeb2003af894a0f"
+    },
+    {
+      "name": "echo-wing",
+      "triangles": 652,
+      "gpu_bytes": 39120,
+      "asset_bytes": 6610,
+      "format": "HBG2",
+      "sha256": "dd3ca3d4d9c3848987a86a9f55e326242c4233f9680ea93feedd6c8a5ba794aa"
+    }
+  ],
+  "vertex_format": "HBG2: float32 XYZ + normalized int8 normal XYZ/pad + uint8 RGB/pad; stride 20"
+}

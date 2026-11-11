@@ -23,6 +23,7 @@ enum class Species(val height: Float, val widthRatio: Float) {
     // Storhuset's own: the friendly ghost, who floats, and the robot butler.
     GHOST(0.24f, 0.62f),
     ROBOT(0.27f, 0.6f),
+    REINDEER(0.19f, 0.8f),
     ;
 
     val pet: Boolean get() = this != FOLK
@@ -39,7 +40,7 @@ object Styles {
     /** 0 plain, 1 cat, 2 bunny, 3 bear, 4 troll. */
     const val EARS = 5
     /** Original 0..6, then 7 jacket, 8 button shirt, 9 ribbed sweater, 10 sports shirt, 11 cape. */
-    const val TOPS = 19 // 12..16 portraits, 17 swim suit, 18 swim shirt and shorts. Never reorder saved styles.
+    const val TOPS = 27 // 12..16 portraits, 17 swim suit, 18 swim shirt and shorts. Never reorder saved styles.
     /** 0 trousers, 1 shorts, 2 skirt, 3 cargo trousers, 4 striped socks. */
     const val BOTTOMS = 5
     /** Original 0..3, then 4 freckles/stubble, 5 cheek stars, 6 patch, 7 earrings, 8 dimples. */
@@ -118,7 +119,7 @@ object Palette {
 
     fun furFor(species: Species, index: Int): Int = when (species) {
         Species.DRAGON -> scales[index.mod(scales.size)]
-        Species.ELK -> elk[index.mod(elk.size)]
+        Species.ELK, Species.REINDEER -> elk[index.mod(elk.size)]
         Species.PUFFIN -> 0xFF2B2140.toInt()
         Species.COW -> intArrayOf(0xFFF5F1EA.toInt(), 0xFF8C5A36.toInt(), 0xFF3A3340.toInt())[index.mod(3)]
         Species.SHEEP -> intArrayOf(0xFFF5F1EA.toInt(), 0xFFE8DCC8.toInt(), 0xFF3A3340.toInt())[index.mod(3)]

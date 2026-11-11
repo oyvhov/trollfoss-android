@@ -52,8 +52,8 @@ import app.trollfoss.ui.screens.PlayScreen
 import app.trollfoss.ui.screens.PlayersScreen
 import app.trollfoss.ui.theme.LocalMotion
 import app.trollfoss.ui.theme.T
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlin.math.abs
 import kotlin.math.sin
 
@@ -61,12 +61,14 @@ import kotlin.math.sin
 fun TrollfossApp(vm: TrollfossViewModel) {
     val motion = LocalMotion.current
 
-    // Look for a new version whenever the app comes to the front; the updater rate-limits itself.
     val lifecycle = LocalLifecycleOwner.current
-    LaunchedEffect(lifecycle) {
+    LaunchedEffect(lifecycle, vm) {
         lifecycle.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            vm.updater.checkIfDue()
-            awaitCancellation()
+            // Also retry if the game stays open after an offline start.
+            while (isActive) {
+                vm.updater.checkIfDue()
+                delay(60_000L)
+            }
         }
     }
 

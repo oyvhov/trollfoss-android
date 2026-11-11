@@ -175,6 +175,10 @@ object S {
         PlaceId.MINE_GROUND -> txt("Mitt hus")
         PlaceId.MINE_UPPER -> txt("Mitt hus, oppe", "Mitt hus, oppe")
         PlaceId.VAGSTADDALEN -> txt("Vagstaddalen", "Vagstaddalen")
+        PlaceId.CHRISTMAS_SQUARE -> txt("Nissegrenda")
+        PlaceId.CHRISTMAS_HOME -> txt("Nisseheimen", "Nissehjemmet")
+        PlaceId.CHRISTMAS_WORKSHOP -> txt("Juleverkstaden", "Juleverkstedet")
+        PlaceId.CHRISTMAS_STABLE -> txt("Reinsdyrtunet", "Reinsdyrtunet")
         PlaceId.CLOUD_ISLAND -> txt("Skyøya", "Skyøya")
     }
 
@@ -277,8 +281,8 @@ object S {
     fun installedVersion(version: String) = txt("Installert: versjon $version")
     val updateAuto = txt("Sjekk automatisk")
     val updateAutoHint = txt(
-        "Ser etter ny versjon på GitHub når appen blir opna, høgst to gonger om dagen.",
-        "Ser etter ny versjon på GitHub når appen åpnes, høyst to ganger om dagen.",
+        "Sjekkar GitHub kvar tolvte time medan appen er open. Ved nettfeil prøver appen igjen etter fem minutt.",
+        "Sjekker GitHub hver tolvte time mens appen er åpen. Ved nettfeil prøver appen igjen etter fem minutter.",
     )
     val updatePreviews = txt("Testutgåver", "Testutgaver")
     val updatePreviewsHint = txt("Ta med utgåver som ikkje er ferdig testa.", "Ta med utgaver som ikke er ferdig testet.")

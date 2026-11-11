@@ -22,8 +22,11 @@ Same kontrakt som Komet. Publiser berre når brukaren ber om ein ny release.
 - 1.0.0 viser notatet som rå tekst og kuttar etter 1200 teikn, også midt i ord. Så lenge nokon kan ha
   1.0.0, skal dei første linene vere vanleg tekst; legg bilete og overskrifter lenger ned eller utelat dei.
 
-Automatisk sjekk skjer når appen kjem fram, høgst éin gong per tolv timar. «Sjekk no» på foreldresida
-går utanom ventetida. Ingenting blir lasta ned eller installert utan at ein vaksen vel det.
+Når «Sjekk automatisk» er på, sjekkar appen når han kjem fram og medan han er open. Etter svar frå
+GitHub ventar han tolv timar før neste sjekk. Etter nettfeil prøver han på nytt etter fem minutt.
+Ved førespurnadsgrensa til GitHub ventar han ein time. Eit merke på foreldretannhjulet viser at
+ei ny utgåve er klar. «Sjekk no» på foreldresida går utanom ventetida. Ein vaksen vel nedlasting
+og stadfestar installasjonen i Android.
 
 ## 1. Frys kjelda
 
@@ -88,9 +91,11 @@ gh release edit $tag --repo oyvhov/trollfoss-android --draft=false --latest
 
 1. Hent release-lista **utan token** og stadfest utgåva, `draft=false` og rett digest.
 2. Last ned `browser_download_url` til ei eiga fil og samanlikn SHA-256 med den bygde APK-en.
-3. Byggje ei eldre lokal utgåve av same kjelde, med lågare versjonsnamn og lågare versjonskode, og
-   installer henne på emulatoren. AGP godtek ikkje versjonskode 0, så frå og med 1.0.1 brukar du førre
-   utgåves kode (for 1.0.1: `1` og `1.0.0`):
+3. Installer helst APK-en frå den førre offentlege utgåva på ein eigen emulator, og kontroller
+   SHA-256 mot GitHub. Opne den gamle appen første gong etter at den nye utgåva er publisert.
+   Då kan du prøve den automatiske sjekken utan å treffe tolvtimarsintervallet frå ei tidlegare økt.
+   Dersom den gamle APK-en er utilgjengeleg, kan du prøve med ei lokal bygging som har lågare
+   versjonsnamn og versjonskode. AGP krev kode på minst 1. Døme for ei oppdatering frå 1.0.0:
 
    ```powershell
    ./gradlew.bat --gradle-user-home C:\JellyBin\.gradle-home assembleRelease "-PtrollfossVersionCode=1" "-PtrollfossVersionName=1.0.0"
@@ -102,8 +107,11 @@ gh release edit $tag --repo oyvhov/trollfoss-android --draft=false --latest
    Den første utgåva (1.0.0, kode 1) kan ikkje testast heilt: det finst ingen lågare kode. Då testar du
    berre at appen finn utgåva, lastar ned og kontrollerer fila. Han skal avvise henne med «Oppdateringa
    kunne ikkje stadfestast. Ingenting vart installert.» når koden ikkje er høgare enn den installerte.
-4. Opne Kart → tannhjulet → gongestykket → Appoppdateringar → **Sjekk no**. Vel **Last ned
-   oppdatering** og så **Installer oppdatering**. Gi løyve til å installere frå Trollfoss om Android spør.
-5. Opne appen og stadfest ny versjon, og at figurar og ting er bevarte.
+4. Gjer ei attkjenneleg endring i den gamle appen og lat henne bli lagra. Opne Kart → tannhjulet →
+   gongestykket → Appoppdateringar. Stadfest at rett versjon er synleg før du eventuelt trykkjer
+   **Sjekk no**. Slik kan du skilje den automatiske prøva frå den manuelle.
+5. Vel **Last ned oppdatering** og så **Installer oppdatering**. Gi løyve til å installere frå
+   Trollfoss om Android spør. Stadfest oppdateringa i Android. Opne appen, sjekk versjonen og
+   finn att endringa frå den gamle utgåva.
 
 Ein `adb install -r`-test er ikkje ein test av oppdateringa gjennom appen.

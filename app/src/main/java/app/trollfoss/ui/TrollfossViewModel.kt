@@ -342,7 +342,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         ambient.enabled = settings.music
         val today = java.time.LocalDate.now().toEpochDay()
         season = debugSeason ?: Seasons.resolve(settings.season, today)
-        festival = debugFestival ?: if (settings.festive) Seasons.festival(today) else Festival.NONE
+        festival = debugFestival ?: Seasons.resolveFestival(settings.festival, today)
     }
 
     /** Debug builds only: a season and a feast forced by the debug intent (never saved). */
@@ -591,6 +591,8 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun setMaalform(m: Maalform) = updateSettings { it.copy(maalform = m) }
+    fun setFestival(s: app.trollfoss.domain.FestivalChoice) = updateSettings { it.copy(festival = s, festive = s != app.trollfoss.domain.FestivalChoice.NONE) }
+
     fun setSeason(s: SeasonChoice) = updateSettings { it.copy(season = s) }
 
     // ---------------------------------------------------------------------------------- photos
@@ -621,6 +623,10 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
 
     override fun sfx(effect: Sfx, volume: Float, rate: Float) {
         sfx.play(effect, volume, rate)
+    }
+
+    fun sfx(effect: Sfx, volume: Float, rate: Float, pan: Float) {
+        sfx.play(effect, volume, rate, pan)
     }
 
     override fun haptic() {
@@ -681,15 +687,22 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         updateMusic()
     }
 
+    /** The cave is part of the same place, so crossing its doorway needs its own ambience refresh. */
+    fun refreshHighlandsAmbience() {
+        if (place == PlaceId.HEILEBERGET) updateMusic()
+    }
+
     private fun updateMusic() {
         val theme = when {
             screen == Screen.Map -> MusicTheme.MAP
+            (world.community.partyPlace==place && "christmas:party" in world.flags || world.fixturesIn(place).any {it.type==app.trollfoss.domain.FixtureType.XM_MUSICBOX && it.on}) && screen==Screen.Play -> MusicTheme.CHRISTMAS
             world.community.partyPlace==place && screen==Screen.Play -> when(world.community.partyMusic) {
                 0 -> MusicTheme.CAFE
                 1 -> MusicTheme.RADIO
                 else -> MusicTheme.STAGE
             }
             (radioOn || world.mine.party != null && place.mine) && screen == Screen.Play -> MusicTheme.RADIO
+            (festival == Festival.CHRISTMAS || place.christmas) && !night -> MusicTheme.CHRISTMAS
             night && place != PlaceId.SPACE && place != PlaceId.UNDERWATER && place != PlaceId.STAGE -> MusicTheme.NIGHT
             else -> when (place) {
                 PlaceId.HOME -> MusicTheme.HOME
@@ -714,11 +727,12 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
                 PlaceId.MANOR_GARDEN -> MusicTheme.GARDEN
                 PlaceId.MINE_YARD -> MusicTheme.PARK
                 PlaceId.MINE_GROUND, PlaceId.MINE_UPPER -> MusicTheme.HOME
+                PlaceId.CHRISTMAS_SQUARE, PlaceId.CHRISTMAS_HOME, PlaceId.CHRISTMAS_WORKSHOP, PlaceId.CHRISTMAS_STABLE -> MusicTheme.CHRISTMAS
                 PlaceId.VAGSTADDALEN -> MusicTheme.FOREST
             }
         }
         music.play(theme)
-        val bed = Soundscape.bedFor(place, night, onMap = screen == Screen.Map)
+        val bed = Soundscape.bedFor(place, night, onMap = screen == Screen.Map, heileCave = world.highlands.cave)
         ambient.play(bed, Soundscape.gain(bed, Progression.level(world)))
     }
 

@@ -270,6 +270,8 @@ class World {
     val toyPhotos = linkedMapOf<Int, Person>()
     val toyInputs = linkedMapOf<String, Int>()
     val community = CommunityState()
+    val highlands = HighlandsState()
+    val christmas = ChristmasState()
 
     /** Glimt the child has collected. */
     val found = linkedSetOf<String>()
@@ -367,6 +369,10 @@ class World {
 
     /** Removes a thing (eaten, flushed, blended). Anything it carried is dropped where it was. */
     fun remove(body: Body) {
+        val contained = christmas.parcels.remove(body.id) ?: christmas.stocking.remove(body.id)
+        contained?.let { id -> (bodies[id] as? Thing)?.let { t ->
+            t.place=body.place;t.x=body.x;t.y=body.y;t.mode=if(body.place==null) Mode.BAG else Mode.FREE;t.holder=-1;t.inside=-1;t.resting=false
+        } }
         bodies.remove(body.id)
         if (body is Person) {
             playerIds.remove(body.id)

@@ -11,6 +11,7 @@ captures/
 .externalNativeBuild/
 .cxx/
 *.hprof
+__pycache__/
 *.apk
 signing.properties
 .signing/

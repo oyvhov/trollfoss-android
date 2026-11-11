@@ -53,6 +53,7 @@ class Designer(private val sim: Sim, private val random: Random) {
         f.y = spot[1]
         f.depth = if (f.type == FixtureType.PLAY_AIRSHIP) place.floor else if (f.spec.wall) f.y else spot[1]
         f.anim = 1f
+        if(type==FixtureType.XM_CALENDAR) f.count=world.christmas.opened.fold(0) { mask,n->mask or (1 shl n) }
         if (type == FixtureType.LAMP_POST) f.on = true
         sim.invalidate(place)
         listener.onFx(Fx.PLACE, f.x, f.y - f.spec.h / 2, f)
@@ -80,7 +81,9 @@ class Designer(private val sim: Sim, private val random: Random) {
         if (f.id in world.playAssemblies) return sim.magic.unmake(f)
         if (f.type == FixtureType.TREASURE_BOX && sim.treasure.holds(f).isNotEmpty()) sim.treasure.refuse(place, f)
         if (!canStore(place, f)) return false
+        val christmasContents = if (f.type in Christmas.types) world.inMachine(f).map { it.id } else emptyList()
         for (b in world.bodiesIn(place)) {
+            if (b.id in christmasContents) { b.place = null; b.holder = -1; continue }
             if (b.mode == Mode.SEATED && b.holder == f.id) {
                 b.mode = Mode.FREE
                 b.holder = -1
@@ -106,7 +109,7 @@ class Designer(private val sim: Sim, private val random: Random) {
             world.fixtures.remove(child.id)
         }
         world.fixtures.remove(f.id)
-        world.storage += Stored(f.type, f.variant, if(f.type in CreativePlay.TYPES || f.type == FixtureType.PICTURE) f.mode else 0, world.community.doors.remove(f.id))
+        world.storage += Stored(f.type, f.variant, if(f.type in CreativePlay.TYPES || f.type in Christmas.types || f.type == FixtureType.PICTURE) f.mode else 0, world.community.doors.remove(f.id), christmasContents, f.on, f.count)
         if(f.type==FixtureType.PLAY_TRAIN) world.flags.remove("train:broken:${f.id}")
         sim.invalidate(place)
         listener.onFx(Fx.STORE, f.x, f.y - f.spec.h / 2, f)
@@ -127,6 +130,10 @@ class Designer(private val sim: Sim, private val random: Random) {
         val item = world.storage.getOrNull(index) ?: return null
         val f = add(place, item.type, item.variant, x, y) ?: return null
         f.mode = item.mode
+        if (f.type in Christmas.types) {
+            f.on = item.on; f.count = item.count
+            item.contents.forEach { id -> (world.bodies[id] as? Thing)?.let { it.place = place; it.holder = f.id; it.mode = Mode.INSIDE } }
+        }
         item.door?.let { world.community.doors[f.id] = it }
         world.storage.removeAt(index)
         return f
@@ -237,7 +244,7 @@ class Designer(private val sim: Sim, private val random: Random) {
         return floatArrayOf(f.x + t.homeDx, f.y + t.homeDy)
     }
 
-    private fun keepsake(t: Thing): Boolean = t.type.cat in KEEPSAKES || t.type == ThingType.GIFT
+    private fun keepsake(t: Thing): Boolean = t.type.name.startsWith("XM_") || t.type.cat in KEEPSAKES || t.type == ThingType.GIFT
 
     /**
      * Tidies [place]: every loose thing that belongs somewhere flies home, keepsakes made during play

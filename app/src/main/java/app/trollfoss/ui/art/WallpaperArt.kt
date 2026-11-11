@@ -30,8 +30,8 @@ import kotlin.math.sin
  * 6 green carpet, 7 terrazzo, 8 grey stone.
  */
 
-internal const val WALLPAPERS = 11
-internal const val FLOORINGS = 8
+internal const val WALLPAPERS = 23
+internal const val FLOORINGS = 16
 
 /** Wall tiles span this height (the tablet top fill down to the floor). */
 private const val WALL_TOP = -0.42f
@@ -83,6 +83,24 @@ private fun buildWall(i: Int): Pattern {
     var top = base.lighten(0.08f)
     var bottom = base.darken(0.04f)
     when (i) {
+        in 12..23 -> {
+            val motifs=Path(); val seams=Path()
+            grid(if(i==18) 5 else 7, 0.18f) { x,y,row,col ->
+                when(i) {
+                    12,19 -> motifs.addPath(xmasStar(x,y,0.025f))
+                    13 -> { motifs.moveTo(x,y-0.04f);motifs.lineTo(x+0.035f,y+0.025f);motifs.lineTo(x-0.035f,y+0.025f);motifs.close() }
+                    14,21 -> for(k in 0..2) { val a=k*1.0472f;val dx=cos(a)*0.035f;val dy=sin(a)*0.035f;seams.moveTo(x-dx,y-dy);seams.lineTo(x+dx,y+dy) }
+                    15 -> heartPath(motifs,x,y,0.022f)
+                    16 -> { motifs.addRect(Rect(x-0.025f,y-0.1f,x+0.025f,y+0.1f)) }
+                    17 -> { seams.moveTo(x-0.07f,y);seams.lineTo(x+0.07f,y);seams.moveTo(x,y-0.1f);seams.lineTo(x,y+0.1f) }
+                    18 -> { motifs.addRect(Rect(x-0.035f,y-0.02f,x+0.035f,y+0.035f));motifs.moveTo(x-0.05f,y-0.02f);motifs.lineTo(x,y-0.065f);motifs.lineTo(x+0.05f,y-0.02f);motifs.close() }
+                    20 -> { heartPath(motifs,x,y,0.02f);motifs.addPath(xmasStar(x+0.06f,y+0.08f,0.015f)) }
+                    22 -> { seams.moveTo(x,y-0.1f);seams.lineTo(x,y+0.1f);seams.moveTo(x+0.025f,y-0.1f);seams.lineTo(x+0.025f,y+0.1f) }
+                    23 -> { motifs.addOval(Rect(x-0.03f,y-0.015f,x+0.03f,y+0.015f));seams.moveTo(x,y);seams.lineTo(x+0.03f,y-0.04f) }
+                }
+            }
+            layers+=Layer(path=motifs,color=motif);layers+=Layer(path=seams,color=motif,width=0.003f)
+        }
         1 -> {
             val petals = ArrayList<Offset>()
             val centres = ArrayList<Offset>()
@@ -276,6 +294,16 @@ private fun buildFloor(i: Int): Pattern {
         }
     }
     when (i) {
+        in 9..16 -> {
+            val pattern=Path()
+            when(i) {
+                9,10,15 -> { for(j in 1..3) { val y=mix(front,back,j/4f);pattern.moveTo(recede(y),y);pattern.lineTo(1f+recede(y),y) };for(k in 0..7) { val x=k/8f;pattern.moveTo(x,front);pattern.lineTo(x+shift,back) } }
+                11,12,16 -> { val points=ArrayList<Offset>();depthLines(0.15f,points);rowLines(3,points);layers+=Layer(points=points,color=motif,width=0.004f,mode=PointMode.Lines) }
+                13 -> for(k in 0..7) pattern.addPath(xmasStar(k/8f+recede(0.88f),0.88f,0.012f))
+                14 -> for(j in 0..3) for(k in 0..7) if((j+k)%2==0) { val yf=mix(front,back,j/4f);val yb=mix(front,back,(j+1)/4f);pattern.quad(k/8f+recede(yf),(k+1)/8f+recede(yf),yf,yb) }
+            }
+            layers+=Layer(path=pattern,color=motif,width=if(i in listOf(13,14)) 0f else 0.003f)
+        }
         1, 2 -> {
             val joints = ArrayList<Offset>()
             val ends = ArrayList<Offset>()

@@ -39,6 +39,7 @@ data class Settings(
     val season: SeasonChoice = SeasonChoice.AUTO,
     /** Decorate the village for Christmas, Easter and pumpkin time. */
     val festive: Boolean = true,
+    val festival: app.trollfoss.domain.FestivalChoice = if (festive) app.trollfoss.domain.FestivalChoice.AUTO else app.trollfoss.domain.FestivalChoice.NONE,
 )
 
 class Saved(val world: World, val settings: Settings)
@@ -73,13 +74,14 @@ class WorldStore(private val file: File) {
 
     companion object {
         private fun storedJson(item: Stored) = JSONObject().put("type",item.type.name).put("variant",item.variant)
-            .put("mode",item.mode).apply { item.door?.let { put("doorPlace",it.place.name);put("doorSlot",it.slot) } }
+            .put("mode",item.mode).put("contents", JSONArray(item.contents)).put("on", item.on).put("count", item.count).apply { item.door?.let { put("doorPlace",it.place.name);put("doorSlot",it.slot) } }
         private fun readStored(type: FixtureType, o: JSONObject): Stored {
             val place=enumOrNull<PlaceId>(o.optString("doorPlace"))
             val slot=o.optInt("doorSlot",-1)
             val door=if(place in listOf(PlaceId.MINE_GROUND,PlaceId.MINE_UPPER) && slot in 0 until Mine.SLOTS)
                 app.trollfoss.domain.RoomLink(requireNotNull(place),slot) else null
-            return Stored(type,o.optInt("variant",0),o.optInt("mode",0),door)
+            val a = o.optJSONArray("contents") ?: JSONArray()
+            return Stored(type,o.optInt("variant",0),o.optInt("mode",0),door, (0 until a.length()).map { a.optInt(it, -1) }.filter { it > 0 }.distinct(), o.optBoolean("on", false), o.optInt("count", 0))
         }
         private const val VERSION = 1
 
@@ -92,6 +94,7 @@ class WorldStore(private val file: File) {
                 put("maalform", settings.maalform.name)
                 put("season", settings.season.name)
                 put("festive", settings.festive)
+                put("festival", settings.festival.name)
             })
             put("place", world.place.name)
             put("night", world.night)
@@ -109,6 +112,8 @@ class WorldStore(private val file: File) {
             put("flags", JSONArray(world.flags.toList()))
             put("community", CommunityStore.encode(world.community))
             put("players", JSONArray(world.playerIds.toList()))
+            put("highlands", HighlandsStore.encode(world.highlands))
+            put("christmas", ChristmasStore.encode(world.christmas))
             put("rumle", JSONObject().put("notes", JSONArray(world.rumleNotes.toList())).put("lantern", world.rumleLantern))
             put("toys", JSONObject().apply {
                 put("inputs", JSONObject().apply { world.toyInputs.forEach { (key,id) -> put(key,id) } })
@@ -174,13 +179,14 @@ class WorldStore(private val file: File) {
             put("fixtures", JSONArray().apply {
                 world.fixtures.values.forEach { f ->
                     val moved = WorldFactory.moved(f)
-                    if (f.open || f.on || f.mode != 0 || f.count != 0 || moved || f.type in app.trollfoss.domain.AdventurePlay.ANGLED || f.type == FixtureType.ROBOT_VACUUM && f.shiftX != 0f) {
+                    if (f.type in app.trollfoss.domain.Christmas.types || f.open || f.on || f.mode != 0 || f.count != 0 || moved || f.type in app.trollfoss.domain.AdventurePlay.ANGLED || f.type == FixtureType.ROBOT_VACUUM && f.shiftX != 0f) {
                         put(JSONObject().apply {
                             put("id", f.id)
                             put("open", f.open)
                             put("on", f.on)
                             put("mode", f.mode)
                             put("count", f.count)
+                            if(f.type in app.trollfoss.domain.Christmas.types) put("christmasVariant",f.variant)
                             if(f.type in app.trollfoss.domain.AdventurePlay.ANGLED) put("toyAngle",f.angle.toDouble())
                             if (f.type == FixtureType.ROBOT_VACUUM) put("vacuumShift", f.shiftX.toDouble())
                             // Furniture the child has moved keeps its new spot.
@@ -269,8 +275,10 @@ class WorldStore(private val file: File) {
                 maalform = enumOrNull<Maalform>(s.optString("maalform")) ?: defaults.maalform,
                 season = enumOrNull<SeasonChoice>(s.optString("season")) ?: defaults.season,
                 festive = s.optBoolean("festive", defaults.festive),
+                festival = enumOrNull<app.trollfoss.domain.FestivalChoice>(s.optString("festival")) ?: if (s.optBoolean("festive", true)) app.trollfoss.domain.FestivalChoice.AUTO else app.trollfoss.domain.FestivalChoice.NONE,
             )
             val world = World()
+            HighlandsStore.decode(world.highlands, json.optJSONObject("highlands"))
             WorldFactory.addFixtures(world)
             world.place = enumOrNull<PlaceId>(json.optString("place")) ?: PlaceId.HOME
             world.night = json.optBoolean("night", false)
@@ -361,6 +369,7 @@ class WorldStore(private val file: File) {
                 }
                 f.mode = o.optInt("mode", 0)
                 f.count = o.optInt("count", 0)
+                if(f.type in app.trollfoss.domain.Christmas.types) f.variant=o.optInt("christmasVariant",f.variant).coerceIn(0,2)
                 if(f.type==FixtureType.PLAY_TRAIN && "train:broken:${f.id}" in world.flags) f.variant=1
                 if(f.type in app.trollfoss.domain.AdventurePlay.ANGLED) { f.angle=o.optDouble("toyAngle",f.mode.coerceIn(0,1).toDouble()).toFloat().coerceIn(0f,1f);if(f.type!=FixtureType.PLAY_LIFT) f.on=false }
                 if (f.type in app.trollfoss.domain.FinalePlay.TYPES) { f.on = false; f.mode = 0 } // Wait for the child after loading.
@@ -423,9 +432,10 @@ class WorldStore(private val file: File) {
                     world.playAssemblies[id] = PlayAssembly(recipe, ids); claimed += ids
                 }
             }
+            ChristmasStore.decode(world, json.optJSONObject("christmas"))
             for (b in world.bodies.values) {
                 val valid = when (b.mode) {
-                    Mode.SEATED, Mode.INSIDE -> world.fixtures[b.holder] != null
+                    Mode.SEATED, Mode.INSIDE -> world.fixtures[b.holder] != null || app.trollfoss.domain.ChristmasPlay.enclosed(world, b)
                     Mode.WORN -> world.bodies[b.holder] is Person
                     else -> true
                 }
@@ -437,7 +447,7 @@ class WorldStore(private val file: File) {
                     b.mode = Mode.FREE; b.holder = -1; b.inside = -1
                 }
                 if (b.inside >= 0 && world.fixtures[b.inside] == null) b.inside = -1
-                if (b.mode != Mode.BAG && b.mode != Mode.WORN && b.place == null) b.place = PlaceId.HOME
+                if (b.mode != Mode.BAG && b.mode != Mode.WORN && b.place == null && !app.trollfoss.domain.ChristmasPlay.enclosed(world, b)) b.place = PlaceId.HOME
                 b.age = 10f
             }
             // Belongings stay with their owner, including when the owner is packed in the bag.
@@ -482,7 +492,7 @@ class WorldStore(private val file: File) {
                     val type = enumOrNull<ThingType>(o.optString("type")) ?: return null
                     Thing(id, type, o.optInt("variant", 0)).apply {
                         used = o.optInt("used", 0).coerceIn(0, when (type) {
-                            ThingType.CUP, ThingType.BUCKET, ThingType.WATERING_CAN, ThingType.RUMLE_NOTE -> 1
+                            ThingType.CUP, ThingType.BUCKET, ThingType.WATERING_CAN, ThingType.RUMLE_NOTE, ThingType.XM_WISH -> 1
                             ThingType.BOOK, ThingType.TROLL_LANTERN -> 3
                             else -> maxOf(0, type.bites - 1)
                         })

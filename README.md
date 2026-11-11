@@ -20,7 +20,7 @@ og legg seg til å sove når natta kjem.
 
 <p align="center"><img src="docs/images/trollfoss-skjermbilete.png" alt="Ni av stadene i Trollfoss" /></p>
 
-## 18 reisemål og 24 stader å leike
+## Stader å leike i Trollfoss
 
 Kartet kan dragast sidelengs og følgjer årstidene, med snø, blomstring, haustfargar og pynt til jul,
 påske og graskartid. Storhuset og Mitt hus har fleire etasjar bak kvart sitt reisemål.
@@ -41,10 +41,11 @@ påske og graskartid. Storhuset og Mitt hus har fleire etasjar bak kvart sitt re
 | **Legekontoret** | Røntgen som viser skjelettet, stetoskop som finn hjarteslaget, plaster og medisin. |
 | **Scena** | Trommer, xylofon og mikrofon – spel i band! Discokule og røykmaskin. |
 | **Havbotnen** | Alt sym. Ubåt, kjempemusling med perle, skipsvrak og ein blekksprut med humor. |
-| **Heileberget** | Det store, lange fjellet: ta taubana opp, rop mot ekko-steinen, møt geitene og plant flagget på toppen. |
+| **Heileberget** | Gå gjennom fjellet i 3D, plukk blåbær til saft, spel på ekkosteinane og besøk Rumle og hòlemusa. |
 | **Storhuset** | Utforske fire etasjar og ein hage, ta heisen og rutsjebanane, møte roboten Rolf og spøkelset Sture og finne fem gylne nøklar. |
 | **Mitt hus** | Byggje eit eige hus rom for rom, velje tak og fargar, møblere og lage ein etasje til. Dyrke bær, bake og snikre ein gitar. |
 | **Vagstaddalen** | Utforske hytta og fossen, skifte til badeklede, bade frå sandstranda, køyre gummibåt for to, fiske og grille fangsten. |
+| **Nissegrenda** | Besøk nissen på tunet, pynt juletreet, bak peparkaker, lag leiker og køyr ut gåver med sleden. |
 
 ## Det som gjer det spesielt
 
@@ -80,10 +81,12 @@ Har du Trollfoss frå før? Installer oppå den gamle. **Ikkje avinstaller førs
 
 ## Oppdateringar
 
-Trollfoss ser sjølv etter nye versjonar på GitHub når appen blir opna, høgst éin gong per tolv timar. Ein
-vaksen vel når oppdateringa skal lastast ned og installerast:
+Trollfoss ser etter nye versjonar på GitHub når appen kjem fram og medan han er open. Etter ein
+vellukka sjekk går det tolv timar til neste gong. Om nettet fell ut, prøver appen igjen etter fem
+minutt. Ei lita pil på foreldretannhjulet viser at ei oppdatering er klar.
 
-**Kart → tannhjulet → reknestykket → Appoppdateringar → Sjekk no**
+Opne **Kart → tannhjulet → reknestykket → Appoppdateringar**. Ein vaksen vel **Last ned oppdatering**
+og deretter **Installer oppdatering**. **Sjekk no** hentar siste status med ein gong.
 
 Appen kontrollerer fila, versjonen og signaturen før Android får spørsmål om installasjon.
 

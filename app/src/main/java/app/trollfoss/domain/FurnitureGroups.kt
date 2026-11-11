@@ -1,10 +1,11 @@
 package app.trollfoss.domain
 
 /** Picture categories for the furniture drawer. Every catalogue item remains available in ALL. */
-enum class FurnitureGroup { ALL, SEATING, TABLES, STORAGE, KITCHEN, PLAY, DECOR }
+enum class FurnitureGroup { ALL, SEATING, TABLES, STORAGE, KITCHEN, PLAY, DECOR, CHRISTMAS }
 
 object FurnitureGroups {
     fun of(type: FixtureType): FurnitureGroup = when {
+        type in Christmas.types -> FurnitureGroup.CHRISTMAS
         type in setOf(FixtureType.STOVE, FixtureType.FRIDGE, FixtureType.SINK, FixtureType.BATH,
             FixtureType.TOILET, FixtureType.OVEN, FixtureType.BLENDER, FixtureType.ICE_CREAM_MACHINE,
             FixtureType.HAIR_WASH, FixtureType.DRYER_HOOD) -> FurnitureGroup.KITCHEN

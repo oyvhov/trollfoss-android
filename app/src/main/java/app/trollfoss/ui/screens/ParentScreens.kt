@@ -139,7 +139,7 @@ fun ParentScreen(vm: TrollfossViewModel) {
                             Choice(S.summer.str(), settings.season == SeasonChoice.SUMMER) { vm.setSeason(SeasonChoice.SUMMER) }
                             Choice(S.autumn.str(), settings.season == SeasonChoice.AUTUMN) { vm.setSeason(SeasonChoice.AUTUMN) }
                         }
-                        ToggleRow(S.festive.str(), settings.festive) { on -> vm.updateSettings { it.copy(festive = on) } }
+                        ToggleRow(S.festive.str(), settings.festival != app.trollfoss.domain.FestivalChoice.NONE) { on -> vm.setFestival(if(on) app.trollfoss.domain.FestivalChoice.AUTO else app.trollfoss.domain.FestivalChoice.NONE) }
                     }
                     Panel(S.progress.str()) {
                         Text(
