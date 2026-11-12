@@ -71,7 +71,7 @@ class ChristmasPlayTest {
         }
         val santa = world.people().single { it.name == "Julenissen" }
         santa.x = 5.1f
-        assertEquals(santa.x, ChristmasPlaces.visitPosition(world, PlaceId.CHRISTMAS_HOME), 0.0001f)
+        assertEquals(santa.x, ChristmasPlaces.visitTarget(world, PlaceId.CHRISTMAS_HOME)!!.x, 0.0001f)
     }
 
     @Test fun oldWorldGetsNewPlacesOnceAndKeepsItsPeople() {

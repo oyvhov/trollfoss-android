@@ -1,5 +1,9 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **1.19.2 · Besøk hos nissen**
+> Besøkjande får eigne plassar ved sida av nissen, leikebenken og reinsdyret når dei kjem frå reisefana.
+> Sjå `docs/release-v1.19.2.md`.
+
 > **1.19.1 · Vegen til Nissegrenda**
 > Startkartet har eit fast reiseskilt. Julemenyen opnar på reisefana, og grenda hugsar kvar barnet kom frå.
 > «Stader i grenda» let barnet velje rom, og dørene på torget viser reisemålet i sjølve spelet.

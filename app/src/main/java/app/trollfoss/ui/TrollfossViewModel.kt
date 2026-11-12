@@ -450,16 +450,16 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
             world.christmas.rememberOrigin(place, x)
         }
         if (to == PlaceId.HEILEBERGET) pendingFocus = null // The 3D scene restores its own camera.
-        if (to.christmas && place != to && !throughPassage && pendingFocus == null) {
-            pendingFocus = ChristmasPlaces.visitPosition(world, to)
-        }
+        val villageVisit = to.christmas && place != to && !throughPassage && pendingFocus == null
+        val target = if (villageVisit) ChristmasPlaces.visitTarget(world, to) else null
+        if (villageVisit) pendingFocus = target?.x ?: 0.9f
         if (to != requested) pendingFocus = app.trollfoss.domain.WaterfallSecret.FOREST_ARRIVAL
         engine?.let { cams[it.place] = it.cam }
         // Whatever the builder is busy with is finished before the child goes; a housewarming ends when they leave the house.
         sim.mine.finishJob()
         if (!to.mine) sim.mine.endParty()
         engine?.cancel()
-        Players.arrive(world, to, pendingFocus ?: arrivalCenter(to))
+        Players.arrive(world, to, pendingFocus ?: arrivalCenter(to), visit = target)
         sim.community.follow(to)
         if (place != to) radioOn = false
         world.place = to

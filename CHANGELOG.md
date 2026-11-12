@@ -1,5 +1,9 @@
 # Endringslogg
 
+## 1.19.2 – Plass til å helse på nissen
+
+- Når du vel nisseheimen, verkstaden eller reinsdyra i julemenyen, kjem figurane dine fram ved sida av den du vil helse på eller benken du vil bruke.
+
 ## 1.19.1 – Vegen til Nissegrenda
 
 - Eit fast skilt på startkartet tek barnet rett til Nissegrenda heile året. Reiser frå eit kart som alt er ope, startar med ein gong.

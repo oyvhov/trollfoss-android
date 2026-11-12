@@ -4,11 +4,24 @@ object ChristmasPlaces {
     private val neighbourhood = listOf(PlaceId.CHRISTMAS_HOME, PlaceId.CHRISTMAS_WORKSHOP, PlaceId.CHRISTMAS_STABLE)
     private fun doorX(index: Int) = 0.35f + index * 0.5f
 
-    fun visitPosition(world: World, place: PlaceId): Float = when (place) {
-        PlaceId.CHRISTMAS_HOME -> world.people().firstOrNull { it.place == place && it.name == "Julenissen" }?.x ?: 1.7f
-        PlaceId.CHRISTMAS_WORKSHOP -> world.fixturesIn(place).firstOrNull { it.type == FixtureType.XM_TOY_BENCH }?.x ?: 1.5f
-        PlaceId.CHRISTMAS_STABLE -> world.people().firstOrNull { it.place == place && it.species == Species.REINDEER }?.x ?: 1.8f
-        else -> 0.9f
+    fun visitTarget(world: World, place: PlaceId): VisitTarget? {
+        val resident = when (place) {
+            PlaceId.CHRISTMAS_HOME -> world.people().firstOrNull { it.place == place && it.name == "Julenissen" }
+                ?: Players.activeTeam(world).firstOrNull { it.name == "Julenissen" }
+            PlaceId.CHRISTMAS_STABLE -> world.people().firstOrNull { it.place == place && it.species == Species.REINDEER }
+            else -> null
+        }
+        if (resident != null) {
+            val x = if (resident.place == place) resident.x else 1.7f // Santa has travelled home with the team.
+            return VisitTarget(x, VisitTarget.halfWidthOf(resident), resident)
+        }
+        val station = when (place) {
+            PlaceId.CHRISTMAS_HOME -> FixtureType.XM_FIREPLACE
+            PlaceId.CHRISTMAS_WORKSHOP -> FixtureType.XM_TOY_BENCH
+            PlaceId.CHRISTMAS_STABLE -> FixtureType.XM_TROUGH
+            else -> return null
+        }
+        return world.fixturesIn(place).firstOrNull { it.type == station }?.let { VisitTarget(it.x, it.spec.w / 2f) }
     }
 
     val floors: List<Floor> = listOf(PlaceId.CHRISTMAS_SQUARE,PlaceId.CHRISTMAS_HOME,PlaceId.CHRISTMAS_WORKSHOP,PlaceId.CHRISTMAS_STABLE).map { id -> object: Floor {

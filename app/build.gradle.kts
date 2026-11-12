@@ -44,8 +44,8 @@ android {
         targetSdk = 36
         // The published release sets these. Only the update test in docs/RELEASE_WORKFLOW.md overrides
         // them, to build an older local copy that the release must be able to replace.
-        versionCode = (findProperty("trollfossVersionCode") as String?)?.toInt() ?: 25
-        versionName = (findProperty("trollfossVersionName") as String?) ?: "1.19.1"
+        versionCode = (findProperty("trollfossVersionCode") as String?)?.toInt() ?: 26
+        versionName = (findProperty("trollfossVersionName") as String?) ?: "1.19.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
