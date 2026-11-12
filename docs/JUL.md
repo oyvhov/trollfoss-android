@@ -1,5 +1,17 @@
 # Den store jula i Trollfoss
 
+## Å finne fram i 1.19.1
+
+På startkartet går «Til Nissegrenda» rett til torget. Nisselua i vanlege scener og i Heileberget
+opnar reisefana. Frå torget og romma viser «Stader i grenda» dei fire besøksmåla og vegen tilbake
+til den opphavlege staden. Spelet lagrar heimvegen når barnet kryssar inn i grenda. Ein lagra leik
+frå 1.19.0 der barnet alt er i grenda, har Familiehuset som heimveg.
+
+Dei tre fysiske dørene på torget viser ei nisselue, eit leiketog og eit reinsdyr. På telefon ligg
+nisselua framme under vanleg leik. Desse vegane er tilgjengelege uavhengig av kalender og årstid.
+
+## Utviklingshistorikk
+
 Lokal implementasjon 11. november 2026 på `codex/christmas`, i `C:/trollfoss-wt/christmas`.
 Bygd på `906bdf2` og ein separat kopi av det eksisterande, uferdige Heileberget-/husarbeidet
 (`9e501cb`). Originalane i `C:/topa` og `rainbow-finale` er ikkje endra. Dette er ei lokal

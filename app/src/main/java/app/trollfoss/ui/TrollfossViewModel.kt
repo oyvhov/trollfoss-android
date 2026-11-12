@@ -25,6 +25,7 @@ import app.trollfoss.data.Settings
 import app.trollfoss.data.WorldStore
 import app.trollfoss.data.WorldHistory
 import app.trollfoss.domain.Progression
+import app.trollfoss.domain.ChristmasPlaces
 import app.trollfoss.domain.ToyReward
 import app.trollfoss.domain.ThingType
 import app.trollfoss.domain.edit
@@ -391,7 +392,7 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
     var passageStamp by mutableIntStateOf(0)
         private set
     private var pendingFocus: Float? = null
-    var balloonDestination: PlaceId? = null
+    var balloonDestination by mutableStateOf<PlaceId?>(null)
     fun flyTo(to: PlaceId) {
         if (app.trollfoss.domain.WaterfallSecret.destination(world, to) != to) {
             travelPlayCard(to)
@@ -422,6 +423,13 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
         travel(to)
     }
 
+    val christmasReturnPlace: PlaceId get() = world.christmas.origin?.place ?: PlaceId.HOME
+
+    fun returnFromChristmas() {
+        val origin = world.christmas.origin
+        if (origin == null) travel(PlaceId.HOME) else travelPlayCard(origin.place, origin.x)
+    }
+
     fun waterfallFromMap() {
         sfx(Sfx.SPLASH, 0.6f)
         val passage = app.trollfoss.domain.WaterfallSecret.entrance
@@ -436,6 +444,15 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun travel(requested: PlaceId, throughPassage: Boolean = false) {
         val to = if (throughPassage) requested else app.trollfoss.domain.WaterfallSecret.destination(world, requested)
+        if (to.christmas && !place.christmas) {
+            val oldScene = engine?.takeIf { it.place == place }
+            val x = oldScene?.let { it.cam + it.visibleViewport / 2f } ?: arrivalCenter(place)
+            world.christmas.rememberOrigin(place, x)
+        }
+        if (to == PlaceId.HEILEBERGET) pendingFocus = null // The 3D scene restores its own camera.
+        if (to.christmas && place != to && !throughPassage && pendingFocus == null) {
+            pendingFocus = ChristmasPlaces.visitPosition(world, to)
+        }
         if (to != requested) pendingFocus = app.trollfoss.domain.WaterfallSecret.FOREST_ARRIVAL
         engine?.let { cams[it.place] = it.cam }
         // Whatever the builder is busy with is finished before the child goes; a housewarming ends when they leave the house.

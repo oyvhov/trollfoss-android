@@ -196,9 +196,26 @@ class ChristmasPlay(private val sim: Sim) {
         if(stock.type!=ThingType.XM_STOCKING || item.type in setOf(ThingType.XM_PARCEL,ThingType.XM_STOCKING) || stock.id in state.stocking || item.id==stock.id) return false
         state.stocking[stock.id]=item.id;item.mode=Mode.INSIDE;item.holder=-stock.id-2;item.place=null;item.held=false;deed("stocking");return true
     }
+    fun sleighRiders(f: Fixture): List<Person> = f.spec.spots.indices.mapNotNull { world.seatedAt(f, it) }
+
+    fun boardingChoices(f: Fixture): List<Person> {
+        if (f.type != FixtureType.XM_SLEIGH || sleighRiders(f).size == f.spec.spots.size) return emptyList()
+        return world.people().filter { person ->
+            person.species == Species.FOLK && person.place != null && person.mode == Mode.FREE &&
+                !person.held && !Players.paused(world, person)
+        }.sortedWith(compareBy<Person>({ it.place != f.place }, { it.id !in world.playerIds }, { it.name != "Julenissen" }, { it.id }))
+    }
+
+    fun boardSleigh(f: Fixture, person: Person): Boolean {
+        if (world.fixtures[f.id] !== f || person !in boardingChoices(f)) return false
+        val seat = f.spec.spots.indices.firstOrNull { world.seatedAt(f, it) == null } ?: return false
+        House.moveTo(world, person, f.place, f.x)
+        return sim.seatByChild(person, f, seat)
+    }
+
     fun fly(f:Fixture,to:PlaceId):Boolean {
         if(f.type!=FixtureType.XM_SLEIGH || to !in Christmas.stops) return false
-        val passengers=world.people().filter { it.mode==Mode.SEATED && it.holder==f.id }
+        val passengers=sleighRiders(f)
         if(passengers.isEmpty()) return false
         passengers.forEachIndexed { i,p -> House.moveTo(world,p,to,0.8f+i*0.25f) }
         world.inMachine(f).forEachIndexed { i,t -> loose(t,to,1.4f+i*0.1f,to.floor-0.2f) }

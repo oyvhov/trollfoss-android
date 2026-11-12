@@ -44,17 +44,22 @@ class MapSpotTest {
         return Box(cx - half, bottom - if(s.h < 500f) 34f else 40f, cx + half, bottom)
     }
 
-    private fun corners(s: Screen) = listOf(
-        Box(s.controls.edge, s.controls.edge, s.controls.edge + if(s.h < 500f) 104f else 120f,
-            s.controls.edge + if(s.h < 500f) 48f else 56f), // day/night and weather
-        Box(s.w - 68f, 16f, s.w - 16f, 68f), // parents
-        Box(s.controls.edge, s.h - s.controls.edge - s.controls.button,
-            s.controls.edge + s.controls.groupWidth, s.h - s.controls.edge), // all three buttons
-        Box(s.w - s.controls.edge - 240f, s.h - s.controls.edge - 58f,
-            s.w - s.controls.edge, s.h - s.controls.edge), // progress and next gift
-        Box(s.w / 2 - 90f, s.controls.edge, s.w / 2 + 90f,
-            s.controls.edge + if(s.h < 500f) 44f else 52f), // title
-    )
+    private fun corners(s: Screen): List<Box> {
+        val compact = s.h < 500f
+        val edge = s.controls.edge
+        val worldButton = if (compact) 48f else 56f
+        val worldGroup = 3 * worldButton + 2 * 8f
+        val parentButton = 52f
+        val signCenter = (s.w + worldGroup - parentButton) / 2f
+        val signHalf = if (compact) 109f else 127f
+        return listOf(
+            Box(edge, edge, edge + worldGroup, edge + worldButton), // Christmas, day/night and weather
+            Box(s.w - edge - parentButton, edge, s.w - edge, edge + parentButton),
+            Box(signCenter - signHalf, edge, signCenter + signHalf, edge + worldButton),
+            Box(edge, s.h - edge - s.controls.button, edge + s.controls.groupWidth, s.h - edge),
+            Box(s.w - edge - 240f, s.h - edge - 58f, s.w - edge, s.h - edge), // progress and next gift
+        )
+    }
 
     @Test
     fun storhusetIsOnTheMapWithItsOwnName() {

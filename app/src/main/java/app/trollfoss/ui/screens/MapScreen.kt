@@ -14,7 +14,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,8 +23,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.LaunchedEffect
@@ -58,9 +55,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import app.trollfoss.audio.Sfx
 import app.trollfoss.domain.HouseKeys
 import app.trollfoss.domain.PlaceId
@@ -89,7 +84,6 @@ import app.trollfoss.ui.art.mapLabel
 import app.trollfoss.ui.art.mapSpot
 import app.trollfoss.ui.art.MAP_WIDTH_FACTOR
 import app.trollfoss.ui.art.rememberMapLayer
-import app.trollfoss.ui.components.GameText
 import app.trollfoss.ui.components.IconCanvas
 import app.trollfoss.ui.components.Icons
 import app.trollfoss.ui.components.RoundButton
@@ -138,9 +132,12 @@ fun MapScreen(vm: TrollfossViewModel) {
         fun centered(place: PlaceId) = (mapSpot(place).x * mapWidth - viewportWidth / 2f).toInt().coerceIn(0, mapWidth - viewportWidth)
         LaunchedEffect(mapWidth, from) { scroll.scrollTo(centered(from)) }
         fun fly(place: PlaceId) {
-            if(target!=null) return
-            if(place==from && vm.place != PlaceId.LAB) { vm.open(Screen.Play); return }
-            target=place
+            if (target != null) return
+            if (place == vm.place) {
+                vm.open(Screen.Play)
+                return
+            }
+            target = place
             vm.sfx(Sfx.WHOOSH,0.8f)
             scope.launch {
                 flight.snapTo(0f)
@@ -149,8 +146,12 @@ fun MapScreen(vm: TrollfossViewModel) {
                 vm.landBalloon(place)
             }
         }
-        LaunchedEffect(Unit) {
-            vm.balloonDestination?.let { vm.balloonDestination=null;fly(it) }
+        val requested = vm.balloonDestination
+        LaunchedEffect(requested) {
+            if (requested != null) {
+                vm.balloonDestination = null
+                fly(requested)
+            }
         }
         // The still scenery is drawn once into a bitmap (off the main thread); each frame draws only what moves.
         // The secret path from the cellar of Storhuset to Trollhola shows once all five golden keys are found.
@@ -243,7 +244,10 @@ fun MapScreen(vm: TrollfossViewModel) {
         for (place in PlaceId.entries.filter { it.onMap }.sortedBy { if (it == PlaceId.MANOR_GROUND) 0 else 1 }) {
             val label = mapLabel(place).str()
             val bounds = mapMarkerBounds(place, w.value, h.value, controlsHeight.value)
-            MapPlaceMarker(place, label, place == (target ?: from), h.value < 500f, onClick = { fly(place) }, modifier =
+            MapPlaceMarker(place, label, place == (target ?: from), h.value < 500f, onClick = {
+                // The house landmarks reopen the child's current floor. The village sign leads to its square.
+                fly(if (place == from && (place.manor || place.mine)) vm.place else place)
+            }, modifier =
                 Modifier
                     // Keep coastal labels above the floating controls without shrinking the map.
                     .offset(x = bounds.left.dp, y = bounds.top.dp)
@@ -252,9 +256,6 @@ fun MapScreen(vm: TrollfossViewModel) {
         }
         }
 
-        Row(Modifier.align(Alignment.TopStart).padding(controls.edge.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            WorldControlButtons(vm, size = if (h.value < 500f) 48.dp else 56.dp)
-        }
         Row(
             Modifier.align(Alignment.BottomCenter).fillMaxWidth().onSizeChanged { controlsHeightPx = it.height }.padding(controls.edge.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -267,13 +268,22 @@ fun MapScreen(vm: TrollfossViewModel) {
             }
             ProgressButton(vm)
         }
-        ParentButton(vm, Modifier.align(Alignment.TopEnd).padding(16.dp))
-        Row(Modifier.align(Alignment.TopCenter).padding(top = controls.edge.dp)
-            .background(T.Cream, RoundedCornerShape(50)).border(2.dp, T.Ink, RoundedCornerShape(50))
-            .padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            IconCanvas(Icons.Map, Modifier.size(if(h.value < 500f) 24.dp else 32.dp))
-            GameText(S.appName.str(), fontSize = if(h.value < 500f) 20.sp else 26.sp, color = T.Sea, maxLines = 1)
+        Row(
+            Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(controls.edge.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                WorldControlButtons(vm, size = if (h.value < 500f) 48.dp else 56.dp)
+            }
+            Box(Modifier.weight(1f), contentAlignment = Alignment.TopCenter) {
+                ChristmasMapSign(
+                    compact = h.value < 500f,
+                    enabled = target == null,
+                    onClick = { fly(PlaceId.CHRISTMAS_SQUARE) },
+                )
+            }
+            ParentButton(vm, Modifier)
         }
         if(canPanLeft) RoundButton(S.mapLeft.str(), onClick = {
             scope.launch { scroll.animateScrollTo((scroll.value - viewportWidth * .65f).toInt().coerceAtLeast(0), tween(if(motion) 480 else 1)) }

@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
+import app.trollfoss.domain.FixtureType
 import app.trollfoss.domain.PlaceId
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -160,7 +161,8 @@ fun PlayScreen(vm: TrollfossViewModel) {
         val waterfallLabel = (if (place == PlaceId.LAB) S.waterfallExit else S.waterfallTouch).str()
         engine.visibleRoom // Refresh alternative actions when the camera enters another room.
         val fixtureActions=vm.world.fixturesIn(place).filter { kotlin.math.abs(it.x-(engine.cam+engine.visibleViewport/2))<engine.visibleViewport/2+0.1f }.take(12).map { f ->
-            val name=app.trollfoss.ui.FurnitureLabels.name(f.type).str()
+            val destination = if (place.christmas && f.type == FixtureType.DOOR) app.trollfoss.domain.House.passageAt(f)?.to else null
+            val name = destination?.let(S::place)?.str() ?: app.trollfoss.ui.FurnitureLabels.name(f.type).str()
             CustomAccessibilityAction(name) { engine.accessibleFixture(f.id) }
         }
         Canvas(
@@ -309,13 +311,14 @@ fun PlayScreen(vm: TrollfossViewModel) {
             }
         }
         if (!engine.designMode && compact) {
-            // Phone: a small counter and one button; the rest unfolds from it.
+            // Keep the village and its travel choices in sight during play on a phone.
             Row(
                 Modifier.align(Alignment.TopEnd).padding(edge),
                 horizontalArrangement = Arrangement.spacedBy(gap),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 GlimtCounter(vm.found, Secrets.all.size, counter, compact = true)
+                ChristmasButton(vm, 48.dp)
                 RoundButton(
                     S.more.str(), onClick = { menuOpen = !menuOpen }, size = btn, tone = if (menuOpen) Tones.Sun else Tones.Cream,
                     icon = { menuDots(menuOpen) },
@@ -336,7 +339,7 @@ fun PlayScreen(vm: TrollfossViewModel) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    WorldControlButtons(vm, small)
+                    SkyControlButtons(vm, small)
                     RoundButton(S.camera.str(), onClick = { menuOpen = false; photo() }, size = small, tone = Tones.Cream, tapSound = false, icon = Icons.Camera)
                     if (place.mine) RoundButton(app.trollfoss.ui.SM.build.str(), onClick = { menuOpen = false; mineUi.open = !mineUi.open }, size = small, tone = if (mineUi.open) Tones.Sun else Tones.Mint, icon = BuildIcons.Hammer)
                     if (place.mine) RoundButton(app.trollfoss.ui.SM.paint.str(), onClick = {

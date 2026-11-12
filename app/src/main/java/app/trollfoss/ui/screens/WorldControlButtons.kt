@@ -13,7 +13,12 @@ import app.trollfoss.ui.str
 /** The same world controls on the home map and inside each place. */
 @Composable
 internal fun WorldControlButtons(vm: TrollfossViewModel, size: Dp) {
-    ChristmasButton(vm,size)
+    ChristmasButton(vm, size)
+    SkyControlButtons(vm, size)
+}
+
+@Composable
+internal fun SkyControlButtons(vm: TrollfossViewModel, size: Dp) {
     RoundButton(if (vm.night) S.day.str() else S.night.str(), vm::toggleNight, size = size,
         tone = Tones.Night, icon = if (vm.night) Icons.Sun else Icons.Moon)
     RoundButton(S.weather.str(), vm::cycleWeather, size = size, tone = Tones.Cream,

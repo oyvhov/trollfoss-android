@@ -1,6 +1,16 @@
 package app.trollfoss.ui.play
 
+import android.graphics.Bitmap
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.font.createFontFamilyResolver
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.test.platform.app.InstrumentationRegistry
 import app.trollfoss.audio.Sfx
 import app.trollfoss.domain.*
 import org.junit.Assert.*
@@ -24,6 +34,50 @@ class ChristmasEngineTest {
         e.down(id,from,1000);e.move(id,(from+to)/2f,1050)
         repeat(3){e.update(0.016f)}
         e.move(id,to,1100);repeat(3){e.update(0.016f)};e.up(id,to,1200)
+    }
+
+    @Test fun villageDoorSpritesKeepTheirOwnDestinationPicturesAfterCaching() {
+        val village = PlaceId.CHRISTMAS_SQUARE
+        val doors = WorldFactory.create().fixturesIn(village).filter { it.type == FixtureType.DOOR }
+        assertEquals(setOf(PlaceId.CHRISTMAS_HOME, PlaceId.CHRISTMAS_WORKSHOP, PlaceId.CHRISTMAS_STABLE),
+            doors.map { House.passageAt(it)?.to }.toSet())
+        val size = Size(800f, 400f)
+        val density = Density(1f)
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val text = TextMeasurer(createFontFamilyResolver(context), density, LayoutDirection.Ltr)
+
+        // Draw the same doors at the same scene coordinates, first sharing a real Engine cache,
+        // then individually. Only the small destination picture and its painted panel are compared.
+        fun doorPictures(visible: List<Fixture>): Map<Int, IntArray> {
+            val world = World()
+            visible.forEach { world.fixtures[it.id] = it }
+            val engine = Engine(world, village, Sim(world), host, false, 0f)
+            val frame = Bitmap.createBitmap(size.width.toInt(), size.height.toInt(), Bitmap.Config.ARGB_8888)
+            try {
+                engine.setSize(size.width, size.height, density.density)
+                engine.photoMode = true
+                val canvas = Canvas(frame.asImageBitmap())
+                val scope = CanvasDrawScope()
+                repeat(6) { scope.draw(density, LayoutDirection.Ltr, canvas, size) { engine.draw(this, text) } }
+                return visible.associate { door ->
+                    val width = (0.6f * door.spec.w * engine.u).toInt()
+                    val height = (0.53f * door.spec.h * engine.u).toInt()
+                    val corner = point(engine, door.x - 0.3f * door.spec.w, door.y - 0.82f * door.spec.h, size.height)
+                    val pixels = IntArray(width * height)
+                    frame.getPixels(pixels, 0, width, corner.x.toInt(), corner.y.toInt(), width, height)
+                    door.id to pixels
+                }
+            } finally {
+                engine.detach()
+                frame.recycle()
+            }
+        }
+
+        val together = doorPictures(doors)
+        for (door in doors) {
+            val alone = doorPictures(listOf(door))
+            assertArrayEquals("Cached sign for ${House.passageAt(door)?.to}", alone.getValue(door.id), together.getValue(door.id))
+        }
     }
     @Test fun actualOrnamentDragAndRemovalWorksOnPhoneAndTablet() {
         for((width,height) in listOf(2400f to 1080f,1920f to 1200f)) {

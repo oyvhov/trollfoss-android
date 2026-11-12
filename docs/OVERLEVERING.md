@@ -1,5 +1,10 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **1.19.1 · Vegen til Nissegrenda**
+> Startkartet har eit fast reiseskilt. Julemenyen opnar på reisefana, og grenda hugsar kvar barnet kom frå.
+> «Stader i grenda» let barnet velje rom, og dørene på torget viser reisemålet i sjølve spelet.
+> Sjå `docs/JUL.md` og `docs/release-v1.19.1.md`.
+
 > **1.19.0 · Nissegrenda og Heileberget**
 > Produksjonsutgåva samlar julearbeidet og 3D-besøket hos Rumle med husbygginga frå 1.18.0.
 > Utgivingsnotatet ligg i `docs/release-v1.19.0.md`. Oppføringane under skildrar arbeidsøktene.

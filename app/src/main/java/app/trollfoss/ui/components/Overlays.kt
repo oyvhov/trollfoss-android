@@ -48,7 +48,12 @@ fun CloseButton(onClick: () -> Unit, modifier: Modifier = Modifier, size: Dp = 6
  * top corner. A tap on the veil closes it too.
  */
 @Composable
-fun TrollDialog(onClose: () -> Unit, maxWidth: Dp = 560.dp, content: @Composable ColumnScope.() -> Unit) {
+fun TrollDialog(
+    onClose: () -> Unit,
+    maxWidth: Dp = 560.dp,
+    scrollContent: Boolean = true,
+    content: @Composable ColumnScope.() -> Unit,
+) {
     val motion = LocalMotion.current
     val appear = remember { Animatable(if (motion) 0f else 1f) }
     val feedback = LocalFeedback.current
@@ -81,7 +86,7 @@ fun TrollDialog(onClose: () -> Unit, maxWidth: Dp = 560.dp, content: @Composable
                         .background(Brush.verticalGradient(listOf(Color.White, T.Cream)))
                         .border(3.dp, T.Ink, shape)
                         .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {}
-                        .verticalScroll(rememberScrollState())
+                        .then(if (scrollContent) Modifier.verticalScroll(rememberScrollState()) else Modifier)
                         .padding(start = 22.dp, end = 22.dp, top = 26.dp, bottom = 22.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(14.dp),

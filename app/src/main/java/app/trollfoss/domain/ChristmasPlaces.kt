@@ -1,17 +1,31 @@
 package app.trollfoss.domain
 
 object ChristmasPlaces {
+    private val neighbourhood = listOf(PlaceId.CHRISTMAS_HOME, PlaceId.CHRISTMAS_WORKSHOP, PlaceId.CHRISTMAS_STABLE)
+    private fun doorX(index: Int) = 0.35f + index * 0.5f
+
+    fun visitPosition(world: World, place: PlaceId): Float = when (place) {
+        PlaceId.CHRISTMAS_HOME -> world.people().firstOrNull { it.place == place && it.name == "Julenissen" }?.x ?: 1.7f
+        PlaceId.CHRISTMAS_WORKSHOP -> world.fixturesIn(place).firstOrNull { it.type == FixtureType.XM_TOY_BENCH }?.x ?: 1.5f
+        PlaceId.CHRISTMAS_STABLE -> world.people().firstOrNull { it.place == place && it.species == Species.REINDEER }?.x ?: 1.8f
+        else -> 0.9f
+    }
+
     val floors: List<Floor> = listOf(PlaceId.CHRISTMAS_SQUARE,PlaceId.CHRISTMAS_HOME,PlaceId.CHRISTMAS_WORKSHOP,PlaceId.CHRISTMAS_STABLE).map { id -> object: Floor {
         override val place = id
         override fun blueprint() = ChristmasPlaces.blueprint(id)
         override val rooms = (0 until (id.width/2).toInt()).map { it*2f..(it+1)*2f }
-        override val arrivals = listOf(Arrival("entry",0.8f))
-        override val passages: List<Passage> get() = links(id).mapIndexed { index,to -> Passage("christmas-${id.name}-${to.name}",id,index,PassageKind.DOOR,to,"entry") }
+        override val arrivals = listOf(Arrival("entry", 0.8f)) + if (id == PlaceId.CHRISTMAS_SQUARE)
+            neighbourhood.mapIndexed { i, room -> Arrival(room.name, doorX(i)) } else emptyList()
+        override val passages: List<Passage> = links(id).mapIndexed { index, to ->
+            Passage("christmas-${id.name}-${to.name}", id, index, PassageKind.DOOR, to,
+                if (to == PlaceId.CHRISTMAS_SQUARE) id.name else "entry")
+        }
     } }
-    private fun links(id:PlaceId): List<PlaceId> = if(id==PlaceId.CHRISTMAS_SQUARE) listOf(PlaceId.CHRISTMAS_HOME,PlaceId.CHRISTMAS_WORKSHOP,PlaceId.CHRISTMAS_STABLE) else listOf(PlaceId.CHRISTMAS_SQUARE)
+    private fun links(id:PlaceId): List<PlaceId> = if(id==PlaceId.CHRISTMAS_SQUARE) neighbourhood else listOf(PlaceId.CHRISTMAS_SQUARE)
     fun blueprint(id:PlaceId):PlaceSpec {
         val fs=mutableListOf<FixtureDef>()
-        links(id).forEachIndexed { i,_ -> fs+=FixtureDef(FixtureType.DOOR,0.35f+i*0.5f,id.floor) }
+        links(id).forEachIndexed { i,_ -> fs+=FixtureDef(FixtureType.DOOR,doorX(i),id.floor) }
         fun f(t:FixtureType,x:Float,y:Float=id.floor,v:Int=0) { fs+=FixtureDef(t,x,y,v) }
         when(id) {
             PlaceId.CHRISTMAS_SQUARE -> {

@@ -16,8 +16,9 @@ import app.trollfoss.ui.theme.T
 @Composable
 fun ChristmasStation(vm:TrollfossViewModel,f:Fixture,onClose:()->Unit) {
     if(f.type==FixtureType.XM_SLEIGH) {ChristmasSleigh(vm,f,onClose);return}
-    if(f.type in setOf(FixtureType.XM_CALENDAR,FixtureType.XM_MARKET,FixtureType.XM_SLEIGH)) {
-        ChristmasPanel(vm,onClose,initialTab=if(f.type==FixtureType.XM_CALENDAR) 2 else if(f.type==FixtureType.XM_SLEIGH) 3 else 0)
+    if (f.type == FixtureType.XM_CALENDAR || f.type == FixtureType.XM_MARKET) {
+        val tab = if (f.type == FixtureType.XM_CALENDAR) ChristmasTab.CALENDAR else ChristmasTab.SUPPLIES
+        ChristmasPanel(vm, onClose, initialTab = tab)
         return
     }
     var revision by remember(f.id) { mutableIntStateOf(0) }

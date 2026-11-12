@@ -59,6 +59,21 @@ class ChristmasPlayTest {
         assertEquals(ids.size,ids.distinct().size)
     }
 
+    @Test fun eachVillageDoorReturnsToItsOwnEntranceAndVisitsFindTheActualResident() {
+        val world = WorldFactory.create()
+        val square = PlaceId.CHRISTMAS_SQUARE
+        val doors = world.fixturesIn(square).filter { it.type == FixtureType.DOOR }
+        assertEquals(3, doors.size)
+        for (door in doors) {
+            val outbound = House.passageAt(door)!!
+            val inbound = House.floor(outbound.to)!!.passages.single { it.to == square }
+            assertEquals(door.x, House.arrival(square, inbound.arrive)!!.x, 0.0001f)
+        }
+        val santa = world.people().single { it.name == "Julenissen" }
+        santa.x = 5.1f
+        assertEquals(santa.x, ChristmasPlaces.visitPosition(world, PlaceId.CHRISTMAS_HOME), 0.0001f)
+    }
+
     @Test fun oldWorldGetsNewPlacesOnceAndKeepsItsPeople() {
         val w=WorldFactory.create();val ids=w.bodies.values.filterNot {it.place?.christmas==true}.map {it.id}.toSet()
         val json=WorldStore.encode(w,Settings())
@@ -180,6 +195,44 @@ class ChristmasPlayTest {
         assertTrue(s.christmas.fly(f,PlaceId.FARM))
         riders.forEach {assertEquals(PlaceId.FARM,it.place);assertEquals(Mode.FREE,it.mode)}
         assertEquals(PlaceId.FARM,parcel.place);assertTrue(s.christmas.use(parcel));assertEquals(PlaceId.FARM,original.place)
+    }
+
+    @Test fun onlyTheChosenFriendsBoardAndKeepWhatTheyCarry() {
+        val s = sim()
+        val f = fixture(s, FixtureType.XM_SLEIGH)
+        val local = s.world.addPerson(Species.FOLK, Look(), 1f, place, 1f, place.floor)
+        val guest = s.world.addPerson(Species.FOLK, Look(), 1f, PlaceId.HOME, 1f, PlaceId.HOME.floor)
+        val other = s.world.addPerson(Species.FOLK, Look(), 1f, PlaceId.FARM, 1f, PlaceId.FARM.floor)
+        val packed = s.world.addPerson(Species.FOLK, Look(), 1f, place, 2f, place.floor)
+        Players.pack(s.world, packed)
+        val gift = s.world.addThing(ThingType.XM_BELL, 0, PlaceId.HOME, 1f, PlaceId.HOME.floor)
+        assertEquals(Give.HELD, s.give(guest, gift, Part.HAND))
+        assertEquals(local, s.christmas.boardingChoices(f).first())
+        assertFalse(s.christmas.boardSleigh(f, packed))
+        assertTrue(s.christmas.boardSleigh(f, guest))
+        assertFalse(s.christmas.boardSleigh(f, guest))
+        assertTrue(s.christmas.boardSleigh(f, local))
+        assertFalse(s.christmas.boardSleigh(f, other))
+        assertTrue(s.christmas.fly(f, PlaceId.CHRISTMAS_SQUARE))
+        assertEquals(PlaceId.CHRISTMAS_SQUARE, guest.place)
+        assertEquals(PlaceId.CHRISTMAS_SQUARE, gift.place)
+        assertSame(gift, s.world.worn(guest, Slot.HAND))
+        assertEquals(PlaceId.FARM, other.place)
+        assertEquals(Mode.BAG, packed.mode)
+    }
+
+    @Test fun savedReturnSpotSurvivesRoomVisitsAndLoadsAnOlderWorldWithoutOne() {
+        val world = WorldFactory.create()
+        world.christmas.rememberOrigin(PlaceId.MANOR_UPPER, 2.75f)
+        world.christmas.rememberOrigin(PlaceId.CHRISTMAS_WORKSHOP, 0.8f)
+        val json = WorldStore.encode(world, Settings())
+        assertEquals(ChristmasOrigin(PlaceId.MANOR_UPPER, 2.75f), WorldStore.decode(json).world.christmas.origin)
+        json.getJSONObject("christmas").remove("origin")
+        assertNull(WorldStore.decode(json).world.christmas.origin)
+        json.getJSONObject("christmas").put("origin", "missing-place")
+        assertNull(WorldStore.decode(json).world.christmas.origin)
+        json.getJSONObject("christmas").put("origin", PlaceId.CHRISTMAS_SQUARE.name)
+        assertNull(WorldStore.decode(json).world.christmas.origin)
     }
 
     @Test fun fullSceneRefusesRecipeWithoutConsumingMaterial() {

@@ -1,5 +1,7 @@
 package app.trollfoss.domain
 
+data class ChristmasOrigin(val place: PlaceId, val x: Float)
+
 /** Permanent play belongs to the child, independently of the calendar decoration. */
 class ChristmasState {
     val opened = linkedSetOf<Int>()
@@ -8,6 +10,14 @@ class ChristmasState {
     val stocking = linkedMapOf<Int, Int>()
     var sleighStop = 0
     var rampStage = 0
+    var origin: ChristmasOrigin? = null
+        private set
+
+    fun rememberOrigin(place: PlaceId, x: Float) {
+        if (!place.christmas && x.isFinite()) {
+            origin = ChristmasOrigin(place, x.coerceIn(0.2f, place.width - 0.2f))
+        }
+    }
 }
 
 object Christmas {

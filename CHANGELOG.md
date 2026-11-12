@@ -1,5 +1,12 @@
 # Endringslogg
 
+## 1.19.1 – Vegen til Nissegrenda
+
+- Eit fast skilt på startkartet tek barnet rett til Nissegrenda heile året. Reiser frå eit kart som alt er ope, startar med ein gong.
+- Nisselua er synleg medan ein leikar på mobil. I grenda viser «Stader i grenda» torget, nisseheimen, leikeverkstaden og reinsdyra med bilete. Ein kan reise tilbake til staden ein kom frå, også etter at spelet har vore lukka.
+- Dørene på torget har kvart sitt kjennemerke. I stallen kan barnet velje kven som får sitje i sleden og kvar gåvene skal leverast.
+- Julekassa viser kvar ei gåve hamnar når ho blir henta frå kartet eller Heileberget.
+
 ## 1.19.0 – Jul i Trollfoss og besøk hos Rumle
 
 - Reis til Nissegrenda. Pynt treet, bak peparkaker, lag leiker i verkstaden, pakk gåver og køyr dei ut med reinsdyrsleden.

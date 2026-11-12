@@ -31,16 +31,7 @@ private fun DrawScope.ribbon(w:Float,y:Float,p:Pen) {
 /** All ornaments are actual things; the tree's content list supplies their saved positions. */
 internal fun DrawScope.drawChristmasFixture(f:Fixture,u:Float,pen:Pen,contents:List<Thing>):Boolean {
     if(f.type==FixtureType.DOOR && f.place.christmas) {
-        val w=f.spec.w*u;val h=f.spec.h*u
-        inkedRound(Rect(-w/2,-h,w/2,0f),w*0.15f,XmasCream,pen)
-        inkedRound(Rect(-w*0.42f,-h*0.95f,w*0.42f,0f),w*0.13f,XmasGreen,pen)
-        inkedCircle(Offset(w*0.23f,-h*0.4f),w*0.035f,XmasGold,pen)
-        val i=f.place.indexOf(f.id)
-        translate(0f,-h*0.42f) { drawChristmasThing(if(i==1) ThingType.XM_ROBOT else ThingType.XM_HAT,if(i==2) 2 else 0,0,w*0.65f,h*0.3f,pen) }
-        if(f.place!=PlaceId.CHRISTMAS_SQUARE) {
-            val arrow=Path().apply {moveTo(-w*0.3f,-h*0.18f);lineTo(0f,-h*0.31f);lineTo(0f,-h*0.23f);lineTo(w*0.3f,-h*0.23f);lineTo(w*0.3f,-h*0.13f);lineTo(0f,-h*0.13f);lineTo(0f,-h*0.05f);close()}
-            drawPath(arrow,XmasGold)
-        }
+        villageDoor(House.passageAt(f)?.to, f.spec.w * u, f.spec.h * u, pen)
         return true
     }
     if(f.type !in Christmas.types) return false

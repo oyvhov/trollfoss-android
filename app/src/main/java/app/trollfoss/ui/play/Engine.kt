@@ -3251,7 +3251,8 @@ class Engine(
     /** What a piece of furniture looks like right now, as far as its picture goes. */
     private data class FixtureLook(
         val type: FixtureType, val variant: Int, val layer: Int, val open: Boolean, val on: Boolean, val mode: Int, val count: Int,
-        val night: Int, val weather: Weather, val rainbow: Int, val size: Int, val restingAngle: Int = 0,
+        val night: Int, val weather: Weather, val rainbow: Int, val size: Int, val restingAngle: Int,
+        val doorId: Int,
     )
 
     private data class ThingLook(val type: ThingType, val variant: Int, val used: Int, val night: Int, val weather: Weather, val rainbow: Int, val size: Int)
@@ -3262,7 +3263,9 @@ class Engine(
         if (!empty || f.anim > 0.01f || f.lift > 0f || f.type in LIVE_FIXTURES || liveToy || f.type==FixtureType.PICTURE && f.variant>=Community.ART_BASE || f.type==FixtureType.PLAY_LIFT || f.type==FixtureType.PLAY_WINDMILL || (f.on && f.type in LIVE_WHEN_ON)) return false
         // Parked finale toys are still pictures. Keep the dragon's final wheel angle in its cache key.
         val restingAngle = if (f.type == FixtureType.PLAY_DRAGON_CART) f.angle.toBits() else 0
-        val look = FixtureLook(f.type, f.variant, layer, f.open, f.on, f.mode, f.count, (pen.night * 10f).toInt(), pen.weather, (pen.rainbow * 5f).toInt(), u.toInt(), restingAngle)
+        // Village doors of the same type display different destinations.
+        val doorId = if (f.type == FixtureType.DOOR && f.place.christmas) f.id else -1
+        val look = FixtureLook(f.type, f.variant, layer, f.open, f.on, f.mode, f.count, (pen.night * 10f).toInt(), pen.weather, (pen.rainbow * 5f).toInt(), u.toInt(), restingAngle, doorId)
         val w = f.spec.w * u
         val h = f.spec.h * u
         val bounds = Rect(-w / 2 - 0.14f * u, -h - 0.4f * u, w / 2 + 0.34f * u, 0.12f * u)
