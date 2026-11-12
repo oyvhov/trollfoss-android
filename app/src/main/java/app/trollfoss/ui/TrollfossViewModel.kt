@@ -235,11 +235,12 @@ class TrollfossViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun swapTask(task:Task) { sim.tasks.swap(task);refreshTasks();scheduleSave() }
     /** Opens the parcel of [levelGift]: while playing in a built place, its first toy is set out on the spot. Returns true when one was. */
-    fun openParcel(): Boolean {
+    fun openParcel(viewportFraction: Float = 0.5f): Boolean {
         val level=levelGift;if(level<=0) return false
         val unbuilt=place==PlaceId.MINE_UPPER && !world.mine.upperBuilt || place==PlaceId.MINE_GROUND && !world.mine.started
         val placed=screen==Screen.Play && !unbuilt && run {
-            val x=engine?.takeIf { it.place==place }?.let { it.cam+it.visibleViewport/2 } ?: 1.15f
+            val scene = engine?.takeIf { it.place == place }
+            val x = scene?.let { it.cam + it.visibleViewport * viewportFraction } ?: 1.15f
             sim.toys.openGift(level,place,x)!=null
         }
         if(placed) changed()

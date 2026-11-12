@@ -3,6 +3,7 @@
 ## 1.19.2 – Plass til å helse på nissen
 
 - Når du vel nisseheimen, verkstaden eller reinsdyra i julemenyen, kjem figurane dine fram ved sida av den du vil helse på eller benken du vil bruke.
+- Nivågåver landar på sida av rommet i Nissegrenda, så barnet kan velje om det vil opne gåva eller helse på nissen først.
 
 ## 1.19.1 – Vegen til Nissegrenda
 

@@ -75,8 +75,10 @@ fun GiftParcel(vm: TrollfossViewModel, motion: Boolean) {
         val w = constraints.maxWidth.toFloat(); val h = constraints.maxHeight.toFloat()
         val density = LocalDensity.current
         val side = with(density) { (if (h / density.density < 520f) 72.dp else 96.dp).toPx() }
-        val cx = w / 2f
-        val ground = h * 0.62f
+        val inVillage = vm.screen == Screen.Play && vm.place.christmas
+        val horizontalFraction = if (inVillage) 0.20f else 0.5f
+        val cx = w * horizontalFraction
+        val ground = h * if (inVillage) 0.40f else 0.62f
         val y = -side * 2f + (ground + side * 2f) * fall.value
         if (phase != ParcelPhase.POP) {
             val wiggle = if (motion && phase == ParcelPhase.WAIT) sin(t * 6f) * 8f else 0f
@@ -86,7 +88,7 @@ fun GiftParcel(vm: TrollfossViewModel, motion: Boolean) {
                 .semantics { contentDescription = label; role = Role.Button }
                 .clickable(remember { MutableInteractionSource() }, indication = null) {
                     if (phase == ParcelPhase.POP) return@clickable
-                    placed = if (vm.openParcel()) 0 else -1
+                    placed = if (vm.openParcel(horizontalFraction)) 0 else -1
                     phase = ParcelPhase.POP
                 }) {
                 Canvas(Modifier.fillMaxSize()) { drawParcel(t, phase == ParcelPhase.FALL, motion) }
