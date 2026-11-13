@@ -93,14 +93,18 @@ class ReleasePolicyTest {
     fun `an update must be the same app, newer, signed by the same key and not debuggable`() {
         val installed = UpdatePackageIdentity("app.trollfoss", 2, "1.1.0", 26, debug = false, signers = setOf("key"))
         val good = installed.copy(versionCode = 3, versionName = "1.2.0")
-        assertTrue(compatibleUpdate(installed, good, "v1.2.0", sdk = 36))
-        assertFalse(compatibleUpdate(installed, good.copy(name = "app.other"), "v1.2.0", 36))
-        assertFalse(compatibleUpdate(installed, good.copy(versionCode = 2), "v1.2.0", 36))
-        assertFalse(compatibleUpdate(installed, good.copy(signers = setOf("other")), "v1.2.0", 36))
-        assertFalse(compatibleUpdate(installed, good.copy(debug = true), "v1.2.0", 36))
-        assertFalse(compatibleUpdate(installed, good.copy(minSdk = 40), "v1.2.0", 36))
-        assertFalse(compatibleUpdate(installed, good, "v1.3.0", 36))
-        assertFalse(compatibleUpdate(installed.copy(signers = emptySet()), good.copy(signers = emptySet()), "v1.2.0", 36))
+        fun reason(candidate: UpdatePackageIdentity) = updateRejection(installed, candidate, "v1.2.0", 36)
+        assertNull(reason(good))
+        assertEquals(UpdateMessage.WRONG_APP, reason(good.copy(name = "app.other")))
+        assertEquals(UpdateMessage.WRONG_APP, reason(good.copy(debug = true)))
+        assertEquals(UpdateMessage.VERSION_MISMATCH, reason(good.copy(versionCode = 2)))
+        assertEquals(UpdateMessage.VERSION_MISMATCH, updateRejection(installed, good, "v1.3.0", 36))
+        assertEquals(UpdateMessage.VERSION_MISMATCH, updateRejection(installed, good, "invalid", 36))
+        assertEquals(UpdateMessage.ANDROID_VERSION, reason(good.copy(minSdk = 40)))
+        assertEquals(UpdateMessage.SIGNER_MISMATCH, reason(good.copy(signers = setOf("other"))))
+        assertEquals(UpdateMessage.SIGNER_MISMATCH, reason(good.copy(signers = setOf("key", "other"))))
+        assertEquals(UpdateMessage.SIGNATURE_UNAVAILABLE, reason(good.copy(signers = emptySet())))
+        assertEquals(UpdateMessage.SIGNATURE_UNAVAILABLE, updateRejection(installed.copy(signers = emptySet()), good, "v1.2.0", 36))
     }
 }
 

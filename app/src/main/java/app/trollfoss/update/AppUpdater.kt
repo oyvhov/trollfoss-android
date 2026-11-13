@@ -29,7 +29,10 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
 
-enum class UpdateMessage { CURRENT, NETWORK, INVALID, STORAGE, PERMISSION, INSTALL, ACCESS, RATE }
+enum class UpdateMessage {
+    CURRENT, NETWORK, INVALID, DOWNLOAD_INCOMPLETE, ARCHIVE_UNREADABLE, SIGNATURE_UNAVAILABLE,
+    SIGNER_MISMATCH, WRONG_APP, VERSION_MISMATCH, ANDROID_VERSION, STORAGE, PERMISSION, INSTALL, ACCESS, RATE,
+}
 
 data class UpdateState(
     val release: AppRelease? = null,
@@ -162,7 +165,7 @@ class AppUpdater(context: Context, private val scope: CoroutineScope) {
             state = state.copy(downloading = true, ready = false, progress = 0f, message = null)
             try {
                 withContext(Dispatchers.IO) {
-                    val part = File(folder, "download.part")
+                    val part = File.createTempFile("trollfoss-download-", ".apk", folder)
                     try {
                         if (folder.usableSpace < release.size + 4 * 1024 * 1024) throw UpdateFailure(UpdateMessage.STORAGE)
                         val connection = connect("https://api.github.com/repos/$RELEASE_REPO/releases/assets/${release.assetId}", "application/octet-stream")
@@ -177,7 +180,7 @@ class AppUpdater(context: Context, private val scope: CoroutineScope) {
                                         val count = input.read(buffer)
                                         if (count < 0) break
                                         total += count
-                                        if (total > release.size || total > MAX_APK_BYTES) throw UpdateFailure(UpdateMessage.INVALID)
+                                        if (total > release.size || total > MAX_APK_BYTES) throw UpdateFailure(UpdateMessage.DOWNLOAD_INCOMPLETE)
                                         output.write(buffer, 0, count)
                                         val percent = (100 * total / release.size).toInt()
                                         if (percent != lastPercent) {
@@ -242,7 +245,7 @@ class AppUpdater(context: Context, private val scope: CoroutineScope) {
 
     @Suppress("DEPRECATION")
     private fun verify(file: File, release: AppRelease) {
-        if (file.length() != release.size) throw UpdateFailure(UpdateMessage.INVALID)
+        if (file.length() != release.size) throw UpdateFailure(UpdateMessage.DOWNLOAD_INCOMPLETE)
         val sha = MessageDigest.getInstance("SHA-256")
         file.inputStream().use { input ->
             val buffer = ByteArray(65_536)
@@ -252,11 +255,11 @@ class AppUpdater(context: Context, private val scope: CoroutineScope) {
                 sha.update(buffer, 0, count)
             }
         }
-        if (sha.digest().joinToString("") { "%02x".format(it) } != release.digest) throw UpdateFailure(UpdateMessage.INVALID)
+        if (sha.digest().joinToString("") { "%02x".format(it) } != release.digest) throw UpdateFailure(UpdateMessage.DOWNLOAD_INCOMPLETE)
         val flags = if (Build.VERSION.SDK_INT >= 28) PackageManager.GET_SIGNING_CERTIFICATES else PackageManager.GET_SIGNATURES
         val installed = app.packageManager.getPackageInfo(app.packageName, flags)
-        val candidate = app.packageManager.getPackageArchiveInfo(file.path, flags) ?: throw UpdateFailure(UpdateMessage.INVALID)
-        if (!compatibleUpdate(identity(installed), identity(candidate), release.tag, Build.VERSION.SDK_INT)) throw UpdateFailure(UpdateMessage.INVALID)
+        val candidate = readUpdateArchive(app.packageManager, file) ?: throw UpdateFailure(UpdateMessage.ARCHIVE_UNREADABLE)
+        updateRejection(identity(installed), identity(candidate), release.tag, Build.VERSION.SDK_INT)?.let { throw UpdateFailure(it) }
     }
 
     @Suppress("DEPRECATION")
@@ -324,5 +327,17 @@ class AppUpdater(context: Context, private val scope: CoroutineScope) {
         const val CHECK_COMPLETED_AT = "check_completed_at"
         const val CHECK_INTERVAL = "check_interval_ms"
     }
+}
+
+@Suppress("DEPRECATION")
+internal fun readUpdateArchive(packageManager: PackageManager, file: File): PackageInfo? {
+    // Some Android releases only collect archive certificates when the legacy flag is also set.
+    // On API 28+ identity() still verifies the current APK signers from SigningInfo.
+    val flags = if (Build.VERSION.SDK_INT >= 28) {
+        PackageManager.GET_SIGNING_CERTIFICATES or PackageManager.GET_SIGNATURES
+    } else {
+        PackageManager.GET_SIGNATURES
+    }
+    return packageManager.getPackageArchiveInfo(file.path, flags)
 }
 

@@ -293,6 +293,13 @@ object S {
     val updateCurrent = txt("Du har den nyaste versjonen.", "Du har den nyeste versjonen.")
     val updateNetwork = txt("Fekk ikkje kontakt med GitHub. Prøv igjen.", "Fikk ikke kontakt med GitHub. Prøv igjen.")
     val updateInvalid = txt("Oppdateringa kunne ikkje stadfestast. Ingenting vart installert.", "Oppdateringen kunne ikke bekreftes. Ingenting ble installert.")
+    val updateIncomplete = txt("Den nedlasta fila stemmer ikkje med utgåva på GitHub. Prøv «Last ned oppdatering» på nytt.", "Den nedlastede filen stemmer ikke med utgaven på GitHub. Prøv «Last ned oppdatering» på nytt.")
+    val updateUnreadable = txt("Android kunne ikkje lese appfila. Prøv å laste henne ned på nytt.", "Android kunne ikke lese appfilen. Prøv å laste den ned på nytt.")
+    val updateNoCertificate = txt("Android kunne ikkje lese signaturen som trengst for å oppdatere Trollfoss.", "Android kunne ikke lese signaturen som trengs for å oppdatere Trollfoss.")
+    val updateOtherSigner = txt("Den installerte appen og oppdateringa har ulike signaturar. Ta vare på den installerte appen og det lagra spelet.", "Den installerte appen og oppdateringen har ulike signaturer. Ta vare på den installerte appen og det lagrede spillet.")
+    val updateOtherApp = txt("Oppdateringa passar til ei anna utgåve av appen enn den som er installert.", "Oppdateringen passer til en annen utgave av appen enn den som er installert.")
+    val updateWrongVersion = txt("Versjonen i fila passar ikkje til denne oppdateringa. Vel «Sjekk no» for å hente utgåvelista på nytt.", "Versjonen i filen passer ikke til denne oppdateringen. Velg «Sjekk nå» for å hente utgavelisten på nytt.")
+    val updateAndroidVersion = txt("Denne utgåva krev ein nyare Android-versjon på eininga.", "Denne utgaven krever en nyere Android-versjon på enheten.")
     val updateStorage = txt("Kunne ikkje lagre oppdateringa. Sjekk ledig plass.", "Kunne ikke lagre oppdateringen. Sjekk ledig plass.")
     val updatePermission = txt(
         "Tillat at Trollfoss installerer oppdateringar. Gå så tilbake og vel «Installer oppdatering».",

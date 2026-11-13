@@ -113,14 +113,15 @@ data class UpdatePackageIdentity(
 )
 
 /** A download may only replace this app with a newer, non-debug build signed by the same key. */
-fun compatibleUpdate(installed: UpdatePackageIdentity, candidate: UpdatePackageIdentity, tag: String, sdk: Int): Boolean {
-    val expected = ReleaseVersion.parse(tag) ?: return false
-    return candidate.name == installed.name &&
-        candidate.versionCode > installed.versionCode &&
-        candidate.minSdk <= sdk &&
-        !candidate.debug &&
-        ReleaseVersion.parse(candidate.versionName) == expected &&
-        installed.signers.isNotEmpty() &&
-        installed.signers == candidate.signers
+internal fun updateRejection(installed: UpdatePackageIdentity, candidate: UpdatePackageIdentity, tag: String, sdk: Int): UpdateMessage? {
+    val expected = ReleaseVersion.parse(tag) ?: return UpdateMessage.VERSION_MISMATCH
+    return when {
+        candidate.name != installed.name || candidate.debug -> UpdateMessage.WRONG_APP
+        candidate.versionCode <= installed.versionCode || ReleaseVersion.parse(candidate.versionName) != expected -> UpdateMessage.VERSION_MISMATCH
+        candidate.minSdk > sdk -> UpdateMessage.ANDROID_VERSION
+        installed.signers.isEmpty() || candidate.signers.isEmpty() -> UpdateMessage.SIGNATURE_UNAVAILABLE
+        installed.signers != candidate.signers -> UpdateMessage.SIGNER_MISMATCH
+        else -> null
+    }
 }
 

@@ -1,5 +1,10 @@
 # Endringslogg
 
+## 1.19.3 – Oppdateringar på eldre nettbrett
+
+- Trollfoss ber Android om sertifikata som trengst for å kontrollere nedlasta oppdateringar, også på Android-utgåver der arkivlesaren krev det eldre signaturflagget.
+- Foreldresida viser kva versjon som er installert. Ho skil mellom ufullstendig nedlasting, uleseleg sertifikat og ein app med annan signatur.
+
 ## 1.19.2 – Plass til å helse på nissen
 
 - Når du vel nisseheimen, verkstaden eller reinsdyra i julemenyen, kjem figurane dine fram ved sida av den du vil helse på eller benken du vil bruke.

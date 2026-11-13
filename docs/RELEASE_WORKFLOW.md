@@ -28,6 +28,15 @@ Ved førespurnadsgrensa til GitHub ventar han ein time. Eit merke på foreldreta
 ei ny utgåve er klar. «Sjekk no» på foreldresida går utanom ventetida. Ein vaksen vel nedlasting
 og stadfestar installasjonen i Android.
 
+### Arkivkontroll på eldre Android
+
+Arkivtesten `ArchiveSignersTest` dekkjer denne plattformfeilen på Android 10 (API 29).
+På denne plattforma krev arkivlesaren `GET_SIGNATURES` for å samle sertifikata, også når ein ber om
+`GET_SIGNING_CERTIFICATES`. Samanlikn framleis dei gjeldande signatarane frå `SigningInfo`.
+Ei eldre utgåve som allereie avviser alle signerte APK-ar lokalt, treng den første retta utgåva via
+ein annan godkjend installasjonskanal. Eit innrullert nettbrett kan få henne gjennom den eksisterande
+einingsstyringa med same pakkenamn, same nøkkel og høgare versjonskode.
+
 ## 1. Frys kjelda
 
 1. `git status` og `git diff`. Ta vare på alt arbeid; ingen reset eller clean.

@@ -1,5 +1,9 @@
 # Overlevering: kor arbeidet står og kva som skal gjerast
 
+> **1.19.3 · Oppdateringar på eldre Android**
+> Oppdateraren ber om begge signaturflagga ved arkivlesing frå API 28 og samanliknar dei gjeldande signatarane.
+> Prøv `ArchiveSignersTest` på API 29 når oppdateringsflyten blir endra. Sjå `docs/RELEASE_WORKFLOW.md`.
+
 > **1.19.2 · Besøk hos nissen**
 > Besøkjande får eigne plassar ved sida av nissen, leikebenken og reinsdyret når dei kjem frå reisefana.
 > Sjå `docs/release-v1.19.2.md`.
