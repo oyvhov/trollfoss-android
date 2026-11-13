@@ -1,3 +1,5 @@
-Denne utgåva rettar oppdateringskontrollen på eldre Android-nettbrett. Dersom den gamle appen finn utgåva og så seier «Oppdateringa kunne ikkje stadfestast», kan feilen liggje i appen som allereie er installert. På eit administrert nettbrett kan den som driftar det, sende ut 1.19.3 som ei vanleg oppdatering. Lat den gamle appen stå så spelet blir bevart.
+Stoggar nedlastinga i den gamle appen? Opne nettlesaren på nettbrettet og skriv github.com/oyvhov/trollfoss-android. Trykk «Last ned Trollfoss for Android», opne fila og vel «Oppdater». Det lagra spelet blir med. På fellesstyrte nettbrett kan drift sende ut rettinga til alle på éin gong.
 
-Foreldresida viser no kva versjon av Trollfoss som er installert, og gjev ulike meldingar om ei nedlasting er ufullstendig, signaturen manglar eller den nye appen har ein annan signatur.
+[Last ned Trollfoss 1.19.3 for Android](https://github.com/oyvhov/trollfoss-android/releases/download/v1.19.3/Trollfoss-v1.19.3.apk)
+
+Denne utgåva rettar signaturkontrollen for framtidige oppdateringar på eldre Android-nettbrett. Foreldresida viser òg kva versjon som er installert. Lat den gamle appen stå under oppdateringa.

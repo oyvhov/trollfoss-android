@@ -9,7 +9,9 @@
 
 <h3 align="center">Eit digitalt dukkehus for barn frå 4 til 10 år<br />– ei heil bygd med folk, dyr og troll å leike med.</h3>
 
-<p align="center"><a href="https://github.com/oyvhov/trollfoss-android/releases/latest"><b>⬇ LAST NED TROLLFOSS (APK)</b></a></p>
+<p align="center"><a href="https://github.com/oyvhov/trollfoss-android/releases/download/v1.19.3/Trollfoss-v1.19.3.apk"><b>Last ned Trollfoss for Android</b></a> · <a href="https://github.com/oyvhov/trollfoss-android/releases/latest">Nyaste utgåve</a></p>
+
+**Stoggar oppdateringa på eit eldre nettbrett?** Opne denne sida i nettlesaren på nettbrettet og trykk «Last ned Trollfoss for Android». Opne APK-fila og vel **Oppdater** i Android. Lat den gamle appen stå. Då blir figurar, hus og framgang med. På fellesstyrte nettbrett kan den som driftar dei, sende ut den same signerte APK-en til alle via den eksisterande einingsstyringa.
 
 ---
 
